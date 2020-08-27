@@ -1,0 +1,3 @@
+[submodule "EthaneEngine/vendor/spdlog"]
+	path = EthaneEngine/vendor/spdlog
+	url = https://github.com/gabime/spdlog
