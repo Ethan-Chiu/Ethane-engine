@@ -142,8 +142,12 @@
     <ClInclude Include="src\Ethane.h" />
     <ClInclude Include="src\Ethane\Application.h" />
     <ClInclude Include="src\Ethane\EntryPoint.h" />
+    <ClInclude Include="src\Ethane\Events\ApplicationEvent.h" />
+    <ClInclude Include="src\Ethane\Events\Event.h" />
+    <ClInclude Include="src\Ethane\Events\KeyEvent.h" />
+    <ClInclude Include="src\Ethane\Events\MouseEvent.h" />
     <ClInclude Include="src\Ethane\Log.h" />
-    <ClInclude Include="src\Ethane\core.h" />
+    <ClInclude Include="src\Ethane\Core.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp" />

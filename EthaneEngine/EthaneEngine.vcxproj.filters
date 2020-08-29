@@ -16,9 +16,13 @@
     <ClInclude Include="src\Ethane\Log.h">
       <Filter>Ethane</Filter>
     </ClInclude>
-    <ClInclude Include="src\Ethane\core.h">
+    <ClInclude Include="src\Ethane\Events\Event.h" />
+    <ClInclude Include="src\Ethane\Core.h">
       <Filter>Ethane</Filter>
     </ClInclude>
+    <ClInclude Include="src\Ethane\Events\ApplicationEvent.h" />
+    <ClInclude Include="src\Ethane\Events\KeyEvent.h" />
+    <ClInclude Include="src\Ethane\Events\MouseEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">

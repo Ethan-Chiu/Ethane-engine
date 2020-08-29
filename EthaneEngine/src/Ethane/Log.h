@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "core.h"
+#include "Core.h"
 #include "spdlog/spdlog.h"
 
 namespace Ethane {
