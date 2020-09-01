@@ -10,6 +10,10 @@ workspace "EthaneEngine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+IncludeDir = {}
+IncludeDir["GLFW"] = "EthaneEngine/vendor/GLFW/include"
+include "EthaneEngine/vendor/GLFW"
+
 project "EthaneEngine"
 
 	location "EthaneEngine"
@@ -19,6 +23,9 @@ project "EthaneEngine"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "ethpch.h"
+	pchsource "EthaneEngine/src/ethpch.cpp"
+
 	files
 	{
 		"%{prj.name}/src/**.h", 
@@ -27,7 +34,15 @@ project "EthaneEngine"
 
 	includedirs
 	{
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/src",
+		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.GLFW}"
+	}
+
+	links
+	{
+		"GLFW",
+		"opengl32.lib"
 	}
 
 	filter "system:windows"

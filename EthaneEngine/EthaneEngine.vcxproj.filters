@@ -4,25 +4,38 @@
     <Filter Include="Ethane">
       <UniqueIdentifier>{3AC540B1-2667-6B87-0F22-7FDBFB62F2D7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ethane\Events">
+      <UniqueIdentifier>{DE0B71C4-4ACC-ECFA-1307-36787F8631D7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Ethane.h" />
     <ClInclude Include="src\Ethane\Application.h">
       <Filter>Ethane</Filter>
     </ClInclude>
+    <ClInclude Include="src\Ethane\Core.h">
+      <Filter>Ethane</Filter>
+    </ClInclude>
     <ClInclude Include="src\Ethane\EntryPoint.h">
       <Filter>Ethane</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\Events\ApplicationEvent.h">
+      <Filter>Ethane\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\Events\Event.h">
+      <Filter>Ethane\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\Events\KeyEvent.h">
+      <Filter>Ethane\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\Events\MouseEvent.h">
+      <Filter>Ethane\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Ethane\Log.h">
       <Filter>Ethane</Filter>
     </ClInclude>
-    <ClInclude Include="src\Ethane\Events\Event.h" />
-    <ClInclude Include="src\Ethane\Core.h">
-      <Filter>Ethane</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Ethane\Events\ApplicationEvent.h" />
-    <ClInclude Include="src\Ethane\Events\KeyEvent.h" />
-    <ClInclude Include="src\Ethane\Events\MouseEvent.h" />
+    <ClInclude Include="src\ethpch.h" />
+    <ClInclude Include="src\Ethane\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">
@@ -31,5 +44,6 @@
     <ClCompile Include="src\Ethane\Log.cpp">
       <Filter>Ethane</Filter>
     </ClCompile>
+    <ClCompile Include="src\ethpch.cpp" />
   </ItemGroup>
 </Project>

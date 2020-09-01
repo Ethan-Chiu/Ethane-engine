@@ -1,10 +1,7 @@
 #pragma once
 
-#include "../Core.h"
 #include "Ethane/Core.h"
 
-#include <string>
-#include <functional>
 
 namespace Ethane {
 
@@ -12,7 +9,7 @@ namespace Ethane {
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved, 
-		Apptick, AppUpdate, AppRender, 
+		AppTick, AppUpdate, AppRender, 
 		KeyPressed, KeyReleased, 
 		MouseButtonPressed, MouseButtonRelease, MouseMoved, MouseScrolled
 	};
@@ -27,7 +24,11 @@ namespace Ethane {
 		EventCategoryMouseButton     = BIT(4)
 	};
 
-#define EVENT_CLASS_TYPE(type) 
+#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() {return EventType::##type;}\
+				virtual EventType GetEventType() const override {return GetStaticType();}\
+								virtual const char* GetName() const override {return #type;}
+
+#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override {return category;}
 
 	class ETHANE_API Event
 	{
@@ -39,7 +40,7 @@ namespace Ethane {
 		virtual int GetCategoryFlags() const = 0;
 		virtual std::string ToString() const { return GetName(); }
 
-		inline IsInCategory(EventCategory category)
+		inline bool IsInCategory(EventCategory category)
 		{
 			return GetCategoryFlags() & category;
 		}
@@ -47,5 +48,34 @@ namespace Ethane {
 	protected:
 		bool m_Handled = false;
 	};
+
+	class ETHANE_API EventDispatcher
+	{
+		template<typename Ty>
+		using EventFn = std::function<bool(Ty&)>;
+
+	public:
+		EventDispatcher(Event& event)
+			: m_Event(event) {}
+
+		template<typename Ty>
+		bool Dispatch(EventFn<Ty> func)
+		{
+			if (m_Event.GetEventType() == Ty::GetStaticType())
+			{
+				m_Event.m_Handled = func(*(Ty*)&m_Event);
+				return true;
+			}
+			return false;
+		}
+
+	private:
+		Event& m_Event;
+	};
+
+	inline std::ostream& operator<<(std::ostream& os, const Event& e)
+	{
+		return os << e.ToString();
+	}
 
 }

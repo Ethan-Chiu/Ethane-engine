@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
 #include "Core.h"
 #include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h"
 
 namespace Ethane {
 
@@ -30,15 +30,15 @@ namespace Ethane {
 
 
 //core log macros
-#define ETH_CORE_TRACE (...) ::ETHANE::Log::GetCoreLoader()->trace(__VA_ARGS__)
-#define ETH_CORE_INFO (...)  ::ETHANE::Log::GetCoreLoader()->info(__VA_ARGS__)
-#define ETH_CORE_WARN (...)  ::ETHANE::Log::GetCoreLoader()->warn(__VA_ARGS__)
-#define ETH_CORE_ERROR (...) ::ETHANE::Log::GetCoreLoader()->error(__VA_ARGS__)
-#define ETH_CORE_FATAL (...) ::ETHANE::Log::GetCoreLoader()->fatal(__VA_ARGS__)
+#define ETH_CORE_TRACE(...) ::Ethane::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define ETH_CORE_INFO(...)  ::Ethane::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define ETH_CORE_WARN(...)  ::Ethane::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define ETH_CORE_ERROR(...) ::Ethane::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define ETH_CORE_FATAL(...) ::Ethane::Log::GetCoreLogger()->fatal(__VA_ARGS__)
 
 //client log macros
-#define ETH_TRACE (...) ::ETHANE::Log::GetClientLoader()->trace(__VA_ARGS__)
-#define ETH_INFO (...)  ::ETHANE::Log::GetClientLoader()->info(__VA_ARGS__)
-#define ETH_WARN (...)  ::ETHANE::Log::GetClientLoader()->warn(__VA_ARGS__)
-#define ETH_ERROR (...) ::ETHANE::Log::GetClientLoader()->error(__VA_ARGS__)
-#define ETH_FATAL (...) ::ETHANE::Log::GetClientLoader()->fatal(__VA_ARGS__)
+#define ETH_TRACE(...) ::Ethane::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define ETH_INFO(...)  ::Ethane::Log::GetClientLogger()->info(__VA_ARGS__)
+#define ETH_WARN(...)  ::Ethane::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define ETH_ERROR(...) ::Ethane::Log::GetClientLogger()->error(__VA_ARGS__)
+#define ETH_FATAL(...) ::Ethane::Log::GetClientLogger()->fatal(__VA_ARGS__)
