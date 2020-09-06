@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Ethane/Core.h"
-
+#include <string>
+#include <functional>
 
 namespace Ethane {
 
@@ -44,7 +45,7 @@ namespace Ethane {
 		{
 			return GetCategoryFlags() & category;
 		}
-
+		
 	protected:
 		bool m_Handled = false;
 	};

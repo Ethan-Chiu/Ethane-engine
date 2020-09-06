@@ -1,0 +1,42 @@
+#pragma once
+
+#include "Ethane/Window.h"
+#include <GLFW/glfw3.h>
+
+namespace Ethane {
+
+	class WindowsWindow : public Window
+	{
+	public:
+		WindowsWindow(const WindowProps& props);
+		virtual ~WindowsWindow();
+
+		void OnUpdate() override;
+
+		inline unsigned int GetWidth() const override { return m_Data.Width; }
+		inline unsigned int GetHeight() const override { return m_Data.Height; }
+
+		inline void SetEventCallback(const EventCallbackFn& callbake) override { m_Data.EventCallback = callbake; }
+
+		void SetVSync(bool enable);
+		bool IsVSync() const;
+
+	private:
+		virtual void Init(const WindowProps& props);
+		virtual void Shutdown();
+	private:
+		GLFWwindow* m_Window;
+
+		struct WindowDate
+		{
+			std::string Title;
+			unsigned int Width, Height;
+			bool VSync;
+
+			EventCallbackFn EventCallback;
+		};
+
+		WindowDate m_Data;
+
+	};
+}

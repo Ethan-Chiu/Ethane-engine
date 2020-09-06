@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Ethane/Log.h"
+
 #ifdef ETH_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif // ETH_PLATFORM_WINDOWS

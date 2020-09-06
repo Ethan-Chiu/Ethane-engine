@@ -36,6 +36,7 @@
     </ClInclude>
     <ClInclude Include="src\ethpch.h" />
     <ClInclude Include="src\Ethane\Window.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">
@@ -45,5 +46,6 @@
       <Filter>Ethane</Filter>
     </ClCompile>
     <ClCompile Include="src\ethpch.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
   </ItemGroup>
 </Project>
