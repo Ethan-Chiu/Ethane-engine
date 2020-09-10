@@ -7,6 +7,12 @@
     <Filter Include="Ethane\Events">
       <UniqueIdentifier>{DE0B71C4-4ACC-ECFA-1307-36787F8631D7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{64FBD71A-50F4-F66C-7926-DCF1657ED678}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Ethane.h" />
@@ -31,21 +37,39 @@
     <ClInclude Include="src\Ethane\Events\MouseEvent.h">
       <Filter>Ethane\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Ethane\Layer.h">
+      <Filter>Ethane</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\LayerStack.h">
+      <Filter>Ethane</Filter>
+    </ClInclude>
     <ClInclude Include="src\Ethane\Log.h">
       <Filter>Ethane</Filter>
     </ClInclude>
+    <ClInclude Include="src\Ethane\Window.h">
+      <Filter>Ethane</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
     <ClInclude Include="src\ethpch.h" />
-    <ClInclude Include="src\Ethane\Window.h" />
-    <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">
       <Filter>Ethane</Filter>
     </ClCompile>
+    <ClCompile Include="src\Ethane\Layer.cpp">
+      <Filter>Ethane</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ethane\LayerStack.cpp">
+      <Filter>Ethane</Filter>
+    </ClCompile>
     <ClCompile Include="src\Ethane\Log.cpp">
       <Filter>Ethane</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\ethpch.cpp" />
-    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
   </ItemGroup>
 </Project>

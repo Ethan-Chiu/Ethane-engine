@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Ethane/Core.h"
-#include <string>
+#include <sstream>
 #include <functional>
 
 namespace Ethane {
@@ -12,7 +12,7 @@ namespace Ethane {
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved, 
 		AppTick, AppUpdate, AppRender, 
 		KeyPressed, KeyReleased, 
-		MouseButtonPressed, MouseButtonRelease, MouseMoved, MouseScrolled
+		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
 	enum EventCategory
@@ -33,8 +33,9 @@ namespace Ethane {
 
 	class ETHANE_API Event
 	{
-		friend class EventDispatcher;
 	public:
+
+		bool Handled = false;
 		//For Debug
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
@@ -45,9 +46,7 @@ namespace Ethane {
 		{
 			return GetCategoryFlags() & category;
 		}
-		
-	protected:
-		bool m_Handled = false;
+	
 	};
 
 	class ETHANE_API EventDispatcher
@@ -64,7 +63,7 @@ namespace Ethane {
 		{
 			if (m_Event.GetEventType() == Ty::GetStaticType())
 			{
-				m_Event.m_Handled = func(*(Ty*)&m_Event);
+				m_Event.Handled = func(*(Ty*)&m_Event);
 				return true;
 			}
 			return false;

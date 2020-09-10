@@ -63,14 +63,17 @@ project "EthaneEngine"
 
 	filter "configurations:Debug"
 		defines "ETH_DEBUG"
+		buildoptions "/MDd"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "ETH_RELEASE"
+		buildoptions "/MD"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
+		buildoptions "/MD"
 		symbols "On"
 
 
@@ -112,13 +115,16 @@ project "Sandbox"
 
 	filter "configurations:Debug"
 		defines "ETH_DEBUG"
+		buildoptions "/MDd"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "ETH_RELEASE"
+		buildoptions "/MD"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
+		buildoptions "/MD"
 		symbols "On"
 

@@ -16,7 +16,7 @@ namespace Ethane {
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
 
-		inline void SetEventCallback(const EventCallbackFn& callbake) override { m_Data.EventCallback = callbake; }
+		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 
 		void SetVSync(bool enable);
 		bool IsVSync() const;
@@ -27,7 +27,7 @@ namespace Ethane {
 	private:
 		GLFWwindow* m_Window;
 
-		struct WindowDate
+		struct WindowData
 		{
 			std::string Title;
 			unsigned int Width, Height;
@@ -36,7 +36,7 @@ namespace Ethane {
 			EventCallbackFn EventCallback;
 		};
 
-		WindowDate m_Data;
+		WindowData m_Data;
 
 	};
 }
