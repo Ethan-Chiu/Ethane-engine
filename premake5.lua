@@ -12,7 +12,12 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["GLFW"] = "EthaneEngine/vendor/GLFW/include"
+IncludeDir["Glad"] = "EthaneEngine/vendor/Glad/include"
+IncludeDir["ImGui"] = "EthaneEngine/vendor/imgui"
+
 include "EthaneEngine/vendor/GLFW"
+include "EthaneEngine/vendor/Glad"
+include "EthaneEngine/vendor/imgui"
 
 project "EthaneEngine"
 
@@ -36,12 +41,16 @@ project "EthaneEngine"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{IncludeDir.GLFW}"
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.ImGui}"
 	}
 
 	links
 	{
 		"GLFW",
+		"Glad",
+		"ImGui",
 		"opengl32.lib"
 	}
 
@@ -53,7 +62,8 @@ project "EthaneEngine"
 		defines
 		{
 			"ETH_PLATFORM_WINDOWS",
-			"ETN_BUILD_DLL"
+			"ETN_BUILD_DLL",
+			"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands

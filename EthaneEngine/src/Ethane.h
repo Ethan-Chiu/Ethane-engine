@@ -6,6 +6,7 @@
 #include "Ethane/Log.h"
 //--------------------
 #include "Ethane/Layer.h"
+#include "Ethane/ImGui/ImGuiLayer.h"
 
 //-----EntryPoint-----
 #include "Ethane/EntryPoint.h"
