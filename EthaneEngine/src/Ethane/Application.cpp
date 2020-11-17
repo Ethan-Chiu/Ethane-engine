@@ -1,5 +1,6 @@
 #include "ethpch.h"
 #include "Application.h"
+#include "Input.h"
 
 #include <glad/glad.h>
 
@@ -59,6 +60,9 @@ namespace Ethane
             {
                 layer->OnUpdate();
             }
+
+            auto [x, y] = Input::GetMousePosition();
+            ETH_CORE_TRACE("{0}, {1}", x, y);
 
             m_Window->OnUpdate();
         }

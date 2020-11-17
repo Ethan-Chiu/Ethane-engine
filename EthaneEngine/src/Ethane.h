@@ -7,6 +7,8 @@
 //--------------------
 #include "Ethane/Layer.h"
 #include "Ethane/ImGui/ImGuiLayer.h"
+//---------input-------
+#include "Ethane/Input.h"
 
 //-----EntryPoint-----
 #include "Ethane/EntryPoint.h"
