@@ -151,7 +151,9 @@
     <ClInclude Include="src\Ethane\LayerStack.h" />
     <ClInclude Include="src\Ethane\Log.h" />
     <ClInclude Include="src\Ethane\MouseButtonCodes.h" />
+    <ClInclude Include="src\Ethane\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Ethane\Window.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\ethpch.h" />
@@ -571,6 +573,7 @@
     <ClCompile Include="src\Ethane\Layer.cpp" />
     <ClCompile Include="src\Ethane\LayerStack.cpp" />
     <ClCompile Include="src\Ethane\Log.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\ethpch.cpp">
