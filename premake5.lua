@@ -16,6 +16,7 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "EthaneEngine/vendor/GLFW/include"
 IncludeDir["Glad"] = "EthaneEngine/vendor/Glad/include"
 IncludeDir["ImGui"] = "EthaneEngine/vendor/imgui"
+IncludeDir["glm"] = "EthaneEngine/vendor/glm"
 
 include "EthaneEngine/vendor/GLFW"
 include "EthaneEngine/vendor/Glad"
@@ -25,9 +26,10 @@ include "EthaneEngine/vendor/imgui"
 project "EthaneEngine"
 
 	location "EthaneEngine"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -39,6 +41,8 @@ project "EthaneEngine"
 	{
 		"%{prj.name}/src/**.h", 
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/glm/glm/**.hpp",
+		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
 
 	includedirs
@@ -47,7 +51,8 @@ project "EthaneEngine"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -59,7 +64,6 @@ project "EthaneEngine"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
@@ -69,25 +73,20 @@ project "EthaneEngine"
 			"GLFW_INCLUDE_NONE"
 		}
 
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
-		}
-
 	filter "configurations:Debug"
 		defines "ETH_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "ETH_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
 		runtime "Release"
-		symbols "On"
+		symbols "on"
 
 
 project "Sandbox"
@@ -95,7 +94,8 @@ project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -103,13 +103,14 @@ project "Sandbox"
 	files
 	{
 		"%{prj.name}/src/**.h", 
-		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.cpp"
 	}
 
 	includedirs
 	{
 		"EthaneEngine/vendor/spdlog/include",
-		"EthaneEngine/src"
+		"EthaneEngine/src",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -118,7 +119,6 @@ project "Sandbox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
@@ -129,15 +129,15 @@ project "Sandbox"
 	filter "configurations:Debug"
 		defines "ETH_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "ETH_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
 		runtime "Release"
-		symbols "On"
+		symbols "on"
 

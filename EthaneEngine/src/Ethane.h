@@ -9,7 +9,8 @@
 #include "Ethane/ImGui/ImGuiLayer.h"
 //---------input-------
 #include "Ethane/Input.h"
-
+#include "Ethane/KeyCodes.h"
+#include "Ethane/MouseButtonCodes.h"
 //-----EntryPoint-----
 #include "Ethane/EntryPoint.h"
 //--------------------

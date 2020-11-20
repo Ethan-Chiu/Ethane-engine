@@ -4,16 +4,22 @@ class ExampleLayer : public Ethane::Layer
 {
 public:
 	ExampleLayer()
-		:Layer("Example"){}
+		:Layer("Example")
+	{
+	}
 
 	void OnUpdate() override
 	{
-		ETH_INFO("ExampleLayer::Update");
+		if (Ethane::Input::IsKeyPressed(ETH_KEY_TAB))
+		{
+			ETH_TRACE("Tab key is pressed");
+		}
+		//ETH_INFO("ExampleLayer::Update");
 	}
 
 	void OnEvent(Ethane::Event& event) override
 	{
-		ETH_TRACE("{0}", event);
+		// ETH_TRACE("{0}", event);
 	}
 
 };
@@ -25,7 +31,6 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Ethane::ImGuiLayer());
 	}
 	~Sandbox()
 	{

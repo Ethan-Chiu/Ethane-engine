@@ -6,6 +6,8 @@
 #include "Window.h"
 #include "Ethane/LayerStack.h"
 
+#include "Ethane/ImGui/ImGuiLayer.h"
+
 namespace Ethane
 {
 	class ETHANE_API Application
@@ -26,6 +28,7 @@ namespace Ethane
 		bool OnWindowClose(WindowCloseEvent& e);
 
 		std::unique_ptr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
 		LayerStack m_LayerStack;
 

@@ -7,3 +7,6 @@
 [submodule "EthaneEngine/vendor/imgui"]
 	path = EthaneEngine/vendor/imgui
 	url = https://github.com/TheCherno/imgui.git
+[submodule "EthaneEngine/vendor/glm"]
+	path = EthaneEngine/vendor/glm
+	url = https://github.com/g-truc/glm.git

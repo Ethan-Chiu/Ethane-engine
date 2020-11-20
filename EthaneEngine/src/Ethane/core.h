@@ -1,11 +1,15 @@
 #pragma once
 
 #ifdef ETH_PLATFORM_WINDOWS
+#if ETH_DYNAMIC_LINK
 	#ifdef ETH_BUILD_DLL
 		#define ETHANE_API __declspec(dllexport)
 	#else
 		#define ETHANE_API __declspec(dllimport)
 	#endif
+#else
+	#define ETHANE_API
+#endif
 #else
 	#error Windows support only
 #endif
