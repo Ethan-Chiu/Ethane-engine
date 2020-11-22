@@ -1339,6 +1339,8 @@
       <Filter>src\Ethane\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Ethane\Renderer\Buffer.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
+    <ClInclude Include="src\Ethane\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">
@@ -1375,5 +1377,7 @@
       <Filter>src\Ethane\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Ethane\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\Renderer.cpp" />
   </ItemGroup>
 </Project>
