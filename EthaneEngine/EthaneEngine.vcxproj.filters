@@ -13,8 +13,14 @@
     <Filter Include="src\Ethane\ImGui">
       <UniqueIdentifier>{5B64DB28-475D-FA7A-708F-DFFF5CE7D986}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Ethane\Renderer">
+      <UniqueIdentifier>{37B146B6-A312-24C4-2C80-6A7698E05A83}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Platform">
       <UniqueIdentifier>{21CA02E5-0D2D-9289-B6B2-CA3FA2F45D0C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Platform\OpenGL">
+      <UniqueIdentifier>{35A49437-A105-7245-2A73-B8F796D3A804}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Platform\Windows">
       <UniqueIdentifier>{5B054582-4794-CE4B-F0B2-E246DC20DFF1}</UniqueIdentifier>
@@ -46,9 +52,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Ethane\Application.h">
-      <Filter>src\Ethane</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Ethane\Core.h">
       <Filter>src\Ethane</Filter>
     </ClInclude>
     <ClInclude Include="src\Ethane\EntryPoint.h">
@@ -87,8 +90,17 @@
     <ClInclude Include="src\Ethane\MouseButtonCodes.h">
       <Filter>src\Ethane</Filter>
     </ClInclude>
+    <ClInclude Include="src\Ethane\Renderer\GraphicsContext.h">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Ethane\Window.h">
       <Filter>src\Ethane</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\core.h">
+      <Filter>src\Ethane</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h">
+      <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsInput.h">
       <Filter>src\Platform\Windows</Filter>
@@ -1323,8 +1335,10 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Ethane\Renderer\GraphicsContext.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="src\Ethane\Renderer\Shader.h">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\Renderer\Buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">
@@ -1345,6 +1359,9 @@
     <ClCompile Include="src\Ethane\Log.cpp">
       <Filter>src\Ethane</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
@@ -1354,6 +1371,9 @@
     <ClCompile Include="src\ethpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\Shader.cpp">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ethane\Renderer\Buffer.cpp" />
   </ItemGroup>
 </Project>

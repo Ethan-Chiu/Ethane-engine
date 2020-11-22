@@ -17,6 +17,12 @@ namespace Ethane {
 		glfwMakeContextCurrent(m_windowHandle);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		ETH_CORE_ASSERT(status, "Failed to initialize Glad!");
+
+		ETH_CORE_INFO("OpenGL Info:");
+		ETH_CORE_INFO("  Vender: {0}", glGetString(GL_VENDOR));
+		ETH_CORE_INFO("  Renderer: {0}", glGetString(GL_RENDERER));
+		ETH_CORE_INFO("  Version: {0}", glGetString(GL_VERSION));
+
 	}
 
 	void OpenGLContext::SwapBuffers()
