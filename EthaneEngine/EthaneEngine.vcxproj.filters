@@ -90,7 +90,16 @@
     <ClInclude Include="src\Ethane\MouseButtonCodes.h">
       <Filter>src\Ethane</Filter>
     </ClInclude>
+    <ClInclude Include="src\Ethane\Renderer\Buffer.h">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Ethane\Renderer\GraphicsContext.h">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\Renderer\Renderer.h">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\Renderer\Shader.h">
       <Filter>src\Ethane\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Ethane\Window.h">
@@ -98,6 +107,9 @@
     </ClInclude>
     <ClInclude Include="src\Ethane\core.h">
       <Filter>src\Ethane</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h">
+      <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h">
       <Filter>src\Platform\OpenGL</Filter>
@@ -1335,12 +1347,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Ethane\Renderer\Shader.h">
-      <Filter>src\Ethane\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Ethane\Renderer\Buffer.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
-    <ClInclude Include="src\Ethane\Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">
@@ -1361,6 +1367,18 @@
     <ClCompile Include="src\Ethane\Log.cpp">
       <Filter>src\Ethane</Filter>
     </ClCompile>
+    <ClCompile Include="src\Ethane\Renderer\Buffer.cpp">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ethane\Renderer\Renderer.cpp">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ethane\Renderer\Shader.cpp">
+      <Filter>src\Ethane\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
@@ -1373,11 +1391,5 @@
     <ClCompile Include="src\ethpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Ethane\Renderer\Shader.cpp">
-      <Filter>src\Ethane\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Ethane\Renderer\Buffer.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
-    <ClCompile Include="src\Ethane\Renderer\Renderer.cpp" />
   </ItemGroup>
 </Project>

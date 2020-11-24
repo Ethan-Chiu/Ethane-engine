@@ -136,9 +136,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Ethane\Renderer\Buffer.h" />
-    <ClInclude Include="src\Ethane\Renderer\Renderer.h" />
-    <ClInclude Include="src\Ethane\Renderer\Shader.h" />
     <ClInclude Include="src\Ethane.h" />
     <ClInclude Include="src\Ethane\Application.h" />
     <ClInclude Include="src\Ethane\EntryPoint.h" />
@@ -153,7 +150,10 @@
     <ClInclude Include="src\Ethane\LayerStack.h" />
     <ClInclude Include="src\Ethane\Log.h" />
     <ClInclude Include="src\Ethane\MouseButtonCodes.h" />
+    <ClInclude Include="src\Ethane\Renderer\Buffer.h" />
     <ClInclude Include="src\Ethane\Renderer\GraphicsContext.h" />
+    <ClInclude Include="src\Ethane\Renderer\Renderer.h" />
+    <ClInclude Include="src\Ethane\Renderer\Shader.h" />
     <ClInclude Include="src\Ethane\Window.h" />
     <ClInclude Include="src\Ethane\core.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
@@ -571,15 +571,15 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Ethane\Renderer\Buffer.cpp" />
-    <ClCompile Include="src\Ethane\Renderer\Renderer.cpp" />
-    <ClCompile Include="src\Ethane\Renderer\Shader.cpp" />
     <ClCompile Include="src\Ethane\Application.cpp" />
     <ClCompile Include="src\Ethane\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Ethane\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Ethane\Layer.cpp" />
     <ClCompile Include="src\Ethane\LayerStack.cpp" />
     <ClCompile Include="src\Ethane\Log.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\Shader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
