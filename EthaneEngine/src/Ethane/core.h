@@ -14,6 +14,9 @@
 	#error Windows support only
 #endif
 
+//////////////////////////
+#define ETH_ENABLE_ASSERTS
+
 #ifdef ETH_ENABLE_ASSERTS
 	#define ETH_ASSERT(x, ...) { if(!(x)) { ETH_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 	#define ETH_CORE_ASSERT(x, ...) { if(!(x)) { ETH_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }

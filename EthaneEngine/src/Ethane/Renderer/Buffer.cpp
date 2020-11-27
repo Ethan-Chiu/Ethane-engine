@@ -12,7 +12,7 @@ namespace Ethane {
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::None: 
-				ETH_CORE_ASSERT(flase, "endererAPI::None is currently not supported!");
+				ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 				return nullptr;
 			case RendererAPI::OpenGL:
 				return new OpenGLVertexBuffer(vertices, size);
@@ -27,7 +27,7 @@ namespace Ethane {
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::None:
-				ETH_CORE_ASSERT(flase, "endererAPI::None is currently not supported!");
+				ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 				return nullptr;
 			case RendererAPI::OpenGL:
 				return new OpenGLIndexBuffer(indices, size);

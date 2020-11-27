@@ -14,6 +14,10 @@ public:
 		{
 			ETH_TRACE("Tab key is pressed");
 		}
+		if (Ethane::Input::IsKeyPressed(ETH_KEY_W))
+		{
+			ETH_TRACE("Tab key is pressed");
+		}
 		//ETH_INFO("ExampleLayer::Update");
 	}
 
