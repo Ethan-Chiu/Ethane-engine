@@ -152,6 +152,7 @@
     <ClInclude Include="src\Ethane\MouseButtonCodes.h" />
     <ClInclude Include="src\Ethane\Renderer\Buffer.h" />
     <ClInclude Include="src\Ethane\Renderer\GraphicsContext.h" />
+    <ClInclude Include="src\Ethane\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\Ethane\Renderer\RenderCommand.h" />
     <ClInclude Include="src\Ethane\Renderer\Renderer.h" />
     <ClInclude Include="src\Ethane\Renderer\RendererAPI.h" />
@@ -583,6 +584,7 @@
     <ClCompile Include="src\Ethane\LayerStack.cpp" />
     <ClCompile Include="src\Ethane\Log.cpp" />
     <ClCompile Include="src\Ethane\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\Ethane\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Ethane\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Ethane\Renderer\RendererAPI.cpp" />

@@ -18,6 +18,10 @@ public:
 		{
 			ETH_TRACE("w key is pressed");
 		}
+		if (Ethane::Input::IsKeyPressed(ETH_KEY_E))
+		{
+			ETH_TRACE("e key is pressed");
+		}
 		//ETH_INFO("ExampleLayer::Update");
 	}
 

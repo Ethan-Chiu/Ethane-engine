@@ -11,6 +11,8 @@
 #include "Ethane/Renderer/Shader.h"
 #include "Ethane/Renderer/Buffer.h"
 #include "Ethane/Renderer/VertexArray.h"
+#include "Ethane/Renderer/OrthographicCamera.h"
+
 
 namespace Ethane
 {
@@ -41,6 +43,8 @@ namespace Ethane
 
 		std::shared_ptr<Shader> m_BlueShader;
 		std::shared_ptr<VertexArray> m_SquareVA;
+
+		OrthographicCamera m_Camera;
 	private:
 		static Application* s_Instance;
 	};

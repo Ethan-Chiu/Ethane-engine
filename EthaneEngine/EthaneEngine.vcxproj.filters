@@ -1352,6 +1352,7 @@
     <ClInclude Include="src\Ethane\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Ethane\Renderer\RenderCommand.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
+    <ClInclude Include="src\Ethane\Renderer\OrthographicCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Ethane\Application.cpp">
@@ -1401,5 +1402,6 @@
     <ClCompile Include="src\Ethane\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Ethane\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\OrthographicCamera.cpp" />
   </ItemGroup>
 </Project>
