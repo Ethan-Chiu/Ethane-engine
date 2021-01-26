@@ -5,18 +5,13 @@
 #include "Ethane/Events/ApplicationEvent.h"
 #include "Window.h"
 #include "Ethane/LayerStack.h"
-
+#include "Ethane/Core/Timestep.h"
 #include "Ethane/ImGui/ImGuiLayer.h"
-
-#include "Ethane/Renderer/Shader.h"
-#include "Ethane/Renderer/Buffer.h"
-#include "Ethane/Renderer/VertexArray.h"
-#include "Ethane/Renderer/OrthographicCamera.h"
 
 
 namespace Ethane
 {
-	class ETHANE_API Application
+	class Application
 	{
 	public:
 		Application();
@@ -32,19 +27,12 @@ namespace Ethane
 		inline Window& GetWindow() { return *m_Window; }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
-
+	private:
 		std::unique_ptr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
 		LayerStack m_LayerStack;
-
-		std::shared_ptr<Shader> m_Shader;
-		std::shared_ptr<VertexArray> m_VertexArray;
-
-		std::shared_ptr<Shader> m_BlueShader;
-		std::shared_ptr<VertexArray> m_SquareVA;
-
-		OrthographicCamera m_Camera;
+		float m_LastFrameTime = 0.0f;
 	private:
 		static Application* s_Instance;
 	};

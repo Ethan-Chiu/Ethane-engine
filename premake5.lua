@@ -110,6 +110,7 @@ project "Sandbox"
 	{
 		"EthaneEngine/vendor/spdlog/include",
 		"EthaneEngine/src",
+		"EthaneEngine/vendor",
 		"%{IncludeDir.glm}"
 	}
 

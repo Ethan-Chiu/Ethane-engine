@@ -2,6 +2,7 @@
 
 #include "Ethane/Core.h"
 #include "Ethane/Events/Event.h"
+#include "Ethane/Core/Timestep.h"
 
 namespace Ethane {
 
@@ -13,7 +14,7 @@ namespace Ethane {
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(Timestep ts) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

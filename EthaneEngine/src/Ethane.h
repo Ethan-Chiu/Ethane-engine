@@ -11,6 +11,17 @@
 #include "Ethane/Input.h"
 #include "Ethane/KeyCodes.h"
 #include "Ethane/MouseButtonCodes.h"
+//-----renderer-------
+#include "Ethane/Renderer/Renderer.h"
+#include "Ethane/Renderer/RenderCommand.h"
+
+#include "Ethane/Renderer/Buffer.h"
+#include "Ethane/Renderer/Shader.h"
+#include "Ethane/Renderer/VertexArray.h"
+//-----cameras--------
+#include "Ethane/Renderer/OrthographicCamera.h"
 //-----EntryPoint-----
 #include "Ethane/EntryPoint.h"
+//-----Time Step-----
+#include "Ethane/Core/Timestep.h"
 //--------------------
