@@ -21,7 +21,7 @@ public:
 			 0.0f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
 		};
 
-		std::shared_ptr<Ethane::VertexBuffer> vertexBuffer;
+		Ethane::Ref<Ethane::VertexBuffer> vertexBuffer;
 		vertexBuffer.reset(Ethane::VertexBuffer::Create(vertices, sizeof(vertices)));
 
 		Ethane::BufferLayout layout = {
@@ -32,7 +32,7 @@ public:
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 
 		uint32_t indices[3] = { 0, 1, 2 };
-		std::shared_ptr<Ethane::IndexBuffer> indexBuffer;
+		Ethane::Ref<Ethane::IndexBuffer> indexBuffer;
 		indexBuffer.reset(Ethane::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
@@ -47,7 +47,7 @@ public:
 			-0.5f,  0.5f, 0.0f
 		};
 
-		std::shared_ptr<Ethane::VertexBuffer> squareVB;
+		Ethane::Ref<Ethane::VertexBuffer> squareVB;
 		squareVB.reset(Ethane::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 
 		squareVB->SetLayout({
@@ -56,7 +56,7 @@ public:
 		m_SquareVA->AddVertexBuffer(squareVB);
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
-		std::shared_ptr<Ethane::IndexBuffer> squareIB;
+		Ethane::Ref<Ethane::IndexBuffer> squareIB;
 		squareIB.reset(Ethane::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
 		m_SquareVA->SetIndexBuffer(squareIB);
 
@@ -202,11 +202,11 @@ public:
 	}
 
 private:
-	std::shared_ptr<Ethane::Shader> m_Shader;
-	std::shared_ptr<Ethane::VertexArray> m_VertexArray;
+	Ethane::Ref<Ethane::Shader> m_Shader;
+	Ethane::Ref<Ethane::VertexArray> m_VertexArray;
 
-	std::shared_ptr<Ethane::Shader> m_FlatColorShader;
-	std::shared_ptr<Ethane::VertexArray> m_SquareVA;
+	Ethane::Ref<Ethane::Shader> m_FlatColorShader;
+	Ethane::Ref<Ethane::VertexArray> m_SquareVA;
 
 	Ethane::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;
