@@ -17,6 +17,7 @@ IncludeDir["GLFW"] = "EthaneEngine/vendor/GLFW/include"
 IncludeDir["Glad"] = "EthaneEngine/vendor/Glad/include"
 IncludeDir["ImGui"] = "EthaneEngine/vendor/imgui"
 IncludeDir["glm"] = "EthaneEngine/vendor/glm"
+IncludeDir["stb_image"] = "EthaneEngine/vendor/stb_image"
 
 include "EthaneEngine/vendor/GLFW"
 include "EthaneEngine/vendor/Glad"
@@ -41,6 +42,8 @@ project "EthaneEngine"
 	{
 		"%{prj.name}/src/**.h", 
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/stb_image/**.h",
+		"%{prj.name}/vendor/stb_image/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
@@ -52,7 +55,8 @@ project "EthaneEngine"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.stb_image}"
 	}
 
 	links

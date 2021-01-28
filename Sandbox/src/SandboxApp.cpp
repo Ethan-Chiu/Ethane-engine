@@ -40,19 +40,20 @@ public:
 
 		m_SquareVA.reset(Ethane::VertexArray::Create());
 
-		float squareVertices[3 * 4] = {
-			-0.5f, -0.5f, 0.0f,
-			 0.5f, -0.5f, 0.0f,
-			 0.5f,  0.5f, 0.0f,
-			-0.5f,  0.5f, 0.0f
+		float squareVertices[5 * 4] = {
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
 		};
 
 		Ethane::Ref<Ethane::VertexBuffer> squareVB;
 		squareVB.reset(Ethane::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 
 		squareVB->SetLayout({
-			{ Ethane::ShaderDataType::Float3, "a_Position" }
-			});
+			{ Ethane::ShaderDataType::Float3, "a_Position" },
+			{ Ethane::ShaderDataType::Float2, "a_TexCoord" }
+		});
 		m_SquareVA->AddVertexBuffer(squareVB);
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
@@ -131,6 +132,42 @@ public:
 		)";
 
 		m_FlatColorShader.reset(Ethane::Shader::Create(flatColorShaderVertexSrc, flatColorShaderfragmentSrc));
+
+
+		std::string textureShaderVertexSrc = R"(
+			#version 330 core
+
+			layout(location = 0) in vec3 a_Position;
+			layout(location = 1) in vec2 a_TexCoord;
+
+			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
+
+			out vec2 v_TexCoord;
+
+			void main()
+			{
+				v_TexCoord = a_TexCoord;
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0); 
+			}
+		)";
+
+		std::string textureShaderfragmentSrc = R"(
+			#version 330 core
+
+			layout(location = 0) out vec4 color;
+
+			in vec2 v_TexCoord;
+
+			uniform vec3 u_Color;   
+
+			void main()
+			{
+				color = vec4(v_TexCoord, 0.0, 1.0);
+			}
+		)";
+
+		m_TextureShader.reset(Ethane::Shader::Create(textureShaderVertexSrc, textureShaderfragmentSrc));
 	}
 
 	void OnUpdate(Ethane::Timestep ts) override
@@ -183,7 +220,11 @@ public:
 			}
 		}
 
-		Ethane::Renderer::Submit(m_Shader, m_VertexArray);
+		Ethane::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+
+		//triangle
+		//Ethane::Renderer::Submit(m_Shader, m_VertexArray);
+
 		//
 		Ethane::Renderer::EndScene();
 	}
@@ -205,7 +246,7 @@ private:
 	Ethane::Ref<Ethane::Shader> m_Shader;
 	Ethane::Ref<Ethane::VertexArray> m_VertexArray;
 
-	Ethane::Ref<Ethane::Shader> m_FlatColorShader;
+	Ethane::Ref<Ethane::Shader> m_FlatColorShader, m_TextureShader;
 	Ethane::Ref<Ethane::VertexArray> m_SquareVA;
 
 	Ethane::OrthographicCamera m_Camera;
