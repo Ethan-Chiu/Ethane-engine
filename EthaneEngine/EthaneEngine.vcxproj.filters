@@ -60,9 +60,6 @@
     <ClInclude Include="src\Ethane\Application.h">
       <Filter>src\Ethane</Filter>
     </ClInclude>
-    <ClInclude Include="src\Ethane\Core.h">
-      <Filter>src\Ethane</Filter>
-    </ClInclude>
     <ClInclude Include="src\Ethane\Core\Timestep.h">
       <Filter>src\Ethane\Core</Filter>
     </ClInclude>
@@ -130,6 +127,9 @@
       <Filter>src\Ethane\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Ethane\Window.h">
+      <Filter>src\Ethane</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ethane\core.h">
       <Filter>src\Ethane</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h">

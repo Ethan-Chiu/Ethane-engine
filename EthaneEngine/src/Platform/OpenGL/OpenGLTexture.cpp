@@ -11,6 +11,7 @@ namespace Ethane {
 		:m_Path(path)
 	{
 		int width, height, channels;
+		stbi_set_flip_vertically_on_load(1);
 		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 		ETH_CORE_ASSERT(data, "Failed to load image!");
 		m_Width = width;
