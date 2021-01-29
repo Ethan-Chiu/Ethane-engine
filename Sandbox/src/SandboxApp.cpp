@@ -159,15 +159,20 @@ public:
 
 			in vec2 v_TexCoord;
 
-			uniform vec3 u_Color;   
+			uniform sampler2D u_Texture;
 
 			void main()
 			{
-				color = vec4(v_TexCoord, 0.0, 1.0);
+				color = texture(u_Texture, v_TexCoord);
 			}
 		)";
 
 		m_TextureShader.reset(Ethane::Shader::Create(textureShaderVertexSrc, textureShaderfragmentSrc));
+
+		m_Texture = Ethane::Texture2D::Create("assets/textures/Checkerboard.png");
+
+		std::dynamic_pointer_cast<Ethane::OpenGLShader>(m_TextureShader)->Bind();
+		std::dynamic_pointer_cast<Ethane::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Ethane::Timestep ts) override
@@ -220,6 +225,7 @@ public:
 			}
 		}
 
+		m_Texture->Bind();
 		Ethane::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		//triangle
@@ -248,6 +254,8 @@ private:
 
 	Ethane::Ref<Ethane::Shader> m_FlatColorShader, m_TextureShader;
 	Ethane::Ref<Ethane::VertexArray> m_SquareVA;
+
+	Ethane::Ref<Ethane::Texture2D> m_Texture;
 
 	Ethane::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;
