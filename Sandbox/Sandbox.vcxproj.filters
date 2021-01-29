@@ -11,6 +11,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\textures\Checkerboard.png" />
+    <None Include="assets\shaders\Texture.glsl" />
   </ItemGroup>
 </Project>
