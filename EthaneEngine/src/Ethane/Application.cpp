@@ -21,7 +21,9 @@ namespace Ethane
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
-		m_Window->SetVSync(false);
+		//m_Window->SetVSync(false);
+
+		Renderer::Init();
 
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
