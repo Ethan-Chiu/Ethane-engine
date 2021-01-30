@@ -97,7 +97,7 @@ public:
 			}
 		)";
 
-		m_Shader.reset(Ethane::Shader::Create(vertexSrc, fragmentSrc));
+		m_Shader = Ethane::Shader::Create("VertexPosColor", vertexSrc, fragmentSrc);
 
 		std::string flatColorShaderVertexSrc = R"(
 			#version 330 core
@@ -131,16 +131,15 @@ public:
 			}
 		)";
 
-		m_FlatColorShader.reset(Ethane::Shader::Create(flatColorShaderVertexSrc, flatColorShaderfragmentSrc));
+		m_FlatColorShader = Ethane::Shader::Create("FlatColor", flatColorShaderVertexSrc, flatColorShaderfragmentSrc);
 
-
-		m_TextureShader.reset(Ethane::Shader::Create("assets/shaders/Texture.glsl"));
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 		m_Texture = Ethane::Texture2D::Create("assets/textures/test.png");
 		m_AlphaTexture = Ethane::Texture2D::Create("assets/textures/test3_rgba.png");
 
-		std::dynamic_pointer_cast<Ethane::OpenGLShader>(m_TextureShader)->Bind();
-		std::dynamic_pointer_cast<Ethane::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+		std::dynamic_pointer_cast<Ethane::OpenGLShader>(textureShader)->Bind();
+		std::dynamic_pointer_cast<Ethane::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Ethane::Timestep ts) override
@@ -193,10 +192,12 @@ public:
 			}
 		}
 
+		auto textureShader = m_ShaderLibrary.Get("Texture");
+
 		m_Texture->Bind();
-		Ethane::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		Ethane::Renderer::Submit(textureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 		m_AlphaTexture->Bind();
-		Ethane::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		Ethane::Renderer::Submit(textureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		//triangle
 		//Ethane::Renderer::Submit(m_Shader, m_VertexArray);
@@ -219,10 +220,12 @@ public:
 	}
 
 private:
+	Ethane::ShaderLibrary m_ShaderLibrary;
+
 	Ethane::Ref<Ethane::Shader> m_Shader;
 	Ethane::Ref<Ethane::VertexArray> m_VertexArray;
 
-	Ethane::Ref<Ethane::Shader> m_FlatColorShader, m_TextureShader;
+	Ethane::Ref<Ethane::Shader> m_FlatColorShader;
 	Ethane::Ref<Ethane::VertexArray> m_SquareVA;
 
 	Ethane::Ref<Ethane::Texture2D> m_Texture, m_AlphaTexture;
