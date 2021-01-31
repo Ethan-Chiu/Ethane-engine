@@ -11,7 +11,7 @@ class ExampleLayer : public Ethane::Layer
 {
 public:
 	ExampleLayer()
-		:Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition(0.0f), m_SquarePosition(0.0f)
+		:Layer("Example"), m_CameraController(1280.0f / 720.0f)
 	{
 		m_VertexArray.reset(Ethane::VertexArray::Create());
 
@@ -146,15 +146,6 @@ public:
 	{
 		//ETH_TRACE("Delta time: {0}s ({1}ms)", ts.GetSeconds(), ts.GetMillisecond());
 
-		if (Ethane::Input::IsKeyPressed(ETH_KEY_LEFT))
-			m_CameraPosition.x -= m_CameraMoveSpeed * ts;
-		else if (Ethane::Input::IsKeyPressed(ETH_KEY_RIGHT))
-			m_CameraPosition.x += m_CameraMoveSpeed * ts;
-		if (Ethane::Input::IsKeyPressed(ETH_KEY_DOWN))
-			m_CameraPosition.y -= m_CameraMoveSpeed * ts;
-		else if (Ethane::Input::IsKeyPressed(ETH_KEY_UP))
-			m_CameraPosition.y += m_CameraMoveSpeed * ts;
-
 		/*if (Ethane::Input::IsKeyPressed(ETH_KEY_J))
 			m_SquarePosition.x -= m_SquareMoveSpeed * ts;
 		else if (Ethane::Input::IsKeyPressed(ETH_KEY_L))
@@ -164,18 +155,14 @@ public:
 		else if (Ethane::Input::IsKeyPressed(ETH_KEY_K))
 			m_SquarePosition.y += m_SquareMoveSpeed * ts;*/
 
-		if (Ethane::Input::IsKeyPressed(ETH_KEY_A))
-			m_CameraRotation += m_CameraRotationSpeed * ts;
-		else if (Ethane::Input::IsKeyPressed(ETH_KEY_D))
-			m_CameraRotation -= m_CameraRotationSpeed * ts;
+		//Update
+		m_CameraController.OnUpdate(ts);
 
+		//Render
 		Ethane::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Ethane::RenderCommand::Clear();
 
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
-
-		Ethane::Renderer::BeginScene(m_Camera);
+		Ethane::Renderer::BeginScene(m_CameraController.GetCamera());
 		//
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
@@ -214,9 +201,10 @@ public:
 		ImGui::End();
 	}
 
-	void OnEvent(Ethane::Event& event) override
+	void OnEvent(Ethane::Event& e) override
 	{
 		// ETH_TRACE("{0}", event);
+		m_CameraController.OnEvent(e);
 	}
 
 private:
@@ -230,15 +218,10 @@ private:
 
 	Ethane::Ref<Ethane::Texture2D> m_Texture, m_AlphaTexture;
 
-	Ethane::OrthographicCamera m_Camera;
-	glm::vec3 m_CameraPosition;
-	float m_CameraMoveSpeed = 5.0f;
+	Ethane::OrthographicCameraController m_CameraController;
 
-	float m_CameraRotation = 0.0f;
-	float m_CameraRotationSpeed = 30.0f;
-
-	glm::vec3 m_SquarePosition;
-	float m_SquareMoveSpeed = 3.0f;
+	// glm::vec3 m_SquarePosition;
+	// float m_SquareMoveSpeed = 3.0f;
 
 	glm::vec3 m_SquareColor = { 0.2f, 0.3f, 0.8f };
 };
