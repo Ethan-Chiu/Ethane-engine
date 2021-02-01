@@ -1,6 +1,6 @@
 #include "ethpch.h"
 #include "Application.h"
-#include "Ethane/Log.h"
+#include "Ethane/Core/Log.h"
 #include "Input.h"
 
 #include "Ethane/Renderer/Renderer.h"

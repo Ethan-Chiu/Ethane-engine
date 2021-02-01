@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ethane/Core.h"
+#include "Ethane/Core/Core.h"
 
 namespace Ethane {
 	
@@ -23,6 +23,6 @@ namespace Ethane {
 		virtual float GetMouseYImpl() = 0;
 
 	private:
-		static Input* s_Instance;
+		static Scope<Input> s_Instance;
 	};
 }

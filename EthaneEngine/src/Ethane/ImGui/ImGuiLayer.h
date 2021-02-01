@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ethane/Layer.h"
+#include "Ethane/Core/Layer.h"
 #include "Ethane/Events/MouseEvent.h"
 #include "Ethane/Events/KeyEvent.h"
 #include "Ethane/Events/ApplicationEvent.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ethane/Core.h"
+#include "Ethane/Core/Core.h"
 #include "Ethane/Events/Event.h"
 #include "Ethane/Core/Timestep.h"
 

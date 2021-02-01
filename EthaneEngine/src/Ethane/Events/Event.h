@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Ethane/Core.h"
-#include <sstream>
-#include <functional>
+#include "ethpch.h"
+#include "Ethane/Core/Core.h"
 
 namespace Ethane {
 

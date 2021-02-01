@@ -1,8 +1,8 @@
 #include "ethpch.h"
 #include "OrthographicCameraController.h"
 
-#include "Ethane/Input.h"
-#include "Ethane/KeyCodes.h"
+#include "Ethane/Core/Input.h"
+#include "Ethane/Core/KeyCodes.h"
 
 namespace Ethane {
 

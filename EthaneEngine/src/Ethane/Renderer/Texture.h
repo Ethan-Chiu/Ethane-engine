@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "Ethane/Core.h"
+#include "Ethane/Core/Core.h"
 
 namespace Ethane {
 

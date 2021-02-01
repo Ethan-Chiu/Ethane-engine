@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Core.h"
-#include "Events/Event.h"
+#include "../Events/Event.h"
 #include "Ethane/Events/ApplicationEvent.h"
 #include "Window.h"
-#include "Ethane/LayerStack.h"
+#include "LayerStack.h"
 #include "Ethane/Core/Timestep.h"
 #include "Ethane/ImGui/ImGuiLayer.h"
 

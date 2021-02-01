@@ -27,7 +27,7 @@ namespace Ethane {
 			glm::mat4 ViewProjectionMatrix;
 		};
 
-		static SceneData* m_SceneData;
+		static Scope<SceneData> s_SceneData;
 	};
 
 }

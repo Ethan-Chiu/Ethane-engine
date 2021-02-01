@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ethane/Core.h"
+#include "Ethane/Core/Core.h"
 #include "Layer.h"
 
 #include <vector>

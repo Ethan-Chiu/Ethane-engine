@@ -72,7 +72,6 @@ project "EthaneEngine"
 
 		defines
 		{
-			"ETH_PLATFORM_WINDOWS",
 			"ETH_BUILD_DLL",
 			"GLFW_INCLUDE_NONE"
 		}
@@ -125,12 +124,7 @@ project "Sandbox"
 
 	filter "system:windows"
 		systemversion "latest"
-
-		defines
-		{
-			"ETH_PLATFORM_WINDOWS"
-		}
-
+		
 	filter "configurations:Debug"
 		defines "ETH_DEBUG"
 		runtime "Debug"

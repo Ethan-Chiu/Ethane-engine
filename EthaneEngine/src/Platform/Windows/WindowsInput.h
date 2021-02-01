@@ -1,5 +1,5 @@
 #pragma once
-#include "Ethane/Input.h"
+#include "Ethane/Core/Input.h"
 
 namespace Ethane {
 

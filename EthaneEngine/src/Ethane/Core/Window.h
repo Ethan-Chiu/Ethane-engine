@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ethpch.h"
-#include "Ethane/Core.h"
+#include "Ethane/Core/Core.h"
 #include "Ethane/Events/Event.h"
 
 namespace Ethane {

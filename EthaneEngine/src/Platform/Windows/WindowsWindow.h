@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ethane/Window.h"
+#include "Ethane/Core/Window.h"
 #include "Ethane/Renderer/GraphicsContext.h"
 #include <GLFW/glfw3.h>
 
@@ -28,7 +28,7 @@ namespace Ethane {
 		virtual void Shutdown();
 	private:
 		GLFWwindow* m_Window;
-		GraphicsContext* m_Context;
+		Scope<GraphicsContext> m_Context;
 
 		struct WindowData
 		{

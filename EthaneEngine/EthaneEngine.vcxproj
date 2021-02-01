@@ -76,7 +76,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ethpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>ETH_PLATFORM_WINDOWS;ETH_BUILD_DLL;GLFW_INCLUDE_NONE;ETH_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ETH_BUILD_DLL;GLFW_INCLUDE_NONE;ETH_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -96,7 +96,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ethpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>ETH_PLATFORM_WINDOWS;ETH_BUILD_DLL;GLFW_INCLUDE_NONE;ETH_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ETH_BUILD_DLL;GLFW_INCLUDE_NONE;ETH_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -120,7 +120,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ethpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>ETH_PLATFORM_WINDOWS;ETH_BUILD_DLL;GLFW_INCLUDE_NONE;ETH_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ETH_BUILD_DLL;GLFW_INCLUDE_NONE;ETH_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -137,32 +137,32 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Ethane.h" />
-    <ClInclude Include="src\Ethane\Application.h" />
+    <ClInclude Include="src\Ethane\Core\Application.h" />
+    <ClInclude Include="src\Ethane\Core\Core.h" />
+    <ClInclude Include="src\Ethane\Core\EntryPoint.h" />
+    <ClInclude Include="src\Ethane\Core\Input.h" />
+    <ClInclude Include="src\Ethane\Core\KeyCodes.h" />
+    <ClInclude Include="src\Ethane\Core\Layer.h" />
+    <ClInclude Include="src\Ethane\Core\LayerStack.h" />
+    <ClInclude Include="src\Ethane\Core\Log.h" />
+    <ClInclude Include="src\Ethane\Core\MouseButtonCodes.h" />
     <ClInclude Include="src\Ethane\Core\Timestep.h" />
-    <ClInclude Include="src\Ethane\EntryPoint.h" />
+    <ClInclude Include="src\Ethane\Core\Window.h" />
     <ClInclude Include="src\Ethane\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Ethane\Events\Event.h" />
     <ClInclude Include="src\Ethane\Events\KeyEvent.h" />
     <ClInclude Include="src\Ethane\Events\MouseEvent.h" />
     <ClInclude Include="src\Ethane\ImGui\ImGuiLayer.h" />
-    <ClInclude Include="src\Ethane\Input.h" />
-    <ClInclude Include="src\Ethane\KeyCodes.h" />
-    <ClInclude Include="src\Ethane\Layer.h" />
-    <ClInclude Include="src\Ethane\LayerStack.h" />
-    <ClInclude Include="src\Ethane\Log.h" />
-    <ClInclude Include="src\Ethane\MouseButtonCodes.h" />
-    <ClInclude Include="src\Ethane\OrthographicCameraController.h" />
     <ClInclude Include="src\Ethane\Renderer\Buffer.h" />
     <ClInclude Include="src\Ethane\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Ethane\Renderer\OrthographicCamera.h" />
+    <ClInclude Include="src\Ethane\Renderer\OrthographicCameraController.h" />
     <ClInclude Include="src\Ethane\Renderer\RenderCommand.h" />
     <ClInclude Include="src\Ethane\Renderer\Renderer.h" />
     <ClInclude Include="src\Ethane\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Ethane\Renderer\Shader.h" />
     <ClInclude Include="src\Ethane\Renderer\Texture.h" />
     <ClInclude Include="src\Ethane\Renderer\VertexArray.h" />
-    <ClInclude Include="src\Ethane\Window.h" />
-    <ClInclude Include="src\Ethane\core.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
@@ -583,15 +583,15 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Ethane\Application.cpp" />
+    <ClCompile Include="src\Ethane\Core\Application.cpp" />
+    <ClCompile Include="src\Ethane\Core\Layer.cpp" />
+    <ClCompile Include="src\Ethane\Core\LayerStack.cpp" />
+    <ClCompile Include="src\Ethane\Core\Log.cpp" />
     <ClCompile Include="src\Ethane\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Ethane\ImGui\ImGuiLayer.cpp" />
-    <ClCompile Include="src\Ethane\Layer.cpp" />
-    <ClCompile Include="src\Ethane\LayerStack.cpp" />
-    <ClCompile Include="src\Ethane\Log.cpp" />
-    <ClCompile Include="src\Ethane\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Ethane\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Ethane\Renderer\OrthographicCamera.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Ethane\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Ethane\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Ethane\Renderer\RendererAPI.cpp" />

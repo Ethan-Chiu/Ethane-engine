@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "Ethane/Log.h"
+#include "Ethane/Core/Log.h"
 
 #ifdef ETH_PLATFORM_WINDOWS
 	#include <Windows.h>

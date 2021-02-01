@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/OrthographicCamera.h"
+#include "OrthographicCamera.h"
 #include "Ethane/Core/Timestep.h"
 
 #include "Ethane/Events/ApplicationEvent.h"
