@@ -22,8 +22,6 @@
 //-----cameras--------
 #include "Ethane/Renderer/OrthographicCamera.h"
 #include "Ethane/Renderer/OrthographicCameraController.h"
-//-----EntryPoint-----
-#include "Ethane/Core/EntryPoint.h"
 //-----Time Step-----
 #include "Ethane/Core/Timestep.h"
 //--------------------
