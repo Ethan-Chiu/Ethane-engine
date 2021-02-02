@@ -13,6 +13,7 @@
 #include "Ethane/Core/MouseButtonCodes.h"
 //-----renderer-------
 #include "Ethane/Renderer/Renderer.h"
+#include "Ethane/Renderer/Renderer2D.h"
 #include "Ethane/Renderer/RenderCommand.h"
 
 #include "Ethane/Renderer/Buffer.h"
