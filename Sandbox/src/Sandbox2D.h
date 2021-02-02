@@ -20,5 +20,7 @@ private:
 	Ethane::Ref<Ethane::VertexArray> m_SquareVA;
 	Ethane::Ref<Ethane::Shader> m_FlatColorShader;
 
+	Ethane::Ref<Ethane::Texture2D> m_Texture;
+
 	glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 };
