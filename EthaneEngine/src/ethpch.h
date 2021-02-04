@@ -15,6 +15,8 @@
 
 #include "Ethane/Core/Log.h"
 
+#include "Ethane/Debug/Instrumentor.h"
+
 #ifdef ETH_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif // ETH_PLATFORM_WINDOWS

@@ -148,6 +148,7 @@
     <ClInclude Include="src\Ethane\Core\MouseButtonCodes.h" />
     <ClInclude Include="src\Ethane\Core\Timestep.h" />
     <ClInclude Include="src\Ethane\Core\Window.h" />
+    <ClInclude Include="src\Ethane\Debug\Instrumentor.h" />
     <ClInclude Include="src\Ethane\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Ethane\Events\Event.h" />
     <ClInclude Include="src\Ethane\Events\KeyEvent.h" />

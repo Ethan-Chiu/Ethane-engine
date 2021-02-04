@@ -7,16 +7,19 @@ extern Ethane::Application* Ethane::CreateApplication();
 int main(int argc, char** argv) {
 
     Ethane::Log::Init();
-    Ethane::Log::GetCoreLogger()->warn("Initialized log");
-    int a = 2;
-    Ethane::Log::GetClientLogger()->info("Initialized log Var = {0}", a);
+    
+    ETH_PROFILE_BEGIN_SESSION("Startup", "EthaneProfile-Startup.json");
     auto app = Ethane::CreateApplication();
-    app->Run();
-    delete app;
+    ETH_PROFILE_END_SESSION();
 
+    ETH_PROFILE_BEGIN_SESSION("Runtime", "EthaneProfile-Runtime.json");
+    app->Run();
+    ETH_PROFILE_END_SESSION();
+
+    ETH_PROFILE_BEGIN_SESSION("Shutdown", "EthaneProfile-Shutdown.json");
+    delete app;
+    ETH_PROFILE_END_SESSION();
 }
 
 
 #endif 
-
-//EntryPoint_h
