@@ -13,11 +13,14 @@ Sandbox2D::Sandbox2D()
 
 void Sandbox2D::OnAttach()
 {
+	ETH_PROFILE_FUNCTION();
+
 	m_Texture = Ethane::Texture2D::Create("assets/textures/test.png");
 }
 
 void Sandbox2D::OnDetach()
 {
+	ETH_PROFILE_FUNCTION();
 
 }
 
@@ -26,10 +29,7 @@ void Sandbox2D::OnUpdate(Ethane::Timestep ts)
 	ETH_PROFILE_FUNCTION();
 
 	//Update
-	{
-		ETH_PROFILE_SCOPE("CameraController::OnUpdate");
-		m_CameraController.OnUpdate(ts);
-	}
+	m_CameraController.OnUpdate(ts);
 
 	//Render
 	{

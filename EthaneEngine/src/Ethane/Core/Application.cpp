@@ -16,10 +16,12 @@ namespace Ethane
 
 	Application::Application()
 	{
+		ETH_PROFILE_FUNCTION();
+
 		ETH_CORE_ASSERT(!s_Instance, "Application already exists!")
 		s_Instance = this;
 
-		m_Window = std::unique_ptr<Window>(Window::Create());
+		m_Window = Window::Create();
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
 		// m_Window->SetVSync(false);
 
@@ -30,23 +32,31 @@ namespace Ethane
 	}
 	Application::~Application()
 	{
-		
+		ETH_PROFILE_FUNCTION();
+
+		Renderer::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
 	{
+		ETH_PROFILE_FUNCTION();
+
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* layer)
 	{
+		ETH_PROFILE_FUNCTION();
+
 		m_LayerStack.PushOverlay(layer);
 		layer->OnAttach();
 	}
 
 	void Application::OnEvent(Event& e)
 	{
+		ETH_PROFILE_FUNCTION();
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FUNCTION(OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FUNCTION(OnWindowResize));
@@ -61,25 +71,38 @@ namespace Ethane
 
 	void Application::Run()
 	{
+		ETH_PROFILE_FUNCTION();
+
 		while (m_Running)
 		{
+			ETH_PROFILE_SCOPE("RunLoop");
+
 			float time = glfwGetTime(); //plateform GetTime()
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
 			if (!m_Minimized)
 			{
-				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(timestep);
+				{
+					ETH_PROFILE_SCOPE("LayerStack OnUpdate");
+
+					for (Layer* layer : m_LayerStack)
+						layer->OnUpdate(timestep);
+				}
+
+				m_ImGuiLayer->Begin();
+				{
+					ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+					for (Layer* layer : m_LayerStack)
+						layer->OnImGuiRender();
+				}
+				m_ImGuiLayer->End();
 			}
 
 			// auto [x, y] = Input::GetMousePosition();
 			// ETH_CORE_TRACE("{0}, {1}", x, y);
 
-			m_ImGuiLayer->Begin();
-			for (Layer* layer : m_LayerStack)
-				layer->OnImGuiRender();
-			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();
 		}
@@ -93,6 +116,8 @@ namespace Ethane
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
+		ETH_PROFILE_FUNCTION();
+
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_Minimized = true;
