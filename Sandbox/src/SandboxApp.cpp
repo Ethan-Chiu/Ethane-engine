@@ -26,7 +26,7 @@ public:
 		};
 
 		Ethane::Ref<Ethane::VertexBuffer> vertexBuffer;
-		vertexBuffer.reset(Ethane::VertexBuffer::Create(vertices, sizeof(vertices)));
+		vertexBuffer = Ethane::VertexBuffer::Create(vertices, sizeof(vertices));
 
 		Ethane::BufferLayout layout = {
 			{ Ethane::ShaderDataType::Float3, "a_Position" },
@@ -37,7 +37,7 @@ public:
 
 		uint32_t indices[3] = { 0, 1, 2 };
 		Ethane::Ref<Ethane::IndexBuffer> indexBuffer;
-		indexBuffer.reset(Ethane::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		indexBuffer = Ethane::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 
@@ -52,7 +52,7 @@ public:
 		};
 
 		Ethane::Ref<Ethane::VertexBuffer> squareVB;
-		squareVB.reset(Ethane::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
+		squareVB = Ethane::VertexBuffer::Create(squareVertices, sizeof(squareVertices));
 
 		squareVB->SetLayout({
 			{ Ethane::ShaderDataType::Float3, "a_Position" },
@@ -62,7 +62,7 @@ public:
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
 		Ethane::Ref<Ethane::IndexBuffer> squareIB;
-		squareIB.reset(Ethane::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
+		squareIB = Ethane::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t));
 		m_SquareVA->SetIndexBuffer(squareIB);
 
 
