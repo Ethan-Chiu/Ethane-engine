@@ -16,6 +16,11 @@ void Sandbox2D::OnAttach()
 	ETH_PROFILE_FUNCTION();
 
 	m_Texture = Ethane::Texture2D::Create("assets/textures/test.png");
+	m_SpriteSheet = Ethane::Texture2D::Create("assets/textures/RPGpack_sheet_2X.png");
+
+	m_TextureStairs = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 6 }, { 128, 128 });
+	m_TextureBarrel = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 8, 2 }, { 128, 128 });
+	m_TextureTree = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, { 128, 128 }, {1, 2});
 }
 
 void Sandbox2D::OnDetach()
@@ -41,7 +46,7 @@ void Sandbox2D::OnUpdate(Ethane::Timestep ts)
 
 	{
 		ETH_PROFILE_SCOPE("Renderer Draw");
-		static float rotation = 0.0f;
+		/*static float rotation = 0.0f;
 		rotation += 10 * ts;
 
 		Ethane::Renderer2D::BeginScene(m_CameraController.GetCamera());
@@ -64,6 +69,11 @@ void Sandbox2D::OnUpdate(Ethane::Timestep ts)
 				Ethane::Renderer2D::DrawQuad({ x, y }, { 0.45f, 0.45f }, color);
 			}
 		}
+		Ethane::Renderer2D::EndScene();*/
+		Ethane::Renderer2D::BeginScene(m_CameraController.GetCamera());
+		Ethane::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f }, m_TextureStairs);
+		Ethane::Renderer2D::DrawQuad({ 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f }, m_TextureBarrel); 
+		Ethane::Renderer2D::DrawQuad({ 1.0f, 0.0f, 0.0f }, { 1.0f, 2.0f }, m_TextureTree);
 		Ethane::Renderer2D::EndScene();
 	}
 }

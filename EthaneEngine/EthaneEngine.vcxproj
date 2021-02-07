@@ -163,6 +163,7 @@
     <ClInclude Include="src\Ethane\Renderer\Renderer2D.h" />
     <ClInclude Include="src\Ethane\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Ethane\Renderer\Shader.h" />
+    <ClInclude Include="src\Ethane\Renderer\SubTexture2D.h" />
     <ClInclude Include="src\Ethane\Renderer\Texture.h" />
     <ClInclude Include="src\Ethane\Renderer\VertexArray.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
@@ -599,6 +600,7 @@
     <ClCompile Include="src\Ethane\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Ethane\Renderer\Shader.cpp" />
     <ClCompile Include="src\Ethane\Renderer\Renderer2D.cpp" />
+    <ClCompile Include="src\Ethane\Renderer\SubTexture2D.cpp" />
     <ClCompile Include="src\Ethane\Renderer\Texture.cpp" />
     <ClCompile Include="src\Ethane\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />

@@ -19,6 +19,7 @@
 #include "Ethane/Renderer/Buffer.h"
 #include "Ethane/Renderer/Shader.h"
 #include "Ethane/Renderer/Texture.h"
+#include "Ethane/Renderer/SubTexture2D.h"
 #include "Ethane/Renderer/VertexArray.h"
 //-----cameras--------
 #include "Ethane/Renderer/OrthographicCamera.h"
