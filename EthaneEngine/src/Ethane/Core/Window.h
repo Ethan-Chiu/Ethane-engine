@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ethpch.h"
-#include "Ethane/Core/Core.h"
+#include "Ethane/Core/Base.h"
 #include "Ethane/Events/Event.h"
 
 namespace Ethane {
@@ -19,12 +19,12 @@ namespace Ethane {
 			
 	};
 
-	class ETHANE_API Window
+	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		virtual ~Window() {}
+		virtual ~Window() = default;
 
 		virtual void OnUpdate() = 0;
 

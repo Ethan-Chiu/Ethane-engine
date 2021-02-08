@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Ethane/Core/Core.h"
+#include "Ethane/Core/Base.h"
 
 namespace Ethane {
 	
-	class ETHANE_API Input
+	class Input
 	{
 	public:
 		inline static bool IsKeyPressed(int keycode) { return s_Instance->IsKeyPressedImpl(keycode); }

@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Ethane/Core/Core.h"
+#include "Ethane/Core/Base.h"
 #include "Layer.h"
 
 #include <vector>
 
 namespace Ethane {
 	
-	class ETHANE_API LayerStack
+	class LayerStack
 	{
 	public:
-		LayerStack();
+		LayerStack() = default;
 		~LayerStack();
 
 		void PushLayer(Layer* layer);

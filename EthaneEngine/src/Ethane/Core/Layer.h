@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Ethane/Core/Core.h"
+#include "Ethane/Core/Base.h"
 #include "Ethane/Events/Event.h"
 #include "Ethane/Core/Timestep.h"
 
 namespace Ethane {
 
-	class ETHANE_API Layer
+	class Layer
 	{
 	public:
 		Layer(const std::string& name = "Layer");
-		virtual ~Layer();
+		virtual ~Layer() = default;
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}

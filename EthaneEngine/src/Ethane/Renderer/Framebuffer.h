@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ethane/Core/core.h"
+#include "Ethane/Core/Base.h"
 
 namespace Ethane {
 

@@ -8,9 +8,5 @@ namespace Ethane {
 	{
 
 	}
-	Layer::~Layer()
-	{
-
-	}
 
 }

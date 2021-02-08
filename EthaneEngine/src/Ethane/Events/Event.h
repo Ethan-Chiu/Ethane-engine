@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ethpch.h"
-#include "Ethane/Core/Core.h"
+#include "Ethane/Core/Base.h"
 
 namespace Ethane {
 
@@ -30,7 +30,7 @@ namespace Ethane {
 
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override {return category;}
 
-	class ETHANE_API Event
+	class Event
 	{
 	public:
 
@@ -48,7 +48,7 @@ namespace Ethane {
 	
 	};
 
-	class ETHANE_API EventDispatcher
+	class EventDispatcher
 	{
 		template<typename Ty>
 		using EventFn = std::function<bool(Ty&)>;
