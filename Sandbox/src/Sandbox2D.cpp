@@ -44,6 +44,12 @@ void Sandbox2D::OnAttach()
 	s_TextureMap['W'] = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 11, 11 }, { 128, 128 });
 	m_MapWidth = s_MapWidth;
 	m_MapHeight = strlen(s_MapTiles) / s_MapWidth;
+
+	Ethane::FramebufferSpecification fbSpec;
+	fbSpec.Width = 1280;
+	fbSpec.Height = 720;
+	m_Framebuffer = Ethane::Framebuffer::Create(fbSpec);
+
 	// m_CameraController.SetZoomLevel(0.5f);
 }
 
@@ -64,6 +70,7 @@ void Sandbox2D::OnUpdate(Ethane::Timestep ts)
 	Ethane::Renderer2D::ResetStats();
 	{
 		ETH_PROFILE_SCOPE("Renderer Prep");
+		m_Framebuffer->Bind();
 		Ethane::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Ethane::RenderCommand::Clear();
 	}
@@ -112,6 +119,7 @@ void Sandbox2D::OnUpdate(Ethane::Timestep ts)
 			}
 		}
 		Ethane::Renderer2D::EndScene();
+		m_Framebuffer->Unbind();
 	}
 }
 
@@ -195,8 +203,8 @@ void Sandbox2D::OnImGuiRender()
 
 	ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
 
-	uint32_t textureID = m_Texture->GetRendererID();
-	ImGui::Image((void*)textureID, ImVec2(128.0f, 128.0f));
+	uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+	ImGui::Image((void*)textureID, ImVec2(1280, 720));
 
 	ImGui::End();
 

@@ -1,9 +1,18 @@
 # Directories
 
-.vs/
 bin/
 bin-int/
 
 # Files
-
 *.user
+
+# Hazel files
+*.log
+Sandbox/*.json
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user

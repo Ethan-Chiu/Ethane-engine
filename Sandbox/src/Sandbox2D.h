@@ -19,6 +19,7 @@ private:
 
 	Ethane::Ref<Ethane::VertexArray> m_SquareVA;
 	Ethane::Ref<Ethane::Shader> m_FlatColorShader;
+	Ethane::Ref<Ethane::Framebuffer> m_Framebuffer;
 
 	Ethane::Ref<Ethane::Texture2D> m_Texture;
 	Ethane::Ref<Ethane::Texture2D> m_SpriteSheet;

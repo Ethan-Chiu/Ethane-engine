@@ -9,7 +9,7 @@ namespace Ethane {
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
 		:m_windowHandle(windowHandle)
 	{
-		ETH_CORE_ASSERT(windowHandle, "Window handle os null");
+		ETH_CORE_ASSERT(windowHandle, "Window handle is null");
 	}
 
 	void OpenGLContext::Init()
