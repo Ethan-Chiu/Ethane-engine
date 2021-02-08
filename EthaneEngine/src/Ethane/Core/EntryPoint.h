@@ -12,9 +12,9 @@ int main(int argc, char** argv) {
     auto app = Ethane::CreateApplication();
     ETH_PROFILE_END_SESSION();
 
-    ETH_PROFILE_BEGIN_SESSION("Runtime", "EthaneProfile-Runtime.json");
+    // ETH_PROFILE_BEGIN_SESSION("Runtime", "EthaneProfile-Runtime.json");
     app->Run();
-    ETH_PROFILE_END_SESSION();
+    // ETH_PROFILE_END_SESSION();
 
     ETH_PROFILE_BEGIN_SESSION("Shutdown", "EthaneProfile-Shutdown.json");
     delete app;
