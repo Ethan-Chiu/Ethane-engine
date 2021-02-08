@@ -8,6 +8,7 @@ bin-int/
 
 # Hazel files
 *.log
+Ethane-Editor/*.json
 Sandbox/*.json
 
 # Visual Studio files and folder

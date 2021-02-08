@@ -19,10 +19,12 @@ IncludeDir["ImGui"] = "EthaneEngine/vendor/imgui"
 IncludeDir["glm"] = "EthaneEngine/vendor/glm"
 IncludeDir["stb_image"] = "EthaneEngine/vendor/stb_image"
 
-include "EthaneEngine/vendor/GLFW"
-include "EthaneEngine/vendor/Glad"
-include "EthaneEngine/vendor/imgui"
+group "Dependencies"
+	include "EthaneEngine/vendor/GLFW"
+	include "EthaneEngine/vendor/Glad"
+	include "EthaneEngine/vendor/imgui"
 
+group ""
 
 project "EthaneEngine"
 
@@ -95,6 +97,54 @@ project "EthaneEngine"
 project "Sandbox"
 	
 	location "Sandbox"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.cpp"
+	}
+
+	includedirs
+	{
+		"EthaneEngine/vendor/spdlog/include",
+		"EthaneEngine/src",
+		"EthaneEngine/vendor",
+		"%{IncludeDir.glm}"
+	}
+
+	links
+	{
+		"EthaneEngine"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+		
+	filter "configurations:Debug"
+		defines "ETH_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "ETH_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "ETH_DIST"
+		runtime "Release"
+		symbols "on"
+
+project "Ethane-Editor"
+
+	location "Ethane-Editor"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++17"

@@ -14,7 +14,7 @@ namespace Ethane
 	class Application
 	{
 	public:
-		Application();
+		Application(const std::string& name = "Ethane App");
 		virtual ~Application();
 		void Run();
 		
