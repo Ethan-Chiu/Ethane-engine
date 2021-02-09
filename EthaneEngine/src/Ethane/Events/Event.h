@@ -33,6 +33,7 @@ namespace Ethane {
 	class Event
 	{
 	public:
+		virtual ~Event() = default;
 
 		bool Handled = false;
 		//For Debug

@@ -10,7 +10,7 @@
 //---------input-------
 #include "Ethane/Core/Input.h"
 #include "Ethane/Core/KeyCodes.h"
-#include "Ethane/Core/MouseButtonCodes.h"
+#include "Ethane/Core/MouseCodes.h"
 //-----renderer-------
 #include "Ethane/Renderer/Renderer.h"
 #include "Ethane/Renderer/Renderer2D.h"
