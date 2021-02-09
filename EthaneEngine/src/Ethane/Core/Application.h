@@ -26,6 +26,8 @@ namespace Ethane
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
 
+		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
+
 		void Close();
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
