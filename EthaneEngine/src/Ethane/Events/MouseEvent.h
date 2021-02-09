@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event.h"
-
+#include "Ethane/Core/MouseCodes.h"
 
 namespace Ethane {
 	
