@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Ethane/Renderer/Camera.h"
+
 namespace Ethane {
 
 	struct TagComponent
@@ -39,4 +41,16 @@ namespace Ethane {
 		operator const glm::vec4& () const { return Color; }
 		operator glm::vec4& () { return Color; }
 	};
+
+	struct CameraComponent
+	{
+		Camera Camera;
+		bool Primary = true;
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
+		CameraComponent(const glm::mat4 & projection)
+			:Camera(projection) {}
+	};
+
 }
