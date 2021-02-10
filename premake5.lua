@@ -18,6 +18,7 @@ IncludeDir["Glad"] = "EthaneEngine/vendor/Glad/include"
 IncludeDir["ImGui"] = "EthaneEngine/vendor/imgui"
 IncludeDir["glm"] = "EthaneEngine/vendor/glm"
 IncludeDir["stb_image"] = "EthaneEngine/vendor/stb_image"
+IncludeDir["entt"] = "EthaneEngine/vendor/entt/include"
 
 group "Dependencies"
 	include "EthaneEngine/vendor/GLFW"
@@ -58,7 +59,8 @@ project "EthaneEngine"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.stb_image}"
+		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.entt}"
 	}
 
 	links
@@ -164,7 +166,8 @@ project "Ethane-Editor"
 		"EthaneEngine/vendor/spdlog/include",
 		"EthaneEngine/src",
 		"EthaneEngine/vendor",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}"
 	}
 
 	links
