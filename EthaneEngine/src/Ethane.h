@@ -24,6 +24,7 @@
 #include "Ethane/Renderer/VertexArray.h"
 //-------Scene--------
 #include "Ethane/Scene/Scene.h"
+#include "Ethane/Scene/Entity.h"
 #include "Ethane/Scene/Components.h"
 //-----cameras--------
 #include "Ethane/Renderer/OrthographicCamera.h"
