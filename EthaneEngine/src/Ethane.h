@@ -2,7 +2,7 @@
 
 //For use of Ethane Application
 #include "Ethane/Core/Application.h"
-//---------Log---------
+//---------Log--------
 #include "Ethane/Core/Log.h"
 //--------------------
 #include "Ethane/Core/Layer.h"
@@ -22,6 +22,9 @@
 #include "Ethane/Renderer/Texture.h"
 #include "Ethane/Renderer/SubTexture2D.h"
 #include "Ethane/Renderer/VertexArray.h"
+//-------Scene--------
+#include "Ethane/Scene/Scene.h"
+#include "Ethane/Scene/Components.h"
 //-----cameras--------
 #include "Ethane/Renderer/OrthographicCamera.h"
 #include "Ethane/Renderer/OrthographicCameraController.h"

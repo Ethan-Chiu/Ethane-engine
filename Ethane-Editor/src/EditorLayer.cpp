@@ -8,24 +8,6 @@
 
 namespace Ethane {
 
-	static const uint32_t s_MapWidth = 24;
-	static const char* s_MapTiles =
-		"WWWWWWWWWWWWWWWWWWWWWWWW"
-		"WWWWDDWWWWWWWWWWWWWWWWWW"
-		"WWDDDDDWWWWWWWWWWWWWWWWW"
-		"WWWDDWWWWWWWWWWWWWWWWWWW"
-		"WWWWWWWWWWWWWWWWWWWWWWWW"
-		"WWWWWWWDDDDDDDDWWWWWWWWW"
-		"WWWWWWDDDDDDDDDDDDDWWWWW"
-		"WWWWWDDDDDDDDDDWWWWWWWWW"
-		"WWWWDDDDDDDDDWWWWWWWWWWW"
-		"WWWDDDDDDDWWWWWWWDDWWWWW"
-		"WWWWDDDDWWWWWWWDDDDWWWWW"
-		"WWWWWWWWWWWWWWDDDDDDDWWW"
-		"WWWWWWWWWWWWWWWWDDDDWWWW"
-		"WWWWWWWWWWWWWWWWWWWWWWWW"
-		;
-
 	EditorLayer::EditorLayer()
 		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
 	{
@@ -35,23 +17,23 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		m_Texture = Ethane::Texture2D::Create("assets/textures/test.png");
-		m_SpriteSheet = Ethane::Texture2D::Create("assets/textures/RPGpack_sheet_2X.png");
+		m_Texture = Texture2D::Create("assets/textures/test.png");
+		m_SpriteSheet = Texture2D::Create("assets/textures/RPGpack_sheet_2X.png");
 
-		m_TextureStairs = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 6 }, { 128, 128 });
-		m_TextureBarrel = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 8, 2 }, { 128, 128 });
-		m_TextureTree = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, { 128, 128 }, { 1, 2 });
+		m_TextureStairs = SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 6 }, { 128, 128 });
+		m_TextureBarrel = SubTexture2D::CreateFromCoords(m_SpriteSheet, { 8, 2 }, { 128, 128 });
+		m_TextureTree = SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, { 128, 128 }, { 1, 2 });
 
-		s_TextureMap['D'] = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 6, 11 }, { 128, 128 });
-		s_TextureMap['W'] = Ethane::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 11, 11 }, { 128, 128 });
-		m_MapWidth = s_MapWidth;
-		m_MapHeight = strlen(s_MapTiles) / s_MapWidth;
-
-		Ethane::FramebufferSpecification fbSpec;
+		FramebufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = Ethane::Framebuffer::Create(fbSpec);
+		m_Framebuffer = Framebuffer::Create(fbSpec);
 
+		m_ActiveScene = CreateRef<Scene>();
+		auto square = m_ActiveScene->CreateEntity();
+		m_ActiveScene->Reg().emplace<TransformComponent>(square);
+		m_ActiveScene->Reg().emplace<SpriteRendererComponent>(square, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f});
+		m_SquareEntity = square;
 		// m_CameraController.SetZoomLevel(0.5f);
 	}
 
@@ -61,7 +43,7 @@ namespace Ethane {
 
 	}
 
-	void EditorLayer::OnUpdate(Ethane::Timestep ts)
+	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		ETH_PROFILE_FUNCTION();
 
@@ -70,35 +52,18 @@ namespace Ethane {
 			m_CameraController.OnUpdate(ts);
 
 		//Render
-		Ethane::Renderer2D::ResetStats();
-		{
-			ETH_PROFILE_SCOPE("Renderer Prep");
-			m_Framebuffer->Bind();
-			Ethane::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-			Ethane::RenderCommand::Clear();
-		}
+		Renderer2D::ResetStats();
+		m_Framebuffer->Bind();
+		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+		RenderCommand::Clear();
 
-		{
-			ETH_PROFILE_SCOPE("Renderer Draw");
-			
-			Ethane::Renderer2D::BeginScene(m_CameraController.GetCamera());
-			
-			for (uint32_t y = 0; y < m_MapHeight; y++)
-			{
-				for (uint32_t x = 0; x < m_MapWidth; x++)
-				{
-					char tileType = s_MapTiles[x + y * m_MapWidth];
-					Ethane::Ref<Ethane::SubTexture2D> texture;
-					if (s_TextureMap.find(tileType) != s_TextureMap.end())
-						texture = s_TextureMap[tileType];
-					else
-						texture = m_TextureBarrel;
-					Ethane::Renderer2D::DrawQuad({ x - m_MapWidth / 2.0f, m_MapHeight / 2.0f - y, 0.5f }, { 1.0f, 1.0f }, texture);
-				}
-			}
-			Ethane::Renderer2D::EndScene();
-			m_Framebuffer->Unbind();
-		}
+		Renderer2D::BeginScene(m_CameraController.GetCamera());
+
+		m_ActiveScene->OnUpdate(ts);
+
+		Renderer2D::EndScene();
+		m_Framebuffer->Unbind();
+
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -162,7 +127,7 @@ namespace Ethane {
 			{
 				// Disabling fullscreen would allow the window to be moved to the front of other windows,
 
-				if (ImGui::MenuItem("Exit")) { Ethane::Application::Get().Close(); }
+				if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
 				ImGui::EndMenu();
 			}
 
@@ -172,15 +137,15 @@ namespace Ethane {
 		//-------------------------
 		ImGui::Begin("Settings");
 
-		auto stats = Ethane::Renderer2D::GetStats();
+		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
 		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 		ImGui::Text("Quads: %d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 
-
-		ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
+		auto& squareColor = m_ActiveScene->Reg().get<SpriteRendererComponent>(m_SquareEntity).Color;
+		ImGui::ColorEdit4("Square Color", glm::value_ptr(squareColor));
 
 		ImGui::End();
 
@@ -209,7 +174,7 @@ namespace Ethane {
 		ImGui::End();
 	}
 
-	void EditorLayer::OnEvent(Ethane::Event& e)
+	void EditorLayer::OnEvent(Event& e)
 	{
 		m_CameraController.OnEvent(e);
 	}
