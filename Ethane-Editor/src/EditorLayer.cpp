@@ -74,6 +74,9 @@ namespace Ethane {
 
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
 		// m_CameraController.SetZoomLevel(0.5f);
 	}
 
@@ -179,6 +182,9 @@ namespace Ethane {
 
 			ImGui::EndMenuBar();
 		}
+
+		//-------------------------
+		m_SceneHierarchyPanel.OnImGuiRender();
 
 		//-------------------------
 		ImGui::Begin("Settings");
