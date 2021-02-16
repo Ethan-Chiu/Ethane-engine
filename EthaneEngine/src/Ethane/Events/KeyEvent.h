@@ -8,7 +8,7 @@ namespace Ethane {
 	class KeyEvent : public Event
 	{
 	public:
-		inline int GetKeyCode() const { return m_KeyCode; }
+		KeyCode GetKeyCode() const { return m_KeyCode; }
 		
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
@@ -22,7 +22,7 @@ namespace Ethane {
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(const KeyCode keycode, int repeatCount)
+		KeyPressedEvent(const KeyCode keycode, const uint16_t repeatCount)
 			:KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 		
 		inline uint16_t GetRepeatCount() const { return m_RepeatCount; }
