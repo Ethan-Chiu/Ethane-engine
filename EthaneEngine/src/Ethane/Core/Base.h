@@ -20,15 +20,31 @@
 #endif */
 
 //////////////////////////
-#define ETH_ENABLE_ASSERTS
 
-#ifdef ETH_ENABLE_ASSERTS
+#ifdef ETH_DEBUG
+	#if defined(ETH_PLATFORM_WINDOWS)
+		#define ETH_DEBUGBREAK() __debugbreak()
+	#elif defined(ETH_PLATFORM_LINUX)
+		#include <signal.h>
+		#define ETH_DEBUGBREAK() raise(SIGTRAP)
+	#else
+		#error "Platform doesn't support debugbreak yet!"
+	#endif
+	#define ETH_ENABLE_ASSERTS
+#else
+	#define ETH_DEBUGBREAK()
+#endif
+
+/* #ifdef ETH_ENABLE_ASSERTS
 	#define ETH_ASSERT(x, ...) { if(!(x)) { ETH_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 	#define ETH_CORE_ASSERT(x, ...) { if(!(x)) { ETH_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 #else
 	#define ETH_ASSERT(x, ...)
 	#define ETH_CORE_ASSERT(x, ...)
-#endif
+#endif */
+
+#define ETH_EXPAND_MACRO(x) x
+#define ETH_STRINGIFY_MACRO(x) #x
 
 #define BIT(x) (1 << x)
 
@@ -53,3 +69,5 @@ namespace Ethane {
 	}
 
 }
+
+#include "Ethane/Core/Assert.h"

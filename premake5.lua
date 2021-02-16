@@ -19,11 +19,13 @@ IncludeDir["ImGui"] = "EthaneEngine/vendor/imgui"
 IncludeDir["glm"] = "EthaneEngine/vendor/glm"
 IncludeDir["stb_image"] = "EthaneEngine/vendor/stb_image"
 IncludeDir["entt"] = "EthaneEngine/vendor/entt/include"
+IncludeDir["yaml_cpp"] =  "%{wks.location}/EthaneEngine/vendor/yaml-cpp/include"
 
 group "Dependencies"
 	include "EthaneEngine/vendor/GLFW"
 	include "EthaneEngine/vendor/Glad"
 	include "EthaneEngine/vendor/imgui"
+	include "EthaneEngine/vendor/yaml-cpp"
 
 group ""
 
@@ -60,7 +62,8 @@ project "EthaneEngine"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.yaml_cpp}"
 	}
 
 	links
@@ -68,6 +71,7 @@ project "EthaneEngine"
 		"GLFW",
 		"Glad",
 		"ImGui",
+		"yaml-cpp",
 		"opengl32.lib"
 	}
 

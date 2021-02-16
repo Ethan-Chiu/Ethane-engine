@@ -1,7 +1,7 @@
 #include "EditorLayer.h"
 #include "imgui/imgui.h"
 
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Ethane/Scene/SceneSerializer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -31,52 +31,51 @@ namespace Ethane {
 
 		m_ActiveScene = CreateRef<Scene>();
 
-		Entity square = m_ActiveScene->CreateEntity("green square");
-		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
-
-		Entity square2 = m_ActiveScene->CreateEntity("blue square");
-		square2.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f });
-
-		Entity CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
-		CameraEntity.AddComponent<CameraComponent>();
-
-		Entity SecondCamera = m_ActiveScene->CreateEntity("Second Camera");
-		auto& cc = SecondCamera.AddComponent<CameraComponent>();
-		cc.Primary = false;
+		// Entity square = m_ActiveScene->CreateEntity("green square");
+		// square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
+		// 
+		// Entity square2 = m_ActiveScene->CreateEntity("blue square");
+		// square2.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f });
+		// 
+		// Entity CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
+		// CameraEntity.AddComponent<CameraComponent>();
+		// 
+		// Entity SecondCamera = m_ActiveScene->CreateEntity("Second Camera");
+		// auto& cc = SecondCamera.AddComponent<CameraComponent>();
+		// cc.Primary = false;
 		
-		class CameraController : public ScriptableEntity
-		{
-		public:
-
-			void OnCreate()
-			{
-				std::cout << "OnCreate" << std::endl;
-			}
-
-			void OnDestroy()
-			{
-
-			}
-
-			void OnUpdate(Timestep ts)
-			{
-				auto& translation = GetComponent<TransformComponent>().Translation;
-				float speed = 5.0f;
-
-				if (Input::IsKeyPressed(Key::A))
-					translation.x -= speed * ts;
-				if (Input::IsKeyPressed(Key::D))
-					translation.x += speed * ts;
-				if (Input::IsKeyPressed(Key::W))
-					translation.y += speed * ts;
-				if (Input::IsKeyPressed(Key::S))
-					translation.y -= speed * ts;
-			}
-		};
-
-		CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-
-
+		// class CameraController : public ScriptableEntity
+		// {
+		// public:
+		// 
+		// 	void OnCreate()
+		// 	{
+		// 		std::cout << "OnCreate" << std::endl;
+		// 	}
+		// 
+		// 	void OnDestroy()
+		// 	{
+		// 
+		// 	}
+		// 
+		// 	void OnUpdate(Timestep ts)
+		// 	{
+		// 		auto& translation = GetComponent<TransformComponent>().Translation;
+		// 		float speed = 5.0f;
+		// 
+		// 		if (Input::IsKeyPressed(Key::A))
+		// 			translation.x -= speed * ts;
+		// 		if (Input::IsKeyPressed(Key::D))
+		// 			translation.x += speed * ts;
+		// 		if (Input::IsKeyPressed(Key::W))
+		// 			translation.y += speed * ts;
+		// 		if (Input::IsKeyPressed(Key::S))
+		// 			translation.y -= speed * ts;
+		// 	}
+		// };
+		// 
+		// CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		// 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		// m_CameraController.SetZoomLevel(0.5f);
@@ -182,6 +181,18 @@ namespace Ethane {
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("Serialize"))
+				{
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.Serialize("assets/scenes/Example.ethane");
+				}
+
+				if (ImGui::MenuItem("Deserialize"))
+				{
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.Deserialize("assets/scenes/Example.ethane");
+				}
+
 				if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
 				ImGui::EndMenu();
 			}
