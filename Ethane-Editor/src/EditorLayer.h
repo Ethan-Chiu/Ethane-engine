@@ -3,6 +3,8 @@
 #include <Ethane.h>
 #include "Panels/SceneHierarchyPanel.h"
 
+#include "Ethane/Renderer/EditorCamera.h"
+
 namespace Ethane {
 
 	class EditorLayer : public Layer
@@ -33,6 +35,8 @@ namespace Ethane {
 		Ref<Texture2D> m_Texture;
 		Ref<Texture2D> m_SpriteSheet;
 		Ref<SubTexture2D> m_TextureStairs, m_TextureBarrel, m_TextureTree;
+
+		EditorCamera m_EditorCamera;
 
 		Ref<Scene> m_ActiveScene;
 

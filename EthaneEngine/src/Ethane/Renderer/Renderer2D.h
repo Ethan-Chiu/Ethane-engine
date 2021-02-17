@@ -2,6 +2,7 @@
 
 #include "OrthographicCamera.h"
 #include "Ethane/Renderer/Camera.h"
+#include "Ethane/Renderer/EditorCamera.h"
 
 #include "Texture.h"
 #include "SubTexture2D.h"
@@ -16,6 +17,8 @@ namespace Ethane {
 
 		static void BeginScene(const Camera& camera, glm::mat4& transform);
 		static void BeginScene(const OrthographicCamera& camera);
+		static void BeginScene(const EditorCamera& camera);
+
 		static void EndScene();
 		static void Flush();
 

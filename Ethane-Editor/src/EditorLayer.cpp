@@ -117,7 +117,7 @@ namespace Ethane {
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		RenderCommand::Clear();
 
-		m_ActiveScene->OnUpdate(ts);
+		m_ActiveScene->OnUpdateRuntime(ts);
 
 		m_Framebuffer->Unbind();
 
