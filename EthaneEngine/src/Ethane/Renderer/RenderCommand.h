@@ -27,7 +27,7 @@ namespace Ethane {
 			s_RendererAPI->Clear();
 		}
 
-		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t count = 0)
+		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t count = -1)
 		{
 			s_RendererAPI->DrawIndexed(vertexArray, count);
 		}
