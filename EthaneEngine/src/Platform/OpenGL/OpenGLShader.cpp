@@ -11,8 +11,10 @@ namespace Ethane {
 	{
 		if (type == "vertex")
 			return GL_VERTEX_SHADER;
-		if (type == "fragment" || type == "pixel")
+		else if (type == "fragment" || type == "pixel")
 			return GL_FRAGMENT_SHADER;
+		else if (type == "computeShader")
+			return GL_COMPUTE_SHADER;
 
 		ETH_CORE_ASSERT(false, "Unknown shader type!");
 		return 0;
@@ -104,7 +106,7 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		GLuint program = glCreateProgram();
-		ETH_CORE_ASSERT(shaderSources.size() <= 2, "only support 2 shaders");
+		ETH_CORE_ASSERT(shaderSources.size() <= 3, "only support 3 shaders");
 		std::array<GLenum, 2> glShaderIDs;
 		int glShaderIDIndex = 0;
 		for (auto& kv : shaderSources)
