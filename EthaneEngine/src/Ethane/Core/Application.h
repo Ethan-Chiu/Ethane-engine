@@ -8,13 +8,26 @@
 #include "Ethane/Core/Timestep.h"
 #include "Ethane/ImGui/ImGuiLayer.h"
 
+int main(int argc, char** argv);
 
 namespace Ethane
 {
+	struct ApplicationCommandLineArgs
+	{
+		int Count = 0;
+		char** Args = nullptr;
+
+		const char* operator[](int index) const
+		{
+			ETH_CORE_ASSERT(index < Count);
+			return Args[index];
+		}
+	};
+
 	class Application
 	{
 	public:
-		Application(const std::string& name = "Ethane App");
+		Application(const std::string& name = "Ethane App", ApplicationCommandLineArgs args = ApplicationCommandLineArgs());
 		virtual ~Application();
 		void Run();
 		
@@ -29,10 +42,13 @@ namespace Ethane
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 		void Close();
+
+		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:
+		ApplicationCommandLineArgs m_CommandLineArgs;
 		Scope<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
@@ -43,6 +59,6 @@ namespace Ethane
 		static Application* s_Instance;
 	};
 
-	Application* CreateApplication();
+	Application* CreateApplication(ApplicationCommandLineArgs args);
 		//to be define in client
 }

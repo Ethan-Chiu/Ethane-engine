@@ -17,6 +17,7 @@ namespace Ethane {
 		static void Init();
 		static void Shutdown();
 
+		static void StartBatch();
 		static void BeginScene(const Camera& camera, glm::mat4& transform);
 		static void BeginScene(const OrthographicCamera& camera);
 		static void BeginScene(const EditorCamera& camera);
@@ -56,7 +57,7 @@ namespace Ethane {
 		static void ResetStats();
 		static Statistics GetStats();
 	private:
-		static void FlushAndReset();
+		static void NextBatch();
 	};
 
 }

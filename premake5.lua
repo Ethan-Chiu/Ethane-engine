@@ -1,6 +1,9 @@
+include "Dependencies.lua"
+
 workspace "EthaneEngine"
-	architecture "x64"
-	
+	architecture "x86_64"
+	startproject "Ethane-Editor"
+
 	configurations
 	{
 		"Debug",
@@ -8,19 +11,13 @@ workspace "EthaneEngine"
 		"Dist"
 	}
 
-	startproject "Sandbox"
+	flags
+	{
+		"MultiProcessorCompile"
+	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-IncludeDir = {}
-IncludeDir["GLFW"] = "%{wks.location}/EthaneEngine/vendor/GLFW/include"
-IncludeDir["Glad"] = "%{wks.location}/EthaneEngine/vendor/Glad/include"
-IncludeDir["ImGui"] = "%{wks.location}/EthaneEngine/vendor/imgui"
-IncludeDir["glm"] = "%{wks.location}/EthaneEngine/vendor/glm"
-IncludeDir["stb_image"] = "%{wks.location}/EthaneEngine/vendor/stb_image"
-IncludeDir["entt"] = "%{wks.location}/EthaneEngine/vendor/entt/include"
-IncludeDir["yaml_cpp"] = "%{wks.location}/EthaneEngine/vendor/yaml-cpp/include"
-IncludeDir["ImGuizmo"] = "%{wks.location}/EthaneEngine/vendor/ImGuizmo"
 
 group "Dependencies"
 	include "EthaneEngine/vendor/GLFW"
@@ -86,7 +83,7 @@ project "Ethane-Editor"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++17"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")

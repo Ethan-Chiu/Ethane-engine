@@ -2,11 +2,15 @@
 
 bin/
 bin-int/
+vendor/
+EthaneEngine/vendor/VulkanSDK
+Ethane-Editor/assets/cache
+scripts/__pycache__ 
 
 # Files
 *.user
 
-# Hazel files
+# Ethane files
 *.log
 Ethane-Editor/*.json
 Sandbox/*.json

@@ -9,8 +9,8 @@ namespace Ethane {
 	class EthaneEditor : public Application
 	{
 	public:
-		EthaneEditor()
-			:Application("Ethane Editor")
+		EthaneEditor(ApplicationCommandLineArgs args)
+			:Application("Ethane Editor", args)
 		{
 			PushLayer(new EditorLayer());
 		}
@@ -21,9 +21,9 @@ namespace Ethane {
 		}
 	};
 
-	Application* CreateApplication()
+	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
-		return new EthaneEditor();
+		return new EthaneEditor(args);
 	}
 
 }
