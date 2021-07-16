@@ -151,6 +151,56 @@ namespace Ethane {
 		ImGui::PopID();
 	}
 
+	static void DrawVec2Control(const std::string& label, glm::vec2& value, float resetValue = 0.0f, float columnWidth = 100.0f)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
+			value.x = resetValue;
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize))
+			value.y = resetValue;
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PopStyleVar();
+
+		ImGui::Columns(1);
+
+		ImGui::PopID();
+	}
+
 	template<typename T, typename UIFunction>
 	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
 	{
@@ -221,6 +271,16 @@ namespace Ethane {
 			if (ImGui::MenuItem("Sprite Renderer"))
 			{
 				m_SelectionContext.AddComponent<SpriteRendererComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::MenuItem("Texture Renderer"))
+			{
+				m_SelectionContext.AddComponent<Texture2DRendererComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::MenuItem("SubTexture Renderer"))
+			{
+				m_SelectionContext.AddComponent<SubTexture2DRendererComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
@@ -299,6 +359,35 @@ namespace Ethane {
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+		});
+
+		DrawComponent<Texture2DRendererComponent>("Texture Renderer", entity, [](auto& component)
+		{
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			if (ImGui::InputText("##assets/textures/test.png", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				component.Texture = Texture2D::Create(std::string(buffer));
+			}
+
+			ImGui::DragFloat("TilingFactor", &component.TilingFactor);
+			ImGui::ColorEdit4("TintColor", glm::value_ptr(component.TintColor));
+		});
+
+		DrawComponent<SubTexture2DRendererComponent>("SubTexture Renderer", entity, [](auto& component)
+		{
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			if (ImGui::InputText("##assets/textures/test.png", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				component.Texture = Texture2D::Create(std::string(buffer));
+			}
+			DrawVec2Control("Coords", component.Coords);
+			DrawVec2Control("CellSize", component.CellSize);
+			DrawVec2Control("SpriteSize", component.SpriteSize);
+			ImGui::DragFloat("TilingFactor", &component.TilingFactor);
+			ImGui::ColorEdit4("TintColor", glm::value_ptr(component.TintColor));
+			component.SubTexture = SubTexture2D::CreateFromCoords(component.Texture, component.Coords, component.CellSize, component.SpriteSize);
 		});
 
 	}

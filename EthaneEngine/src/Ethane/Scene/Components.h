@@ -8,6 +8,9 @@
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
 
+#include "Ethane/Renderer/Texture.h"
+#include "Ethane/Renderer/SubTexture2D.h"
+
 namespace Ethane {
 
 	struct TagComponent
@@ -50,6 +53,37 @@ namespace Ethane {
 
 		operator const glm::vec4& () const { return Color; }
 		operator glm::vec4& () { return Color; }
+	};
+
+	struct Texture2DRendererComponent
+	{
+		Ref<Texture2D> Texture = Texture2D::Create("assets/textures/test.png");
+		// Texture2D::Create(1, 1)
+		float TilingFactor = 1.0f;
+		glm::vec4 TintColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+		bool test = false;
+
+		Texture2DRendererComponent() = default;
+		Texture2DRendererComponent(const Texture2DRendererComponent&) = default;
+		Texture2DRendererComponent(const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+			:Texture(texture), TilingFactor(tilingFactor), TintColor(tintColor) {}
+	};
+
+	struct SubTexture2DRendererComponent
+	{
+		Ref<SubTexture2D> SubTexture;
+		Ref<Texture2D> Texture = Texture2D::Create("assets/textures/test.png");
+		glm::vec2 Coords = { 0, 0 };
+		glm::vec2 CellSize = {128, 128};
+		glm::vec2 SpriteSize = { 1, 1 };
+		float TilingFactor = 1.0f;
+		glm::vec4 TintColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+		bool test = false;
+
+		SubTexture2DRendererComponent() = default;
+		SubTexture2DRendererComponent(const SubTexture2DRendererComponent&) = default;
+		SubTexture2DRendererComponent(const Ref<SubTexture2D>& subTexture, float tilingFactor, const glm::vec4 & tintColor)
+			:SubTexture(subTexture), TilingFactor(tilingFactor), TintColor(tintColor) {}
 	};
 
 	struct CameraComponent

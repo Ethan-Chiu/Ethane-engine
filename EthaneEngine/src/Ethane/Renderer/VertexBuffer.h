@@ -31,7 +31,7 @@ namespace Ethane {
 		return 0;
 	}
 
-	struct BufferElement
+	struct VertexBufferElement
 	{
 		std::string Name;
 		ShaderDataType Type;
@@ -39,9 +39,9 @@ namespace Ethane {
 		uint32_t Offset;
 		bool Normalized;
 
-		BufferElement() {}
+		VertexBufferElement() {}
 
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
+		VertexBufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
 			:Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
 		{
 		}
@@ -68,24 +68,24 @@ namespace Ethane {
 		}
 	};
 
-	class BufferLayout
+	class VertexBufferLayout
 	{
 	public:
-		BufferLayout() {}
+		VertexBufferLayout() {}
 
-		BufferLayout(const std::initializer_list<BufferElement>& elements) 
+		VertexBufferLayout(const std::initializer_list<VertexBufferElement>& elements) 
 			:m_Elements(elements) 
 		{
 			CalculateOffsetAndStride();
 		}
 
-		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
+		inline const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
 		inline uint32_t GetStride() const { return m_Stride; }
 
-		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
-		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
-		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
-		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
+		std::vector<VertexBufferElement>::iterator begin() { return m_Elements.begin(); }
+		std::vector<VertexBufferElement>::iterator end() { return m_Elements.end(); }
+		std::vector<VertexBufferElement>::const_iterator begin() const { return m_Elements.begin(); }
+		std::vector<VertexBufferElement>::const_iterator end() const { return m_Elements.end(); }
 
 	private:
 		void CalculateOffsetAndStride()
@@ -101,7 +101,7 @@ namespace Ethane {
 		}
 
 	private:
-		std::vector<BufferElement> m_Elements;
+		std::vector<VertexBufferElement> m_Elements;
 		uint32_t m_Stride = 0;
 	};
 
@@ -115,24 +115,11 @@ namespace Ethane {
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
 
-		virtual const BufferLayout& GetLayout() const = 0;
-		virtual void SetLayout(const BufferLayout& layout) = 0;
+		virtual const VertexBufferLayout& GetLayout() const = 0;
+		virtual void SetLayout(const VertexBufferLayout& layout) = 0;
 
 		static Ref<VertexBuffer> Create(uint32_t size);
 		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
-	};
-
-	class IndexBuffer
-	{
-	public:
-		virtual ~IndexBuffer() {}
-
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
-
-		virtual uint32_t GetCount() const = 0;
-
-		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 	};
 
 }

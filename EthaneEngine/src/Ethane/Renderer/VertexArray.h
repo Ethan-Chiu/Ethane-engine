@@ -1,7 +1,8 @@
 #pragma once
 
 #include <memory>
-#include "Ethane/Renderer/Buffer.h"
+#include "Ethane/Renderer/VertexBuffer.h"
+#include "Ethane/Renderer/IndexBuffer.h"
 
 namespace Ethane {
 

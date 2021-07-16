@@ -16,7 +16,8 @@
 #include "Ethane/Renderer/Renderer2D.h"
 #include "Ethane/Renderer/RenderCommand.h"
 
-#include "Ethane/Renderer/Buffer.h"
+#include "Ethane/Renderer/VertexBuffer.h"
+#include "Ethane/Renderer/IndexBuffer.h"
 #include "Ethane/Renderer/Shader.h"
 #include "Ethane/Renderer/Framebuffer.h"
 #include "Ethane/Renderer/Texture.h"

@@ -54,7 +54,9 @@ project "Sandbox"
 		"EthaneEngine/vendor/spdlog/include",
 		"EthaneEngine/src",
 		"EthaneEngine/vendor",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.ImGuizmo}"
 	}
 
 	links
