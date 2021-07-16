@@ -2,6 +2,7 @@
 
 #include <Ethane.h>
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 
 #include "Ethane/Renderer/EditorCamera.h"
 
@@ -50,6 +51,7 @@ namespace Ethane {
 
 		//Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		ContentBrowserPanel m_ContentBrowserPanel;
 
 		bool m_PrimaryCamera = true;
 	};
