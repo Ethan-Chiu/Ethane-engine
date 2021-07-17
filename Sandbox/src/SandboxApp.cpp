@@ -28,7 +28,7 @@ public:
 		Ethane::Ref<Ethane::VertexBuffer> vertexBuffer;
 		vertexBuffer = Ethane::VertexBuffer::Create(vertices, sizeof(vertices));
 
-		Ethane::BufferLayout layout = {
+		Ethane::VertexBufferLayout layout = {
 			{ Ethane::ShaderDataType::Float3, "a_Position" },
 			{ Ethane::ShaderDataType::Float4, "a_Color" }
 		};

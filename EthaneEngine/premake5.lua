@@ -21,7 +21,8 @@ project "EthaneEngine"
 		"vendor/glm/glm/**.inl",
 
 		"vendor/ImGuizmo/ImGuizmo.h",
-		"vendor/ImGuizmo/ImGuizmo.cpp"
+		"vendor/ImGuizmo/ImGuizmo.cpp",
+		"vendor/entt/include/**.hpp",
 	}
 
 	includedirs

@@ -93,6 +93,22 @@ namespace Ethane {
 			Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color, (int)entity);
 		}
 
+		auto view = m_Registry.view<TransformComponent, Texture2DRendererComponent>();
+		for (auto entity : view)
+		{
+			auto [transform, texture] = view.get<TransformComponent, Texture2DRendererComponent>(entity);
+
+			Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+		}
+
+		auto view2 = m_Registry.view<TransformComponent, SubTexture2DRendererComponent>();
+		for (auto entity : view2)
+		{
+			auto [transform, texture] = view2.get<TransformComponent, SubTexture2DRendererComponent>(entity);
+
+			Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+		}
+
 		Renderer2D::EndScene();
 	}
 
@@ -143,6 +159,17 @@ namespace Ethane {
 	template<>
 	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
 	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<Texture2DRendererComponent>(Entity entity, Texture2DRendererComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<SubTexture2DRendererComponent>(Entity entity, SubTexture2DRendererComponent& component)
+	{
+		component.SubTexture = SubTexture2D::CreateFromCoords(component.Texture, component.Coords, component.CellSize);
 	}
 
 	template<>

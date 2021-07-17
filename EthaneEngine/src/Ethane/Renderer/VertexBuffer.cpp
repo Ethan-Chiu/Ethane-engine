@@ -1,9 +1,9 @@
 #include "ethpch.h"
-#include "Buffer.h"
+#include "VertexBuffer.h"
 
 #include "Renderer.h"
 
-#include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/OpenGL/OpenGLVertexBuffer.h"
 
 namespace Ethane {
 
@@ -31,21 +31,6 @@ namespace Ethane {
 			return nullptr;
 		case RendererAPI::API::OpenGL:
 			return CreateRef<OpenGLVertexBuffer>(vertices, size);
-		}
-
-		ETH_CORE_ASSERT(false, "Unknpwn RendererAPI");
-		return nullptr;
-	}
-
-	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case RendererAPI::API::None:
-				ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
-				return nullptr;
-			case RendererAPI::API::OpenGL:
-				return CreateRef<OpenGLIndexBuffer>(indices, size);
 		}
 
 		ETH_CORE_ASSERT(false, "Unknpwn RendererAPI");
