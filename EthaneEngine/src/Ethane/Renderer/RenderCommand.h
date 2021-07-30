@@ -31,6 +31,11 @@ namespace Ethane {
 		{
 			s_RendererAPI->DrawIndexed(count);
 		}
+
+		inline static void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f))
+		{
+			s_RendererAPI->DrawMesh(mesh, transform);
+		}
 	private:
 		static Scope<RendererAPI> s_RendererAPI;
 	};

@@ -21,6 +21,15 @@ namespace Ethane {
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
 
+
+		//Uniform
+		virtual uint32_t GetUniformBufferIndex(uint32_t bindingPoint) = 0;
+		virtual void SetUniformBuffer(uint32_t uboIndex, const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void SetUniformBufferByBindingPoint(uint32_t bindingPoint, const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual uint32_t GetUniformBufferIndex(const std::string& name) = 0; // test
+		virtual void SetUniformBufferByName(const std::string& name, const void* data, uint32_t size) =  0; // test
+
+
 		virtual const std::string& GetName() const = 0;
 
 		static Ref<Shader> Create(const std::string& filepath);

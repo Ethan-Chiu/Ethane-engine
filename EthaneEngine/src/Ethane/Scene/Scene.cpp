@@ -4,13 +4,16 @@
 #include "Components.h"
 
 #include "Ethane/Renderer/Renderer2D.h"
+#include "Ethane/Renderer/Renderer.h"
+
 #include <glm/glm.hpp>
 
 namespace Ethane {
 
 	Scene::Scene()
 	{
-		
+		m_Mesh = CreateRef<Mesh>("resources/meshes/default/Cube.fbx");
+		// m_Mesh = CreateRef<Mesh>("resources/meshes/default/Sphere.fbx");
 	}
 
 	Scene::~Scene()
@@ -110,6 +113,13 @@ namespace Ethane {
 		}
 
 		Renderer2D::EndScene();
+
+
+		Renderer::BeginScene();
+
+		Renderer::RenderMesh(m_Mesh);
+
+		Renderer::EndScene();
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)

@@ -5,6 +5,8 @@
 #include "Ethane/Core/Timestep.h"
 #include "Ethane/Renderer/EditorCamera.h"
 
+#include "Ethane/Renderer/Mesh.h"
+
 namespace Ethane {
 
 	class Entity;
@@ -29,6 +31,8 @@ namespace Ethane {
 		entt::registry m_Registry;
 
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+
+		Ref<Mesh> m_Mesh;
 
 		friend class Entity;
 		friend class SceneSerializer;

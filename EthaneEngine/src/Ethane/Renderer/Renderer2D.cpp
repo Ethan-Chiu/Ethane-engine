@@ -75,7 +75,24 @@ namespace Ethane {
 			glm::mat4 ViewProjection;
 		};
 		CameraData CameraBuffer;
-		Ref<UniformBuffer> CameraUniformBuffer;
+			// delete
+			// Ref<UniformBuffer> CameraUniformBuffer;
+
+		// Grid
+		// struct TransformData
+		// {
+		// 	glm::mat4 Transform;
+		// };
+		struct SettingsData
+		{
+			float GridScale = 16.025f;
+			float GridRes = 0.025f;
+		};
+		// TransformData TransformBuffer;
+		// Ref<UniformBuffer> TransformUniformBuffer;
+		SettingsData SettingsBuffer;
+		Ref<UniformBuffer> SettingsUniformBuffer;
+		Ref<Shader> GridShader;
 	};
 
 	static Renderer2DData s_Data;
@@ -158,8 +175,13 @@ namespace Ethane {
 		// 	delete[] lineIndices;
 		// }
 
-		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
+			// delete
+			// s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 
+
+		// grid
+		// s_Data.SettingsUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::SettingsData), 1);
+		// s_Data.GridShader = Shader::Create("assets/shaders/Grid.glsl");
 	}
 
 	void Renderer2D::Shutdown()
@@ -181,7 +203,9 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+		// delete
+		// s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 		StartBatch();
 	}
@@ -201,7 +225,13 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+		// delete
+		// s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+
+
+		// Grid
+		// s_Data.SettingsUniformBuffer->SetData(&s_Data.SettingsBuffer, sizeof(Renderer2DData::SettingsData));
 
 		StartBatch();
 	}
@@ -229,6 +259,11 @@ namespace Ethane {
 		s_Data.QuadPipeline->Bind();
 		s_Data.QuadIndexBuffer->Bind();
 		RenderCommand::DrawIndexed(s_Data.QuadIndexCount);
+
+
+		// Grid
+		// s_Data.GridShader->Bind();
+
 		s_Data.Stats.DrawCalls++;
 	}
 

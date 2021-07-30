@@ -244,7 +244,7 @@ public:
 	}
 };
 
-Ethane::Application* Ethane::CreateApplication()
+Ethane::Application* Ethane::CreateApplication(ApplicationCommandLineArgs args)
 {
 	return new Sandbox();
 }

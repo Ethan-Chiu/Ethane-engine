@@ -4,7 +4,50 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
+#include <glm/glm.hpp>
+
 namespace Ethane {
+
+#ifdef ETH_DEBUG
+
+	struct log_mat4
+	{
+		log_mat4(const glm::mat4& _mat) { Mat = _mat; }
+		glm::mat4 Mat;
+		template<typename OStream>
+		friend OStream& operator<<(OStream& os, const log_mat4& c)
+		{
+			os << std::endl << "[" << std::endl;
+			for (int i = 0; i < 4; i++)
+			{
+				for (int j = 0; j < 4; j++)
+					os << c.Mat[i][j] << " ";
+				os << std::endl;
+			}
+			os << "]";
+			return os;
+		}
+	};
+
+	struct log_mat3
+	{
+		log_mat3(const glm::mat3& _mat) { Mat = _mat; }
+		glm::mat3 Mat;
+		template<typename OStream>
+		friend OStream& operator<<(OStream& os, const log_mat3& c)
+		{
+			os << std::endl << "[" << std::endl;
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < 3; j++)
+					os << c.Mat[i][j] << " ";
+				os << std::endl;
+			}
+			os << "]";
+			return os;
+		}
+	};
+#endif
 
 	class Log
 	{

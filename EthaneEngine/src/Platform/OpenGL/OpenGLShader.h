@@ -3,6 +3,9 @@
 #include "Ethane/Renderer/Shader.h"
 #include <glm/glm.hpp>
 
+
+#include "Ethane/Renderer/UniformBuffer.h"
+
 //TODO: remove
 typedef unsigned int GLenum;
 
@@ -37,6 +40,15 @@ namespace Ethane {
 
 		void UploadUniformMat3(const std::string& name, const glm::mat3& matrix);
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
+
+
+		// UniformBuffer //prehaps move to opengl uniformbuffer
+		uint32_t GetUniformBufferIndex(uint32_t bindingPoint) override;
+		uint32_t GetUniformBufferIndex(const std::string& name) override;
+		void SetUniformBuffer(uint32_t uboIndex, const void* data, uint32_t size, uint32_t offset = 0) override;
+		void SetUniformBufferByBindingPoint(uint32_t bindingPoint, const void* data, uint32_t size, uint32_t offset = 0) override;
+		void SetUniformBufferByName(const std::string& name, const void* data, uint32_t size) override;
+
 	private:
 		std::string ReadFile(const std::string& filepath);
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
@@ -54,5 +66,8 @@ namespace Ethane {
 		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
 
 		std::unordered_map<GLenum, std::string> m_OpenGLSourceCode;
+
+		inline static std::unordered_map<uint32_t, UniformBufferSpec> s_UniformBuffers;
+
 	};
 }

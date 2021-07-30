@@ -103,7 +103,9 @@ project "Ethane-Editor"
 		"EthaneEngine/vendor",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.ImGuizmo}"
+		"%{IncludeDir.ImGuizmo}",
+
+		"%{IncludeDir.Assimp}"
 	}
 
 	links
@@ -118,14 +120,38 @@ project "Ethane-Editor"
 		defines "ETH_DEBUG"
 		runtime "Debug"
 		symbols "on"
+		links
+		{
+			"EthaneEngine/vendor/assimp/bin/Debug/assimp-vc141-mtd.lib"
+		}
+		postbuildcommands 
+		{
+			'{COPY} "../EthaneEngine/vendor/assimp/bin/Debug/assimp-vc141-mtd.dll" "%{cfg.targetdir}"',
+			'{COPY} "../EthaneEngine/vendor/VulkanSDK/Bin/shaderc_sharedd.dll" "%{cfg.targetdir}"'
+		}
 
 	filter "configurations:Release"
 		defines "ETH_RELEASE"
 		runtime "Release"
 		optimize "on"
+		links
+		{
+			"EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mt.lib"
+		}
+		postbuildcommands 
+		{
+			'{COPY} "../EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mt.dll" "%{cfg.targetdir}"',
+		}
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
 		runtime "Release"
 		symbols "on"
-
+		links
+		{
+			"EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mt.lib"
+		}
+		postbuildcommands 
+		{
+			'{COPY} "../EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mtd.dll" "%{cfg.targetdir}"',
+		}

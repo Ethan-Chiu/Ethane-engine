@@ -23,6 +23,9 @@
 #include "Ethane/Renderer/Framebuffer.h"
 #include "Ethane/Renderer/Texture.h"
 #include "Ethane/Renderer/SubTexture2D.h"
+
+#include "Ethane/Renderer/Mesh.h"
+
 //-------Scene--------
 #include "Ethane/Scene/Scene.h"
 #include "Ethane/Scene/Entity.h"

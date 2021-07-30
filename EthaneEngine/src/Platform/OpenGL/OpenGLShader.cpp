@@ -205,7 +205,7 @@ namespace Ethane {
 			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
 
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
+			if (in.is_open()) // test fix tomorrow
 			{
 				in.seekg(0, std::ios::end);
 				auto size = in.tellg();
@@ -248,6 +248,7 @@ namespace Ethane {
 		shaderc::CompileOptions options;
 		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 		const bool optimize = false;
+
 		if (optimize)
 			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
@@ -344,6 +345,14 @@ namespace Ethane {
 		}
 
 		m_RendererID = program;
+
+
+		// test
+		// ETH_CORE_INFO("uniform binding");
+		// uint32_t uboIndex = glGetUniformBlockIndex(program, "Transform");
+		// glUniformBlockBinding(program, 1, uboIndex);
+		// uboIndex = glGetUniformBlockIndex(program, "Camera");
+		// glUniformBlockBinding(program, 0, uboIndex);
 	}
 
 	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
@@ -363,10 +372,43 @@ namespace Ethane {
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			int memberCount = bufferType.member_types.size();
 
-			ETH_CORE_TRACE("  {0}", resource.name);
+			ETH_CORE_TRACE("    {0}", resource.name);
 			ETH_CORE_TRACE("    Size = {0}", bufferSize);
 			ETH_CORE_TRACE("    Binding = {0}", binding);
 			ETH_CORE_TRACE("    Members = {0}", memberCount);
+
+			if (s_UniformBuffers.find(binding) == s_UniformBuffers.end())
+			{
+				UniformBufferSpec& buffer = s_UniformBuffers[binding];
+				buffer.Name = resource.name;
+				buffer.BindingPoint = binding;
+				buffer.Size = bufferSize;
+
+				glCreateBuffers(1, &buffer.RendererID);
+				glNamedBufferData(buffer.RendererID, buffer.Size, NULL, GL_DYNAMIC_DRAW); 
+				glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
+
+				ETH_CORE_TRACE("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+				// glBindBuffer(GL_UNIFORM_BUFFER, 0);
+			}
+			else
+			{
+				// Validation
+				UniformBufferSpec& buffer = s_UniformBuffers.at(binding);
+				// ETH_CORE_INFO("{0}, {1}", buffer.Name, resource.name);
+				// ETH_CORE_ASSERT(buffer.Name == resource.name); // Must be the same buffer
+				if (bufferSize > buffer.Size) // Resize buffer if needed
+				{
+					buffer.Size = bufferSize;
+
+					glDeleteBuffers(1, &buffer.RendererID);
+					glCreateBuffers(1, &buffer.RendererID);
+					glNamedBufferData(buffer.RendererID, buffer.Size, NULL, GL_DYNAMIC_DRAW);
+					glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
+
+					ETH_CORE_TRACE("Resized Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+				}
+			}
 		}
 	}
 
@@ -474,4 +516,41 @@ namespace Ethane {
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
+
+	// UniformBuffer
+	uint32_t OpenGLShader::GetUniformBufferIndex(uint32_t bindingPoint)
+	{
+
+		return s_UniformBuffers[bindingPoint].RendererID;
+		ETH_CORE_ASSERT(false, "Can't find uniform buffer");
+	}
+
+	uint32_t OpenGLShader::GetUniformBufferIndex(const std::string& name)
+	{
+		for (auto& [bindingPoint, ub] : s_UniformBuffers)
+		{
+			if (ub.Name == name)
+			{
+				return ub.RendererID;
+			}
+		}
+		ETH_CORE_ASSERT(false, "Can't find uniform buffer");
+	}
+
+	void OpenGLShader::SetUniformBuffer(uint32_t uboIndex, const void* data, uint32_t size, uint32_t offset)
+	{
+		glNamedBufferSubData(uboIndex, offset, size, data);
+	}
+
+	void OpenGLShader::SetUniformBufferByBindingPoint(uint32_t bindingPoint, const void* data, uint32_t size, uint32_t offset)
+	{
+		uint32_t uboIndex = GetUniformBufferIndex(bindingPoint);
+		glNamedBufferSubData(uboIndex, 0, size, data);
+	}
+
+	void OpenGLShader::SetUniformBufferByName(const std::string& name, const void* data, uint32_t size)
+	{
+		uint32_t uboIndex = GetUniformBufferIndex(name);
+		glNamedBufferSubData(uboIndex, 0, size, data);
+	}
 }

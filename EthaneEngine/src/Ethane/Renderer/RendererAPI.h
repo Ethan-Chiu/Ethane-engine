@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Mesh.h"
+
 namespace Ethane {
 
 	class RendererAPI
@@ -21,6 +23,8 @@ namespace Ethane {
 		virtual void Clear() = 0;
 
 		virtual void DrawIndexed(uint32_t indexCount = 0) = 0;
+
+		virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) = 0;
 
 		inline static API GetAPI() { return s_API; }
 

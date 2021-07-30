@@ -31,9 +31,23 @@ namespace Ethane {
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 	}
 
+	void Renderer::BeginScene()
+	{
+
+	}
+
 	void Renderer::EndScene()
 	{
 
+	}
+
+	void Renderer::RenderMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+	{
+		auto shader = mesh->m_MeshShader;
+		shader->Bind();
+
+		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+		RenderCommand::DrawMesh(mesh, transform);
 	}
 
 	void Renderer::Submit(const Ref<Shader>& shader, const uint32_t indexCount, const glm::mat4& transform)

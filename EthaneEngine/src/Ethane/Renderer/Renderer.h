@@ -3,8 +3,10 @@
 #include "RenderCommand.h"
 
 #include "OrthographicCamera.h"
+#include "EditorCamera.h"
 
 #include "Shader.h"
+#include "Mesh.h"
 
 namespace Ethane {
 	
@@ -17,7 +19,10 @@ namespace Ethane {
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
 		static void BeginScene(OrthographicCamera& camera);
+		static void BeginScene();
 		static void EndScene();
+
+		static void RenderMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		// static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
 		static void Submit(const Ref<Shader>& shader, const uint32_t indexCount, const glm::mat4& transform = glm::mat4(1.0f));
