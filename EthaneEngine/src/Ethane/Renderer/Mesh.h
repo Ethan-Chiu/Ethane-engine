@@ -12,6 +12,8 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+#include "Ethane/Asset/ShaderLibrary.h"
+
 struct aiNode;
 struct aiAnimation;
 struct aiNodeAnim;

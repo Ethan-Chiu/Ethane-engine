@@ -2,23 +2,28 @@
 #include "Renderer.h"
 
 #include "Platform/OpenGL/OpenGLShader.h"
-#include "Renderer2D.h"
 
 namespace Ethane {
 
 	Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
+	
+	RenderCommandQueue* Renderer::s_CommandQueue = nullptr;
 
 	void Renderer::Init()
 	{
 		ETH_PROFILE_FUNCTION();
 
 		RenderCommand::Init();
+		s_CommandQueue = new RenderCommandQueue();
+
 		Renderer2D::Init();
 	}
 
 	void Renderer::Shutdown()
 	{
 		Renderer2D::Shutdown();
+
+		delete Renderer::s_CommandQueue;
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -31,12 +36,12 @@ namespace Ethane {
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 	}
 
-	void Renderer::BeginScene()
+	void Renderer::BeginFrame()
 	{
 
 	}
 
-	void Renderer::EndScene()
+	void Renderer::EndFrame()
 	{
 
 	}
@@ -59,14 +64,25 @@ namespace Ethane {
 
 		RenderCommand::DrawIndexed(indexCount);
 	}
-	// void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
-	// {
-	// 	shader->Bind();
-	// 	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
-	// 	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
-	// 
-	// 	vertexArray->Bind();
-	// 	RenderCommand::DrawIndexed(vertexArray);
-	// }
+
+	void Renderer::WaitAndRender()
+	{
+		ETH_PROFILE_FUNCTION();
+		s_CommandQueue->Execute();
+	}
+
+	RenderCommandQueue& Renderer::GetRenderCommandQueue()
+	{
+		return *s_CommandQueue;
+	}
 	
 }
+// void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
+// {
+// 	shader->Bind();
+// 	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+// 	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
+// 
+// 	vertexArray->Bind();
+// 	RenderCommand::DrawIndexed(vertexArray);
+// }

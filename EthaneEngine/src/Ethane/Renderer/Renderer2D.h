@@ -9,6 +9,8 @@
 
 #include "Ethane/Scene/Components.h"
 
+#include "Ethane/Asset/ShaderLibrary.h"
+
 namespace Ethane {
 
 	class Renderer2D

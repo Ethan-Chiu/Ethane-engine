@@ -61,6 +61,7 @@ namespace Ethane {
 		uint32_t m_RendererID;
 		std::string m_FilePath;
 		std::string m_Name;
+		bool m_UseCache = false;
 
 		std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
 		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;

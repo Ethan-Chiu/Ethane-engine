@@ -1,12 +1,6 @@
 #include "ethpch.h"
 #include "Mesh.h"
 
-// #include <assimp/scene.h>
-// #include <assimp/postprocess.h>
-// #include <assimp/Importer.hpp>
-// #include <assimp/DefaultLogger.hpp>
-// #include <assimp/LogStream.hpp>
-
 #include "Renderer.h"
 #include "Pipeline.h"
 
@@ -51,7 +45,8 @@ namespace Ethane {
 
 		m_Scene = scene;
 
-		m_MeshShader = Shader::Create("assets/shaders/PBR_static.glsl");
+		// m_MeshShader = Shader::Create("assets/shaders/PBR_static.glsl");
+		m_MeshShader = ShaderLibrary::Get("PBR_static");
 		m_InverseTransform = glm::inverse(Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
 		uint32_t vertexCount = 0;
@@ -141,7 +136,7 @@ namespace Ethane {
 			m_Pipeline = Pipeline::Create(pipelineSpecification);
 		}
 
-		m_IndexBuffer = IndexBuffer::Create((uint32_t*) m_Indices.data(), (uint32_t)(m_Indices.size() * sizeof(Index)));
+		m_IndexBuffer = IndexBuffer::Create((uint32_t*) m_Indices.data(), (uint32_t)(m_Indices.size() * 3));
 	}
 
 

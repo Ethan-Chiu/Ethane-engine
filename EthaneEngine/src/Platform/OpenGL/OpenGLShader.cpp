@@ -186,11 +186,12 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		GLuint program = glCreateProgram();
+		// test
+		// GLuint program = glCreateProgram();
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		const bool optimize = true;
+		const bool optimize = false;
 
 		if (optimize)
 			options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -205,7 +206,7 @@ namespace Ethane {
 			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
 
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open()) // test fix tomorrow
+			if (in.is_open() && m_UseCache) // test fix tomorrow
 			{
 				in.seekg(0, std::ios::end);
 				auto size = in.tellg();
@@ -236,8 +237,6 @@ namespace Ethane {
 			}
 		}
 
-		for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);
 	}
 
 	void OpenGLShader::CompileOrGetOpenGLBinaries()
@@ -246,7 +245,7 @@ namespace Ethane {
 
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
-		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+		options.SetTargetEnvironment(shaderc_target_env_opengl_compat, shaderc_env_version_opengl_4_5);
 		const bool optimize = false;
 
 		if (optimize)
@@ -260,7 +259,7 @@ namespace Ethane {
 			std::filesystem::path shaderFilePath = m_FilePath;
 			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(stage));
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
+			if (in.is_open() && m_UseCache)
 			{
 				in.seekg(0, std::ios::end);
 				auto size = in.tellg();
@@ -276,7 +275,14 @@ namespace Ethane {
 				m_OpenGLSourceCode[stage] = glslCompiler.compile();
 				auto& source = m_OpenGLSourceCode[stage];
 
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
+				// test
+				printf("=========================================\n");
+				printf("%s Shader:\n%s\n", Utils::GLShaderStageToString(stage), source.c_str());
+				printf("=========================================\n");
+				// testend
+
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
+				
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					ETH_CORE_ERROR(module.GetErrorMessage());
@@ -295,6 +301,9 @@ namespace Ethane {
 				}
 			}
 		}
+
+		for (auto&& [stage, data] : shaderData)
+			Reflect(stage, data);
 	}
 
 	void OpenGLShader::CreateProgram()
@@ -358,21 +367,22 @@ namespace Ethane {
 	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
 	{
 		spirv_cross::Compiler compiler(shaderData);
-		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+		spirv_cross::ShaderResources res = compiler.get_shader_resources();
 
 		ETH_CORE_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_FilePath);
-		ETH_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
-		ETH_CORE_TRACE("    {0} resources", resources.sampled_images.size());
+		ETH_CORE_TRACE("    {0} uniform buffers", res.uniform_buffers.size());
+		ETH_CORE_TRACE("    {0} resources", res.sampled_images.size());
 
 		ETH_CORE_TRACE("Uniform buffers:");
-		for (const auto& resource : resources.uniform_buffers)
+		glUseProgram(m_RendererID);
+		for (const auto& resource : res.uniform_buffers)
 		{
 			const auto& bufferType = compiler.get_type(resource.base_type_id);
 			uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			int memberCount = bufferType.member_types.size();
 
-			ETH_CORE_TRACE("    {0}", resource.name);
+			ETH_CORE_TRACE("    {0}, {1}", resource.name, compiler.get_name(resource.id));
 			ETH_CORE_TRACE("    Size = {0}", bufferSize);
 			ETH_CORE_TRACE("    Binding = {0}", binding);
 			ETH_CORE_TRACE("    Members = {0}", memberCount);
@@ -383,6 +393,21 @@ namespace Ethane {
 				buffer.Name = resource.name;
 				buffer.BindingPoint = binding;
 				buffer.Size = bufferSize;
+
+				buffer.Uniforms.reserve(memberCount);
+				for (int i = 0; i < memberCount; i++)
+				{
+					auto type = compiler.get_type(bufferType.member_types[i]);
+					const auto& name = compiler.get_member_name(bufferType.self, i);
+					auto size = compiler.get_declared_struct_member_size(bufferType, i);
+					auto offset = compiler.type_struct_member_offset(bufferType, i);
+					ETH_CORE_INFO("member name: {0}", name);
+					ETH_CORE_INFO("member size: {0}", size);
+					ETH_CORE_INFO("member offset: {0}", offset);
+
+					//ShaderUniformType uniformType = SPIRTypeToShaderUniformType(type);
+					//buffer.Uniforms.emplace_back(name, uniformType, size, offset);
+				}
 
 				glCreateBuffers(1, &buffer.RendererID);
 				glNamedBufferData(buffer.RendererID, buffer.Size, NULL, GL_DYNAMIC_DRAW); 
@@ -410,6 +435,39 @@ namespace Ethane {
 				}
 			}
 		}
+		// test
+		// for (const spirv_cross::Resource& resource : res.push_constant_buffers)
+		// {
+		// 	const auto& bufferName = resource.name;
+		// 	auto& bufferType = compiler.get_type(resource.base_type_id);
+		// 	const auto bufferSize = uint32_t(compiler.get_declared_struct_size(bufferType));
+		// 
+		// 	// Skip empty push constant buffers - these are for the renderer only
+		// 	if (bufferName.empty() || bufferName == "u_Renderer")
+		// 	{
+		// 		m_ConstantBufferOffset += bufferSize;
+		// 		continue;
+		// 	}
+		// 
+		// 	auto location = compiler.get_decoration(resource.id, spv::DecorationLocation);
+		// 	const int memberCount = int(bufferType.member_types.size());
+		// 	auto& [Name, Size, Uniforms] = m_Buffers[bufferName];
+		// 	Name = bufferName;
+		// 	Size = bufferSize - m_ConstantBufferOffset;
+		// 	for (int i = 0; i < memberCount; i++)
+		// 	{
+		// 		const auto& type = compiler.get_type(bufferType.member_types[i]);
+		// 		const auto& memberName = compiler.get_member_name(bufferType.self, i);
+		// 		const auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
+		// 		const auto offset = compiler.type_struct_member_offset(bufferType, i) - m_ConstantBufferOffset;
+		// 
+		// 		std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
+		// 		Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), size, offset);
+		// 	}
+		// 
+		// 	m_ConstantBufferOffset += bufferSize;
+		// }
+		// testend
 	}
 
 	void OpenGLShader::Bind() const

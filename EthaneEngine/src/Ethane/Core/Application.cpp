@@ -3,6 +3,7 @@
 #include "Ethane/Core/Log.h"
 #include "Input.h"
 
+#include "Ethane/Asset/AssetManager.h"
 #include "Ethane/Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
@@ -24,8 +25,9 @@ namespace Ethane
 
 		m_Window = Window::Create(WindowProps(name));
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
-		// m_Window->SetVSync(false);
+		// m_Window->SetVSync(false); // deal with this tomorrow
 
+		AssetManager::Init();
 		Renderer::Init();
 
 		m_ImGuiLayer = new ImGuiLayer;
@@ -89,6 +91,8 @@ namespace Ethane
 
 			if (!m_Minimized)
 			{
+				Renderer::BeginFrame();
+
 				{
 					ETH_PROFILE_SCOPE("LayerStack OnUpdate");
 
@@ -104,6 +108,8 @@ namespace Ethane
 						layer->OnImGuiRender();
 				}
 				m_ImGuiLayer->End();
+
+				Renderer::EndFrame();
 			}
 
 			// auto [x, y] = Input::GetMousePosition();

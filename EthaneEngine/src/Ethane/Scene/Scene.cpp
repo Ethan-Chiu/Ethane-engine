@@ -114,12 +114,7 @@ namespace Ethane {
 
 		Renderer2D::EndScene();
 
-
-		Renderer::BeginScene();
-
 		Renderer::RenderMesh(m_Mesh);
-
-		Renderer::EndScene();
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
