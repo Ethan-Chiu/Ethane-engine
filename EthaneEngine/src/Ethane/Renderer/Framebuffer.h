@@ -41,6 +41,7 @@ namespace Ethane {
 	struct FramebufferSpecification
 	{
 		uint32_t Width, Height;
+		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		FramebufferAttachmentSpecification Attachments;
 		uint32_t Samples = 1;
 

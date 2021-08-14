@@ -11,7 +11,7 @@ namespace Ethane {
 	public:
 		enum class API
 		{
-			None = 0, OpenGL = 1
+			None = 0, OpenGL = 1, Vulkan = 2
 		};
 
 	public:
@@ -27,6 +27,7 @@ namespace Ethane {
 		virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) = 0;
 
 		inline static API GetAPI() { return s_API; }
+		inline static void SetAPI(API _API) { s_API = _API; }
 
 	private:
 		static API s_API;

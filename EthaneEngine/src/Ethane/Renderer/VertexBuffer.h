@@ -81,6 +81,7 @@ namespace Ethane {
 
 		inline const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
 		inline uint32_t GetStride() const { return m_Stride; }
+		uint32_t GetElementCount() const { return (uint32_t)m_Elements.size(); }
 
 		std::vector<VertexBufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<VertexBufferElement>::iterator end() { return m_Elements.end(); }
@@ -119,7 +120,7 @@ namespace Ethane {
 		virtual void SetLayout(const VertexBufferLayout& layout) = 0;
 
 		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+		static Ref<VertexBuffer> Create(void* vertices, uint32_t size);
 	};
 
 }

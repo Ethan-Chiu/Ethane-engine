@@ -13,6 +13,9 @@ namespace Ethane {
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
+
+		// TODO: test
+		virtual void ShutDown() override {}
 	private:
 		GLFWwindow* m_windowHandle;
 	};

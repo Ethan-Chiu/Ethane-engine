@@ -8,6 +8,11 @@
 
 #include "Platform/OpenGL/OpenGLContext.h"
 
+// test
+#include "Ethane/Renderer/Renderer.h"
+
+// TODO: remove this 
+#include <vulkan/vulkan.h>
 
 namespace Ethane {
 
@@ -56,6 +61,10 @@ namespace Ethane {
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_WindowInitialized = true;
 		}
+
+		// test
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
@@ -161,6 +170,7 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
+		m_Context->ShutDown();
 	}
 
 	void WindowsWindow::OnUpdate()
@@ -174,12 +184,14 @@ namespace Ethane {
 	void WindowsWindow::SetVSync(bool enable)
 	{
 		ETH_PROFILE_FUNCTION();
-
-		if (enable)
-			glfwSwapInterval(1);
-		else
-			glfwSwapInterval(0);
-		m_Data.VSync = enable;
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			if (enable)
+				glfwSwapInterval(1);
+			else
+				glfwSwapInterval(0);
+			m_Data.VSync = enable;
+		}
 	}
 
 	bool WindowsWindow::IsVSync() const

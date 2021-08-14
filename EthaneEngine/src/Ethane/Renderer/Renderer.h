@@ -45,8 +45,6 @@ namespace Ethane {
 
 		static void WaitAndRender();
 
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();
 

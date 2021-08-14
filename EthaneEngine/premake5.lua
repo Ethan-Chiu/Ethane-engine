@@ -47,7 +47,10 @@ project "EthaneEngine"
 		"Glad",
 		"ImGui",
 		"yaml-cpp",
-		"opengl32.lib"
+		"opengl32.lib",
+
+		"%{Library.Vulkan}",
+		"%{Library.VulkanUtils}",
 	}
 
 	filter "files:vendor/ImGuizmo/**.cpp"

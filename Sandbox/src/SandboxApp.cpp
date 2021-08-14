@@ -20,7 +20,13 @@ public:
 
 	virtual void OnAttach() override
 	{
+		FramebufferSpecification framebufferSpec;
+		framebufferSpec.SwapChainTarget = true;
 
+		RenderPassSpecification renderPassSpec;
+		// renderPassSpec.TargetFramebuffer = Framebuffer::Create(framebufferSpec);
+
+		// m_RenderPass = RenderPass::Create(renderPassSpec);
 	}
 
 	virtual void OnDetach() override
@@ -49,7 +55,6 @@ class Sandbox : public Ethane::Application
 public:
 	Sandbox()
 	{
-		// PushLayer(new ExampleLayer());
 		PushLayer(new ExampleLayer());
 	}
 	~Sandbox()
@@ -60,5 +65,6 @@ public:
 
 Ethane::Application* Ethane::CreateApplication(ApplicationCommandLineArgs args)
 {
+	RendererAPI::SetAPI(RendererAPI::API::Vulkan);
 	return new Sandbox();
 }

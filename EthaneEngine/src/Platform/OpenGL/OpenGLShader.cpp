@@ -135,27 +135,6 @@ namespace Ethane {
 		glDeleteProgram(m_RendererID);
 	}
 
-	std::string OpenGLShader::ReadFile(const std::string& filepath)
-	{
-		ETH_PROFILE_FUNCTION();
-
-		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
-		if (in)
-		{
-			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
-			in.seekg(0, std::ios::beg);
-			in.read(&result[0], result.size());
-			in.close();
-		}
-		else
-		{
-			ETH_CORE_ERROR("Could not open file '{0}'", filepath);
-		}
-		return result;
-	}
-
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
 		ETH_PROFILE_FUNCTION();
@@ -421,7 +400,7 @@ namespace Ethane {
 				// Validation
 				UniformBufferSpec& buffer = s_UniformBuffers.at(binding);
 				// ETH_CORE_INFO("{0}, {1}", buffer.Name, resource.name);
-				// ETH_CORE_ASSERT(buffer.Name == resource.name); // Must be the same buffer
+				ETH_CORE_ASSERT(buffer.Name == resource.name); // Must be the same buffer
 				if (bufferSize > buffer.Size) // Resize buffer if needed
 				{
 					buffer.Size = bufferSize;
@@ -484,48 +463,85 @@ namespace Ethane {
 		glUseProgram(0);
 	}
 
-	void OpenGLShader::SetInt(const std::string& name, const int value)
+	// Uniforms
+	void OpenGLShader::SetUniform(const std::string& name, const int value)
 	{
 		ETH_PROFILE_FUNCTION();
 
 		UploadUniformInt(name, value);
 	}
 
-	void OpenGLShader::SetIntArray(const std::string& name, int* values, uint32_t count)
+	void OpenGLShader::SetUniform(const std::string& name, int* values, uint32_t count)
 	{
 		ETH_PROFILE_FUNCTION();
 
 		UploadUniformIntArray(name, values, count);
 	}
 
-	void OpenGLShader::SetFloat(const std::string& name, const float value)
+	void OpenGLShader::SetUniform(const std::string& name, const float value)
 	{
 		ETH_PROFILE_FUNCTION();
 
 		UploadUniformFloat(name, value);
 	}
 
-	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
+	void OpenGLShader::SetUniform(const std::string& name, const glm::vec2& value)
+	{
+		ETH_PROFILE_FUNCTION();
+
+		UploadUniformFloat2(name, value);
+	}
+	void OpenGLShader::SetUniform(const std::string& name, const glm::ivec2& value)
+	{
+		ETH_PROFILE_FUNCTION();
+
+		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+		glUniform2i(location, value.x, value.y);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& name, const glm::vec3& value)
 	{
 		ETH_PROFILE_FUNCTION();
 
 		UploadUniformFloat3(name, value);
 	}
+	void OpenGLShader::SetUniform(const std::string& name, const glm::ivec3& value)
+	{
+		ETH_PROFILE_FUNCTION();
 
-	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
+		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+		glUniform3i(location, value.x, value.y, value.z);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& name, const glm::vec4& value)
 	{
 		ETH_PROFILE_FUNCTION();
 
 		UploadUniformFloat4(name, value);
 	}
+	void OpenGLShader::SetUniform(const std::string& name, const glm::ivec4& value)
+	{
+		ETH_PROFILE_FUNCTION();
 
-	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
+		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+		glUniform4i(location, value.x, value.y, value.z, value.w);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& name, const glm::mat3& value)
+	{
+		ETH_PROFILE_FUNCTION();
+
+		UploadUniformMat3(name, value);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& name, const glm::mat4& value)
 	{
 		ETH_PROFILE_FUNCTION();
 
 		UploadUniformMat4(name, value);
 	}
 
+	// internal Uniform
 	void OpenGLShader::UploadUniformInt(const std::string& name, int value)
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
@@ -578,7 +594,7 @@ namespace Ethane {
 	// UniformBuffer
 	uint32_t OpenGLShader::GetUniformBufferIndex(uint32_t bindingPoint)
 	{
-
+		ETH_CORE_ASSERT(s_UniformBuffers.size() > bindingPoint, "Can't find uniform buffer");
 		return s_UniformBuffers[bindingPoint].RendererID;
 		ETH_CORE_ASSERT(false, "Can't find uniform buffer");
 	}

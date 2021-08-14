@@ -203,8 +203,6 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		// delete
-		// s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 		StartBatch();
@@ -215,7 +213,7 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &camera.GetViewProjectionMatrix(), sizeof(Renderer2DData::CameraData));
 
 		StartBatch();
 	}
@@ -225,8 +223,7 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
-		// delete
-		// s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+		// s_Data.TextureShader->SetUniformBufferByName("Camera", &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 

@@ -47,7 +47,7 @@ namespace Ethane {
 		mesh->m_IndexBuffer->Bind();
 
 		auto shader = mesh->m_MeshShader;
-		uint32_t uboIndex = std::dynamic_pointer_cast<OpenGLShader>(shader)->GetUniformBufferIndex(1);
+		// uint32_t uboIndex = std::dynamic_pointer_cast<OpenGLShader>(shader)->GetUniformBufferIndex(1);
 
 		// auto& materials = mesh->GetMaterials();
 		for (Submesh& submesh : mesh->m_Submeshes)
@@ -62,7 +62,9 @@ namespace Ethane {
 			// shader->Bind();
 			// ETH_CORE_INFO("{0}", log_mat4{ transformUniform });
 
-			std::dynamic_pointer_cast<OpenGLShader>(shader)->SetUniformBuffer(uboIndex, &transformUniform, sizeof(transformUniform));
+			// std::dynamic_pointer_cast<OpenGLShader>(shader)->SetUniformBuffer(uboIndex, &transformUniform, sizeof(transformUniform));
+			std::dynamic_pointer_cast<OpenGLShader>(shader)->SetUniform("u_TransformUniform.Transform", transformUniform);
+
 			// std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transformUniform);
 			// shader->SetUniform("u_Renderer.Transform", transformUniform);
 

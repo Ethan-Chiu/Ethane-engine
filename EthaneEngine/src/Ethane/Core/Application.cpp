@@ -8,6 +8,7 @@
 
 #include <GLFW/glfw3.h>
 
+
 namespace Ethane
 {
 
@@ -27,11 +28,11 @@ namespace Ethane
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
 		// m_Window->SetVSync(false); // deal with this tomorrow
 
-		AssetManager::Init();
-		Renderer::Init();
+		// AssetManager::Init();
+		// Renderer::Init();
 
-		m_ImGuiLayer = new ImGuiLayer;
-		PushOverlay(m_ImGuiLayer);
+		// m_ImGuiLayer = new ImGuiLayer;
+		// PushOverlay(m_ImGuiLayer);
 	}
 	Application::~Application()
 	{
@@ -89,7 +90,7 @@ namespace Ethane
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			if (!m_Minimized)
+			if (false && !m_Minimized)
 			{
 				Renderer::BeginFrame();
 
@@ -114,7 +115,6 @@ namespace Ethane
 
 			// auto [x, y] = Input::GetMousePosition();
 			// ETH_CORE_TRACE("{0}, {1}", x, y);
-
 
 			m_Window->OnUpdate();
 		}
