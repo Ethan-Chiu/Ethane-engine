@@ -30,6 +30,12 @@ namespace Ethane {
 		m_SwapChain.Cleanup();
 		m_Device->Cleanup();
 		
+		if (m_DebugReportCallback != VK_NULL_HANDLE)
+		{
+			auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugReportCallbackEXT");
+			vkDestroyDebugReportCallbackEXT(s_VulkanInstance, m_DebugReportCallback, nullptr);
+		}
+
 		vkDestroySurfaceKHR(s_VulkanInstance, m_SwapChain.GetSurface(), nullptr);
 
 		vkDestroyInstance(s_VulkanInstance, nullptr);
@@ -151,5 +157,9 @@ namespace Ethane {
 		m_SwapChain.DrawFrame();
 	}
 
+	void VulkanContext::OnResize(uint32_t width, uint32_t height)
+	{
+		m_SwapChain.OnResize(width, height);
+	}
 
 }

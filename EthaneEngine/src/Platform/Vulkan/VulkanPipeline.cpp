@@ -3,9 +3,6 @@
 
 #include "VulkanContext.h"
 
-// TODO: remove this
-#include "VulkanShader.h"
-
 namespace Ethane {
 
 	namespace Utils {
@@ -36,6 +33,7 @@ namespace Ethane {
 	void VulkanPipeline::Cleanup()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		m_VulkanShader->Cleanup();
 		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 	}
@@ -44,8 +42,8 @@ namespace Ethane {
 	{
 		// Shader Stage
 		// TODO: remove this
-		VulkanShader vulkanShader{ "assets/shaders/test.glsl" };
-		const auto& shaderStages = vulkanShader.GetPipelineShaderStageCreateInfos();
+		m_VulkanShader = CreateRef<VulkanShader>( "assets/shaders/test.glsl" );
+		const auto& shaderStages = m_VulkanShader->GetPipelineShaderStageCreateInfos();
 
 		// Fixed Function 
 		// vertex input

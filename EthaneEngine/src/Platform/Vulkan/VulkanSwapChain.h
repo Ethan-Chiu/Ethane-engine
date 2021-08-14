@@ -25,7 +25,7 @@ namespace Ethane{
 		void Init(VkInstance instance, GLFWwindow* windowHandle);
 		void Create(const Ref<VulkanDevice>& device, uint32_t* width, uint32_t* height, bool vsync);
 		
-		void CleanupSwapChain();
+		void CleanupSwapChain(VkSwapchainKHR swapchain);
 		void Cleanup();
 
 		void OnResize(uint32_t width, uint32_t height);
@@ -65,7 +65,7 @@ namespace Ethane{
 		uint32_t m_Width = 0, m_Height = 0;
 
 		VkRenderPass m_RenderPass; // TODO: remove this maybe ?
-		Ref<VulkanPipeline> m_Pipeline; // TODO: remove this maybe ?
+		Ref<VulkanPipeline> m_Pipeline = nullptr; // TODO: remove this maybe ?
 		std::vector<VkFramebuffer> m_Framebuffers;
 
 		VkCommandPool m_CommandPool = nullptr;
@@ -83,7 +83,7 @@ namespace Ethane{
 		uint32_t m_CurrentImageIndex = 0;
 
 
-		Ref<VulkanVertexBuffer> m_VertexBuffer;
+		Ref<VulkanVertexBuffer> m_VertexBuffer = nullptr;
 	};
 
 }

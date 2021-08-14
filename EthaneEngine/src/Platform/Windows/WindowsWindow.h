@@ -13,6 +13,7 @@ namespace Ethane {
 		virtual ~WindowsWindow();
 
 		void OnUpdate() override;
+		void OnResize(uint32_t width, uint32_t height);
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }

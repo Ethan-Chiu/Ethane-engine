@@ -19,6 +19,8 @@ namespace Ethane {
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
 		
+		virtual void OnResize(uint32_t width, uint32_t height) override;
+
 		// TODO: test
 		virtual void ShutDown() override { vkDeviceWaitIdle(m_Device->GetVulkanDevice()); };
 

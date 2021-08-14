@@ -137,8 +137,8 @@ namespace Ethane
 		}
 
 		m_Minimized = false;
-		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
-
+		// Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		m_Window->OnResize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 }

@@ -194,6 +194,11 @@ namespace Ethane {
 		}
 	}
 
+	void WindowsWindow::OnResize(uint32_t width, uint32_t height)
+	{
+		m_Context->OnResize(width, height);
+	}
+
 	bool WindowsWindow::IsVSync() const
 	{
 		return m_Data.VSync;

@@ -3,6 +3,9 @@
 #include "Vulkan.h"
 #include "Ethane/Renderer/Pipeline.h"
 
+// TODO: remove this
+#include "VulkanShader.h"
+
 namespace Ethane {
 
 	class VulkanPipeline : public Pipeline
@@ -11,7 +14,7 @@ namespace Ethane {
 	public:
 		VulkanPipeline() = default;
 		VulkanPipeline(VkRenderPass renderPass, VertexBufferLayout layout);
-		VulkanPipeline(PipelineSpecification spec) {};
+		VulkanPipeline(PipelineSpecification spec) {}
 		~VulkanPipeline();
 		void Cleanup();
 
@@ -32,6 +35,8 @@ namespace Ethane {
 
 		VkRenderPass m_RenderPass; // TODO: remove this temp
 		VertexBufferLayout m_Layout; // TODO: remove this temp
+
+		Ref<VulkanShader> m_VulkanShader; // TODO: remove test
 
 	};
 

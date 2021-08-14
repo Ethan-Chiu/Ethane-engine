@@ -3,6 +3,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Ethane/Core/timer.h"
+
 namespace Ethane {
 
     VulkanSwapChain::~VulkanSwapChain()
@@ -17,6 +19,9 @@ namespace Ethane {
 
     void VulkanSwapChain::Create(const Ref<VulkanDevice>& _device, uint32_t* width, uint32_t* height, bool vsync)
     {
+        // for profiling
+        Timer timer;
+
         m_Device = _device;
         m_PhysicalDevice = _device->GetPhysicalDevice();
         m_VSync = vsync;
@@ -30,10 +35,15 @@ namespace Ethane {
 
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
 
+
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
         VkExtent2D m_Extent = chooseSwapExtent(swapChainSupport.capabilities);
         m_ImageFormat = surfaceFormat.format;
+
+        // profiling
+        ETH_CORE_INFO("chhose {0}", timer.ElapsedMillis());
+        timer.Reset();
 
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
         if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
@@ -109,7 +119,7 @@ namespace Ethane {
         // This also cleans up all the presentable images
         if (oldSwapchain != VK_NULL_HANDLE)
         {
-            CleanupSwapChain();
+            CleanupSwapChain(oldSwapchain);
         }
 
         // Get the swap chain images
@@ -144,10 +154,7 @@ namespace Ethane {
         // Render pass
         CreateRenderPass();
 
-        // Framebuffers (clean first)
-        if (!m_Framebuffers.empty())
-            for (auto& framebuffer : m_Framebuffers)
-                vkDestroyFramebuffer(device, framebuffer, nullptr);
+        // Framebuffers 
         m_Framebuffers.resize(m_ImageViews.size());
         VkImageView attachments[1];
         VkFramebufferCreateInfo framebufferInfo{};
@@ -186,30 +193,38 @@ namespace Ethane {
         }
 
         // Synchronization Objects
-        m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        m_ImagesInFlight.resize(m_Images.size(), VK_NULL_HANDLE);
+        if (m_ImageAvailableSemaphores.empty() || m_RenderFinishedSemaphores.empty() || m_InFlightFences.empty())
+        {
+            m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+            m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+            m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+            m_ImagesInFlight.resize(m_Images.size(), VK_NULL_HANDLE);
 
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            VkSemaphoreCreateInfo semaphoreInfo{};
+            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            VkFenceCreateInfo fenceInfo{};
+            fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]));
-            VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]));
-            VK_CHECK_RESULT(vkCreateFence(device, &fenceInfo, nullptr, &m_InFlightFences[i]));
+            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]));
+                VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]));
+                VK_CHECK_RESULT(vkCreateFence(device, &fenceInfo, nullptr, &m_InFlightFences[i]));
+            }
         }
+
+        // profiling
+        ETH_CORE_INFO("create {0}", timer.ElapsedMillis());
+        timer.Reset();
 
         // TODO: remove this test 
         VertexBufferLayout layout = {
                 { ShaderDataType::Float2, "a_Position" },
                 { ShaderDataType::Float3, "a_Color" }
         };
-        m_Pipeline = CreateRef<VulkanPipeline>(m_RenderPass, layout);
+        if(m_Pipeline == nullptr)
+            m_Pipeline = CreateRef<VulkanPipeline>(m_RenderPass, layout);
         struct Vertex {
             glm::vec2 pos;
             glm::vec3 color;
@@ -222,8 +237,8 @@ namespace Ethane {
             // {0.5f, 0.5f },
             // {-0.5f, 0.5f},
         };
-        ETH_CORE_TRACE("{0}", sizeof(vertices[0])* vertices.size());
-        m_VertexBuffer = CreateRef<VulkanVertexBuffer>((void*)vertices.data(), sizeof(vertices[0])*vertices.size());
+        if(m_VertexBuffer == nullptr)
+            m_VertexBuffer = CreateRef<VulkanVertexBuffer>((void*)vertices.data(), sizeof(vertices[0])*vertices.size());
         for (size_t i = 0; i < m_CommandBuffers.size(); i++) {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -272,6 +287,10 @@ namespace Ethane {
                 throw std::runtime_error("failed to record command buffer!");
             }
         }
+
+        // profiling
+        ETH_CORE_INFO("extra {0}", timer.ElapsedMillis());
+        timer.Reset();
     }
 
     // private func 
@@ -483,7 +502,7 @@ namespace Ethane {
         VK_CHECK_RESULT(result);
     }
 
-    void VulkanSwapChain::CleanupSwapChain() {
+    void VulkanSwapChain::CleanupSwapChain(VkSwapchainKHR swapchain) {
         VkDevice device = m_Device->GetVulkanDevice();
 
         for (auto framebuffer : m_Framebuffers) {
@@ -492,22 +511,22 @@ namespace Ethane {
 
         vkFreeCommandBuffers(device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 
-        // TODO: test
-        m_Pipeline->Cleanup();
-
         vkDestroyRenderPass(device, m_RenderPass, nullptr); // test
 
         for (auto imageView : m_ImageViews) {
             vkDestroyImageView(device, imageView, nullptr);
         }
 
-        vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
     }
 
     void VulkanSwapChain::Cleanup() {
         VkDevice device = m_Device->GetVulkanDevice();
 
-        CleanupSwapChain();
+        CleanupSwapChain(m_SwapChain);
+
+        // TODO: test
+        m_Pipeline->Cleanup();
 
         // TODO: remove this 
         m_VertexBuffer->Cleanup();

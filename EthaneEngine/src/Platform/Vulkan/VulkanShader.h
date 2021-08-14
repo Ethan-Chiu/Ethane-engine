@@ -6,11 +6,15 @@
 
 namespace Ethane {
 
-	class VulkanShader : public Shader 
+	class VulkanShader : public Shader
 	{
 	public:
+		VulkanShader() = default;
 		VulkanShader(const std::string& filepath);
+		VulkanShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {}; // temp
 		virtual ~VulkanShader();
+
+		void Cleanup();
 
 		// temp
 		virtual void Bind() const override {};

@@ -94,6 +94,15 @@ namespace Ethane {
 	{
 	}
 
+	void VulkanShader::Cleanup()
+	{
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		for (auto&& [flag, shadermodule] : m_ShaderModule)
+		{
+			vkDestroyShaderModule(device, shadermodule, nullptr);
+		}
+	}
+
 	std::unordered_map<VkShaderStageFlagBits, std::string> VulkanShader::PreProcess(const std::string& source)
 	{
 		ETH_PROFILE_FUNCTION();

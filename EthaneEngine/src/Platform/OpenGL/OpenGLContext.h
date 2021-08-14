@@ -14,6 +14,8 @@ namespace Ethane {
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
 
+		virtual void OnResize(uint32_t width, uint32_t height) {}
+
 		// TODO: test
 		virtual void ShutDown() override {}
 	private:
