@@ -13,8 +13,11 @@ namespace Ethane {
 		VulkanIndexBuffer(void* data, uint32_t size = 0);
 		virtual ~VulkanIndexBuffer();
 
+		void Cleanup();
+
 		void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override;
 		virtual void Bind() const override {};
+		virtual void Unbind() const override {};
 
 		virtual uint32_t GetCount() const override { return m_Size / sizeof(uint32_t); }
 

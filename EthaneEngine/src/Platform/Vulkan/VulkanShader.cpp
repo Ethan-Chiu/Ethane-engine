@@ -88,6 +88,8 @@ namespace Ethane {
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
 		CompileOrGetVulkanBinaries(shaderSources, shaderData, true);
 		CreatePipelineShaderStage(shaderData);
+		Reflect(shaderData);
+		CreateDescriptorLayouts();
 	}
 
 	VulkanShader::~VulkanShader()
@@ -97,8 +99,14 @@ namespace Ethane {
 	void VulkanShader::Cleanup()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		for (auto&& [flag, shadermodule] : m_ShaderModule)
+		for (auto descriptorSetLayout : m_DescriptorSetLayouts)
 		{
+			vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+		}
+
+		for (auto& [flag, shadermodule] : m_ShaderModule)
+		{
+			ETH_CORE_INFO("123 {0}", Utils::GLShaderStageToString(flag));
 			vkDestroyShaderModule(device, shadermodule, nullptr);
 		}
 	}
@@ -207,7 +215,17 @@ namespace Ethane {
 		}
 	}
 
-	void VulkanShader::Reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData)
+	void VulkanShader::Reflect(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
+	{
+		for (auto [stage, data] : shaderData)
+		{
+			ReflectStage(stage, data);
+		}
+	}
+
+	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
+
+	void VulkanShader::ReflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
 
@@ -216,7 +234,6 @@ namespace Ethane {
 
 		ETH_CORE_TRACE("VulkanShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_FilePath);
 
-#ifdef reflect
 		ETH_CORE_TRACE("    {0} uniform buffers", res.uniform_buffers.size());
 		for (const auto& resource : res.uniform_buffers)
 		{
@@ -229,31 +246,103 @@ namespace Ethane {
 
 			if (descriptorSet >= m_ShaderDescriptorSets.size())
 				m_ShaderDescriptorSets.resize(descriptorSet + 1);
-
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			
+			ShaderDescriptorSetData& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
 			if (s_UniformBuffers[descriptorSet].find(binding) == s_UniformBuffers[descriptorSet].end())
 			{
 				UniformBuffer* uniformBuffer = new UniformBuffer();
-				uniformBuffer->BindingPoint = binding;
-				uniformBuffer->Size = size;
+				// uniformBuffer->BindingPoint = binding;
+				uniformBuffer->Size = bufferSize;
 				uniformBuffer->Name = name;
 				uniformBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
 				s_UniformBuffers.at(descriptorSet)[binding] = uniformBuffer;
 			}
 			else
 			{
-				UniformBuffer* uniformBuffer = s_UniformBuffers.at(descriptorSet).at(binding);
-				if (size > uniformBuffer->Size)
-					uniformBuffer->Size = size;
-
+				UniformBuffer* uniformBuffer = s_UniformBuffers[descriptorSet][binding];
+				if (bufferSize > uniformBuffer->Size)
+					uniformBuffer->Size = bufferSize;
+			
 			}
 
-			shaderDescriptorSet.UniformBuffers[binding] = s_UniformBuffers.at(descriptorSet).at(binding);
+			shaderDescriptorSet.UniformBuffers[binding] = s_UniformBuffers[descriptorSet][binding];
 
 			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 			ETH_CORE_TRACE("  Member Count: {0}", memberCount);
-			ETH_CORE_TRACE("  Size: {0}", size);
+			ETH_CORE_TRACE("  Size: {0}", bufferSize);
 			ETH_CORE_TRACE("-------------------");
+		}
+
+
+
+		ETH_CORE_INFO("Sampled Images:");
+		for (const auto& resource : res.sampled_images)
+		{
+			const auto& name = resource.name;
+			auto& baseType = compiler.get_type(resource.base_type_id);
+			auto& type = compiler.get_type(resource.type_id);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			uint32_t dimension = baseType.image.dim;
+			uint32_t arraySize = type.array[0];
+			if (arraySize == 0)
+				arraySize = 1;
+			if (descriptorSet >= m_ShaderDescriptorSets.size())
+				m_ShaderDescriptorSets.resize(descriptorSet + 1);
+
+			ShaderDescriptorSetData& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
+			imageSampler.DescriptorSet = descriptorSet;
+			imageSampler.Name = name;
+			imageSampler.ShaderStage = stage;
+			imageSampler.ArraySize = arraySize;
+			// imageSampler.BindingPoint = binding;
+
+			// m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+
+			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+		}
+
+#ifdef reflect
+
+		ETH_CORE_INFO("Push Constant Buffers:");
+		for (const auto& resource : res.push_constant_buffers)
+		{
+			const auto& bufferName = resource.name;
+			auto& bufferType = compiler.get_type(resource.base_type_id);
+			uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+			uint32_t memberCount = uint32_t(bufferType.member_types.size());
+			uint32_t bufferOffset = 0;
+			if (m_PushConstantRanges.size())
+				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
+
+			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
+			pushConstantRange.ShaderStage = shaderStage;
+			pushConstantRange.Size = bufferSize - bufferOffset;
+			pushConstantRange.Offset = bufferOffset;
+
+			// Skip empty push constant buffers - these are for the renderer only
+			if (bufferName.empty() || bufferName == "u_Renderer")
+				continue;
+
+			ShaderBuffer& buffer = m_Buffers[bufferName];
+			buffer.Name = bufferName;
+			buffer.Size = bufferSize - bufferOffset;
+
+			ETH_CORE_TRACE("  Name: {0}", bufferName);
+			ETH_CORE_TRACE("  Member Count: {0}", memberCount);
+			ETH_CORE_TRACE("  Size: {0}", bufferSize);
+
+			for (uint32_t i = 0; i < memberCount; i++)
+			{
+				const auto& memberName = compiler.get_member_name(bufferType.self, i);
+				auto type = compiler.get_type(bufferType.member_types[i]);
+				auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
+				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
+
+				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
+			}
 		}
 
 		ETH_CORE_INFO("Storage Buffers:");
@@ -294,74 +383,6 @@ namespace Ethane {
 			ETH_CORE_TRACE("-------------------");
 		}
 
-		ETH_CORE_INFO("Push Constant Buffers:");
-		for (const auto& resource : resources.push_constant_buffers)
-		{
-			const auto& bufferName = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
-			uint32_t memberCount = uint32_t(bufferType.member_types.size());
-			uint32_t bufferOffset = 0;
-			if (m_PushConstantRanges.size())
-				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
-
-			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
-			pushConstantRange.ShaderStage = shaderStage;
-			pushConstantRange.Size = bufferSize - bufferOffset;
-			pushConstantRange.Offset = bufferOffset;
-
-			// Skip empty push constant buffers - these are for the renderer only
-			if (bufferName.empty() || bufferName == "u_Renderer")
-				continue;
-
-			ShaderBuffer& buffer = m_Buffers[bufferName];
-			buffer.Name = bufferName;
-			buffer.Size = bufferSize - bufferOffset;
-
-			ETH_CORE_TRACE("  Name: {0}", bufferName);
-			ETH_CORE_TRACE("  Member Count: {0}", memberCount);
-			ETH_CORE_TRACE("  Size: {0}", bufferSize);
-
-			for (uint32_t i = 0; i < memberCount; i++)
-			{
-				auto type = compiler.get_type(bufferType.member_types[i]);
-				const auto& memberName = compiler.get_member_name(bufferType.self, i);
-				auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
-				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
-
-				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
-			}
-		}
-
-		ETH_CORE_INFO("Sampled Images:");
-		for (const auto& resource : resources.sampled_images)
-		{
-			const auto& name = resource.name;
-			auto& baseType = compiler.get_type(resource.base_type_id);
-			auto& type = compiler.get_type(resource.type_id);
-			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-			uint32_t dimension = baseType.image.dim;
-			uint32_t arraySize = type.array[0];
-			if (arraySize == 0)
-				arraySize = 1;
-			if (descriptorSet >= m_ShaderDescriptorSets.size())
-				m_ShaderDescriptorSets.resize(descriptorSet + 1);
-
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
-			imageSampler.BindingPoint = binding;
-			imageSampler.DescriptorSet = descriptorSet;
-			imageSampler.Name = name;
-			imageSampler.ShaderStage = shaderStage;
-			imageSampler.ArraySize = arraySize;
-
-			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
-
-			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
-		}
-
 		ETH_CORE_INFO("Storage Images:");
 		for (const auto& resource : resources.storage_images)
 		{
@@ -389,10 +410,161 @@ namespace Ethane {
 		ETH_CORE_INFO("===========================");
 
 #endif
+
 	}
 
-	void VulkanShader::CreateDescriptors()
+	void VulkanShader::CreateDescriptorLayouts()
 	{
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		// m_TypeCounts.clear();
+		for (uint32_t set = 0; set < m_ShaderDescriptorSets.size(); set++)
+		{
+			auto& shaderDescriptorSet = m_ShaderDescriptorSets[set];
 
+			// Uniform Buffers
+			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+			for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.binding = binding;
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = uniformBuffer->ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer->Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType;
+				set.dstBinding = layoutBinding.binding;
+				set.descriptorCount = 1;
+			}
+
+			// Image Sampler
+			for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
+			{
+				auto& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.binding = binding;
+				layoutBinding.descriptorCount = imageSampler.ArraySize;
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.stageFlags = imageSampler.ShaderStage;
+
+				ETH_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present!");
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[imageSampler.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType;
+				set.dstBinding = layoutBinding.binding;
+				set.descriptorCount = imageSampler.ArraySize;
+			}
+
+			VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+			descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descriptorLayout.pNext = nullptr;
+			descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
+			descriptorLayout.pBindings = layoutBindings.data();
+
+			ETH_CORE_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
+				shaderDescriptorSet.UniformBuffers.size(), 0, 0, 0);
+				// shaderDescriptorSet.StorageBuffers.size(),
+				// shaderDescriptorSet.ImageSamplers.size(),
+				// shaderDescriptorSet.StorageImages.size());
+			if (set >= m_DescriptorSetLayouts.size())
+				m_DescriptorSetLayouts.resize((size_t)(set + 1));
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayouts[set]));
+		}
+	}
+
+	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts()
+	{
+		std::vector<VkDescriptorSetLayout> result;
+		result.reserve(m_DescriptorSetLayouts.size());
+		for (auto& layout : m_DescriptorSetLayouts)
+			result.emplace_back(layout);
+
+		return result;
+	}
+
+	const VkWriteDescriptorSet* VulkanShader::GetWriteDescriptorSet(uint32_t set, const std::string& name) const
+	{
+		ETH_CORE_ASSERT(set < m_ShaderDescriptorSets.size());
+		ETH_CORE_ASSERT(m_ShaderDescriptorSets[set]);
+		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
+		{
+			ETH_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			return nullptr;
+		}
+		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
+	}
+
+	VulkanShader::DescriptorSetsAndPool VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
+	{
+		DescriptorSetsAndPool result;
+
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+
+		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> poolSizes;
+		for (uint32_t set = 0; set < m_ShaderDescriptorSets.size(); set++)
+		{
+			auto& shaderDescriptorSet = m_ShaderDescriptorSets[set];
+			if (!shaderDescriptorSet) // Empty descriptor set
+				continue;
+
+			if (shaderDescriptorSet.UniformBuffers.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
+			}
+			// if (shaderDescriptorSet.StorageBuffers.size())
+			// {
+			// 	VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+			// 	typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			// 	typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageBuffers.size() * numberOfSets;
+			// }
+			if (shaderDescriptorSet.ImageSamplers.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+				uint32_t descriptorSetCount = 0;
+				for (auto&& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
+					descriptorSetCount += imageSampler.ArraySize;
+			
+				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				typeCount.descriptorCount = descriptorSetCount * numberOfSets;
+			}
+			// if (shaderDescriptorSet.StorageImages.size())
+			// {
+			// 	VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+			// 	typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			// 	typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageImages.size() * numberOfSets;
+			// }
+
+		}
+
+		ETH_CORE_ASSERT(poolSizes.find(set) != poolSizes.end());
+
+		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolInfo.pNext = nullptr;
+		descriptorPoolInfo.poolSizeCount = (uint32_t)poolSizes.at(set).size();
+		descriptorPoolInfo.pPoolSizes = poolSizes.at(set).data();
+		descriptorPoolInfo.maxSets = numberOfSets;
+
+		ETH_CORE_INFO("create pool size: {0}", (uint32_t)poolSizes.at(set).size());
+
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
+
+		std::vector<VkDescriptorSetLayout> layouts(numberOfSets, m_DescriptorSetLayouts[set]);
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = result.Pool;
+		allocInfo.descriptorSetCount = numberOfSets;
+		allocInfo.pSetLayouts = layouts.data();
+
+		result.DescriptorSets.resize(numberOfSets);
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
+		return result;
 	}
 }

@@ -3,6 +3,7 @@
 #include "Ethane/Core/Base.h"
 
 #include "Shader.h"
+#include "RenderPass.h"
 #include "VertexBuffer.h"
 
 namespace Ethane {
@@ -10,6 +11,7 @@ namespace Ethane {
 	struct PipelineSpecification
 	{
 		Ref<Shader> Shader;
+		Ref<RenderPass> RenderPass;
 		VertexBufferLayout Layout;
 	};
 

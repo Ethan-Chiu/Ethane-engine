@@ -132,13 +132,11 @@ namespace Ethane {
 		m_PhysicalDevice = VulkanPhysicalDevice::Pick(m_SwapChain.GetSurface());
 
 		VkPhysicalDeviceFeatures enabledFeatures{VK_FALSE};
+		enabledFeatures.samplerAnisotropy = VK_TRUE;
 		m_Device = VulkanDevice::Create(m_PhysicalDevice, enabledFeatures);
 
 		uint32_t width = 1280, height = 720;
 		m_SwapChain.Create(m_Device, &width, &height, false);
-
-
-
 
 		// command pool
 		// draw command buffer

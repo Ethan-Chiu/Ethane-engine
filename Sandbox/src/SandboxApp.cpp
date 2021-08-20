@@ -2,10 +2,14 @@
 //-----EntryPoint-----
 #include <Ethane/Core/EntryPoint.h>
 
+
 using namespace Ethane;
 
 class ExampleLayer : public Ethane::Layer
 {
+private:
+    
+
 public:
 	ExampleLayer()
 		:Layer("Example")
@@ -20,13 +24,7 @@ public:
 
 	virtual void OnAttach() override
 	{
-		FramebufferSpecification framebufferSpec;
-		framebufferSpec.SwapChainTarget = true;
-
-		RenderPassSpecification renderPassSpec;
-		// renderPassSpec.TargetFramebuffer = Framebuffer::Create(framebufferSpec);
-
-		// m_RenderPass = RenderPass::Create(renderPassSpec);
+        
 	}
 
 	virtual void OnDetach() override

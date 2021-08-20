@@ -4,6 +4,7 @@
 #include "RendererAPI.h"
 
 #include "Platform/OpenGL/OpenGLRenderPass.h"
+#include "Platform/Vulkan/VulkanRenderPass.h"
 
 namespace Ethane {
 	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec)
@@ -15,6 +16,8 @@ namespace Ethane {
 			return nullptr;
 		case RendererAPI::API::OpenGL:
 			return CreateRef<OpenGLRenderPass>(spec);
+		case RendererAPI::API::Vulkan:
+			return CreateRef<VulkanRenderPass>(spec);
 		}
 
 		ETH_CORE_ASSERT(false, "Unknpwn RendererAPI");

@@ -3,9 +3,6 @@
 #include "Vulkan.h"
 #include "Ethane/Renderer/Pipeline.h"
 
-// TODO: remove this
-#include "VulkanShader.h"
-
 namespace Ethane {
 
 	class VulkanPipeline : public Pipeline
@@ -13,9 +10,9 @@ namespace Ethane {
 
 	public:
 		VulkanPipeline() = default;
-		VulkanPipeline(VkRenderPass renderPass, VertexBufferLayout layout);
-		VulkanPipeline(PipelineSpecification spec) {}
-		~VulkanPipeline();
+		VulkanPipeline(const PipelineSpecification& spec);
+		// VulkanPipeline(Ref<VulkanShader> vulkanShader, VkRenderPass renderPass, VertexBufferLayout layout);
+		virtual ~VulkanPipeline() override;
 		void Cleanup();
 
 		void Invalidate() override;
@@ -25,18 +22,20 @@ namespace Ethane {
 
 		// Getter
 		VkPipeline GetVulkanPipeline() { return m_GraphicsPipeline; }
-		virtual PipelineSpecification& GetSpecification() { return m_Specification; }
-		virtual const PipelineSpecification& GetSpecification() const { return m_Specification; }
+		VkPipelineLayout GetPipelineLayout() { return m_PipelineLayout; }
+		virtual PipelineSpecification& GetSpecification() override { return m_Specification; }
+		virtual const PipelineSpecification& GetSpecification() const override { return m_Specification; }
 	private:
 		PipelineSpecification m_Specification;
 
 		VkPipeline m_GraphicsPipeline;
 		VkPipelineLayout m_PipelineLayout; // test 
 
-		VkRenderPass m_RenderPass; // TODO: remove this temp
-		VertexBufferLayout m_Layout; // TODO: remove this temp
 
-		Ref<VulkanShader> m_VulkanShader; // TODO: remove test
+
+		// Ref<VulkanShader> m_VulkanShader; // TODO: remove test
+		// VkRenderPass m_RenderPass; // TODO: remove this temp
+		// VertexBufferLayout m_Layout; // TODO: remove this temp
 
 	};
 

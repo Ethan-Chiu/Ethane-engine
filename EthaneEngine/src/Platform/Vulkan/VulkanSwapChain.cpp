@@ -1,4 +1,7 @@
 #include "ethpch.h"
+
+#define GLM_FORECE_DEPT_ZERO_TO_ONE // TODO: move
+
 #include "VulkanSwapChain.h"
 
 #include <GLFW/glfw3.h>
@@ -38,8 +41,14 @@ namespace Ethane {
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        VkExtent2D m_Extent = chooseSwapExtent(swapChainSupport.capabilities);
+        m_Extent = chooseSwapExtent(swapChainSupport.capabilities);
         m_ImageFormat = surfaceFormat.format;
+        m_DepthFormat = findSupportedFormat(
+            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
+        ETH_CORE_INFO("{0}, {1}", m_Extent.width, m_Extent.height);
 
         // profiling
         ETH_CORE_INFO("chhose {0}", timer.ElapsedMillis());
@@ -154,14 +163,21 @@ namespace Ethane {
         // Render pass
         CreateRenderPass();
 
+        // Create depth resources
+        CreateDepthResources();
+
         // Framebuffers 
         m_Framebuffers.resize(m_ImageViews.size());
-        VkImageView attachments[1];
+
+        std::array<VkImageView, 2> attachments = {
+            m_ImageViews[0],
+            m_DepthImageView
+        };
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = m_RenderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = m_Extent.width;
         framebufferInfo.height = m_Extent.height;
         framebufferInfo.layers = 1;
@@ -217,37 +233,94 @@ namespace Ethane {
         // profiling
         ETH_CORE_INFO("create {0}", timer.ElapsedMillis());
         timer.Reset();
-
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // TODO: remove this test 
         VertexBufferLayout layout = {
-                { ShaderDataType::Float2, "a_Position" },
-                { ShaderDataType::Float3, "a_Color" }
+                { ShaderDataType::Float3, "a_Position" },
+                { ShaderDataType::Float3, "a_Color" },
+                { ShaderDataType::Float2, "a_TexCoord" }
         };
-        if(m_Pipeline == nullptr)
-            m_Pipeline = CreateRef<VulkanPipeline>(m_RenderPass, layout);
+        Ref<VulkanShader> vulkanShader = CreateRef<VulkanShader>("assets/shaders/test.glsl");
+
+
+        RenderPassSpecification renderPassSpec{};
+        Ref<VulkanRenderPass> renderPass = CreateRef<VulkanRenderPass>( renderPassSpec, m_RenderPass );
+        PipelineSpecification pipelineSpec{ vulkanShader, renderPass, layout};
+        if (m_Pipeline == nullptr)
+            m_Pipeline = CreateRef<VulkanPipeline>(pipelineSpec);
+
+
+        VulkanShader::DescriptorSetsAndPool descriptorSets = vulkanShader->CreateDescriptorSets(0, MAX_FRAMES_IN_FLIGHT);
+
+        // Creaet Texture
+        m_Texture2D = CreateRef<VulkanTexture2D>("assets/textures/test.png");
+
+        // TODO: move
+        // create uniform buffer & update descriptor sets
+        m_UniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+        for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            std::vector<VkWriteDescriptorSet> writeDescriptors{};
+
+            // Uniform buffer
+            m_UniformBuffers[i] = CreateRef<VulkanUniformBuffer>(sizeof(glm::mat4), 0);
+            VkWriteDescriptorSet& uboWriteDescriptor = writeDescriptors.emplace_back();
+            uboWriteDescriptor = *vulkanShader->GetWriteDescriptorSet(0, "UniformBufferObject");
+            uboWriteDescriptor.dstSet = descriptorSets.DescriptorSets[i];
+            uboWriteDescriptor.dstArrayElement = 0;
+            uboWriteDescriptor.pBufferInfo = &m_UniformBuffers[i]->GetDescriptorBufferInfo();
+
+            // Image Sampler
+            VkWriteDescriptorSet& samplerWriteDescriptor = writeDescriptors.emplace_back();
+            samplerWriteDescriptor = *vulkanShader->GetWriteDescriptorSet(0, "u_Texture");
+            samplerWriteDescriptor.dstSet = descriptorSets.DescriptorSets[i];
+            samplerWriteDescriptor.dstArrayElement = 0;
+            samplerWriteDescriptor.pImageInfo = &m_Texture2D->GetDescriptorImageInfo();
+            vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
+        }
+        
+
         struct Vertex {
-            glm::vec2 pos;
+            glm::vec3 pos;
             glm::vec3 color;
+            glm::vec2 texCoord;
         };
         const std::vector<Vertex> vertices = {
-            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} },
-            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-            {{-0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
+            {{-0.5f, -0.5f,  0.0}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f,  0.0}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+            {{ 0.5f,  0.5f,  0.0}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+            {{-0.5f,  0.5f,  0.0}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+            {{-0.5f, -0.5f, -0.5}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f, -0.5}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+            {{ 0.5f,  0.5f, -0.5}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+            {{-0.5f,  0.5f, -0.5}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
             // {0.0f, -0.5f},
             // {0.5f, 0.5f },
             // {-0.5f, 0.5f},
         };
-        if(m_VertexBuffer == nullptr)
-            m_VertexBuffer = CreateRef<VulkanVertexBuffer>((void*)vertices.data(), sizeof(vertices[0])*vertices.size());
+        if (m_VertexBuffer == nullptr)
+            m_VertexBuffer = CreateRef<VulkanVertexBuffer>((void*)vertices.data(), sizeof(vertices[0]) * vertices.size());
+
+        const std::vector<uint32_t> indices = {
+            0, 1, 2, 2, 3, 0,
+            4, 5, 6, 6, 7, 4
+        };
+        if (m_IndexBuffer == nullptr)
+            m_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(), sizeof(indices[0]) * indices.size());
+
         for (size_t i = 0; i < m_CommandBuffers.size(); i++) {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             beginInfo.flags = 0; // Optional
             beginInfo.pInheritanceInfo = nullptr; // Optional
 
-            if (vkBeginCommandBuffer(m_CommandBuffers[i], &beginInfo) != VK_SUCCESS) {
-                throw std::runtime_error("failed to begin recording command buffer!");
-            }
+            VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffers[i], &beginInfo));
+
+            std::array<VkClearValue, 2> clearValues{};
+            clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+            clearValues[1].depthStencil = { 1.0f, 0 };
 
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -255,9 +328,8 @@ namespace Ethane {
             renderPassInfo.framebuffer = m_Framebuffers[i];
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = m_Extent;
-            VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearColor;
+            renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
+            renderPassInfo.pClearValues = clearValues.data();
             vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             VkViewport viewport{};
@@ -276,18 +348,26 @@ namespace Ethane {
 
             vkCmdBindPipeline(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->GetVulkanPipeline());
 
-            VkBuffer buffer = m_VertexBuffer->GetVulkanBuffer();
+            VkBuffer vertexbuffer = m_VertexBuffer->GetVulkanBuffer();
             VkDeviceSize offsets[] = { 0 };
-            vkCmdBindVertexBuffers(m_CommandBuffers[i], 0, 1, &buffer, offsets);
+            vkCmdBindVertexBuffers(m_CommandBuffers[i], 0, 1, &vertexbuffer, offsets);
 
-            vkCmdDraw(m_CommandBuffers[i], 3, 1, 0, 0);
+            VkBuffer indexbuffer = m_IndexBuffer->GetVulkanBuffer();
+            vkCmdBindIndexBuffer(m_CommandBuffers[i], indexbuffer, 0, VK_INDEX_TYPE_UINT32);
+
+            VkDescriptorSet _descriptorSet = descriptorSets.DescriptorSets[i];
+            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->GetPipelineLayout(), 0, 1, &_descriptorSet, 0, nullptr);
+
+            vkCmdDrawIndexed(m_CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+            // vkCmdDraw(m_CommandBuffers[i], 3, 1, 0, 0);
 
             vkCmdEndRenderPass(m_CommandBuffers[i]);
             if (vkEndCommandBuffer(m_CommandBuffers[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to record command buffer!");
             }
         }
-
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // profiling
         ETH_CORE_INFO("extra {0}", timer.ElapsedMillis());
         timer.Reset();
@@ -368,25 +448,134 @@ namespace Ethane {
         }
     }
 
+    VkFormat VulkanSwapChain::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+
+        for (VkFormat format : candidates) {
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice->GetVulkanPhysicalDevice(), format, &props);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+                return format;
+            }
+            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+
+            ETH_CORE_ASSERT("failed to find supported format!");
+        }
+
+    }
+
+    // TODO
+    uint32_t VulkanSwapChain::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    {
+        auto physicalDevice = m_PhysicalDevice->GetVulkanPhysicalDevice();
+
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+    }
+
+    void VulkanSwapChain::CreateDepthResources()
+    {
+        auto device = m_Device->GetVulkanDevice();
+
+        // TODO:
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = m_Extent.width;
+        imageInfo.extent.height = m_Extent.height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = m_DepthFormat;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.flags = 0; // Optional
+
+        if (vkCreateImage(device, &imageInfo, nullptr, &m_DepthImage) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create image!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetImageMemoryRequirements(device, m_DepthImage, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        if (vkAllocateMemory(device, &allocInfo, nullptr, &m_DepthImageMemory) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate image memory!");
+        }
+
+        vkBindImageMemory(device, m_DepthImage, m_DepthImageMemory, 0);
+ 
+        // Create ImageView TODO: remove
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = m_DepthImage;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = m_DepthFormat;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        VK_CHECK_RESULT(vkCreateImageView(device, &viewInfo, nullptr, &m_DepthImageView));
+    }
+
+
+
     void VulkanSwapChain::CreateRenderPass() {
+        
+        std::array<VkAttachmentDescription, 2> attachments = {};
+        // Color attachment
         VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = m_ImageFormat;
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        attachments[0].format = m_ImageFormat;
+        attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+        attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        // Depth attachment
+        VkAttachmentDescription depthAttachment{};
+        attachments[1].format = m_DepthFormat;
+        attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+        attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+
         VkSubpassDescription subpass{};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
         VkSubpassDependency dependency{};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -398,8 +587,8 @@ namespace Ethane {
 
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassInfo.pAttachments = attachments.data();
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
         renderPassInfo.dependencyCount = 1;
@@ -453,6 +642,19 @@ namespace Ethane {
 
         vkResetFences(device, 1, &m_InFlightFences[m_CurrentFrame]);
         VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]));
+
+        // TODO: test
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        glm::mat4 model = glm::rotate(glm::mat4(1.0), m_CurrentFrame* 1.0f * glm::radians(90.0f), glm::vec3(0, 0, 1));
+        glm::mat4 proj = glm::perspectiveFov(45.0f, (float)m_Width, (float)m_Height, 0.001f, 1000.0f);
+        glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0), {0.0, 0.0, 4.0}));
+        glm::mat4 viewproj = proj * view;
+        // viewproj = glm::mat4(1.0);
+        m_UniformBuffers[m_CurrentFrame]->SetData(&viewproj, sizeof(viewproj));
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         PresentQueue(m_Device->GetGraphicsQueue(), signalSemaphores);
 
@@ -517,6 +719,10 @@ namespace Ethane {
             vkDestroyImageView(device, imageView, nullptr);
         }
 
+        vkDestroyImageView(device, m_DepthImageView, nullptr);
+        vkDestroyImage(device, m_DepthImage, nullptr);
+        vkFreeMemory(device, m_DepthImageMemory, nullptr);
+
         vkDestroySwapchainKHR(device, swapchain, nullptr);
     }
 
@@ -530,6 +736,14 @@ namespace Ethane {
 
         // TODO: remove this 
         m_VertexBuffer->Cleanup();
+        m_IndexBuffer->Cleanup();
+
+        m_Texture2D->Cleanup();
+
+        for (auto ubo : m_UniformBuffers)
+        {
+            ubo->Cleanup();
+        }
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);

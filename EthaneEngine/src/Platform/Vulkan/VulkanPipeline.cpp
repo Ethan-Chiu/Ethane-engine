@@ -3,6 +3,10 @@
 
 #include "VulkanContext.h"
 
+// TODO: 
+#include "VulkanShader.h"
+#include "VulkanRenderPass.h"
+
 namespace Ethane {
 
 	namespace Utils {
@@ -20,11 +24,18 @@ namespace Ethane {
 		}
 	}
 
-	VulkanPipeline::VulkanPipeline(VkRenderPass renderPass, VertexBufferLayout layout)
-		:m_RenderPass(renderPass), m_Layout(layout)
+	VulkanPipeline::VulkanPipeline(const PipelineSpecification& spec)
+		:m_Specification(spec)
 	{
 		Invalidate();
 	}
+
+
+	// VulkanPipeline::VulkanPipeline(Ref<VulkanShader> vulkanShader, VkRenderPass renderPass, VertexBufferLayout layout)
+	// 	:m_VulkanShader(vulkanShader), m_RenderPass(renderPass), m_Layout(layout)
+	// {
+	// 	Invalidate();
+	// }
 
 	VulkanPipeline::~VulkanPipeline()
 	{
@@ -33,7 +44,7 @@ namespace Ethane {
 	void VulkanPipeline::Cleanup()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		m_VulkanShader->Cleanup();
+		std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader)->Cleanup(); // TODO test
 		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 	}
@@ -41,20 +52,22 @@ namespace Ethane {
 	void VulkanPipeline::Invalidate()
 	{
 		// Shader Stage
-		// TODO: remove this
-		m_VulkanShader = CreateRef<VulkanShader>( "assets/shaders/test.glsl" );
-		const auto& shaderStages = m_VulkanShader->GetPipelineShaderStageCreateInfos();
+		// TODO: test
+		Ref<VulkanShader> vulkanShader = std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader);
+
+		const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
 
 		// Fixed Function 
 		// vertex input
 		// TODO:
+		VertexBufferLayout layout = m_Specification.Layout;
 		VkVertexInputBindingDescription vertexInputBinding = {};
 		vertexInputBinding.binding = 0;
-		vertexInputBinding.stride = m_Layout.GetStride();
+		vertexInputBinding.stride = layout.GetStride();
 		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(m_Layout.GetElementCount());
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(layout.GetElementCount());
 		uint32_t location = 0;
-		for (auto element : m_Layout)
+		for (auto element : layout)
 		{
 			attributeDescriptions[location].binding = 0;
 			attributeDescriptions[location].location = location;
@@ -117,6 +130,17 @@ namespace Ethane {
 		multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
 		// depth and stencil testing
+		VkPipelineDepthStencilStateCreateInfo depthStencil{};
+		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencil.depthTestEnable = VK_TRUE;
+		depthStencil.depthWriteEnable = VK_TRUE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthBoundsTestEnable = VK_FALSE;
+		depthStencil.minDepthBounds = 0.0f; // Optional
+		depthStencil.maxDepthBounds = 1.0f; // Optional
+		depthStencil.stencilTestEnable = VK_FALSE;
+		depthStencil.front = {}; // Optional
+		depthStencil.back = {}; // Optional
 
 		// color blending
 		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
@@ -162,27 +186,26 @@ namespace Ethane {
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &rasterizer;
 		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pDepthStencilState = nullptr; // Optional
+		pipelineInfo.pDepthStencilState = &depthStencil; // Optional
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState; // Optional
 
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
 
-		// TODO: remove this
+		// TODO: push constant
+		auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
+		pipelineLayoutInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
-		if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) !=
-			VK_SUCCESS) {
-			throw std::runtime_error("failed to create pipeline layout!");
-		}
+		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 		pipelineInfo.layout = m_PipelineLayout;
 
 		// TODO: 
-		pipelineInfo.renderPass = m_RenderPass;
+		Ref<VulkanRenderPass> renderPass = std::dynamic_pointer_cast<VulkanRenderPass>(m_Specification.RenderPass);
+		pipelineInfo.renderPass = renderPass->GetVulkanRenderPass();
 		pipelineInfo.subpass = 0;
 
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional

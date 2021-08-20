@@ -9,6 +9,42 @@ namespace Ethane {
 	class VulkanShader : public Shader
 	{
 	public:
+		struct UniformBuffer
+		{
+			std::string Name;
+			uint32_t Size = 0;
+			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+			VkDescriptorBufferInfo Descriptor;
+			// uint32_t BindingPoint = 0;
+		};
+
+		struct ImageSampler
+		{
+			std::string Name;
+			uint32_t DescriptorSet = 0;
+			uint32_t ArraySize = 0;
+			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+			// uint32_t BindingPoint = 0;
+		};
+
+		struct ShaderDescriptorSetData
+		{
+			std::unordered_map<uint32_t, UniformBuffer*> UniformBuffers;
+			std::unordered_map<uint32_t, ImageSampler> ImageSamplers;
+
+			std::unordered_map<std::string, VkWriteDescriptorSet> WriteDescriptorSets;
+
+			operator bool() const { return !(UniformBuffers.empty()); }
+		};
+
+
+		struct DescriptorSetsAndPool
+		{
+			VkDescriptorPool Pool = nullptr;
+			std::vector<VkDescriptorSet> DescriptorSets;
+		};
+
+	public:
 		VulkanShader() = default;
 		VulkanShader(const std::string& filepath);
 		VulkanShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {}; // temp
@@ -23,6 +59,8 @@ namespace Ethane {
 		// Getter
 		virtual const std::string& GetName() const override { return  m_Name; }
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
+		const VkWriteDescriptorSet* GetWriteDescriptorSet(uint32_t set, const std::string& name) const;
 
 		// TODO: remove this
 		//Uniform
@@ -38,14 +76,26 @@ namespace Ethane {
 		void CompileOrGetVulkanBinaries(const std::unordered_map<VkShaderStageFlagBits, std::string>& shaderSources, 
 											  std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile = false);
 		void CreatePipelineShaderStage(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
-		void Reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData);
+		void Reflect(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
+		void ReflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData);
 
-		void CreateDescriptors();
+		void CreateDescriptorLayouts();
+	public:
+		DescriptorSetsAndPool CreateDescriptorSets(uint32_t set, uint32_t numberOfSets = 1);
 	private:
 		std::string m_FilePath;
 		std::string m_Name;
 
-		// std::vector<ShaderDescriptorSet> m_ShaderDescriptorSets;
+		// Datas from Reflect
+		std::vector<ShaderDescriptorSetData> m_ShaderDescriptorSets;
+		
+		// Discripter Set Layouts
+		std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
+
+		// Descriptor pool size info
+		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_DescriptorCounts;
+
+		// Descriptor sets
 
 		std::unordered_map<VkShaderStageFlagBits, VkShaderModule>  m_ShaderModule;
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;

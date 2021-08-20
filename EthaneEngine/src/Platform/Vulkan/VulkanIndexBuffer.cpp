@@ -50,6 +50,10 @@ namespace Ethane {
 
 	VulkanIndexBuffer::~VulkanIndexBuffer()
 	{
+	}
+
+	void VulkanIndexBuffer::Cleanup()
+	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 		vkDestroyBuffer(device, m_VulkanBuffer, nullptr);
 		vkFreeMemory(device, m_IndexBufferMemory, nullptr);

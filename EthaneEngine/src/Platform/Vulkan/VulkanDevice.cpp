@@ -107,7 +107,7 @@ namespace Ethane {
 		// 	swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		// }
 
-		if (!indices.isComplete() || !extensionsSupported)
+		if (!indices.isComplete() || !extensionsSupported || !deviceFeatures.samplerAnisotropy)
 			return 0;
 		
 		return score;
