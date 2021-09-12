@@ -2,6 +2,7 @@
 #include "Framebuffer.h"
 #include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLFramebuffer.h"
+#include "Platform/Vulkan/vulkanFramebuffer.h"
 
 namespace Ethane {
 
@@ -14,6 +15,8 @@ namespace Ethane {
 			return nullptr;
 		case RendererAPI::API::OpenGL:
 			return CreateRef<OpenGLFramebuffer>(spec);
+		case RendererAPI::API::Vulkan:
+			return CreateRef<VulkanFramebuffer>(spec);
 		}
 
 		ETH_CORE_ASSERT(false, "Unknpwn RendererAPI");

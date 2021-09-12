@@ -7,10 +7,7 @@ namespace Ethane {
 	class RenderCommand
 	{
 	public:
-		inline static void Init()
-		{
-			s_RendererAPI->Init();
-		}
+		static void Init();
 
 		inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 		{
@@ -37,7 +34,7 @@ namespace Ethane {
 			s_RendererAPI->DrawMesh(mesh, transform);
 		}
 	private:
-		static Scope<RendererAPI> s_RendererAPI;
+		static Ref<RendererAPI> s_RendererAPI;
 	};
 
 }

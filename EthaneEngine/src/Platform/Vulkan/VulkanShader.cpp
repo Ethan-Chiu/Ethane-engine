@@ -3,6 +3,8 @@
 #include "VulkanShader.h"
 #include "VulkanContext.h"
 
+#include "VulkanRendererAPI.h"
+
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 
@@ -73,6 +75,7 @@ namespace Ethane {
 	VulkanShader::VulkanShader(const std::string& filepath)
 	{
 		ETH_PROFILE_FUNCTION();
+		ETH_CORE_INFO("Create Shader: {0}", filepath);
 
 		Utils::CreateCacheDirectoryIfNeeded();
 
@@ -255,7 +258,7 @@ namespace Ethane {
 				uniformBuffer->Size = bufferSize;
 				uniformBuffer->Name = name;
 				uniformBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_UniformBuffers.at(descriptorSet)[binding] = uniformBuffer;
+				s_UniformBuffers[descriptorSet][binding] = uniformBuffer;
 			}
 			else
 			{
@@ -467,9 +470,8 @@ namespace Ethane {
 			descriptorLayout.pBindings = layoutBindings.data();
 
 			ETH_CORE_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
-				shaderDescriptorSet.UniformBuffers.size(), 0, 0, 0);
+				shaderDescriptorSet.UniformBuffers.size(), 0, shaderDescriptorSet.ImageSamplers.size(), 0);
 				// shaderDescriptorSet.StorageBuffers.size(),
-				// shaderDescriptorSet.ImageSamplers.size(),
 				// shaderDescriptorSet.StorageImages.size());
 			if (set >= m_DescriptorSetLayouts.size())
 				m_DescriptorSetLayouts.resize((size_t)(set + 1));
@@ -499,7 +501,7 @@ namespace Ethane {
 		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
 	}
 
-	VulkanShader::DescriptorSetsAndPool VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
+	VulkanShader::DescriptorSetsAndPool VulkanShader::CreateDescriptorSetsAndPool(uint32_t set, uint32_t numberOfSets)
 	{
 		DescriptorSetsAndPool result;
 
@@ -565,6 +567,29 @@ namespace Ethane {
 
 		result.DescriptorSets.resize(numberOfSets);
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
+		return result;
+	}
+
+	VulkanShader::DescriptorSetsAndPool VulkanShader::CreateDescriptorSets(uint32_t set)
+	{
+		ETH_CORE_ASSERT(set < m_DescriptorSetLayouts.size());
+		DescriptorSetsAndPool result;
+
+		if (m_ShaderDescriptorSets.empty())
+		{
+			ETH_CORE_INFO("Empty descriptor set {0}", set);
+			return result;
+		}
+
+		result.Pool = nullptr;
+
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
+		VkDescriptorSet descriptorSet = VulkanRendererAPI::AllocateDescriptorSet(allocInfo);
+		ETH_CORE_ASSERT(descriptorSet);
+		result.DescriptorSets.push_back(descriptorSet);
 		return result;
 	}
 }

@@ -42,11 +42,11 @@ namespace Ethane {
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
 
+		Ref<Shader> TextureShader;
 		Ref<Pipeline> QuadPipeline;
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<IndexBuffer> QuadIndexBuffer;
 
-		Ref<Shader> TextureShader;
 		Ref<Texture2D> WhiteTexture;
 
 		uint32_t QuadIndexCount = 0;
@@ -101,9 +101,28 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 		{
+			FramebufferSpecification framebufferSpec;
+			framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::Depth };
+			framebufferSpec.Samples = 1;
+			framebufferSpec.ClearOnLoad = false;
+			framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
+			framebufferSpec.DebugName = "Renderer2D Framebuffer";
+			// TODO: 
+			framebufferSpec.Width = 1600;
+			framebufferSpec.Height = 900;
+			Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+
+			RenderPassSpecification renderPassSpec;
+			renderPassSpec.TargetFramebuffer = framebuffer;
+			Ref<RenderPass> renderPass = RenderPass::Create(renderPassSpec);
+
 			s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 
+			s_Data.TextureShader = ShaderLibrary::Get("Texture");
+
 			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Shader = s_Data.TextureShader;
+			pipelineSpecification.RenderPass = renderPass;
 			pipelineSpecification.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float4, "a_Color" },
@@ -142,8 +161,6 @@ namespace Ethane {
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
-
-		s_Data.TextureShader = ShaderLibrary::Get("Texture");
 
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 

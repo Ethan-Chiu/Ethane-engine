@@ -26,6 +26,9 @@ namespace Ethane {
 
 		virtual ~Window() = default;
 
+		// TODO: test
+		virtual void BeginFrame() = 0;
+
 		virtual void OnUpdate() = 0;
 		virtual void OnResize(uint32_t width, uint32_t height) = 0;
 

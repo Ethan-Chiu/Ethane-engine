@@ -7,9 +7,11 @@ namespace Ethane {
 
 	void ShaderLibrary::Init()
 	{
-		// Load("assets/shaders/PBR_static.glsl");
-		// Load("assets/shaders/Texture.glsl");
+		Load("assets/shaders/Texture.glsl");
+		Load("assets/shaders/PBR_static.glsl");
+		Load("assets/shaders/SceneComposite.glsl");
 		// Load("assets/shaders/Grid.glsl");
+		// Load("assets/shaders/test.glsl");
 	}
 
 	void ShaderLibrary::Shutdown()

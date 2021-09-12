@@ -53,6 +53,7 @@ project "Sandbox"
 		"EthaneEngine/vendor",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.Assimp}"
 	}
@@ -113,6 +114,7 @@ project "Ethane-Editor"
 		"EthaneEngine/vendor",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
 
 		"%{IncludeDir.Assimp}"

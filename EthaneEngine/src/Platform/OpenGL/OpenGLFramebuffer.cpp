@@ -66,22 +66,30 @@ namespace Ethane {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
 
-		static bool IsDepthFormat(FramebufferTextureFormat format)
+		static GLenum DepthAttachmentType(ImageFormat format)
 		{
 			switch (format)
 			{
-			case FramebufferTextureFormat::DEPTH24STENCIL8:  return true;
+			case ImageFormat::DEPTH32F:        return GL_DEPTH_ATTACHMENT;
+			case ImageFormat::DEPTH24STENCIL8: return GL_DEPTH_STENCIL_ATTACHMENT;
 			}
-
-			return false;
+			ETH_CORE_ASSERT(false, "Unknown format");
+			return 0;
 		}
 
-		static GLenum EthaneFBTextureFormatToGL(FramebufferTextureFormat format)
+		static GLenum EthaneImageFormatToGL(ImageFormat format)
 		{
 			switch (format)
 			{
-			case FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
-			case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+			case ImageFormat::RGB:             return GL_RGB8;
+			case ImageFormat::SRGB:            return GL_SRGB8;
+			case ImageFormat::RGBA:            return GL_RGBA8;
+			case ImageFormat::RGBA16F:         return GL_RGBA16F;
+			case ImageFormat::RGBA32F:         return GL_RGBA32F;
+			case ImageFormat::RED32F:		   return GL_RED_INTEGER;
+
+			case ImageFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
+			case ImageFormat::DEPTH32F:        return GL_DEPTH_COMPONENT32F;
 			}
 
 			ETH_CORE_ASSERT(false);
@@ -95,7 +103,7 @@ namespace Ethane {
 	{
 		for (auto format : m_Specification.Attachments.Attachments)
 		{
-			if (!Utils::IsDepthFormat(format.TextureFormat))
+			if (!Utils::IsDepthFormat(format.Format))
 				m_ColorAttachmentSpecifications.emplace_back(format);
 			else
 				m_DepthAttachmentSpecification = format;
@@ -137,25 +145,25 @@ namespace Ethane {
 			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
 			{
 				Utils::BindTexture(multisample, m_ColorAttachments[i]);
-				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
+				switch (m_ColorAttachmentSpecifications[i].Format)
 				{
-					case FramebufferTextureFormat::RGBA8:
+					case ImageFormat::RGBA:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
 						break;
-					case FramebufferTextureFormat::RED_INTEGER:
+					case ImageFormat::RED32F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i);
 						break;
 				}
 			}
 		}
 
-		if (m_DepthAttachmentSpecification.TextureFormat != FramebufferTextureFormat::None)
+		if (m_DepthAttachmentSpecification.Format != ImageFormat::None)
 		{
 			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
 			Utils::BindTexture(multisample, m_DepthAttachment);
-			switch (m_DepthAttachmentSpecification.TextureFormat)
+			switch (m_DepthAttachmentSpecification.Format)
 			{
-			case FramebufferTextureFormat::DEPTH24STENCIL8:
+			case ImageFormat::DEPTH24STENCIL8:
 				Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 			}
 		}
@@ -213,7 +221,7 @@ namespace Ethane {
 		ETH_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
 		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
-		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::EthaneFBTextureFormatToGL(spec.TextureFormat), GL_INT, &value);
+		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::EthaneImageFormatToGL(spec.Format), GL_INT, &value);
 	}
 
 }

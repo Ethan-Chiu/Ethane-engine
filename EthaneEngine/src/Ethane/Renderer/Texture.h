@@ -3,6 +3,8 @@
 #include <string>
 #include "Ethane/Core/Base.h"
 
+#include "Image.h"
+
 namespace Ethane {
 
 	class Texture
@@ -24,6 +26,11 @@ namespace Ethane {
 	class Texture2D : public Texture
 	{
 	public:
+		
+		// TODO: test
+		virtual Ref<Image2D> GetImage() const = 0;
+
+
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 		static Ref<Texture2D> Create(const std::string& path);
 	};

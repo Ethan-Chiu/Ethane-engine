@@ -8,15 +8,20 @@ layout(location = 3) in vec3 a_Binormal;
 layout(location = 4) in vec2 a_TexCoord;
 // layout(location = 5) in int a_EntityID;
 
-layout(std140, binding = 0) uniform Camera
-{
-	mat4 u_ViewProjection;
-};
+// replaces
+// layout(std140, binding = 0) uniform Camera
+// {
+// 	mat4 u_ViewProjection;
+// };
 
-layout(std140, binding = 1) uniform Transform
-{
-	mat4 u_Transform;
-};
+layout(binding = 0) uniform UniformBufferObject{
+	mat4 viewproj;
+} ubo;
+
+// layout(push_constant) uniform TransformUniform
+// {
+// 	mat4 Transform;
+// }u_TransformUniform;
 
 struct VertexOutput
 {
@@ -33,16 +38,16 @@ layout(location = 0) out VertexOutput Output;
 
 void main()
 {
-	Output.WorldPosition = vec3(u_Transform * vec4(a_Position, 1.0));
-	Output.Normal = mat3(u_Transform) * a_Normal;
+	Output.WorldPosition = vec3(vec4(a_Position, 1.0)); // u_TransformUniform.Transform * 
+	Output.Normal = a_Normal; // mat3(u_TransformUniform.Transform) * 
 	Output.TexCoord = vec2(a_TexCoord.x, 1.0- a_TexCoord.y);
-	Output.WorldNormals = mat3(u_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
-	Output.WorldTransform = mat3(u_Transform);
+	Output.WorldNormals = mat3(a_Tangent, a_Binormal, a_Normal); // mat3(u_TransformUniform.Transform) * 
+	Output.WorldTransform = mat3(1.0);// mat3(u_TransformUniform.Transform);
 	Output.Binormal = a_Binormal;
 
 	// v_EntityID = a_EntityID;
 
-	gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
+	gl_Position = ubo.viewproj * vec4(a_Position, 1.0); // u_TransformUniform.Transform * 
 }
 
 
@@ -58,12 +63,12 @@ const int LighCount = 1;
 
 const vec3 Fdielectric = vec3(0.04);
 
-struct Light 
-{
-	vec3 Direction;
-	vec3 Radiance;
-	float Multiplier;
-};
+// struct Light 
+// {
+// 	vec3 Direction;
+// 	vec3 Radiance;
+// 	float Multiplier;
+// };
 
 struct VertexOutput
 {

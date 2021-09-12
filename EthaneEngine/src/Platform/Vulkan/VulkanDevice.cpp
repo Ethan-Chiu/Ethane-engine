@@ -263,7 +263,7 @@ namespace Ethane {
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value();
-		cmdPoolInfo.flags = 0; // VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		VK_CHECK_RESULT(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_GraphicsCommandPool));
 
 		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->m_QueueFamilyIndices.Compute.value();
@@ -358,5 +358,19 @@ namespace Ethane {
 		default:
 			ETH_CORE_ASSERT(false, "No command pool");
 		}
+	}
+
+	VkCommandBuffer VulkanDevice::CreateSecondaryCommandBuffer()
+	{
+		VkCommandBuffer cmdBuffer;
+
+		VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
+		cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+		cmdBufAllocateInfo.commandBufferCount = 1;
+		cmdBufAllocateInfo.commandPool = m_GraphicsCommandPool;
+
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+		return cmdBuffer;
 	}
 }

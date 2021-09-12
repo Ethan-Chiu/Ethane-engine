@@ -2,7 +2,7 @@
 
 #include "Ethane/Renderer/Texture.h"
 
-#include "Vulkan.h"
+#include "VulkanImage.h"
 
 namespace Ethane {
 
@@ -14,7 +14,7 @@ namespace Ethane {
 	{
 	public:
 		VulkanTexture2D(const std::string& path); // TextureProperties properties
-		VulkanTexture2D(uint32_t width, uint32_t height) {}; // ImageFormat format, TextureProperties properties, const void* data
+		VulkanTexture2D(uint32_t width, uint32_t height); // ImageFormat format, TextureProperties properties, const void* data
 		~VulkanTexture2D() override = default;
 
 		void Cleanup();
@@ -22,18 +22,20 @@ namespace Ethane {
 
 		void Invalidate() {};
 
-		virtual void SetData(void* data, uint32_t size) override {} // TODO
+		virtual void SetData(void* data, uint32_t size) override;
 
 		// Getter
 		virtual uint32_t GetWidth() const override { return m_Width; } 
 		virtual uint32_t GetHeight() const override { return m_Height; } 
 		// virtual ImageFormat GetFormat() const override { return m_Format; }
-		const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorInfo; }
+		const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_Image->GetDescriptor(); }
+		VkImageView GetImageView() { return m_Image->GetImageInfo().ImageView; }
+		VkSampler GetImageSampler() { return m_Image->GetImageInfo().Sampler; }
 
 		virtual void Bind(uint32_t slot = 0) const override {}
 		virtual uint32_t GetRendererID() const override { return 0; };
 		virtual bool operator==(const Texture& other) const { return this->m_Path == ((VulkanTexture2D&)other).m_Path; };
-		// virtual Ref<Image2D> GetImage() const override { return m_Image; }
+		virtual Ref<Image2D> GetImage() const override { return std::dynamic_pointer_cast<Image2D>(m_Image); } // TODO: 
 		// const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_Image.As<VulkanImage2D>()->GetDescriptor(); }
 
 		// void Lock() override;
@@ -54,14 +56,16 @@ namespace Ethane {
 		std::string m_Path;
 		uint32_t m_Width, m_Height;
 
+		Ref<VulkanImage2D> m_Image = nullptr;
 
-		VkImage m_TextureImage;
-		VkDeviceMemory m_TextureImageMemory;
 
-		VkImageView m_TextureImageView;
-		VkSampler m_TextureSampler;
+		// TODO: remove
+		// VkImage m_TextureImage;
+		// VkDeviceMemory m_TextureImageMemory;
+		// VkImageView m_TextureImageView;
+		// VkSampler m_TextureSampler;
+		
 		// Buffer m_ImageData
-		// Ref<Image2D> m_Image;
 
 		// TextureProperties m_Properties;
 

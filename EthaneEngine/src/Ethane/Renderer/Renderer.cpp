@@ -8,6 +8,8 @@ namespace Ethane {
 	Scope<Renderer::SceneData> Renderer::s_SceneData = CreateScope<Renderer::SceneData>();
 	
 	RenderCommandQueue* Renderer::s_CommandQueue = nullptr;
+	
+	RendererConfig Renderer::s_Config = RendererConfig{};
 
 	void Renderer::Init()
 	{

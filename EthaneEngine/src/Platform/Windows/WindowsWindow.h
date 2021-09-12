@@ -12,6 +12,9 @@ namespace Ethane {
 		WindowsWindow(const WindowProps& props);
 		virtual ~WindowsWindow();
 
+		// TODO: test
+		void BeginFrame() override;
+
 		void OnUpdate() override;
 		void OnResize(uint32_t width, uint32_t height);
 

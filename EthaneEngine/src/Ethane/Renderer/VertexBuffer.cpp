@@ -15,8 +15,10 @@ namespace Ethane {
 		case RendererAPI::API::None: 
 				ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 				return nullptr;
-			case RendererAPI::API::OpenGL:
-				return CreateRef<OpenGLVertexBuffer>(size);
+		case RendererAPI::API::OpenGL:
+			return CreateRef<OpenGLVertexBuffer>(size);
+		case RendererAPI::API::Vulkan:
+			return CreateRef<VulkanVertexBuffer>(size);
 		}
 
 		ETH_CORE_ASSERT(false, "Unknpwn RendererAPI");

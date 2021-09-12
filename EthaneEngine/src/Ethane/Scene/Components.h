@@ -10,6 +10,7 @@
 
 #include "Ethane/Renderer/Texture.h"
 #include "Ethane/Renderer/SubTexture2D.h"
+#include "Ethane/Renderer/Material.h"
 
 namespace Ethane {
 
@@ -109,6 +110,21 @@ namespace Ethane {
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
+	};
+
+	struct MeshComponent
+	{
+		Ref<Mesh> Mesh;
+		// Ref<Ethane::MaterialTable> MaterialTable = Ref<Hazel::MaterialTable>::Create();
+		Ref<Material> Material;
+		bool IsFractured = false;
+	
+		MeshComponent() = default;
+		MeshComponent(const MeshComponent& other) = default;
+		MeshComponent(const Ref<Ethane::Mesh>& mesh)
+			: Mesh(mesh) {}
+	
+		operator Ref<Ethane::Mesh>() { return Mesh; }
 	};
 
 }

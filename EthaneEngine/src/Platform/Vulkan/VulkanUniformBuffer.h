@@ -12,11 +12,13 @@ namespace Ethane {
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0);
 
+		// Getter
 		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
+		uint32_t GetBinding() { return m_Binding; }
 	private:
 		void Invalidate();
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		// uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	private:
 		VkBuffer m_VulkanBuffer;
 		VkDeviceMemory m_UniformBufferMemory = nullptr;

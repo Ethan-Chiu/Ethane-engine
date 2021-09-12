@@ -1,10 +1,16 @@
 #pragma once
 
-#include <Ethane.h>
+#include "Ethane.h"
+
+#include "Ethane/ImGui/ImGuiLayer.h"
+
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 
 #include "Ethane/Renderer/EditorCamera.h"
+
+// TODO: test
+#include "Ethane/UI/UIImage.h"
 
 namespace Ethane {
 
@@ -33,13 +39,11 @@ namespace Ethane {
 		Ref<Shader> m_FlatColorShader;
 		Ref<Framebuffer> m_Framebuffer;
 
-		Ref<Texture2D> m_Texture;
-		Ref<Texture2D> m_SpriteSheet;
-		Ref<SubTexture2D> m_TextureStairs, m_TextureBarrel, m_TextureTree;
-
 		EditorCamera m_EditorCamera;
 
 		Ref<Scene> m_ActiveScene;
+		Ref<SceneRenderer> m_ViewportRenderer;
+
 		Entity m_HoveredEntity;
 
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
@@ -53,6 +57,15 @@ namespace Ethane {
 		ContentBrowserPanel m_ContentBrowserPanel;
 
 		bool m_PrimaryCamera = true;
+
+		// TODO: test
+		UIImage m_ViewportImage;
+		Ref<Texture2D> m_TexTest = nullptr;
+
+
+		// Ref<Texture2D> m_Texture;
+		// Ref<Texture2D> m_SpriteSheet;
+		// Ref<SubTexture2D> m_TextureStairs, m_TextureBarrel, m_TextureTree;
 	};
 
 }

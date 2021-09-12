@@ -173,6 +173,11 @@ namespace Ethane {
 		m_Context->ShutDown();
 	}
 
+	void WindowsWindow::BeginFrame()
+	{
+		m_Context->BeginFrame();
+	}
+
 	void WindowsWindow::OnUpdate()
 	{
 		ETH_PROFILE_FUNCTION();

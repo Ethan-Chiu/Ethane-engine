@@ -136,22 +136,17 @@ namespace Ethane {
 		m_Device = VulkanDevice::Create(m_PhysicalDevice, enabledFeatures);
 
 		uint32_t width = 1280, height = 720;
-		m_SwapChain.Create(m_Device, &width, &height, false);
+		m_SwapChain.Create(m_Device, width, height, false);
+	}
 
-		// command pool
-		// draw command buffer
-
-		// create depth stencil
-
-		// renderpass
-
-		// create framebuffer
+	void VulkanContext::BeginFrame()
+	{
+		m_SwapChain.BeginFrame();
 	}
 
 	void VulkanContext::SwapBuffers()
 	{
 		ETH_PROFILE_FUNCTION();
-		m_SwapChain.BeginFrame();
 		m_SwapChain.DrawFrame();
 	}
 

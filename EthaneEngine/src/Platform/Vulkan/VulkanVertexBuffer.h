@@ -35,7 +35,7 @@ namespace Ethane {
 
 	private: 
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		// uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void CopyBuffer(VkBuffer dstBuffer, VkBuffer srcBuffer, VkDeviceSize size);
 	private:
 		uint32_t m_Size = 0;

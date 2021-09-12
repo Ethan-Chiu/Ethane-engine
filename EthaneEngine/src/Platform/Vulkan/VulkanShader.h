@@ -34,7 +34,7 @@ namespace Ethane {
 
 			std::unordered_map<std::string, VkWriteDescriptorSet> WriteDescriptorSets;
 
-			operator bool() const { return !(UniformBuffers.empty()); }
+			operator bool() const { return !(UniformBuffers.empty() && ImageSamplers.empty()); }
 		};
 
 
@@ -59,6 +59,7 @@ namespace Ethane {
 		// Getter
 		virtual const std::string& GetName() const override { return  m_Name; }
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+		const std::vector<ShaderDescriptorSetData>& GetShaderDescriptorSetData() const { return m_ShaderDescriptorSets; }
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
 		const VkWriteDescriptorSet* GetWriteDescriptorSet(uint32_t set, const std::string& name) const;
 
@@ -81,7 +82,8 @@ namespace Ethane {
 
 		void CreateDescriptorLayouts();
 	public:
-		DescriptorSetsAndPool CreateDescriptorSets(uint32_t set, uint32_t numberOfSets = 1);
+		DescriptorSetsAndPool CreateDescriptorSetsAndPool(uint32_t set, uint32_t numberOfSets = 1);
+		DescriptorSetsAndPool CreateDescriptorSets(uint32_t set);
 	private:
 		std::string m_FilePath;
 		std::string m_Name;

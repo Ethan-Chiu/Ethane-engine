@@ -19,17 +19,17 @@ namespace Ethane {
 		virtual void Bind() const override {};
 		virtual void Unbind() const override {};
 
-		virtual uint32_t GetCount() const override { return m_Size / sizeof(uint32_t); }
 
 		// virtual RendererID GetRendererID() const;
 
 		//Getter
+		virtual uint32_t GetCount() const override { return m_Size / sizeof(uint32_t); }
 		virtual uint32_t GetSize() const { return m_Size; }
 		VkBuffer GetVulkanBuffer() { return m_VulkanBuffer; }
 
 	private:
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		// uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void CopyBuffer(VkBuffer dstBuffer, VkBuffer srcBuffer, VkDeviceSize size);
 
 	private:

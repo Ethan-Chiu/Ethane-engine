@@ -13,6 +13,18 @@
 
 namespace Ethane {
 	
+	struct RendererConfig
+	{
+		uint32_t FramesInFlight = 3;
+
+		// "Experimental" features
+		bool ComputeEnvironmentMaps = true;
+
+		// Tiering settings
+		uint32_t EnvironmentMapResolution = 1024;
+		uint32_t IrradianceMapComputeSamples = 512;
+	};
+
 	class Renderer
 	{
 	public:
@@ -45,10 +57,13 @@ namespace Ethane {
 
 		static void WaitAndRender();
 
+		// Getter
+		static RendererConfig& GetConfig() { return s_Config; }
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();
 
 	private:
+		// TODO:
 		struct SceneData
 		{
 			glm::mat4 ViewProjectionMatrix;
@@ -56,6 +71,7 @@ namespace Ethane {
 
 		static Scope<SceneData> s_SceneData;
 		static RenderCommandQueue* s_CommandQueue;
+		static RendererConfig s_Config;
 	};
 
 }

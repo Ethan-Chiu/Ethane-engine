@@ -4,6 +4,7 @@
 #include "Renderer.h"
 
 #include "Platform/OpenGL/OpenGLIndexBuffer.h"
+#include "Platform/Vulkan/VulkanIndexBuffer.h"
 
 namespace Ethane {
 
@@ -16,6 +17,8 @@ namespace Ethane {
 			return nullptr;
 		case RendererAPI::API::OpenGL:
 			return CreateRef<OpenGLIndexBuffer>(indices, size);
+		case RendererAPI::API::Vulkan:
+			return CreateRef<VulkanIndexBuffer>(indices, size);
 		}
 
 		ETH_CORE_ASSERT(false, "Unknpwn RendererAPI");

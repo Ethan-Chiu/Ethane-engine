@@ -39,7 +39,7 @@ namespace Ethane {
 		// Getter
 		VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
 		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
-
+		VkPhysicalDeviceProperties GetProperties() { return m_Properties; }
 	private:
 		uint32_t rateDeviceSuitability(VkPhysicalDevice device);
 		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -82,12 +82,17 @@ namespace Ethane {
 		VkCommandBuffer CreateCommandBuffer(QueueFamilyTypes type = QueueFamilyTypes::Graphics, bool oneTimeUse = false, bool begin = false);
 		void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
 
+		VkCommandBuffer CreateSecondaryCommandBuffer();
+
 		// Getter
 		VkDevice GetVulkanDevice() { return m_LogicalDevice; }
 		Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; }
 
 		VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
 		VkQueue GetComputeQueue() { return m_ComputeQueue; }
+
+		VkCommandPool GetGraphicsCommandPool() { return m_GraphicsCommandPool; }
+		VkCommandPool GetComputeCommandPool() { return m_GraphicsCommandPool; }
 
 	private:
 		VkDevice m_LogicalDevice = VK_NULL_HANDLE;
@@ -100,4 +105,19 @@ namespace Ethane {
 
 		bool m_EnableDebugMarkers = false;
 	};
+
+	namespace Utils
+	{
+		static const char* VulkanVendorIDToString(uint32_t vendorID)
+		{
+			switch (vendorID)
+			{
+			case 0x10DE: return "NVIDIA";
+			case 0x1002: return "AMD";
+			case 0x8086: return "INTEL";
+			case 0x13B5: return "ARM";
+			}
+			return "Unknown";
+		}
+	}
 }

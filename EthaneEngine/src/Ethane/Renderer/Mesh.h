@@ -72,7 +72,6 @@ namespace Ethane {
 	private:
 		std::string m_FilePath;
 		std::unique_ptr<Assimp::Importer> m_Importer;
-		// Assimp::Importer m_Importer;
 
 		const aiScene* m_Scene;
 		glm::mat4 m_InverseTransform;
@@ -91,6 +90,7 @@ namespace Ethane {
 
 	friend class Renderer;
 	friend class OpenGLRendererAPI;
+	friend class VulkanRendererAPI;
 
 	};
 

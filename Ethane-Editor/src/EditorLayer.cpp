@@ -11,6 +11,9 @@
 
 #include "Ethane/Math/Math.h"
 
+// TODO: test temp remove
+// #include "Platform/Vulkan/VulkanTexture.h"
+
 namespace Ethane {
 
 	EditorLayer::EditorLayer()
@@ -22,19 +25,13 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		m_Texture = Texture2D::Create("assets/textures/test.png");
-		m_SpriteSheet = Texture2D::Create("assets/textures/RPGpack_sheet_2X.png");
-
-		m_TextureStairs = SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 6 }, { 128, 128 });
-		m_TextureBarrel = SubTexture2D::CreateFromCoords(m_SpriteSheet, { 8, 2 }, { 128, 128 });
-		m_TextureTree = SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, { 128, 128 }, { 1, 2 });
-
+#if OpenGL
 		FramebufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
+		fbSpec.Attachments = { ImageFormat::RGBA, ImageFormat::RED32F, ImageFormat::DEPTH24STENCIL8 };
 		m_Framebuffer = Framebuffer::Create(fbSpec);
-
+#endif
 		m_ActiveScene = CreateRef<Scene>();
 
 		auto commandLineArgs = Application::Get().GetCommandLineArgs();
@@ -47,52 +44,10 @@ namespace Ethane {
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
-		// Entity square = m_ActiveScene->CreateEntity("green square");
-		// square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
-		// 
-		// Entity square2 = m_ActiveScene->CreateEntity("blue square");
-		// square2.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f });
-		// 
-		// Entity CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
-		// CameraEntity.AddComponent<CameraComponent>();
-		// 
-		// Entity SecondCamera = m_ActiveScene->CreateEntity("Second Camera");
-		// auto& cc = SecondCamera.AddComponent<CameraComponent>();
-		// cc.Primary = false;
-		
-		// class CameraController : public ScriptableEntity
-		// {
-		// public:
-		// 
-		// 	void OnCreate()
-		// 	{
-		// 		std::cout << "OnCreate" << std::endl;
-		// 	}
-		// 
-		// 	void OnDestroy()
-		// 	{
-		// 
-		// 	}
-		// 
-		// 	void OnUpdate(Timestep ts)
-		// 	{
-		// 		auto& translation = GetComponent<TransformComponent>().Translation;
-		// 		float speed = 5.0f;
-		// 
-		// 		if (Input::IsKeyPressed(Key::A))
-		// 			translation.x -= speed * ts;
-		// 		if (Input::IsKeyPressed(Key::D))
-		// 			translation.x += speed * ts;
-		// 		if (Input::IsKeyPressed(Key::W))
-		// 			translation.y += speed * ts;
-		// 		if (Input::IsKeyPressed(Key::S))
-		// 			translation.y -= speed * ts;
-		// 	}
-		// };
-		// 
-		// CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		// 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		// TODO: test
+		m_ViewportRenderer = CreateRef<SceneRenderer>(m_ActiveScene);
 
 		// m_CameraController.SetZoomLevel(0.5f);
 	}
@@ -108,31 +63,33 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		// Resize
-		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y) &&
-			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f )// zero sized framebuffer is invalid
-		{
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
-			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		}
+		// if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+		// 	(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y) &&
+		// 	m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f )// zero sized framebuffer is invalid
+		// {
+		// 	m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		// 	m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+		// 	m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+		// 	m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		// }
 
 		//Update
 		if (m_ViewportFocused)
 		{
 			m_CameraController.OnUpdate(ts);
 		}
-			m_EditorCamera.OnUpdate(ts);
+		m_EditorCamera.OnUpdate(ts);
 
-		//Render
+		// Render
 		Renderer2D::ResetStats();
+
+		m_ActiveScene->OnUpdateEditor(m_ViewportRenderer, ts, m_EditorCamera);
+
+#if OpenGL
 		m_Framebuffer->Bind();
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		RenderCommand::Clear();
 		m_Framebuffer->ClearAttachment(1, -1);
-
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -151,7 +108,7 @@ namespace Ethane {
 		}
 
 		m_Framebuffer->Unbind();
-
+#endif
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -235,7 +192,7 @@ namespace Ethane {
 
 		//-------------------------
 		m_SceneHierarchyPanel.OnImGuiRender();
-		m_ContentBrowserPanel.OnImGuiRender();
+		// m_ContentBrowserPanel.OnImGuiRender();
 
 		//-------------------------
 		ImGui::Begin("Settings");
@@ -264,9 +221,26 @@ namespace Ethane {
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+		ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+		ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+		ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+		ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 
-		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		
+		// OpenGL
+		// uint32_t textureID = m_ViewPortTextureID;
+		// // uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+		// ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
+
+		// if (!m_ViewportImage)
+		// {
+		// 	m_TexTest = Texture2D::Create("assets/textures/test.png");
+		// 	m_ViewportImage = UIImage(m_TexTest->GetImage());
+		// }
+		if(!m_ViewportImage)
+			m_ViewportImage = UIImage(m_ViewportRenderer->GetFinalPassImage());
+		m_ViewportImage.Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
+		
 
 		//Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();

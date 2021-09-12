@@ -3,8 +3,10 @@
 #include "Entity.h"
 #include "Components.h"
 
-#include "Ethane/Renderer/Renderer2D.h"
+// Renderer
 #include "Ethane/Renderer/Renderer.h"
+#include "Ethane/Renderer/Renderer2D.h"
+#include "Ethane/Renderer/SceneRenderer.h"
 
 #include <glm/glm.hpp>
 
@@ -12,8 +14,10 @@ namespace Ethane {
 
 	Scene::Scene()
 	{
-		m_Mesh = CreateRef<Mesh>("resources/meshes/default/Cube.fbx");
+		// temp
+		// m_Mesh = CreateRef<Mesh>("resources/meshes/default/Cube.fbx");
 		// m_Mesh = CreateRef<Mesh>("resources/meshes/default/Sphere.fbx");
+		// m_Material = CreateRef<Material>();
 	}
 
 	Scene::~Scene()
@@ -84,37 +88,67 @@ namespace Ethane {
 		}
 	}
 
-	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
+	void Scene::OnUpdateEditor(Ref<SceneRenderer> renderer, Timestep ts, EditorCamera& camera)
 	{
-		Renderer2D::BeginScene(camera);
+#if 1
+		renderer->BeginScene(camera);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 		for (auto entity : group)
 		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+			auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+			if (meshComponent.Mesh)
+			{
+				// glm::mat4 transform = GetTransformRelativeToParent(Entity{ entity, this });
+				
+				renderer->SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), m_Material);
+			}
+		}
+		// colliders
+		{
 
-			Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color, (int)entity);
 		}
 
-		auto view = m_Registry.view<TransformComponent, Texture2DRendererComponent>();
-		for (auto entity : view)
-		{
-			auto [transform, texture] = view.get<TransformComponent, Texture2DRendererComponent>(entity);
+		renderer->EndScene();
+#endif
+#if 0
+		Renderer2D::BeginScene(camera);
 
-			Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+		// Srpite
+		{
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>(); //(entt::get<SpriteRendererComponent>)
+			for (auto entity : view)
+			{
+				auto [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+
+				Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color, (int)entity);
+			}
 		}
-
-		auto view2 = m_Registry.view<TransformComponent, SubTexture2DRendererComponent>();
-		for (auto entity : view2)
+		// Texture2D
 		{
-			auto [transform, texture] = view2.get<TransformComponent, SubTexture2DRendererComponent>(entity);
+			auto view = m_Registry.view<TransformComponent, Texture2DRendererComponent>();
+			for (auto entity : view)
+			{
+				auto [transform, texture] = view.get<TransformComponent, Texture2DRendererComponent>(entity);
 
-			Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+				Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+			}
+		}
+		// SubTexture
+		{
+			auto view = m_Registry.view<TransformComponent, SubTexture2DRendererComponent>();
+			for (auto entity : view)
+			{
+				auto [transform, texture] = view.get<TransformComponent, SubTexture2DRendererComponent>(entity);
+
+				Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+			}
 		}
 
 		Renderer2D::EndScene();
+# endif
 
-		Renderer::RenderMesh(m_Mesh);
+		// Renderer::RenderMesh(m_Mesh);
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)

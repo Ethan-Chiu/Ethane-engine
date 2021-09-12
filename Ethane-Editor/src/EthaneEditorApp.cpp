@@ -23,6 +23,7 @@ namespace Ethane {
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
+		RendererAPI::SetAPI(RendererAPI::API::Vulkan);
 		return new EthaneEditor(args);
 	}
 
