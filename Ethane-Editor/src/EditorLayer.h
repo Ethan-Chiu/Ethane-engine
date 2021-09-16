@@ -34,12 +34,11 @@ namespace Ethane {
 		void OpenScene();
 		void SaveSceneAs();
 	private:
-		OrthographicCameraController m_CameraController;
-
 		Ref<Shader> m_FlatColorShader;
 		Ref<Framebuffer> m_Framebuffer;
 
 		EditorCamera m_EditorCamera;
+		// OrthographicCameraController m_CameraController;
 
 		Ref<Scene> m_ActiveScene;
 		Ref<SceneRenderer> m_ViewportRenderer;
@@ -49,6 +48,7 @@ namespace Ethane {
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_ViewportBounds[2];
+		bool m_ViewportResize = false;
 
 		int m_GizmoType = -1;
 
@@ -58,9 +58,8 @@ namespace Ethane {
 
 		bool m_PrimaryCamera = true;
 
-		// TODO: test
-		UIImage m_ViewportImage;
-		Ref<Texture2D> m_TexTest = nullptr;
+		// TODO: test remove
+		// Ref<Texture2D> m_TexTest = nullptr;
 
 
 		// Ref<Texture2D> m_Texture;

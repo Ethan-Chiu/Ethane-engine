@@ -24,6 +24,8 @@ namespace Ethane {
 		// std::unordered_map<SceneRenderer*, std::vector<VulkanShader::DescriptorSetsAndPool>> RendererDescriptorSet;
 		VkDescriptorSet ActiveRendererDescriptorSet = nullptr;
 		std::vector<VkDescriptorPool> DescriptorPools;
+		
+		// TODO: stats
 		std::vector<uint32_t> DescriptorPoolAllocationCount;
 
 		// UniformBufferSet -> Shader Hash -> Frame -> WriteDescriptor
@@ -121,22 +123,36 @@ namespace Ethane {
 		// TODO: temp
 		s_UniformBufferSet = CreateRef<VulkanUniformBufferSet>(framesInFlight);
 		s_UniformBufferSet->Create(sizeof(glm::mat4), 0);
+		// TODO: test remove
+		// for (uint32_t i = 0; i < Renderer::GetConfig().FramesInFlight; i++)
+		// {
+		// 	std::vector<VkWriteDescriptorSet> writeDescriptors{};
+		// 
+		// 	// Uniform buffer
+		// 	VkWriteDescriptorSet& uboWriteDescriptor = writeDescriptors.emplace_back();
+		// 	uboWriteDescriptor = *vulkanShader->GetWriteDescriptorSet(0, "UniformBufferObject");
+		// 	uboWriteDescriptor.dstSet = m_DescriptorSets.DescriptorSets[i];
+		// 	uboWriteDescriptor.dstArrayElement = 0;
+		// 	uboWriteDescriptor.pBufferInfo = &s_UniformBufferSet->Get(0, 0, i)->GetDescriptorBufferInfo();
+		// 
+		// 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
+		// }
 	}
 
 	VkDescriptorSet VulkanRendererAPI::AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
 		ETH_PROFILE_FUNCTION();
 
-		uint32_t bufferIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
-		allocInfo.descriptorPool = s_Data->DescriptorPools[bufferIndex];
+		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
+		allocInfo.descriptorPool = s_Data->DescriptorPools[frameIndex];
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
 		VkDescriptorSet result;
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &result));
-		s_Data->DescriptorPoolAllocationCount[bufferIndex] += allocInfo.descriptorSetCount;
+		s_Data->DescriptorPoolAllocationCount[frameIndex] += allocInfo.descriptorSetCount;
 		return result;
 	}
 
-	static const std::vector<std::vector<VkWriteDescriptorSet>>& RetrieveOrCreateUniformBufferWriteDescriptors(Ref<VulkanUniformBufferSet> uniformBufferSet, Ref<VulkanMaterial> vulkanMaterial)
+	static const std::vector<std::vector<VkWriteDescriptorSet>> RetrieveOrCreateUniformBufferWriteDescriptors(Ref<VulkanUniformBufferSet> uniformBufferSet, Ref<VulkanMaterial> vulkanMaterial)
 	{
 		ETH_PROFILE_FUNCTION();
 
@@ -155,7 +171,7 @@ namespace Ethane {
 		Ref<VulkanShader> vulkanShader = std::dynamic_pointer_cast<VulkanShader>(vulkanMaterial->GetShader());
 
 		// TODO: currently no cache
-		std::vector<std::vector<VkWriteDescriptorSet>> UniformBufferWriteDescriptorCache;
+		std::vector<std::vector<VkWriteDescriptorSet>> UniformBufferWriteDescriptorCache; // frame -> writeDescriptorSets
 
 		// if (vulkanShader->HasDescriptorSet(0))
 		// {
@@ -173,8 +189,9 @@ namespace Ethane {
 						VkWriteDescriptorSet writeDescriptorSet = {};
 						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-						writeDescriptorSet.descriptorCount = 1;
 						writeDescriptorSet.dstBinding = binding;
+						writeDescriptorSet.descriptorCount = 1;
+						writeDescriptorSet.dstArrayElement = 0;
 						writeDescriptorSet.pBufferInfo = &uniformBuffer->GetDescriptorBufferInfo();
 						writeDescriptors[frame].push_back(writeDescriptorSet);
 					}
@@ -199,6 +216,13 @@ namespace Ethane {
 			material->UpdateForRendering();
 		}
 		
+	}
+
+	void VulkanRendererAPI::BeginFrame()
+	{
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // // Application::Get().GetWindow().GetSwapChain();
+		vkResetDescriptorPool(device, s_Data->DescriptorPools[frameIndex], 0);
 	}
 
 	void VulkanRendererAPI::BeginRenderCommandBuffer(Ref<RenderCommandBuffer> renderCommandBuffer)
@@ -407,11 +431,8 @@ namespace Ethane {
 		VkPipelineLayout layout = vulkanPipeline->GetPipelineLayout();
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
 
-		if (tempfirst)
-		{
-			UpdateMaterialForRendering(vulkanMaterial);
-			tempfirst = false;
-		}
+		// TODO: test
+		UpdateMaterialForRendering(vulkanMaterial);
 
 		VkDescriptorSet descriptorSet = vulkanMaterial->GetDescriptorSet(frameIndex);
 		if (descriptorSet)
@@ -457,7 +478,7 @@ namespace Ethane {
 		VkPipelineLayout layout = vulkanPipeline->GetPipelineLayout();
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
 
-		float lineWidth = 2.0;// vulkanPipeline->GetSpecification().LineWidth;
+		float lineWidth = 1.0;// vulkanPipeline->GetSpecification().LineWidth;
 		if (lineWidth != 1.0f)
 			vkCmdSetLineWidth(commandBuffer, lineWidth);
 
@@ -484,10 +505,10 @@ namespace Ethane {
 	}
 
 	// TODO: test
-	void VulkanRendererAPI::SetUniform(uint32_t binding, uint32_t set , const void* data, uint32_t size, uint32_t offset)
+	void VulkanRendererAPI::SetUniformBuffer(uint32_t binding, uint32_t set , const void* data, uint32_t size, uint32_t offset)
 	{
 		uint32_t bufferIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
-		s_UniformBufferSet->Get(binding, set, bufferIndex)->SetData(&data, size);
+		s_UniformBufferSet->Get(binding, set, bufferIndex)->SetData(data, size);
 	}
 
 }

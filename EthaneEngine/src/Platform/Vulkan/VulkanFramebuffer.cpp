@@ -79,6 +79,7 @@ namespace Ethane {
 		}
 		else
 		{
+			ETH_CORE_ASSERT("Haven't done");
 			VulkanSwapChain& swapChain = VulkanContext::GetSwapChain(); // Application::Get().GetWindow().GetSwapChain();
 			m_RenderPass = swapChain.GetRenderPass();
 
@@ -103,9 +104,11 @@ namespace Ethane {
 
 		if (m_Framebuffer)
 		{
+			// TODO: change this: investigate resources management( release at appropriate time )
+			vkDeviceWaitIdle(device);
 			VkFramebuffer framebuffer = m_Framebuffer;
-			
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
+			vkDestroyRenderPass(device, m_RenderPass, nullptr);
 
 			// Don't free the images if we don't own them
 			if (!m_Specification.ExistingFramebuffer)
@@ -117,17 +120,17 @@ namespace Ethane {
 						continue;
 
 					// Only destroy deinterleaved image once and prevent clearing layer views on second framebuffer invalidation
-					// if (!image->GetSpecification().Deinterleaved || attachmentIndex == 0 && !image->GetLayerImageView(0))
-					// 	image->Cleanup();
+					image->Cleanup();
 					attachmentIndex++;
 				}
+				m_AttachmentImages.clear();
 
 				if (m_DepthAttachmentImage)
 				{
 					if (m_Specification.ExistingImages.find((uint32_t)m_Specification.Attachments.Attachments.size() - 1) == m_Specification.ExistingImages.end())
 						m_DepthAttachmentImage->Cleanup();
 				}
-
+				m_DepthAttachmentImage = nullptr;
 			}
 		}
 
@@ -166,12 +169,15 @@ namespace Ethane {
 				}
 				else
 				{
-					Ref<VulkanImage2D> depthAttachmentImage = std::dynamic_pointer_cast<VulkanImage2D>(m_DepthAttachmentImage);
-					auto& spec = depthAttachmentImage->GetSpecification();
-					spec.Width = m_Width;
-					spec.Height = m_Height;
-					// TODO: test
-					// depthAttachmentImage->Invalidate(); // Create immediately
+					if (m_DepthAttachmentImage == nullptr)
+					{
+						ImageSpecification spec;
+						spec.Format = attachmentSpec.Format;
+						spec.Usage = ImageUsage::Attachment;
+						spec.Width = m_Width;
+						spec.Height = m_Height;
+						m_DepthAttachmentImage = std::dynamic_pointer_cast<VulkanImage2D>(Image2D::Create(spec)); // TODO
+					}
 				}
 
 				VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
@@ -197,6 +203,9 @@ namespace Ethane {
 				}
 				m_ClearValues[attachmentIndex].depthStencil = { 1.0f, 0 };
 			}
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			// Color attachment
 			else
 			{

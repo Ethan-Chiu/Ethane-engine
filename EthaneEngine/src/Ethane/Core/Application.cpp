@@ -94,7 +94,7 @@ namespace Ethane
 
 			if (!m_Minimized)
 			{
-				// Renderer::BeginFrame();
+				Renderer::BeginFrame();
 
 				{
 					ETH_PROFILE_SCOPE("LayerStack OnUpdate");
@@ -112,7 +112,7 @@ namespace Ethane
 				}
 				m_ImGuiLayer->End();
 
-				// Renderer::EndFrame();
+				Renderer::EndFrame();
 			}
 
 			// auto [x, y] = Input::GetMousePosition();

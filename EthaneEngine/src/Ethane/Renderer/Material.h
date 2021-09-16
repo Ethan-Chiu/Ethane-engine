@@ -38,8 +38,8 @@ namespace Ethane {
 
 		virtual void Set(const std::string& name, const Ref<Texture2D>& texture) = 0;
 		virtual void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex) = 0;
+		virtual void Set(const std::string& name, const Ref<Image2D>& image) = 0;
 		// virtual void Set(const std::string& name, const Ref<TextureCube>& texture) = 0;
-		// virtual void Set(const std::string& name, const Ref<Image2D>& image) = 0;
 
 		// Getter
 		virtual float& GetFloat(const std::string& name) = 0;

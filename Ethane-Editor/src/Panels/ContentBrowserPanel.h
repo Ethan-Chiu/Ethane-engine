@@ -3,6 +3,9 @@
 #include <filesystem>
 #include "Ethane/Renderer/Texture.h"
 
+// TODO: test
+#include "Ethane/UI/UIImage.h"
+
 namespace Ethane {
 
 	class ContentBrowserPanel

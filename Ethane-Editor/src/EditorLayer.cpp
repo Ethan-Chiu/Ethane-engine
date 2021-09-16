@@ -17,7 +17,7 @@
 namespace Ethane {
 
 	EditorLayer::EditorLayer()
-		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
+		:Layer("EditorLayer") // , m_CameraController(1280.0f / 720.0f)
 	{
 	}
 
@@ -63,21 +63,32 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		// Resize
-		// if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-		// 	(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y) &&
-		// 	m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f )// zero sized framebuffer is invalid
-		// {
-		// 	m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		// 	m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
-		// 	m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-		// 	m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		// }
+		if (m_ViewportResize)
+		{
+			m_ViewportRenderer->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			// m_ActiveScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			// if (m_RuntimeScene)
+			// 	m_RuntimeScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+		}
+#if OpenGL
+		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y) &&
+			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f )// zero sized framebuffer is invalid
+		{
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			// m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+		}
+#endif
+		
 
 		//Update
-		if (m_ViewportFocused)
-		{
-			m_CameraController.OnUpdate(ts);
-		}
+		// if (m_ViewportFocused)
+		// {
+		// 	m_CameraController.OnUpdate(ts);
+		// }
 		m_EditorCamera.OnUpdate(ts);
 
 		// Render
@@ -191,8 +202,9 @@ namespace Ethane {
 		}
 
 		//-------------------------
+		// Panels
 		m_SceneHierarchyPanel.OnImGuiRender();
-		// m_ContentBrowserPanel.OnImGuiRender();
+		m_ContentBrowserPanel.OnImGuiRender();
 
 		//-------------------------
 		ImGui::Begin("Settings");
@@ -220,27 +232,26 @@ namespace Ethane {
 		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered );
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		if (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y)
+			m_ViewportResize = true;
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 		ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 		ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
 		ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 		ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
-
 		
 		// OpenGL
-		// uint32_t textureID = m_ViewPortTextureID;
-		// // uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+		// uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		// ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
 
+		// TODO: test remove
 		// if (!m_ViewportImage)
 		// {
 		// 	m_TexTest = Texture2D::Create("assets/textures/test.png");
 		// 	m_ViewportImage = UIImage(m_TexTest->GetImage());
 		// }
-		if(!m_ViewportImage)
-			m_ViewportImage = UIImage(m_ViewportRenderer->GetFinalPassImage());
-		m_ViewportImage.Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
 		
+		UIImage(m_ViewportRenderer->GetFinalPassImage()).Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
 
 		//Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -298,7 +309,7 @@ namespace Ethane {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_CameraController.OnEvent(e);
+		// m_CameraController.OnEvent(e);
 		m_EditorCamera.OnEvent(e);
 
 		EventDispatcher	dispatcher(e);

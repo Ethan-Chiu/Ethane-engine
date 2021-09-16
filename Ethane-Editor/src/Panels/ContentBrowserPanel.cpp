@@ -43,7 +43,8 @@ namespace Ethane{
 			
 			if (currentPath.is_directory())
 			{
-				ImGui::ImageButton((ImTextureID)m_DirectoryIcon->GetRendererID(), { m_ThumbnailSize, m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+				// ImGui::ImageButton((ImTextureID)m_DirectoryIcon->GetRendererID(), { m_ThumbnailSize, m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+				UIImageButton(filenameString.c_str(), m_DirectoryIcon).Draw({ m_ThumbnailSize, m_ThumbnailSize });
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
 					m_CurrentDirectory /= path.filename();
@@ -51,7 +52,8 @@ namespace Ethane{
 			}
 			else
 			{
-				ImGui::ImageButton((ImTextureID)m_FileIcon->GetRendererID(), { m_ThumbnailSize, m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+				// ImGui::ImageButton((ImTextureID)m_FileIcon->GetRendererID(), { m_ThumbnailSize, m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+				UIImageButton(filenameString.c_str(), m_FileIcon).Draw({ m_ThumbnailSize, m_ThumbnailSize });
 			}
 			ImGui::Text(filenameString.c_str());
 

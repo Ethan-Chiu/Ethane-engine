@@ -23,8 +23,8 @@ namespace Ethane {
 
 		virtual void Init() override;
 
-		void BeginFrame() {};
-		void EndFrame() {};
+		void BeginFrame() override;
+		void EndFrame() override {};
 
 		static void BeginRenderCommandBuffer(Ref<RenderCommandBuffer> renderCommandBuffer);
 		static void EndRenderCommandBuffer();
@@ -53,14 +53,11 @@ namespace Ethane {
 		// virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override;
 
 		// Update uniform buffer value
-		static void SetUniform(uint32_t binding, uint32_t set, const void* data, uint32_t size, uint32_t offset = 0);
+		static void SetUniformBuffer(uint32_t binding, uint32_t set, const void* data, uint32_t size, uint32_t offset = 0);
 	private:
 		inline static Ref<VulkanUniformBufferSet> s_UniformBufferSet;
 		inline static Ref<RenderCommandBuffer> s_RenderCommandBuffer;
 
-
-		// temp
-		inline static bool tempfirst = true;
 	};
 
 }

@@ -7,7 +7,7 @@
 
 namespace Ethane {
 
-	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t size)
+	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t size) // size in byte
 		: m_Size(size)
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
@@ -21,30 +21,30 @@ namespace Ethane {
 	{
 		// Ref<VulkanIndexBuffer> instance = this;
 		// Renderer::Submit([instance]() mutable
-			{
-				auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+		{
+			auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
-				// create staging buffer
-				VkBuffer stagingBuffer;
-				VkDeviceMemory stagingBufferMemory;
-				CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+			// create staging buffer
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+			CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-				// copy data to staging buffer
-				void* dstData;
-				vkMapMemory(device, stagingBufferMemory, 0, m_Size, 0, &dstData);
-				memcpy(dstData, data, m_Size);
-				vkUnmapMemory(device, stagingBufferMemory);
+			// copy data to staging buffer
+			void* dstData;
+			vkMapMemory(device, stagingBufferMemory, 0, m_Size, 0, &dstData);
+			memcpy(dstData, data, m_Size);
+			vkUnmapMemory(device, stagingBufferMemory);
 
-				// create index buffer (gpu local memory)
-				CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanBuffer, m_IndexBufferMemory);
+			// create index buffer (gpu local memory)
+			CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanBuffer, m_IndexBufferMemory);
 
-				// copy from staging buffer
-				CopyBuffer(m_VulkanBuffer, stagingBuffer, m_Size);
+			// copy from staging buffer
+			CopyBuffer(m_VulkanBuffer, stagingBuffer, m_Size);
 
-				// cleanup staging buffer
-				vkDestroyBuffer(device, stagingBuffer, nullptr);
-				vkFreeMemory(device, stagingBufferMemory, nullptr);
-			}
+			// cleanup staging buffer
+			vkDestroyBuffer(device, stagingBuffer, nullptr);
+			vkFreeMemory(device, stagingBufferMemory, nullptr);
+		}
 			// );
 	}
 

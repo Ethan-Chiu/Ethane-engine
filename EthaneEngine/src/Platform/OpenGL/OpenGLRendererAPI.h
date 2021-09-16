@@ -13,6 +13,9 @@ namespace Ethane {
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
 
+		virtual void BeginFrame() override {};
+		virtual void EndFrame() override {};
+
 		virtual void DrawIndexed(uint32_t indexCount = 0) override;
 
 		virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override;

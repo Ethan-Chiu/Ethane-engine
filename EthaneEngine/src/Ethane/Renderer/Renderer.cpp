@@ -18,12 +18,12 @@ namespace Ethane {
 		RenderCommand::Init();
 		s_CommandQueue = new RenderCommandQueue();
 
-		Renderer2D::Init();
+		// Renderer2D::Init();
 	}
 
 	void Renderer::Shutdown()
 	{
-		Renderer2D::Shutdown();
+		// Renderer2D::Shutdown();
 
 		delete Renderer::s_CommandQueue;
 	}
@@ -40,12 +40,12 @@ namespace Ethane {
 
 	void Renderer::BeginFrame()
 	{
-
+		RenderCommand::BeginFrame();
 	}
 
 	void Renderer::EndFrame()
 	{
-
+		RenderCommand::EndFrame();
 	}
 
 	void Renderer::RenderMesh(Ref<Mesh> mesh, const glm::mat4& transform)

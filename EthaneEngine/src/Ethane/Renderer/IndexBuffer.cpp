@@ -16,7 +16,7 @@ namespace Ethane {
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLIndexBuffer>(indices, size);
+			return CreateRef<OpenGLIndexBuffer>(indices, size/sizeof(uint32_t));
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanIndexBuffer>(indices, size);
 		}

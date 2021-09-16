@@ -33,8 +33,8 @@ namespace Ethane {
 
 		virtual void Set(const std::string& name, const Ref<Texture2D>& texture) override;
 		virtual void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex) override;
+		virtual void Set(const std::string& name, const Ref<Image2D>& image);
 		// virtual void Set(const std::string& name, const Ref<TextureCube>& texture) override;
-		// virtual void Set(const std::string& name, const Ref<Image2D>& image) override;
 
 		virtual float& GetFloat(const std::string& name) override;
 		virtual int32_t& GetInt(const std::string& name) override;
@@ -114,6 +114,7 @@ namespace Ethane {
 		// 	}
 		// }
 
+		// Getter
 		virtual uint32_t GetFlags() const override { return m_MaterialFlags; }
 		virtual bool GetFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
 
@@ -129,10 +130,10 @@ namespace Ethane {
 		// void OnShaderReloaded();
 
 		// TODO: set Texture
-		void SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture) {};
-		void SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex) {};
+		void SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture);
+		void SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex);
+		void SetVulkanDescriptor(const std::string& name, const Ref<Image2D>& image);
 		// void SetVulkanDescriptor(const std::string& name, const Ref<TextureCube>& texture);
-		// void SetVulkanDescriptor(const std::string& name, const Ref<Image2D>& image);
 
 		// const ShaderUniform* FindUniformDeclaration(const std::string& name);
 		// const ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
@@ -183,7 +184,7 @@ namespace Ethane {
 
 
 		// TODO: temp remove
-		Ref<VulkanTexture2D> m_Texture2D = nullptr;
+		// Ref<VulkanTexture2D> m_Texture2D = nullptr;
 
 	};
 

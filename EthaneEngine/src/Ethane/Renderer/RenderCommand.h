@@ -24,6 +24,16 @@ namespace Ethane {
 			s_RendererAPI->Clear();
 		}
 
+		inline static void BeginFrame()
+		{
+			s_RendererAPI -> BeginFrame();
+		}
+
+		inline static void EndFrame()
+		{
+			s_RendererAPI->EndFrame();
+		}
+
 		inline static void DrawIndexed(uint32_t count = -1)
 		{
 			s_RendererAPI->DrawIndexed(count);

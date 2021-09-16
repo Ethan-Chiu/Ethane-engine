@@ -49,12 +49,11 @@ namespace Ethane {
 		SceneRendererOptions m_Options;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		float m_InvViewportWidth = 0.f, m_InvViewportHeight = 0.f;
+		bool m_NeedResize = false;
 
 		Ref<Scene> m_Scene;
 
 		Ref<RenderCommandBuffer> m_CommandBuffer;
-
-		Ref<Shader> m_CompositeShader;
 
 		struct UBCamera
 		{
@@ -101,6 +100,7 @@ namespace Ethane {
 		Ref<Material> m_PreDepthMaterial;
 		Ref<Pipeline> m_SkyboxPipeline;
 		Ref<Material> m_SkyboxMaterial;
+
 		// Grid
 		Ref<Pipeline> m_GridPipeline;
 		Ref<Shader> m_GridShader;
@@ -113,6 +113,11 @@ namespace Ethane {
 		};
 		std::vector<DrawCommand> m_DrawList;
 		std::vector<DrawCommand> m_SelectedMeshDrawList;
+
+		// TODO: remove
+		Ref<Texture2D> m_Texture2D = nullptr;
+		Ref<Mesh> m_testMesh = nullptr;
+		Ref<Material> m_testMaterial = nullptr;
 	};
 
 }

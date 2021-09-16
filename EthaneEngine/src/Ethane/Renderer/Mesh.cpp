@@ -122,9 +122,9 @@ namespace Ethane {
 
 		{
 			uint32_t size = (uint32_t)(m_StaticVertices.size() * sizeof(Vertex));
-			m_VertexBuffer = VertexBuffer::Create(size);
-			m_VertexBuffer->SetData(m_StaticVertices.data(), size);
-
+			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), size);
+// 			m_VertexBuffer->SetData(, size);
+#if 0
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
@@ -134,9 +134,10 @@ namespace Ethane {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
 			m_Pipeline = Pipeline::Create(pipelineSpecification);
+#endif
 		}
 
-		m_IndexBuffer = IndexBuffer::Create((uint32_t*) m_Indices.data(), (uint32_t)(m_Indices.size() * 3));
+		m_IndexBuffer = IndexBuffer::Create((uint32_t*) m_Indices.data(), (uint32_t)(m_Indices.size() * 3 * sizeof(uint32_t))); // TODO: temp test change Decide to use byte or 4byte as unit
 	}
 
 
