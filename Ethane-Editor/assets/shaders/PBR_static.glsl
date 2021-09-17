@@ -8,7 +8,7 @@ layout(location = 3) in vec3 a_Binormal;
 layout(location = 4) in vec2 a_TexCoord;
 // layout(location = 5) in int a_EntityID;
 
-// replaces
+// replace
 // layout(std140, binding = 0) uniform Camera
 // {
 // 	mat4 u_ViewProjection;
@@ -47,7 +47,7 @@ void main()
 
 	// v_EntityID = a_EntityID;
 
-	gl_Position = ubo.viewproj * vec4(a_Position, 1.0); // u_TransformUniform.Transform * 
+	gl_Position = ubo.viewproj * vec4(a_Position, 1.0); //  u_TransformUniform.Transform * 
 }
 
 
@@ -63,12 +63,12 @@ const int LighCount = 1;
 
 const vec3 Fdielectric = vec3(0.04);
 
-// struct Light 
-// {
-// 	vec3 Direction;
-// 	vec3 Radiance;
-// 	float Multiplier;
-// };
+struct DirectionalLight
+{
+	vec3 Direction;
+	vec3 Radiance;
+	float Multiplier;
+};
 
 struct VertexOutput
 {
@@ -85,7 +85,10 @@ layout(location = 0) in VertexOutput Input;
 
 layout(location = 0) out vec4 color;
 
+vec3 LightDir = vec3(1.0, 1.0, 1.0);
+
 void main()
 {
-	color = vec4(1.0, 0.2, 0.3, 1);
+	float intensity = clamp(dot(LightDir, Input.Normal), 0.2, 1.0);
+	color = vec4(1.0, 0.2, 0.3, 1) * intensity;
 }

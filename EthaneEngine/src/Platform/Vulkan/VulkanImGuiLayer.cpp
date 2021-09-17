@@ -138,6 +138,8 @@ namespace Ethane {
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}
 
+		SetDarkThemeColors();
+
 		uint32_t framesInFlight = swapChain.GetMaxFramesInFlight();// Renderer::GetConfig().FramesInFlight;
 		s_ImGuiCommandBuffers.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++)

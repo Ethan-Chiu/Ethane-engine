@@ -54,7 +54,7 @@ namespace Ethane {
 				nsc.Instance->OnUpdate(ts);
 			});
 		}
-		// Render 2D
+		// Find Primary Camera
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
 		{
@@ -71,9 +71,11 @@ namespace Ethane {
 				}
 			}
 		}
-
+		// Render
 		if (mainCamera)
 		{
+#if 0
+			// Render 2D
 			Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
 			
 			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
@@ -85,6 +87,7 @@ namespace Ethane {
 			}
 
 			Renderer2D::EndScene();
+#endif
 		}
 	}
 

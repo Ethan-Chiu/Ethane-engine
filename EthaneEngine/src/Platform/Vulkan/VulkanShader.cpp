@@ -73,6 +73,7 @@ namespace Ethane {
 	}
 
 	VulkanShader::VulkanShader(const std::string& filepath)
+		:m_FilePath(filepath)
 	{
 		ETH_PROFILE_FUNCTION();
 		ETH_CORE_INFO("Create Shader: {0}", filepath);

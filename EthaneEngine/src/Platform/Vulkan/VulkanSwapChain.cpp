@@ -246,6 +246,7 @@ namespace Ethane {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // TODO: remove this test 
+#if test
         if (m_Pipeline == nullptr)
         {
 
@@ -323,6 +324,7 @@ namespace Ethane {
                 m_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(), sizeof(indices[0]) * indices.size());
 
         }
+#endif
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // profiling
@@ -593,6 +595,7 @@ namespace Ethane {
         scissor.extent = m_Extent;
         vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
         
+#if test
         vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->GetVulkanPipeline());
         
         VkBuffer vertexbuffer = m_VertexBuffer->GetVulkanBuffer();
@@ -606,7 +609,7 @@ namespace Ethane {
         vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->GetPipelineLayout(), 0, 1, &_descriptorSet, 0, nullptr);
         
         vkCmdDrawIndexed(currentCommandBuffer, static_cast<uint32_t>(m_IndexBuffer->GetCount()), 1, 0, 0, 0);
-
+#endif
 
         vkCmdNextSubpass(currentCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -638,13 +641,14 @@ namespace Ethane {
         // TODO: test
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#if test
         glm::mat4 model = glm::rotate(glm::mat4(1.0), m_CurrentFrame* 1.0f * glm::radians(90.0f), glm::vec3(0, 0, 1));
         glm::mat4 proj = glm::perspectiveFov(45.0f, (float)m_Width, (float)m_Height, 0.001f, 1000.0f);
         glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0), {0.0, 0.0, 4.0}));
         glm::mat4 viewproj = proj * view;
         // viewproj = glm::mat4(1.0);
         m_UniformBuffers[m_CurrentFrame]->SetData(&viewproj, sizeof(viewproj));
+#endif
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

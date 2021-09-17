@@ -27,18 +27,31 @@ namespace Ethane {
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& e) override;
 	private:
-		bool OnKeyPressed(KeyPressedEvent& e);
-		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		void OnScenePlay();
+		void OnSceneStop();
 
 		void NewScene();
 		void OpenScene();
+		void OpenScene(const std::filesystem::path& filepath);
 		void SaveSceneAs();
+
+		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+
+		// UI Panels
+		void UI_Toolbar();
 	private:
 		Ref<Shader> m_FlatColorShader;
 		Ref<Framebuffer> m_Framebuffer;
 
 		EditorCamera m_EditorCamera;
 		// OrthographicCameraController m_CameraController;
+
+		enum class SceneState
+		{
+			Edit = 0, Play = 1
+		};
+		SceneState m_SceneState = SceneState::Edit;
 
 		Ref<Scene> m_ActiveScene;
 		Ref<SceneRenderer> m_ViewportRenderer;
@@ -57,6 +70,9 @@ namespace Ethane {
 		ContentBrowserPanel m_ContentBrowserPanel;
 
 		bool m_PrimaryCamera = true;
+
+		// Assets
+		Ref<Texture2D> m_IconPlay, m_IconStop;
 
 		// TODO: test remove
 		// Ref<Texture2D> m_TexTest = nullptr;

@@ -22,6 +22,7 @@ namespace Ethane {
 	{
 #if 1
 		m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
+
 		// Geometry
 		{
 			FramebufferSpecification geoFramebufferSpec;
@@ -53,9 +54,30 @@ namespace Ethane {
 			m_GeometryPipeline = Pipeline::Create(pipelineSpecification);
 
 			// TODO: test remove
-			m_testMesh = CreateRef<Mesh>("resources/meshes/default/Cube.fbx");
+			m_testMesh = CreateRef<Mesh>("resources/meshes/default/Cone.fbx");
 			m_testMaterial = Material::Create(ShaderLibrary::Get("PBR_static"), "tset Geo material");
 			// VulkanRendererAPI::UpdateMaterialForRendering(std::dynamic_pointer_cast<VulkanMaterial>(m_testMaterial));
+		}
+
+		// Grid
+		{
+			m_GridShader = ShaderLibrary::Get("Grid");
+			const float gridScale = 16.025f;
+			const float gridSize = 0.025f;
+			m_GridMaterial = Material::Create(m_GridShader);
+			// m_GridMaterial->Set("u_Settings.Scale", gridScale);
+			// m_GridMaterial->Set("u_Settings.Size", gridSize);
+		
+			PipelineSpecification pipelineSpec;
+			// pipelineSpec.DebugName = "Grid";
+			pipelineSpec.Shader = m_GridShader;
+			// pipelineSpec.BackfaceCulling = false;
+			pipelineSpec.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" }
+			};
+			pipelineSpec.RenderPass = m_GeometryPipeline->GetSpecification().RenderPass;
+			m_GridPipeline = Pipeline::Create(pipelineSpec);
 		}
 
 		// Composite
@@ -95,26 +117,6 @@ namespace Ethane {
 			// VulkanRendererAPI::UpdateMaterialForRendering(std::dynamic_pointer_cast<VulkanMaterial>(m_CompositeMaterial));
 		}
 
-		// Grid
-		// {
-		// 	m_GridShader = Renderer::GetShaderLibrary()->Get("Grid");
-		// 	const float gridScale = 16.025f;
-		// 	const float gridSize = 0.025f;
-		// 	m_GridMaterial = Material::Create(m_GridShader);
-		// 	m_GridMaterial->Set("u_Settings.Scale", gridScale);
-		// 	m_GridMaterial->Set("u_Settings.Size", gridSize);
-		// 
-		// 	PipelineSpecification pipelineSpec;
-		// 	pipelineSpec.DebugName = "Grid";
-		// 	pipelineSpec.Shader = m_GridShader;
-		// 	pipelineSpec.BackfaceCulling = false;
-		// 	pipelineSpec.Layout = {
-		// 		{ ShaderDataType::Float3, "a_Position" },
-		// 		{ ShaderDataType::Float2, "a_TexCoord" }
-		// 	};
-		// 	pipelineSpec.RenderPass = m_GeometryPipeline->GetSpecification().RenderPass;
-		// 	m_GridPipeline = Pipeline::Create(pipelineSpec);
-		// }
 #endif 
 	}
 
@@ -235,11 +237,11 @@ namespace Ethane {
 		// }
 
 		// Grid
-		// if (GetOptions().ShowGrid)
-		// {
-		// 	const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
-		// 	Renderer::RenderQuad(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial, transform);
-		// }
+		if (GetOptions().ShowGrid)
+		{
+			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
+			VulkanRendererAPI::DrawQuad(m_GridPipeline, m_GridMaterial, transform);
+		}
 
 		VulkanRendererAPI::EndRenderPass();
 	}

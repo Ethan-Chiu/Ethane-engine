@@ -16,6 +16,9 @@
 
 namespace Ethane {
 
+	// TODO: temp
+	extern const std::filesystem::path g_AssetsPath;
+
 	EditorLayer::EditorLayer()
 		:Layer("EditorLayer") // , m_CameraController(1280.0f / 720.0f)
 	{
@@ -48,6 +51,10 @@ namespace Ethane {
 
 		// TODO: test
 		m_ViewportRenderer = CreateRef<SceneRenderer>(m_ActiveScene);
+
+		// Assets TODO: change path
+		m_IconPlay = Texture2D::Create("Resources/Icons/Viewport/PlayButton.png");
+		m_IconStop = Texture2D::Create("Resources/Icons/Viewport/StopButton.png");
 
 		// m_CameraController.SetZoomLevel(0.5f);
 	}
@@ -89,12 +96,25 @@ namespace Ethane {
 		// {
 		// 	m_CameraController.OnUpdate(ts);
 		// }
-		m_EditorCamera.OnUpdate(ts);
 
-		// Render
+		// Update Scene and Render
 		Renderer2D::ResetStats();
 
-		m_ActiveScene->OnUpdateEditor(m_ViewportRenderer, ts, m_EditorCamera);
+		switch (m_SceneState)
+		{
+			case SceneState::Edit:
+			{
+				m_EditorCamera.OnUpdate(ts);
+
+				m_ActiveScene->OnUpdateEditor(m_ViewportRenderer, ts, m_EditorCamera);
+				break;
+			}
+			case SceneState::Play:
+			{
+				m_ActiveScene->OnUpdateRuntime(ts);
+				break;
+			}
+		}
 
 #if OpenGL
 		m_Framebuffer->Bind();
@@ -235,8 +255,8 @@ namespace Ethane {
 		if (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y)
 			m_ViewportResize = true;
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-		ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-		ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+		ImVec2 uv_min = ImVec2(0.0f, 1.0f);                 // Top-left
+		ImVec2 uv_max = ImVec2(1.0f, 0.0f);                 // Lower-right
 		ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 		ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 		
@@ -252,6 +272,17 @@ namespace Ethane {
 		// }
 		
 		UIImage(m_ViewportRenderer->GetFinalPassImage()).Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
+
+		// Drag File in Viewport
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_FILE"))
+			{
+				const wchar_t* filepath = (const wchar_t*)payload->Data;
+				OpenScene(std::filesystem::path(g_AssetsPath) / filepath);
+			}
+			ImGui::EndDragDropTarget();
+		}
 
 		//Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -304,6 +335,50 @@ namespace Ethane {
 		ImGui::End();
 		ImGui::PopStyleVar();
 		
+		UI_Toolbar();
+
+		ImGui::End();
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		m_SceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		m_SceneState = SceneState::Edit;
+
+	}
+
+	void EditorLayer::UI_Toolbar()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		auto& colors = ImGui::GetStyle().Colors;
+		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f));
+		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(buttonActive.x, buttonActive.y, buttonActive.z, 0.5f));
+
+		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		float size = ImGui::GetWindowHeight() - 4.0f;
+		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_IconPlay : m_IconStop;
+		ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+		std::string tempID = "PlayAndPauseIcons";
+		UIImageButton temp = UIImageButton(tempID.c_str(), icon);
+		temp.Draw(ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0);
+		if (temp.Pressed())
+		{
+			if (m_SceneState == SceneState::Edit)
+				OnScenePlay();
+			else if (m_SceneState == SceneState::Play)
+				OnSceneStop();
+		}
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(3);
 		ImGui::End();
 	}
 
@@ -390,9 +465,15 @@ namespace Ethane {
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
+
 	void EditorLayer::OpenScene()
 	{
 		std::string filepath = FileDialogs::OpenFile("Ethane Scene (*.ethane)\0*.ethane\0");
+		OpenScene(filepath);
+	}
+
+	void EditorLayer::OpenScene(const std::filesystem::path& filepath)
+	{
 		if (!filepath.empty())
 		{
 			m_ActiveScene = CreateRef<Scene>();
@@ -400,9 +481,10 @@ namespace Ethane {
 			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(filepath);
+			serializer.Deserialize(filepath.string());
 		}
 	}
+
 	void EditorLayer::SaveSceneAs()
 	{
 		std::string filepath = FileDialogs::SaveFile("Ethane Scene (*.ethane)\0*.ethane\0");

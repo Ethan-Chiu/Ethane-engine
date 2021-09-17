@@ -87,8 +87,12 @@ namespace Ethane {
 			char Padding3[3] = { 0,0,0 };
 		} RendererDataUB;
 
+		Ref<Shader> m_GridShader;
+
 		Ref<Material> m_CompositeMaterial;
-		
+		Ref<Material> m_GridMaterial;
+
+		Ref<Pipeline> m_GridPipeline;
 		Ref<Pipeline> m_GeometryPipeline;
 		Ref<Pipeline> m_SelectedGeometryPipeline;
 		Ref<Pipeline> m_GeometryWireframePipeline;
@@ -100,10 +104,6 @@ namespace Ethane {
 		Ref<Material> m_PreDepthMaterial;
 		Ref<Pipeline> m_SkyboxPipeline;
 		Ref<Material> m_SkyboxMaterial;
-
-		// Grid
-		Ref<Pipeline> m_GridPipeline;
-		Ref<Shader> m_GridShader;
 
 		struct DrawCommand
 		{

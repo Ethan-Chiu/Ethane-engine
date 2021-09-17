@@ -395,7 +395,7 @@ namespace Ethane {
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
 
-		// UpdateMaterialForRendering(vulkanMaterial, uniformBufferSet);
+		UpdateMaterialForRendering(vulkanMaterial);
 
 		VkDescriptorSet descriptorSet = vulkanMaterial->GetDescriptorSet(frameIndex);
 		if (descriptorSet)
@@ -403,7 +403,7 @@ namespace Ethane {
 
 		// Buffer uniformStorageBuffer = vulkanMaterial->GetUniformStorageBuffer();
 
-		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
+		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		vkCmdDrawIndexed(commandBuffer, s_Data->QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		// });
