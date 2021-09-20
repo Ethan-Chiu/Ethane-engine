@@ -78,8 +78,17 @@ namespace Ethane {
 					Vertex vertex;
 					vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 					vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+					// ETH_CORE_INFO("{0} {1} {2}", mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
 					
-					ETH_CORE_INFO("{0} {1} {2}", mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+					// AABB
+					auto& min = submesh.Aabb.Min;
+					auto& max = submesh.Aabb.Max;
+					min.x = glm::min(vertex.Position.x, min.x);
+					min.y = glm::min(vertex.Position.y, min.y);
+					min.z = glm::min(vertex.Position.z, min.z);
+					max.x = glm::max(vertex.Position.x, max.x);
+					max.y = glm::max(vertex.Position.y, max.y);
+					max.z = glm::max(vertex.Position.z, max.z);
 
 					if (mesh->HasTangentsAndBitangents())
 					{
@@ -100,11 +109,27 @@ namespace Ethane {
 				ETH_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
+
+				m_TriangleCache[m].emplace_back(m_StaticVertices[index.V1 + submesh.BaseVertex], m_StaticVertices[index.V2 + submesh.BaseVertex], m_StaticVertices[index.V3 + submesh.BaseVertex]);
 			}
 		}
 
+		// Set submesh transform and name
 		TraverseNodes(scene->mRootNode);
 
+		for (const auto& submesh : m_Submeshes)
+		{
+			AABB SubmeshAABB = submesh.Aabb;
+			glm::vec3 min = glm::vec3(submesh.Transform * glm::vec4(SubmeshAABB.Min, 1.0f));
+			glm::vec3 max = glm::vec3(submesh.Transform * glm::vec4(SubmeshAABB.Max, 1.0f));
+
+			m_BoundingBox.Min.x = glm::min(m_BoundingBox.Min.x, min.x);
+			m_BoundingBox.Min.y = glm::min(m_BoundingBox.Min.y, min.y);
+			m_BoundingBox.Min.z = glm::min(m_BoundingBox.Min.z, min.z);
+			m_BoundingBox.Max.x = glm::max(m_BoundingBox.Max.x, max.x);
+			m_BoundingBox.Max.y = glm::max(m_BoundingBox.Max.y, max.y);
+			m_BoundingBox.Max.z = glm::max(m_BoundingBox.Max.z, max.z);
+		}
 		
 		// material
 		// {

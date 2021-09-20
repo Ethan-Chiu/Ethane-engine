@@ -130,7 +130,7 @@ namespace Ethane {
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex)
 	{
-		uint32_t binding = 0; // TODO
+		uint32_t binding = 1; // TODO
 		// Texture is already set
 		if (binding < m_TextureArrays.size() && m_TextureArrays[binding].size() < arrayIndex) // already in list TODO: check if they are the same
 			return;
@@ -140,9 +140,13 @@ namespace Ethane {
 			m_TextureArrays[binding].resize(arrayIndex + 1);
 	
 		m_TextureArrays[binding][arrayIndex] = texture;
-	
-		const VkWriteDescriptorSet* wds = std::dynamic_pointer_cast<VulkanShader>(m_Shader)->GetWriteDescriptorSet(0, name);
-		ETH_CORE_ASSERT(wds);
+
+		if (m_DescriptorArrays.find(binding) == m_DescriptorArrays.end())
+		{
+			const VkWriteDescriptorSet* wds = std::dynamic_pointer_cast<VulkanShader>(m_Shader)->GetWriteDescriptorSet(0, name);
+			ETH_CORE_ASSERT(wds);
+			m_DescriptorArrays[binding] = *wds;
+		}
 	}
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<Image2D>& image)
@@ -378,6 +382,7 @@ namespace Ethane {
 		// vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors[frameIndex].size(), m_WriteDescriptors[frameIndex].data(), 0, nullptr);
 		
 		// TODO: test
+		std::vector<VkDescriptorImageInfo> arrayImageInfos;
 		std::vector<VkWriteDescriptorSet> writeDescriptors{};
 
 		auto descriptorSet = vulkanShader->CreateDescriptorSets(0);
@@ -391,7 +396,23 @@ namespace Ethane {
 				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSetsAndPool[frameIndex].DescriptorSets[0];
 			}
 		}
-		// update other desciptor ( textures )
+		// update array descriptors
+		if (!m_DescriptorArrays.empty())
+		{
+			for (auto&& [binding, wds] : m_DescriptorArrays)
+			{
+				for (auto tex : m_TextureArrays[binding])
+				{
+					Ref<VulkanTexture2D> texture = std::dynamic_pointer_cast<VulkanTexture2D>(tex);
+					arrayImageInfos.emplace_back(texture->GetDescriptorImageInfo());
+				}
+				auto& writeDescritorSet = writeDescriptors.emplace_back(wds);
+				writeDescritorSet.dstSet = m_DescriptorSetsAndPool[frameIndex].DescriptorSets[0];
+				writeDescritorSet.descriptorCount = arrayImageInfos.size();
+				writeDescritorSet.pImageInfo = arrayImageInfos.data();
+			}
+		}
+		// update other descriptors ( textures )
 		if (!m_WriteDescriptors.empty())
 		{
 			for (auto& wds : m_WriteDescriptors[frameIndex])
@@ -402,6 +423,7 @@ namespace Ethane {
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
 
 		m_WriteDescriptors[frameIndex].clear();
+		m_DescriptorArrays.clear();
 	}
 
 }

@@ -18,11 +18,16 @@ namespace Ethane {
 		// m_Mesh = CreateRef<Mesh>("resources/meshes/default/Cube.fbx");
 		// m_Mesh = CreateRef<Mesh>("resources/meshes/default/Sphere.fbx");
 		// m_Material = CreateRef<Material>();
+		Init();
 	}
 
 	Scene::~Scene()
 	{
+	}
 
+	void Scene::Init()
+	{
+		m_Renderer2D = CreateRef<Renderer2D>();
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -114,8 +119,9 @@ namespace Ethane {
 
 		renderer->EndScene();
 #endif
-#if 0
-		Renderer2D::BeginScene(camera);
+
+#if 1
+		m_Renderer2D->BeginScene(camera);
 
 		// Srpite
 		{
@@ -124,7 +130,7 @@ namespace Ethane {
 			{
 				auto [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-				Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color, (int)entity);
+				m_Renderer2D->DrawQuad(transform.GetTransform(), sprite.Color, (int)entity);
 			}
 		}
 		// Texture2D
@@ -134,7 +140,7 @@ namespace Ethane {
 			{
 				auto [transform, texture] = view.get<TransformComponent, Texture2DRendererComponent>(entity);
 
-				Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+				m_Renderer2D->DrawTexture(transform.GetTransform(), texture, (int)entity);
 			}
 		}
 		// SubTexture
@@ -144,14 +150,12 @@ namespace Ethane {
 			{
 				auto [transform, texture] = view.get<TransformComponent, SubTexture2DRendererComponent>(entity);
 
-				Renderer2D::DrawTexture(transform.GetTransform(), texture, (int)entity);
+				m_Renderer2D->DrawTexture(transform.GetTransform(), texture, (int)entity);
 			}
 		}
 
-		Renderer2D::EndScene();
+		m_Renderer2D->EndScene();
 # endif
-
-		// Renderer::RenderMesh(m_Mesh);
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -222,6 +226,11 @@ namespace Ethane {
 
 	template<>
 	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
 	{
 	}
 }

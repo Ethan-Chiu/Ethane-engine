@@ -40,6 +40,10 @@ namespace Ethane {
 
 		// UI Panels
 		void UI_Toolbar();
+
+		// Helper function
+		std::pair<float, float> GetViewportSpaceMousePosition();
+		std::pair<glm::vec3, glm::vec3> CastRay(const EditorCamera& camera, float mx, float my);
 	private:
 		Ref<Shader> m_FlatColorShader;
 		Ref<Framebuffer> m_Framebuffer;

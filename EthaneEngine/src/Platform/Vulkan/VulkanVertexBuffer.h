@@ -22,7 +22,6 @@ namespace Ethane {
 		virtual void SetData(const void* data, uint32_t size) override { SetData(data, size, 0); };
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0);
-		virtual void RT_SetData(void* data, uint32_t size, uint32_t offset = 0);
 		
 		virtual void SetLayout(const VertexBufferLayout& layout) override {} // test
 	

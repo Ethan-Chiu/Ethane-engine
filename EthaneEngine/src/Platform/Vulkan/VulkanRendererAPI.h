@@ -18,6 +18,33 @@ namespace Ethane {
 	class VulkanRendererAPI : public RendererAPI
 	{
 	public:
+		struct VulkanRendererData
+		{
+			// RendererCapabilities RenderCaps;
+			// Ref<Texture2D> BRDFLut;
+
+			Ref<VertexBuffer> QuadVertexBuffer;
+			Ref<IndexBuffer> QuadIndexBuffer;
+			VulkanShader::DescriptorSetsAndPool QuadDescriptorSet;
+
+			// std::unordered_map<SceneRenderer*, std::vector<VulkanShader::DescriptorSetsAndPool>> RendererDescriptorSet;
+			VkDescriptorSet ActiveRendererDescriptorSet = nullptr;
+			std::vector<VkDescriptorPool> DescriptorPools;
+
+			// TODO: stats
+			std::vector<uint32_t> DescriptorPoolAllocationCount;
+
+			// UniformBufferSet -> Shader Hash -> Frame -> WriteDescriptor
+			// std::unordered_map<UniformBufferSet*, std::unordered_map<uint64_t, std::vector<std::vector<VkWriteDescriptorSet>>>> UniformBufferWriteDescriptorCache;
+			// std::unordered_map<StorageBufferSet*, std::unordered_map<uint64_t, std::vector<std::vector<VkWriteDescriptorSet>>>> StorageBufferWriteDescriptorCache;
+
+			// Default samplers
+			VkSampler SamplerClamp = nullptr;
+
+			// int32_t SelectedDrawCall = -1;
+			// int32_t DrawCallCount = 0;
+		};
+	public:
 		VulkanRendererAPI() = default;
 		~VulkanRendererAPI() = default;
 
@@ -41,16 +68,19 @@ namespace Ethane {
 
 		static VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo);
 
-		virtual void DrawIndexed(uint32_t indexCount = 0) override {};
-		virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override {};
+		// Draw
+		virtual void DrawIndexed(uint32_t indexCount = 0) override {}; // TODO: remove
+		virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override {}; // TODO: remove
 
-		static void DrawQuad(Ref<Pipeline> pipeline, Ref<Material> material, const glm::mat4& transform) ; // Ref<RenderCommandBuffer> renderCommandBuffer, Ref<StorageBufferSet> storageBufferSet
-		
-		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material); // Ref<RenderCommandBuffer> renderCommandBuffer,
+		static void DrawQuad(Ref<Pipeline> pipeline, Ref<Material> material, const glm::mat4& transform) ; // Ref<StorageBufferSet> storageBufferSet
+
+		static void DrawFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material); // Ref<RenderCommandBuffer> renderCommandBuffer,
 		// void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) override;
 
 		static void DrawMesh(Ref<Pipeline> pipeline, Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform); // , Ref<MaterialTable> materialTable
 		// virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override;
+
+		static void DrawGeometry(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexbuffer, Ref<IndexBuffer> indexbuffer, Ref<Material> material, const glm::mat4& transform = glm::mat4(1.0f), uint32_t indexCount = 0);
 
 		// Update uniform buffer value
 		static void SetUniformBuffer(uint32_t binding, uint32_t set, const void* data, uint32_t size, uint32_t offset = 0);
@@ -58,6 +88,7 @@ namespace Ethane {
 		inline static Ref<VulkanUniformBufferSet> s_UniformBufferSet;
 		inline static Ref<RenderCommandBuffer> s_RenderCommandBuffer;
 
+		static VulkanRendererData* s_Data;
 	};
 
 }

@@ -178,9 +178,9 @@ namespace Ethane {
 
 		// std::unordered_map<uint32_t, uint64_t> m_ImageHashes;
 
-		std::vector<std::vector<VkWriteDescriptorSet>> m_WriteDescriptors;
-
-		std::unordered_map<std::string, VkDescriptorImageInfo> m_ImageInfos;
+		// Write Descriptors
+		std::unordered_map<uint32_t, VkWriteDescriptorSet> m_DescriptorArrays; // binding
+		std::vector<std::vector<VkWriteDescriptorSet>> m_WriteDescriptors; // frame
 
 
 		// TODO: temp remove

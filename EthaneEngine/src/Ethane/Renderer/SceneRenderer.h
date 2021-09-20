@@ -116,7 +116,6 @@ namespace Ethane {
 
 		// TODO: remove
 		Ref<Texture2D> m_Texture2D = nullptr;
-		Ref<Mesh> m_testMesh = nullptr;
 		Ref<Material> m_testMaterial = nullptr;
 	};
 

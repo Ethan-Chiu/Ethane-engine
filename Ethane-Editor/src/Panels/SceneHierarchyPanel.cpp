@@ -1,5 +1,6 @@
 #include "SceneHierarchyPanel.h"
 #include "Ethane/Scene/Components.h"
+#include "Ethane/Asset/AssetManager.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
@@ -35,7 +36,69 @@ namespace Ethane {
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
-				m_Context->CreateEntity("Empty Entity");
+			{
+				SetSelectdEntity(m_Context->CreateEntity("Empty Entity"));
+			}
+			if (ImGui::MenuItem("Camera"))
+			{
+				auto newEntity = m_Context->CreateEntity("Camera");
+				newEntity.AddComponent<CameraComponent>();
+				SetSelectdEntity(newEntity);
+			}
+
+			if (ImGui::BeginMenu("3D"))
+			{
+				if (ImGui::MenuItem("Cube"))
+				{
+					auto newEntity = m_Context->CreateEntity("Cube");
+					Ref<Mesh> mesh = AssetManager::GetAssetMesh("resources/meshes/default/Cube.fbx"); // TODO
+					newEntity.AddComponent<MeshComponent>(mesh);
+					SetSelectdEntity(newEntity);
+				}
+				if (ImGui::MenuItem("Sphere"))
+				{
+					auto newEntity = m_Context->CreateEntity("Sphere");
+					Ref<Mesh> mesh = AssetManager::GetAssetMesh("resources/meshes/default/Sphere.fbx");// TODO
+					newEntity.AddComponent<MeshComponent>(mesh);
+					SetSelectdEntity(newEntity);
+				}
+				if (ImGui::MenuItem("Capsule"))
+				{
+					auto newEntity = m_Context->CreateEntity("Capsule");
+					Ref<Mesh> mesh = AssetManager::GetAssetMesh("resources/meshes/default/Capsule.fbx");// TODO
+					newEntity.AddComponent<MeshComponent>(mesh);
+					SetSelectdEntity(newEntity);
+				}
+				if (ImGui::MenuItem("Cylinder"))
+				{
+					auto newEntity = m_Context->CreateEntity("Cylinder");
+					Ref<Mesh> mesh = AssetManager::GetAssetMesh("resources/meshes/default/Cylinder.fbx");// TODO
+					newEntity.AddComponent<MeshComponent>(mesh);
+					SetSelectdEntity(newEntity);
+				}
+				if (ImGui::MenuItem("Torus"))
+				{
+					auto newEntity = m_Context->CreateEntity("Torus");
+					Ref<Mesh> mesh = AssetManager::GetAssetMesh("resources/meshes/default/Torus.fbx");// TODO
+					newEntity.AddComponent<MeshComponent>(mesh);
+					SetSelectdEntity(newEntity);
+				}
+				if (ImGui::MenuItem("Plane"))
+				{
+					auto newEntity = m_Context->CreateEntity("Plane");
+					Ref<Mesh> mesh = AssetManager::GetAssetMesh("resources/meshes/default/Plane.fbx");// TODO
+					newEntity.AddComponent<MeshComponent>(mesh);
+					SetSelectdEntity(newEntity);
+				}
+				if (ImGui::MenuItem("Cone"))
+				{
+					auto newEntity = m_Context->CreateEntity("Cone");
+					Ref<Mesh> mesh = AssetManager::GetAssetMesh("resources/meshes/default/Cone.fbx");// TODO
+					newEntity.AddComponent<MeshComponent>(mesh);
+					SetSelectdEntity(newEntity);
+				}
+				ImGui::EndMenu();
+			}
 
 			ImGui::EndPopup();
 		}

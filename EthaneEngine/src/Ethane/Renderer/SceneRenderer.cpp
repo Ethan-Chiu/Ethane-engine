@@ -54,7 +54,6 @@ namespace Ethane {
 			m_GeometryPipeline = Pipeline::Create(pipelineSpecification);
 
 			// TODO: test remove
-			m_testMesh = CreateRef<Mesh>("resources/meshes/default/Cone.fbx");
 			m_testMaterial = Material::Create(ShaderLibrary::Get("PBR_static"), "tset Geo material");
 			// VulkanRendererAPI::UpdateMaterialForRendering(std::dynamic_pointer_cast<VulkanMaterial>(m_testMaterial));
 		}
@@ -225,9 +224,11 @@ namespace Ethane {
 
 		// Render entities
 		for (auto& dc : m_DrawList)
-			VulkanRendererAPI::DrawMesh(m_GeometryPipeline, dc.Mesh, dc.Material, dc.Transform);
-
-		VulkanRendererAPI::DrawMesh(m_GeometryPipeline, m_testMesh, m_testMaterial, glm::mat4(1.0f));
+		{
+			// VulkanRendererAPI::DrawMesh(m_GeometryPipeline, dc.Mesh, dc.Material, dc.Transform);
+			VulkanRendererAPI::DrawMesh(m_GeometryPipeline, dc.Mesh, m_testMaterial, dc.Transform);
+		}
+		 // test VulkanRendererAPI::DrawMesh(m_GeometryPipeline, m_testMesh, m_testMaterial, glm::mat4(1.0f));
 
 		// for (auto& dc : m_SelectedMeshDrawList)
 		// {
@@ -277,7 +278,7 @@ namespace Ethane {
 
 		m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
 
-		VulkanRendererAPI::SubmitFullscreenQuad(m_CompositePipeline, m_CompositeMaterial);
+		VulkanRendererAPI::DrawFullscreenQuad(m_CompositePipeline, m_CompositeMaterial);
 		// VulkanRendererAPI::SubmitFullscreenQuad(m_CommandBuffer, m_JumpFloodCompositePipeline, nullptr, m_JumpFloodCompositeMaterial);
 		VulkanRendererAPI::EndRenderPass();
 
@@ -306,6 +307,8 @@ namespace Ethane {
 
 		VulkanRendererAPI::EndRenderCommandBuffer();
 		m_CommandBuffer->Submit();
+
+		m_DrawList.clear();
 	}
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage()

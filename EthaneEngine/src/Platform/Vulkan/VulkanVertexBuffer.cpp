@@ -69,7 +69,7 @@ namespace Ethane {
 		// create staging buffer
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		// copy data to staging buffer
 		void* dstData;
@@ -83,10 +83,6 @@ namespace Ethane {
 		// cleanup staging buffer
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
-	}
-
-	void VulkanVertexBuffer::RT_SetData(void* data, uint32_t size, uint32_t offset)
-	{
 	}
 
 	///////////////////////////////////////////////////////////////////////////

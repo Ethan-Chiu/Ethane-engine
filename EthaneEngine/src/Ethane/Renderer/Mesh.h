@@ -6,6 +6,8 @@
 #include "VertexBuffer.h"
 #include "Shader.h"
 
+#include "Ethane/Math/AABB.h"
+
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
@@ -57,6 +59,7 @@ namespace Ethane {
 		uint32_t VertexCount;
 
 		glm::mat4 Transform{ 1.0f };
+		AABB Aabb;
 
 		std::string NodeName, MeshName;
 	};
@@ -67,6 +70,10 @@ namespace Ethane {
 		Mesh() = default;
 		Mesh(const std::string& filename);
 		~Mesh() = default;
+
+		// Getter
+		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
+		const std::vector<Triangle> GetTrianglesCacheInSubmesh(uint32_t index) const { return m_TriangleCache.at(index); }
 	private:
 		void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 	private:
@@ -77,6 +84,7 @@ namespace Ethane {
 		glm::mat4 m_InverseTransform;
 
 		std::vector<Submesh> m_Submeshes;
+		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 
 		Ref<Shader> m_MeshShader;
 		Ref<VertexBuffer> m_VertexBuffer;
@@ -85,6 +93,8 @@ namespace Ethane {
 
 		std::vector<Vertex> m_StaticVertices;
 		std::vector<Index> m_Indices;
+
+		AABB m_BoundingBox;
 
 		std::unordered_map<aiNode*, std::vector<uint32_t>> m_NodeMap;
 

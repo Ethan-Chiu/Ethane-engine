@@ -11,117 +11,67 @@
 #include "Pipeline.h"
 #include "IndexBuffer.h"
 
+// TODO: temp
+#include "Platform/Vulkan/VulkanRendererAPI.h"
+
 namespace Ethane {
 
-	struct QuadVertex
+	Renderer2D::Renderer2D()
 	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-		glm::vec2 TexCoord;
-		float TexIndex;
-		float TilingFactor;
+		Init();
+	}
 
-		// Editor only
-		int EntityID;
-	};
-
-	struct LineVertex
+	Renderer2D::~Renderer2D()
 	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-	};
-
-	struct Renderer2DData
-	{
-		static const uint32_t MaxQuads = 10000;
-		static const uint32_t MaxVertices = 4 * MaxQuads;
-		static const uint32_t MaxIndices = 6 * MaxQuads;
-		static const uint32_t MaxTextureSlots = 32;
-
-		static const uint32_t MaxLines = 20000;
-		static const uint32_t MaxLineVertices = MaxLines * 2;
-		static const uint32_t MaxLineIndices = MaxLines * 6;
-
-		Ref<Shader> TextureShader;
-		Ref<Pipeline> QuadPipeline;
-		Ref<VertexBuffer> QuadVertexBuffer;
-		Ref<IndexBuffer> QuadIndexBuffer;
-
-		Ref<Texture2D> WhiteTexture;
-
-		uint32_t QuadIndexCount = 0;
-		QuadVertex* QuadVertexBufferBase = nullptr;
-		QuadVertex* QuadVertexBufferPtr = nullptr;
-
-		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex = 1;
-
-		glm::vec4 QuadVertexPositions[4];
-
-		// lines
-		// Ref<Pipeline> LinePipeline;
-		// Ref<VertexBuffer> LineVertexBuffer;
-		// Ref<IndexBuffer> LineIndexBuffer;
-		// Ref<Shader> LineShader;
-		// 
-		// uint32_t LineIndexCount = 0;
-		// LineVertex* LineVertexBufferBase = nullptr;
-		// LineVertex* LIneVertexBufferPtr = nullptr;
-
-		Renderer2D::Statistics Stats;
-
-		struct CameraData
-		{
-			glm::mat4 ViewProjection;
-		};
-		CameraData CameraBuffer;
-			// delete
-			// Ref<UniformBuffer> CameraUniformBuffer;
-
-		// Grid
-		// struct TransformData
-		// {
-		// 	glm::mat4 Transform;
-		// };
-		struct SettingsData
-		{
-			float GridScale = 16.025f;
-			float GridRes = 0.025f;
-		};
-		// TransformData TransformBuffer;
-		// Ref<UniformBuffer> TransformUniformBuffer;
-		SettingsData SettingsBuffer;
-		Ref<UniformBuffer> SettingsUniformBuffer;
-		Ref<Shader> GridShader;
-	};
-
-	static Renderer2DData s_Data;
+		Shutdown();
+	}
 
 	void Renderer2D::Init()
 	{
+		m_CommandBuffer = RenderCommandBuffer::Create(0, "Renderer2D");
 		ETH_PROFILE_FUNCTION();
+		
+		FramebufferSpecification framebufferSpec;
+		framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::Depth };
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearOnLoad = false;
+		framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
+		framebufferSpec.DebugName = "Renderer2D Framebuffer";
+		// TODO: 
+		framebufferSpec.Width = 1600;
+		framebufferSpec.Height = 900;
+		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+
+		RenderPassSpecification renderPassSpec;
+		renderPassSpec.TargetFramebuffer = framebuffer;
+		Ref<RenderPass> renderPass = RenderPass::Create(renderPassSpec);
+
+		// White Texture
+		m_WhiteTexture = Texture2D::Create(1, 1);
+		uint32_t whiteTextureData = 0xffffffff;
+		m_WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+
+		int32_t samplers[Config::MaxTextureSlots];
+		for (uint32_t i = 0; i < Config::MaxTextureSlots; i++)
+			samplers[i] = i;
+
+		m_TextureSlots[0] = m_WhiteTexture;
+
+		// Quad Vertex
+		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+
 		{
-			FramebufferSpecification framebufferSpec;
-			framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::Depth };
-			framebufferSpec.Samples = 1;
-			framebufferSpec.ClearOnLoad = false;
-			framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
-			framebufferSpec.DebugName = "Renderer2D Framebuffer";
-			// TODO: 
-			framebufferSpec.Width = 1600;
-			framebufferSpec.Height = 900;
-			Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+			m_QuadVertexBufferBase = new QuadVertex[Config::MaxVertices];
+			m_QuadVertexBuffer = VertexBuffer::Create(Config::MaxVertices * sizeof(QuadVertex));
 
-			RenderPassSpecification renderPassSpec;
-			renderPassSpec.TargetFramebuffer = framebuffer;
-			Ref<RenderPass> renderPass = RenderPass::Create(renderPassSpec);
+			Ref<Shader> shader = ShaderLibrary::Get("Texture");
 
-			s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
-
-			s_Data.TextureShader = ShaderLibrary::Get("Texture");
-
+			// Quad Pipeline
 			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Shader = s_Data.TextureShader;
+			pipelineSpecification.Shader = shader;
 			pipelineSpecification.RenderPass = renderPass;
 			pipelineSpecification.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
@@ -129,15 +79,13 @@ namespace Ethane {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 				{ ShaderDataType::Float, "a_TexIndex" },
 				{ ShaderDataType::Float, "a_TilingFactor" },
-				{ ShaderDataType::Int, "a_EntityID" },
+				// { ShaderDataType::Int, "a_EntityID" },
 			};
-			s_Data.QuadPipeline = Pipeline::Create(pipelineSpecification);	
+			m_QuadPipeline = Pipeline::Create(pipelineSpecification);	
 
-			s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
-
-			uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
+			uint32_t* quadIndices = new uint32_t[Config::MaxIndices];
 			uint32_t offset = 0;
-			for (uint32_t i = 0; i < s_Data.MaxIndices; i += 6)
+			for (uint32_t i = 0; i < Config::MaxIndices; i += 6)
 			{
 				quadIndices[i + 0] = offset + 0;
 				quadIndices[i + 1] = offset + 1;
@@ -150,24 +98,13 @@ namespace Ethane {
 				offset += 4;
 			}
 		
-			s_Data.QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
+			m_QuadIndexBuffer = IndexBuffer::Create(quadIndices, Config::MaxIndices);
 			delete[] quadIndices;
+
+			m_QuadMaterial = Material::Create(shader, "QuadMaterial");
 		}
 
-		s_Data.WhiteTexture = Texture2D::Create(1, 1);
-		uint32_t whiteTextureData = 0xffffffff;
-		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-
-		int32_t samplers[s_Data.MaxTextureSlots];
-		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
-			samplers[i] = i;
-
-		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
-
-		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+		
 
 		// lines
 		// {
@@ -191,36 +128,28 @@ namespace Ethane {
 		// 	s_Data.LineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.MaxLineIndices);
 		// 	delete[] lineIndices;
 		// }
-
-			// delete
-			// s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
-
-
-		// grid
-		// s_Data.SettingsUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::SettingsData), 1);
-		// s_Data.GridShader = Shader::Create("assets/shaders/Grid.glsl");
 	}
 
 	void Renderer2D::Shutdown()
 	{
 		ETH_PROFILE_FUNCTION();
 
-		delete[] s_Data.QuadVertexBufferBase;
+		delete[] m_QuadVertexBufferBase;
 	}
 
 	void Renderer2D::StartBatch()
 	{
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-		s_Data.TextureSlotIndex = 1;
+		m_QuadIndexCount = 0;
+		m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
+		m_TextureSlotIndex = 1;
 	}
 
 	void Renderer2D::BeginScene(const Camera& camera, glm::mat4& transform)
 	{
 		ETH_PROFILE_FUNCTION();
 
-		s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+		m_ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		// TextureShader->SetUniformBufferByBindingPoint(0, &m_ViewProjection, sizeof(CameraUB));
 
 		StartBatch();
 	}
@@ -229,8 +158,8 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &camera.GetViewProjectionMatrix(), sizeof(Renderer2DData::CameraData));
+		// m_TextureShader->Bind();
+		// m_TextureShader->SetUniformBufferByBindingPoint(0, &camera.GetViewProjectionMatrix(), sizeof(CameraUB));
 
 		StartBatch();
 	}
@@ -239,13 +168,9 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
+		m_ViewProjection = camera.GetViewProjection();
 		// s_Data.TextureShader->SetUniformBufferByName("Camera", &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
-		s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
-
-
-		// Grid
-		// s_Data.SettingsUniformBuffer->SetData(&s_Data.SettingsBuffer, sizeof(Renderer2DData::SettingsData));
+		// s_Data.TextureShader->SetUniformBufferByBindingPoint(0, &s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 		StartBatch();
 	}
@@ -259,12 +184,13 @@ namespace Ethane {
 
 	void Renderer2D::Flush()
 	{
-		if (s_Data.QuadIndexCount == 0)
+		if (m_QuadIndexCount == 0)
 			return; // Nothing to draw
 
-		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+		uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
+		m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, dataSize);
 
+#if OpenGL
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 			s_Data.TextureSlots[i]->Bind(i);
 
@@ -272,24 +198,41 @@ namespace Ethane {
 
 		s_Data.QuadPipeline->Bind();
 		s_Data.QuadIndexBuffer->Bind();
+
 		RenderCommand::DrawIndexed(s_Data.QuadIndexCount);
+#endif
+		VulkanRendererAPI::BeginRenderCommandBuffer(m_CommandBuffer);
 
+		VulkanRendererAPI::BeginRenderPass(m_QuadPipeline->GetSpecification().RenderPass);
 
-		// Grid
-		// s_Data.GridShader->Bind();
+		for (uint32_t i = 0; i < m_TextureSlots.size(); i++)
+		{
+			if (m_TextureSlots[i])
+				m_QuadMaterial->Set("u_Textures", m_TextureSlots[i], i);
+			else
+				m_QuadMaterial->Set("u_Textures", m_WhiteTexture, i);
+		}
 
-		s_Data.Stats.DrawCalls++;
+		VulkanRendererAPI::DrawGeometry(m_QuadPipeline, m_QuadVertexBuffer, m_QuadIndexBuffer, m_QuadMaterial, glm::mat4(1.0f), m_QuadIndexCount);
+
+		VulkanRendererAPI::EndRenderPass();
+
+		VulkanRendererAPI::EndRenderCommandBuffer();
+		m_CommandBuffer->Submit();
+
+		m_Stats.DrawCalls++;
 	}
 
 	void Renderer2D::NextBatch()
 	{
 		ETH_PROFILE_FUNCTION();
-
 		Flush();
 		StartBatch();
 	}
 
-	//DrawQuad
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// Primitives
+	// DrawQuad
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, color);
@@ -333,7 +276,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (m_QuadIndexCount >= Config::MaxIndices)
 			NextBatch();
 
 		constexpr size_t quadVertexCount = 4;
@@ -343,25 +286,25 @@ namespace Ethane {
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			m_QuadVertexBufferPtr->Position = transform * m_QuadVertexPositions[i];
+			m_QuadVertexBufferPtr->Color = color;
+			m_QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			m_QuadVertexBufferPtr->TexIndex = textureIndex;
+			m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr->EntityID = entityID;
+			m_QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 6;
+		m_QuadIndexCount += 6;
 
-		s_Data.Stats.QuadCount++;
+		m_Stats.QuadCount++;
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor, int entityID)
 	{
 		ETH_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (m_QuadIndexCount >= Config::MaxIndices)
 			NextBatch();
 
 		constexpr size_t quadVertexCount = 4;
@@ -370,9 +313,9 @@ namespace Ethane {
 
 		float textureIndex = 0.0f;
 
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < m_TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*m_TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = float(i);
 				break;
@@ -381,32 +324,32 @@ namespace Ethane {
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
+			textureIndex = (float)m_TextureSlotIndex;
+			m_TextureSlots[m_TextureSlotIndex] = texture;
+			m_TextureSlotIndex++;
 		}
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = tintColor;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			m_QuadVertexBufferPtr->Position = transform * m_QuadVertexPositions[i];
+			m_QuadVertexBufferPtr->Color = tintColor;
+			m_QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			m_QuadVertexBufferPtr->TexIndex = textureIndex;
+			m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr->EntityID = entityID;
+			m_QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 6;
+		m_QuadIndexCount += 6;
 
-		s_Data.Stats.QuadCount++;
+		m_Stats.QuadCount++;
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4& tintColor, int entityID)
 	{
 		ETH_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (m_QuadIndexCount >= Config::MaxIndices)
 			NextBatch();
 
 		constexpr size_t quadVertexCount = 4;
@@ -416,9 +359,9 @@ namespace Ethane {
 
 		float textureIndex = 0.0f;
 
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < m_TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*m_TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = float(i);
 				break;
@@ -427,25 +370,25 @@ namespace Ethane {
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
+			textureIndex = (float)m_TextureSlotIndex;
+			m_TextureSlots[m_TextureSlotIndex] = texture;
+			m_TextureSlotIndex++;
 		}
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = tintColor;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			m_QuadVertexBufferPtr->Position = transform * m_QuadVertexPositions[i];
+			m_QuadVertexBufferPtr->Color = tintColor;
+			m_QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			m_QuadVertexBufferPtr->TexIndex = textureIndex;
+			m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr->EntityID = entityID;
+			m_QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 6;
+		m_QuadIndexCount += 6;
 
-		s_Data.Stats.QuadCount++;
+		m_Stats.QuadCount++;
 	}
 
 
@@ -459,7 +402,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (m_QuadIndexCount >= Config::MaxIndices)
 			NextBatch();
 
 		constexpr size_t quadVertexCount = 4;
@@ -471,17 +414,17 @@ namespace Ethane {
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr++;
+			m_QuadVertexBufferPtr->Position = transform * m_QuadVertexPositions[i];
+			m_QuadVertexBufferPtr->Color = color;
+			m_QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			m_QuadVertexBufferPtr->TexIndex = textureIndex;
+			m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 6;
+		m_QuadIndexCount += 6;
 		
-		s_Data.Stats.QuadCount++;
+		m_Stats.QuadCount++;
 	}
 
 	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
@@ -493,7 +436,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (m_QuadIndexCount >= Config::MaxIndices)
 			NextBatch();
 
 		constexpr size_t quadVertexCount = 4;
@@ -502,9 +445,9 @@ namespace Ethane {
 
 		float textureIndex = 0.0f;
 
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < m_TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*m_TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = float(i);
 				break;
@@ -513,26 +456,26 @@ namespace Ethane {
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
+			textureIndex = (float)m_TextureSlotIndex;
+			m_TextureSlots[m_TextureSlotIndex] = texture;
+			m_TextureSlotIndex++;
 		}
 
 		glm::mat4 transform = glm::scale(glm::rotate(glm::translate(glm::mat4(1.0f), position), glm::radians(rotation), { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = tintColor;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr++;
+			m_QuadVertexBufferPtr->Position = transform * m_QuadVertexPositions[i];
+			m_QuadVertexBufferPtr->Color = tintColor;
+			m_QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			m_QuadVertexBufferPtr->TexIndex = textureIndex;
+			m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 6;
+		m_QuadIndexCount += 6;
 
-		s_Data.Stats.QuadCount++;
+		m_Stats.QuadCount++;
 	}
 
 	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4& tintColor)
@@ -544,7 +487,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (m_QuadIndexCount >= Config::MaxIndices)
 			NextBatch();
 
 		constexpr size_t quadVertexCount = 4;
@@ -554,9 +497,9 @@ namespace Ethane {
 
 		float textureIndex = 0.0f;
 
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < m_TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*m_TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = float(i);
 				break;
@@ -565,28 +508,29 @@ namespace Ethane {
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
+			textureIndex = (float)m_TextureSlotIndex;
+			m_TextureSlots[m_TextureSlotIndex] = texture;
+			m_TextureSlotIndex++;
 		}
 
 		glm::mat4 transform = glm::scale(glm::rotate(glm::translate(glm::mat4(1.0f), position), glm::radians(rotation), { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = tintColor;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr++;
+			m_QuadVertexBufferPtr->Position = transform * m_QuadVertexPositions[i];
+			m_QuadVertexBufferPtr->Color = tintColor;
+			m_QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			m_QuadVertexBufferPtr->TexIndex = textureIndex;
+			m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 6;
+		m_QuadIndexCount += 6;
 
-		s_Data.Stats.QuadCount++;
+		m_Stats.QuadCount++;
 	}
 
+	// Draw with component
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
 	{
 		DrawQuad(transform, src.Color, entityID);
@@ -602,13 +546,14 @@ namespace Ethane {
 		DrawQuad(transform, src.SubTexture, src.TilingFactor, src.TintColor, entityID);
 	}
 
+	// stats
 	void Renderer2D::ResetStats()
 	{
-		memset(&s_Data.Stats, 0, sizeof(Statistics));
+		memset(&m_Stats, 0, sizeof(Statistics));
 	}
 
 	Renderer2D::Statistics Renderer2D::GetStats()
 	{
-		return s_Data.Stats;
+		return m_Stats;
 	}
 }

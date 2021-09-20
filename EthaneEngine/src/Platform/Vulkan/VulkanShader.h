@@ -59,8 +59,9 @@ namespace Ethane {
 		// Getter
 		virtual const std::string& GetName() const override { return  m_Name; }
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
-		const std::vector<ShaderDescriptorSetData>& GetShaderDescriptorSetData() const { return m_ShaderDescriptorSets; }
+		const std::vector<VkPushConstantRange> GetPushConstantRanges() const { return m_PushConstantRanges; } // TODO
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
+		const std::vector<ShaderDescriptorSetData>& GetShaderDescriptorSetData() const { return m_ShaderDescriptorSets; }
 		const VkWriteDescriptorSet* GetWriteDescriptorSet(uint32_t set, const std::string& name) const;
 
 		// TODO: remove this
@@ -97,9 +98,10 @@ namespace Ethane {
 		// Descriptor pool size info
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_DescriptorCounts;
 
-		// Descriptor sets
-
 		std::unordered_map<VkShaderStageFlagBits, VkShaderModule>  m_ShaderModule;
+
+		// For pipeine creation
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
+		std::vector<VkPushConstantRange> m_PushConstantRanges;
 	};
 }

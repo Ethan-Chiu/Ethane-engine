@@ -33,15 +33,8 @@ namespace Ethane {
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		static void BeginScene(OrthographicCamera& camera);
 		static void BeginFrame();
 		static void EndFrame();
-
-
-		static void RenderMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
-
-		// static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
-		static void Submit(const Ref<Shader>& shader, const uint32_t indexCount, const glm::mat4& transform = glm::mat4(1.0f));
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
@@ -57,19 +50,22 @@ namespace Ethane {
 
 		static void WaitAndRender();
 
+		// Stats // TODO: temp
+		struct Statistics
+		{
+			uint32_t DrawCalls = 0;
+			uint32_t QuadCount = 0;
+		};
+		static void ResetStats() {};
+
 		// Getter
 		static RendererConfig& GetConfig() { return s_Config; }
+		// static Statistics GetStats() {}; // TODO: temp
+
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();
 
 	private:
-		// TODO:
-		struct SceneData
-		{
-			glm::mat4 ViewProjectionMatrix;
-		};
-
-		static Scope<SceneData> s_SceneData;
 		static RenderCommandQueue* s_CommandQueue;
 		static RendererConfig s_Config;
 	};

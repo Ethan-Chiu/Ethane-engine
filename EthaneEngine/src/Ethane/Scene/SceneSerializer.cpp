@@ -148,6 +148,33 @@ namespace Ethane{
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
 
+		// if (entity.HasComponent<MeshComponent>())
+		// {
+		// 	out << YAML::Key << "MeshComponent";
+		// 	out << YAML::BeginMap; // MeshComponent
+		// 
+		// 	MeshComponent& mc = entity.GetComponent<MeshComponent>();
+		// 	if (mc.Mesh)
+		// 		out << YAML::Key << "AssetID" << YAML::Value << (mc.Mesh ? mc.Mesh->Handle : (AssetHandle)0);
+		// 
+		// 	auto materialTable = mc.MaterialTable;
+		// 	if (materialTable->GetMaterialCount() > 0)
+		// 	{
+		// 		out << YAML::Key << "MaterialTable" << YAML::Value << YAML::BeginMap; // MaterialTable
+		// 
+		// 		for (uint32_t i = 0; i < materialTable->GetMaterialCount(); i++)
+		// 		{
+		// 			AssetHandle handle = (materialTable->HasMaterial(i) ? materialTable->GetMaterial(i)->Handle : (AssetHandle)0);
+		// 			out << YAML::Key << i << YAML::Value << handle;
+		// 
+		// 		}
+		// 
+		// 		out << YAML::EndMap; // MaterialTable
+		// 	}
+		// 
+		// 	out << YAML::EndMap; // MeshComponent
+		// }
+
 		out << YAML::EndMap; // Entity
 	}
 

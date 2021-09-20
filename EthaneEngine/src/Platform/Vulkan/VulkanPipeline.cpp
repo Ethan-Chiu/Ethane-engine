@@ -57,14 +57,12 @@ namespace Ethane {
 	void VulkanPipeline::Invalidate()
 	{
 		// Shader Stage
-		// TODO: test
 		Ref<VulkanShader> vulkanShader = std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader);
 
 		const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
 
 		// Fixed Function 
 		// vertex input
-		// TODO:
 		VertexBufferLayout layout = m_Specification.Layout;
 		VkVertexInputBindingDescription vertexInputBinding = {};
 		vertexInputBinding.binding = 0;
@@ -197,14 +195,14 @@ namespace Ethane {
 
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
 
-		// TODO: push constant
 		auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
+		auto vulkanPushConstantRanges = vulkanShader->GetPushConstantRanges();
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
 		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		pipelineLayoutInfo.pushConstantRangeCount = (uint32_t)vulkanPushConstantRanges.size();
+		pipelineLayoutInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 		pipelineInfo.layout = m_PipelineLayout;
 

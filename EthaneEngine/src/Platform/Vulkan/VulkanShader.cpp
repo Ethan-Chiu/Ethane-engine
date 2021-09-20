@@ -90,7 +90,7 @@ namespace Ethane {
 		auto shaderSources = PreProcess(source);
 
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-		CompileOrGetVulkanBinaries(shaderSources, shaderData, true);
+		CompileOrGetVulkanBinaries(shaderSources, shaderData, false);
 		CreatePipelineShaderStage(shaderData);
 		Reflect(shaderData);
 		CreateDescriptorLayouts();
@@ -307,7 +307,6 @@ namespace Ethane {
 			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
 
-#ifdef reflect
 
 		ETH_CORE_INFO("Push Constant Buffers:");
 		for (const auto& resource : res.push_constant_buffers)
@@ -318,36 +317,37 @@ namespace Ethane {
 			uint32_t memberCount = uint32_t(bufferType.member_types.size());
 			uint32_t bufferOffset = 0;
 			if (m_PushConstantRanges.size())
-				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
+				bufferOffset = m_PushConstantRanges.back().offset + m_PushConstantRanges.back().size;
 
 			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
-			pushConstantRange.ShaderStage = shaderStage;
-			pushConstantRange.Size = bufferSize - bufferOffset;
-			pushConstantRange.Offset = bufferOffset;
+			pushConstantRange.stageFlags = stage;
+			pushConstantRange.offset = bufferOffset;
+			pushConstantRange.size = bufferSize - bufferOffset;
 
 			// Skip empty push constant buffers - these are for the renderer only
-			if (bufferName.empty() || bufferName == "u_Renderer")
-				continue;
-
-			ShaderBuffer& buffer = m_Buffers[bufferName];
-			buffer.Name = bufferName;
-			buffer.Size = bufferSize - bufferOffset;
-
-			ETH_CORE_TRACE("  Name: {0}", bufferName);
-			ETH_CORE_TRACE("  Member Count: {0}", memberCount);
-			ETH_CORE_TRACE("  Size: {0}", bufferSize);
-
-			for (uint32_t i = 0; i < memberCount; i++)
-			{
-				const auto& memberName = compiler.get_member_name(bufferType.self, i);
-				auto type = compiler.get_type(bufferType.member_types[i]);
-				auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
-				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
-
-				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
-			}
+			// if (bufferName.empty() || bufferName == "u_Renderer")
+			// 	continue;
+			// 
+			// ShaderBuffer& buffer = m_Buffers[bufferName];
+			// buffer.Name = bufferName;
+			// buffer.Size = bufferSize - bufferOffset;
+			// 
+			// ETH_CORE_TRACE("  Name: {0}", bufferName);
+			// ETH_CORE_TRACE("  Member Count: {0}", memberCount);
+			// ETH_CORE_TRACE("  Size: {0}", bufferSize);
+			// 
+			// for (uint32_t i = 0; i < memberCount; i++)
+			// {
+			// 	const auto& memberName = compiler.get_member_name(bufferType.self, i);
+			// 	auto type = compiler.get_type(bufferType.member_types[i]);
+			// 	auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
+			// 	auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
+			// 
+			// 	std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
+			// 	buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
+			// }
 		}
+#ifdef reflect
 
 		ETH_CORE_INFO("Storage Buffers:");
 		for (const auto& resource : resources.storage_buffers)

@@ -98,7 +98,7 @@ namespace Ethane {
 		// }
 
 		// Update Scene and Render
-		Renderer2D::ResetStats();
+		// Renderer2D::ResetStats();
 
 		switch (m_SceneState)
 		{
@@ -229,12 +229,13 @@ namespace Ethane {
 		//-------------------------
 		ImGui::Begin("Settings");
 
-		auto stats = Renderer2D::GetStats();
-		ImGui::Text("Renderer2D Stats:");
-		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-		ImGui::Text("Quads: %d", stats.QuadCount);
-		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
-		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
+		// TODO:
+		// auto stats = Renderer2D::GetStats();
+		// ImGui::Text("Renderer2D Stats:");
+		// ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+		// ImGui::Text("Quads: %d", stats.QuadCount);
+		// ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
+		// ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 
 		ImGui::End();
 
@@ -451,12 +452,84 @@ namespace Ethane {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (e.GetMouseButton() == Mouse::ButtonLeft)
+		if (e.GetMouseButton() == Mouse::ButtonLeft && m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 		{
-			if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
-				m_SceneHierarchyPanel.SetSelectdEntity(m_HoveredEntity);
+			auto [mouseX, mouseY] = GetViewportSpaceMousePosition();
+			if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+			{
+				ETH_CORE_INFO("({0}, {1})", mouseX, mouseY);
+				auto [origin, direction] = CastRay(m_EditorCamera, mouseX, mouseY);
+
+				auto meshEntities = m_ActiveScene->GetEntitiesWithComponent<MeshComponent>();
+				for (auto e : meshEntities)
+				{
+					Entity entity = { e, m_ActiveScene.get() };
+					auto mesh = entity.GetComponent<MeshComponent>().Mesh;
+					
+					auto& submeshes = mesh->GetSubmeshes();
+					float minT = std::numeric_limits<float>::max();
+					for (uint32_t i = 0; i < submeshes.size(); i++)
+					{
+						auto& submesh = submeshes[i];
+						glm::mat4 transform = entity.GetComponent<TransformComponent>().GetTransform();// m_ActiveScene->GetTransformRelativeToParent(entity);
+						Ray ray = {
+							glm::inverse(transform * submesh.Transform) * glm::vec4(origin, 1.0f),
+							glm::inverse(glm::mat3(transform) * glm::mat3(submesh.Transform)) * direction
+						};
+						ETH_CORE_INFO("{0}", ray);
+
+						float t;
+						bool intersects = submesh.Aabb.intersect(ray, t);
+						if (intersects)
+						{
+							const auto& triangleCache = mesh->GetTrianglesCacheInSubmesh(i);
+							for (const auto& triangle : triangleCache)
+							{
+								if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+								{
+									if (t < minT)
+									{
+										minT = t;
+										m_HoveredEntity = entity;
+										ETH_CORE_INFO("t: {0}", t);
+									}
+									break;
+								}
+							}
+						}
+					}
+				}
+
+			}
+			m_SceneHierarchyPanel.SetSelectdEntity(m_HoveredEntity);
 		}
 		return false;
+	}
+
+	std::pair<glm::vec3, glm::vec3> EditorLayer::CastRay(const EditorCamera& camera, float mx, float my)
+	{
+		glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+		auto inverseProj = glm::inverse(camera.GetProjectionMatrix());
+		auto inverseView = glm::inverse(glm::mat3(camera.GetViewMatrix()));
+
+		glm::vec3 rayPos = camera.GetPosition();
+		glm::vec4 ray = inverseProj * mouseClipPos;
+		glm::vec3 rayDir = inverseView * glm::vec3(ray);
+
+		return { rayPos, rayDir };
+	}
+
+	std::pair<float, float> EditorLayer::GetViewportSpaceMousePosition()
+	{
+		auto [mx, my] = ImGui::GetMousePos();
+		const auto& viewportBounds = m_ViewportBounds;
+		mx -= viewportBounds[0].x;
+		my -= viewportBounds[0].y;
+		auto viewportWidth = viewportBounds[1].x - viewportBounds[0].x;
+		auto viewportHeight = viewportBounds[1].y - viewportBounds[0].y;
+
+		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 	}
 
 	void EditorLayer::NewScene()
