@@ -12,12 +12,15 @@ namespace Ethane {
 	public:
 		UIImage() = default;
 		UIImage(Ref<Image2D> image);
+		UIImage(Ref<Texture2D> texture);
 		UIImage(uint32_t rendererID); // TODO: remove this maybe
 		~UIImage() = default;
 
 		void Draw(const ImVec2& size, const ImVec2& uv_min = { 0.0f, 0.0f }, const ImVec2& uv_max = { 1.0f, 1.0f }, const ImVec4& tint_col = { 1.0f, 1.0f, 1.0f, 1.0f }, const ImVec4& border_col = { 1.0f, 1.0f, 1.0f, 0.5f });
 
 		operator bool() const { return m_Initialized; }
+
+		ImTextureID GetTextureID() { return m_ImageID; }
 	private:
 		bool m_Initialized = false;
 		ImTextureID m_ImageID = nullptr;

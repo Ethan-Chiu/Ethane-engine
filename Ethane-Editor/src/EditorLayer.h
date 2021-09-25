@@ -11,6 +11,7 @@
 
 // TODO: test
 #include "Ethane/UI/UIImage.h"
+#include "Ethane/NodeGraph/NodeGraph.h"
 
 namespace Ethane {
 
@@ -72,6 +73,8 @@ namespace Ethane {
 		//Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
+		// TODO: test
+		NodeGraph m_NodeGraph;
 
 		bool m_PrimaryCamera = true;
 
@@ -81,10 +84,6 @@ namespace Ethane {
 		// TODO: test remove
 		// Ref<Texture2D> m_TexTest = nullptr;
 
-
-		// Ref<Texture2D> m_Texture;
-		// Ref<Texture2D> m_SpriteSheet;
-		// Ref<SubTexture2D> m_TextureStairs, m_TextureBarrel, m_TextureTree;
 	};
 
 }

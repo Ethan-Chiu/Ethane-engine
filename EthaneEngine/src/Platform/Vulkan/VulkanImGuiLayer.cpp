@@ -7,7 +7,7 @@
 #define IMGUI_IMPL_API
 #endif
 
-#include "examples/imgui_impl_glfw.h"
+#include "backends/imgui_impl_glfw.h"
 #include "examples/imgui_impl_vulkan_with_textures.h"
 
 #include "Ethane/Core/Application.h"
@@ -230,21 +230,21 @@ namespace Ethane {
 		
 		VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
 		
-		// VkViewport viewport = {};
-		// viewport.x = 0.0f;
-		// viewport.y = (float)height;
-		// viewport.height = -(float)height;
-		// viewport.width = (float)width;
-		// viewport.minDepth = 0.0f;
-		// viewport.maxDepth = 1.0f;
-		// vkCmdSetViewport(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
-		
-		// VkRect2D scissor = {};
-		// scissor.extent.width = width;
-		// scissor.extent.height = height;
-		// scissor.offset.x = 0;
-		// scissor.offset.y = 0;
-		// vkCmdSetScissor(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = (float)height;
+		viewport.height = -(float)height;
+		viewport.width = (float)width;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
+
+		VkRect2D scissor = {};
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
 		
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
 		ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffers[commandBufferIndex]);
@@ -261,7 +261,7 @@ namespace Ethane {
 		// VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();

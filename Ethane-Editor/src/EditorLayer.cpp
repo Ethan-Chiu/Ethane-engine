@@ -56,13 +56,16 @@ namespace Ethane {
 		m_IconPlay = Texture2D::Create("Resources/Icons/Viewport/PlayButton.png");
 		m_IconStop = Texture2D::Create("Resources/Icons/Viewport/StopButton.png");
 
-		// m_CameraController.SetZoomLevel(0.5f);
+		// TODO: test
+		// m_NodeGraph = NodeGraph();
 	}
 
 	void EditorLayer::OnDetach()
 	{
 		ETH_PROFILE_FUNCTION();
 
+		// TODO: test
+		m_NodeGraph.OnClose();
 	}
 
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -157,8 +160,8 @@ namespace Ethane {
 		if (opt_fullscreen)
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->GetWorkPos());
-			ImGui::SetNextWindowSize(viewport->GetWorkSize());
+			ImGui::SetNextWindowPos(viewport->Pos);
+			ImGui::SetNextWindowSize(viewport->Size);
 			ImGui::SetNextWindowViewport(viewport->ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -225,7 +228,9 @@ namespace Ethane {
 		// Panels
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
-
+		// TODO: test
+		m_NodeGraph.OnImGuiRender();
+		
 		//-------------------------
 		ImGui::Begin("Settings");
 

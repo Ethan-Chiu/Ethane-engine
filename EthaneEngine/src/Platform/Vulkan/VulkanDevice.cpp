@@ -91,7 +91,7 @@ namespace Ethane {
 
 		QueueFamilyIndices indices = FindQueueFamilies(device, VK_QUEUE_GRAPHICS_BIT);
 		
-		// add 
+		// TODO: add 
 		// prefer indices.Graphic == indices.Present
 		// temp
 		VkBool32 presentSupport = false;
@@ -100,7 +100,7 @@ namespace Ethane {
 
 		bool extensionsSupported = checkDeviceExtensionSupport(device);
 
-		// check swap chain adequate
+		// TODO: check swap chain adequate
 		// bool swapChainAdequate = false;
 		// if (extensionsSupported) {
 		// 	SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
@@ -184,7 +184,7 @@ namespace Ethane {
 
 			if (flags & VK_QUEUE_GRAPHICS_BIT)
 			{
-				// check surface present add
+				// TODO: check surface present add
 				// VkBool32 presentSupport = false;
 				// vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 				if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -252,8 +252,7 @@ namespace Ethane {
 			deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 		}
 
-		ETH_CORE_ASSERT(vkCreateDevice(m_PhysicalDevice->GetVulkanPhysicalDevice(), &deviceCreateInfo, nullptr, &m_LogicalDevice) == VK_SUCCESS
-			, "Logical device creation failed");
+		VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice->GetVulkanPhysicalDevice(), &deviceCreateInfo, nullptr, &m_LogicalDevice));
 
 		// retrieving queue handles
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value(), 0, &m_GraphicsQueue);

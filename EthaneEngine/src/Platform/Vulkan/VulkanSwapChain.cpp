@@ -490,6 +490,7 @@ namespace Ethane {
 #endif
 
         // TODO: test
+#if subpassTest
         VkSubpassDescription subpass2{};
         subpass2.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass2.colorAttachmentCount = 1;
@@ -503,7 +504,7 @@ namespace Ethane {
         dependency2.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency2.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         //
-
+#endif
         VkSubpassDependency dependency{};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.dstSubpass = 0;
@@ -513,15 +514,15 @@ namespace Ethane {
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
         // TODO: test
-        VkSubpassDependency dependencies[] = { dependency , dependency2 };
+        VkSubpassDependency dependencies[] = { dependency };
 
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = 2; // TODO
-        renderPassInfo.pSubpasses = subpasses; // TODO
-        renderPassInfo.dependencyCount = 2; // TODO
+        renderPassInfo.subpassCount = 1; // TODO
+        renderPassInfo.pSubpasses = &subpass; // TODO
+        renderPassInfo.dependencyCount = 1; // TODO
         renderPassInfo.pDependencies = dependencies; // TODO
 
         VkDevice device = m_Device->GetVulkanDevice();
@@ -579,21 +580,21 @@ namespace Ethane {
         renderPassInfo.renderArea.extent = m_Extent;
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
         renderPassInfo.pClearValues = clearValues.data();
-        vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
         
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (float)m_Extent.width;
-        viewport.height = (float)m_Extent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(currentCommandBuffer, 0, 1, &viewport);
-        
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = m_Extent;
-        vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
+        // VkViewport viewport{};
+        // viewport.x = 0.0f;
+        // viewport.y = 0.0f;
+        // viewport.width = (float)m_Extent.width;
+        // viewport.height = (float)m_Extent.height;
+        // viewport.minDepth = 0.0f;
+        // viewport.maxDepth = 1.0f;
+        // vkCmdSetViewport(currentCommandBuffer, 0, 1, &viewport);
+        // 
+        // VkRect2D scissor{};
+        // scissor.offset = { 0, 0 };
+        // scissor.extent = m_Extent;
+        // vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
         
 #if test
         vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->GetVulkanPipeline());
@@ -611,7 +612,7 @@ namespace Ethane {
         vkCmdDrawIndexed(currentCommandBuffer, static_cast<uint32_t>(m_IndexBuffer->GetCount()), 1, 0, 0, 0);
 #endif
 
-        vkCmdNextSubpass(currentCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        // vkCmdNextSubpass(currentCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         std::vector<VkCommandBuffer> secondaryCommandBuffers;
         secondaryCommandBuffers.push_back((VulkanImGuiLayer::GetImGuiCommandBuffer())[m_CurrentFrame]);

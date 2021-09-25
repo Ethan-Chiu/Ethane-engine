@@ -15,6 +15,7 @@ IncludeDir["shaderc"] = "%{wks.location}/EthaneEngine/vendor/shaderc/include"
 IncludeDir["SPIRV_Cross"] = "%{wks.location}/EthaneEngine/vendor/SPIRV-Cross"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["Assimp"] = "%{wks.location}/EthaneEngine/vendor/assimp/include"
+IncludeDir["ImGuiNodeEditor"] = "%{wks.location}/EthaneEngine/vendor/imgui-node-editor"
 
 LibraryDir = {}
 

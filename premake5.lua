@@ -116,7 +116,7 @@ project "Ethane-Editor"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-
+		"%{IncludeDir.ImGuiNodeEditor}",
 		"%{IncludeDir.Assimp}"
 	}
 

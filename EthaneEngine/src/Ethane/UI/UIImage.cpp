@@ -44,6 +44,22 @@ namespace Ethane {
 		// ETH_CORE_TRACE("Create UIImage with image layout: {0}", (const void*)(finalImage->GetDescriptor().imageLayout));
 	}
 
+	UIImage::UIImage(Ref<Texture2D> texture)
+	{
+		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			// Ref<OpenGLImage2D> glImage = std::dynamic_pointer_cast<OpenGLImage2D>(image);
+			// ImGui::Image((ImTextureID)(size_t)glImage->GetRendererID(), size, uv0, uv1, tint_col, border_col);
+		}
+		else
+		{
+			Ref<VulkanTexture2D> vulkanTexture = std::dynamic_pointer_cast<VulkanTexture2D>(texture);
+			const VkDescriptorImageInfo& imageInfo = vulkanTexture->GetDescriptorImageInfo();
+			m_ImageID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+			m_Initialized = true;
+		}
+	}
+
 	void UIImage::Draw(const ImVec2& size, const ImVec2& uv_min, const ImVec2& uv_max, const ImVec4& tint_col, const ImVec4& border_col)
 	{
 		ImGui::Image(m_ImageID, size, uv_min, uv_max, tint_col, border_col);
