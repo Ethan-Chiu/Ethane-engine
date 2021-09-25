@@ -4,9 +4,6 @@
 [submodule "EthaneEngine/vendor/GLFW"]
 	path = EthaneEngine/vendor/GLFW
 	url = https://github.com/TheCherno/glfw
-[submodule "EthaneEngine/vendor/imgui"]
-	path = EthaneEngine/vendor/imgui
-	url = https://github.com/TheCherno/imgui.git
 [submodule "EthaneEngine/vendor/glm"]
 	path = EthaneEngine/vendor/glm
 	url = https://github.com/g-truc/glm.git
@@ -16,3 +13,6 @@
 [submodule "EthaneEngine/vendor/ImGuizmo"]
 	path = EthaneEngine/vendor/ImGuizmo
 	url = https://github.com/TheCherno/ImGuizmo.git
+[submodule "EthaneEngine/vendor/imgui"]
+	path = EthaneEngine/vendor/imgui
+	url = https://github.com/Ethan-Chiu/imgui_forked.git
