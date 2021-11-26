@@ -74,6 +74,10 @@ namespace Ethane {
 		// Getter
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Triangle> GetTrianglesCacheInSubmesh(uint32_t index) const { return m_TriangleCache.at(index); }
+		Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
+		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
+		uint32_t GetVertexNum() const { return m_StaticVertices.size(); };
+		uint32_t GetIndexNum() const { return m_Indices.size();}
 	private:
 		void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 	private:
@@ -102,6 +106,8 @@ namespace Ethane {
 	friend class OpenGLRendererAPI;
 	friend class VulkanRendererAPI;
 
+	// test
+	friend class RayTracing;
 	};
 
 }

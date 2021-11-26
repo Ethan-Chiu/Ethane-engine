@@ -74,7 +74,7 @@ namespace Ethane {
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 		// TODO: test
-		NodeGraph m_NodeGraph;
+		NodeGraph::NodeGraph m_NodeGraph;
 
 		bool m_PrimaryCamera = true;
 

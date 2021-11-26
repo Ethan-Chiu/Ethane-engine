@@ -7,6 +7,8 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
+#include <any>
+
 namespace ed = ax::NodeEditor;
 
 namespace Ethane {
@@ -21,6 +23,10 @@ namespace Ethane {
 		Object,
 		Function,
 		Delegate,
+
+		// TODO: test remove
+		StringArray,
+		IntArray
 	};
 
 	enum PinDirection
@@ -34,12 +40,15 @@ namespace Ethane {
 	struct Pin
 	{
 		ed::PinId       ID;
+		// UUID			ID;
 		Node*		    Node;
 		std::string     Name;
 		PinType         Type;
 		PinDirection    Kind;
 
-		Pin(int id, const char* name, PinType type) :
+		std::any Value;
+
+		Pin(uint32_t id, const char* name, PinType type) :
 			ID(id), Node(nullptr), Name(name), Type(type), Kind(PinDirection::Input)
 		{
 		}

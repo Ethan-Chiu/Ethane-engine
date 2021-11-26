@@ -7,10 +7,13 @@ namespace Ethane {
 
 	void ShaderLibrary::Init()
 	{
+#define NotSandbox 1
+#if NotSandbox
 		Load("assets/shaders/Texture.glsl");
 		Load("assets/shaders/PBR_static.glsl");
 		Load("assets/shaders/SceneComposite.glsl");
 		Load("assets/shaders/Grid.glsl");
+#endif
 		// Load("assets/shaders/test.glsl");
 	}
 

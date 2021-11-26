@@ -1,17 +1,21 @@
 #include "ethpch.h"
 #include "NodeGraph.h"
 
-#include "builders.h"
-#include "widgets.h"
+#include "Ethane/Utils/PlatformUtils.h"
 
 #include <imgui.h>
 
 # define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
+#include "Ethane/Asset/SerializerYaml.h"
+
+// TODO: test
+#include <format>
+
 namespace ed = ax::NodeEditor;
 
-namespace Ethane {
+namespace Ethane::NodeGraph {
 
 	NodeGraph::NodeGraph()
 	{
@@ -20,8 +24,6 @@ namespace Ethane {
 
     void NodeGraph::Init()
     {
-        m_Context = ed::CreateEditor();
-
         ed::Config config;
 
         config.SettingsFile = "Blueprints.json";
@@ -57,35 +59,35 @@ namespace Ethane {
         m_Context = ed::CreateEditor(&config);
         ed::SetCurrentEditor(m_Context);
 
-        Node* node;
-        node = SpawnInputActionNode();      ed::SetNodePosition(node->ID, ImVec2(-252, 220));
-        node = SpawnBranchNode();           ed::SetNodePosition(node->ID, ImVec2(-300, 351));
-        node = SpawnDoNNode();              ed::SetNodePosition(node->ID, ImVec2(-238, 504));
-        node = SpawnOutputActionNode();     ed::SetNodePosition(node->ID, ImVec2(71, 80));
-        node = SpawnSetTimerNode();         ed::SetNodePosition(node->ID, ImVec2(168, 316));
-
-        node = SpawnTreeSequenceNode();     ed::SetNodePosition(node->ID, ImVec2(1028, 329));
-        node = SpawnTreeTaskNode();         ed::SetNodePosition(node->ID, ImVec2(1204, 458));
-        node = SpawnTreeTask2Node();        ed::SetNodePosition(node->ID, ImVec2(868, 538));
-
-        node = SpawnComment();              ed::SetNodePosition(node->ID, ImVec2(112, 576)); ed::SetGroupSize(node->ID, ImVec2(384, 154));
-        node = SpawnComment();              ed::SetNodePosition(node->ID, ImVec2(800, 224)); ed::SetGroupSize(node->ID, ImVec2(640, 400));
-
-        node = SpawnLessNode();             ed::SetNodePosition(node->ID, ImVec2(366, 652));
-        node = SpawnWeirdNode();            ed::SetNodePosition(node->ID, ImVec2(144, 652));
-        node = SpawnMessageNode();          ed::SetNodePosition(node->ID, ImVec2(-348, 698));
-        node = SpawnPrintStringNode();      ed::SetNodePosition(node->ID, ImVec2(-69, 652));
-
-        node = SpawnHoudiniTransformNode(); ed::SetNodePosition(node->ID, ImVec2(500, -70));
-        node = SpawnHoudiniGroupNode();     ed::SetNodePosition(node->ID, ImVec2(500, 42));
+        // Node* node;
+        // node = SpawnInputActionNode();      ed::SetNodePosition(node->ID, ImVec2(-252, 220));
+        // node = SpawnBranchNode();           ed::SetNodePosition(node->ID, ImVec2(-300, 351));
+        // node = SpawnDoNNode();              ed::SetNodePosition(node->ID, ImVec2(-238, 504));
+        // node = SpawnOutputActionNode();     ed::SetNodePosition(node->ID, ImVec2(71, 80));
+        // node = SpawnSetTimerNode();         ed::SetNodePosition(node->ID, ImVec2(168, 316));
+        // 
+        // node = SpawnTreeSequenceNode();     ed::SetNodePosition(node->ID, ImVec2(1000, 329));
+        // node = SpawnTreeTaskNode();         ed::SetNodePosition(node->ID, ImVec2(1204, 458));
+        // node = SpawnTreeTask2Node();        ed::SetNodePosition(node->ID, ImVec2(868, 538));
+        // 
+        // node = SpawnComment();              ed::SetNodePosition(node->ID, ImVec2(112, 576)); ed::SetGroupSize(node->ID, ImVec2(384, 154));
+        // node = SpawnComment();              ed::SetNodePosition(node->ID, ImVec2(800, 224)); ed::SetGroupSize(node->ID, ImVec2(640, 400));
+        // 
+        // node = SpawnLessNode();             ed::SetNodePosition(node->ID, ImVec2(366, 652));
+        // node = SpawnWeirdNode();            ed::SetNodePosition(node->ID, ImVec2(144, 652));
+        // node = SpawnMessageNode();          ed::SetNodePosition(node->ID, ImVec2(-348, 698));
+        // node = SpawnPrintStringNode();      ed::SetNodePosition(node->ID, ImVec2(-69, 652));
+        // 
+        // node = SpawnHoudiniTransformNode(); ed::SetNodePosition(node->ID, ImVec2(500, -70));
+        // node = SpawnHoudiniGroupNode();     ed::SetNodePosition(node->ID, ImVec2(500, 42));
 
         ed::NavigateToContent();
 
         BuildNodes();
 
-        m_Links.push_back(Link(GetNextLinkId(), m_Nodes[5].Outputs[0].ID, m_Nodes[6].Inputs[0].ID));
-        m_Links.push_back(Link(GetNextLinkId(), m_Nodes[5].Outputs[0].ID, m_Nodes[7].Inputs[0].ID));
-        m_Links.push_back(Link(GetNextLinkId(), m_Nodes[14].Outputs[0].ID, m_Nodes[15].Inputs[0].ID));
+        // m_Links.push_back(Link(GetNextLinkId().Get(), m_Nodes[5].Outputs[0].ID, m_Nodes[6].Inputs[0].ID));
+        // m_Links.push_back(Link(GetNextLinkId().Get(), m_Nodes[5].Outputs[0].ID, m_Nodes[7].Inputs[0].ID));
+        // m_Links.push_back(Link(GetNextLinkId().Get(), m_Nodes[14].Outputs[0].ID, m_Nodes[15].Inputs[0].ID));
 
         // Load Textures
         m_HeaderBackground =    Texture2D::Create("resources/icons/NodeGraph/BlueprintBackground.png");
@@ -121,8 +123,6 @@ namespace Ethane {
 
     static inline ImRect ImGui_GetItemRect()
     {
-        auto a = ImGui::GetItemRectMin();
-        auto b = ImGui::GetItemRectMax();
         return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
 
@@ -153,7 +153,8 @@ namespace Ethane {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     int NodeGraph::GetNextId()
     {
-        return m_NextId++;
+        return UUID();
+        // return m_NextId++;
     }
 
     ed::LinkId NodeGraph::GetNextLinkId()
@@ -595,6 +596,15 @@ namespace Ethane {
                 ed::Flow(link.ID);
         }
         ImGui::Spring();
+        if (ImGui::Button("Open"))
+            OnOpenGraphFile();
+        ImGui::Spring();
+        if (ImGui::Button("Save"))
+            OnSave();
+        ImGui::Spring();
+        if (ImGui::Button("Compile"))
+            OnCompile();
+        ImGui::Spring(0.0f);
         if (ImGui::Button("Edit Style"))
             showStyleEditor = true;
         ImGui::EndHorizontal();
@@ -790,163 +800,23 @@ namespace Ethane {
 
         {
             auto cursorTopLeft = ImGui::GetCursorScreenPos();
-            ed::Utilities::BlueprintNodeBuilder builder(UIImage(m_HeaderBackground).GetTextureID(), m_HeaderBackground->GetWidth(), m_HeaderBackground->GetHeight());
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Draw Nodes
-            for (auto& node : m_Nodes)
-            {
-                const auto isSimple = node.Type == NodeType::Simple;
-
-                if (node.Type != NodeType::Blueprint && !isSimple)
-                    continue;
-
-                bool hasOutputDelegates = false;
-                for (auto& output : node.Outputs)
-                    if (output.Type == PinType::Delegate)
-                        hasOutputDelegates = true;
-
-                builder.Begin(node.ID);
-                if (!isSimple)
-                {
-                    builder.Header(node.Color);
-                    ImGui::Spring(0);
-                    ImGui::TextUnformatted(node.Name.c_str());
-                    ImGui::Spring(1);
-                    ImGui::Dummy(ImVec2(0, 28));
-                    if (hasOutputDelegates)
-                    {
-                        ImGui::BeginVertical("delegates", ImVec2(0, 28));
-                        ImGui::Spring(1, 0);
-                        for (auto& output : node.Outputs)
-                        {
-                            if (output.Type != PinType::Delegate)
-                                continue;
-
-                            auto alpha = ImGui::GetStyle().Alpha;
-                            if (m_NewLinkPin && !CanCreateLink(m_NewLinkPin, &output) && &output != m_NewLinkPin)
-                                alpha = alpha * (48.0f / 255.0f);
-
-                            ed::BeginPin(output.ID, ed::PinKind::Output);
-                            ed::PinPivotAlignment(ImVec2(1.0f, 0.5f));
-                            ed::PinPivotSize(ImVec2(0, 0));
-                            ImGui::BeginHorizontal(output.ID.AsPointer());
-                            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-                            if (!output.Name.empty())
-                            {
-                                ImGui::TextUnformatted(output.Name.c_str());
-                                ImGui::Spring(0);
-                            }
-                            DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
-                            ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
-                            ImGui::EndHorizontal();
-                            ImGui::PopStyleVar();
-                            ed::EndPin();
-
-                            //DrawItemRect(ImColor(255, 0, 0));
-                        }
-                        ImGui::Spring(1, 0);
-                        ImGui::EndVertical();
-                        ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
-                    }
-                    else
-                        ImGui::Spring(0);
-                    builder.EndHeader();
-                }
-
-                // Draw Inputs
-                for (auto& input : node.Inputs)
-                {
-                    auto alpha = ImGui::GetStyle().Alpha;
-                    if (m_NewLinkPin && !CanCreateLink(m_NewLinkPin, &input) && &input != m_NewLinkPin)
-                        alpha = alpha * (48.0f / 255.0f);
-
-                    builder.Input(input.ID);
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-                    DrawPinIcon(input, IsPinLinked(input.ID), (int)(alpha * 255));
-                    ImGui::Spring(0);
-                    if (!input.Name.empty())
-                    {
-                        ImGui::TextUnformatted(input.Name.c_str());
-                        ImGui::Spring(0);
-                    }
-                    if (input.Type == PinType::Bool)
-                    {
-                        ImGui::Button("Hello");
-                        ImGui::Spring(0);
-                    }
-                    ImGui::PopStyleVar();
-                    builder.EndInput();
-                }
-
-                // Draw simple main body
-                if (isSimple)
-                {
-                    builder.Middle();
-
-                    ImGui::Spring(1, 0);
-                    ImGui::TextUnformatted(node.Name.c_str());
-                    ImGui::Spring(1, 0);
-                }
-
-                // Draw Output
-                for (auto& output : node.Outputs)
-                {
-                    if (!isSimple && output.Type == PinType::Delegate)
-                        continue;
-
-                    auto alpha = ImGui::GetStyle().Alpha;
-                    if (m_NewLinkPin && !CanCreateLink(m_NewLinkPin, &output) && &output != m_NewLinkPin)
-                        alpha = alpha * (48.0f / 255.0f);
-
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-                    builder.Output(output.ID);
-                    if (output.Type == PinType::String)
-                    {
-                        static char buffer[128] = "Edit Me\nMultiline!";
-                        static bool wasActive = false;
-
-                        ImGui::PushItemWidth(100.0f);
-                        ImGui::InputText("##edit", buffer, 127);
-                        ImGui::PopItemWidth();
-                        if (ImGui::IsItemActive() && !wasActive)
-                        {
-                            ed::EnableShortcuts(false);
-                            wasActive = true;
-                        }
-                        else if (!ImGui::IsItemActive() && wasActive)
-                        {
-                            ed::EnableShortcuts(true);
-                            wasActive = false;
-                        }
-                        ImGui::Spring(0);
-                    }
-                    if (!output.Name.empty())
-                    {
-                        ImGui::Spring(0);
-                        ImGui::TextUnformatted(output.Name.c_str());
-                    }
-                    ImGui::Spring(0);
-                    DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
-                    ImGui::PopStyleVar();
-                    builder.EndOutput();
-                }
-
-                builder.End();
-            }
+            m_Builder = ed::Utilities::BlueprintNodeBuilder(UIImage(m_HeaderBackground).GetTextureID(), m_HeaderBackground->GetWidth(), m_HeaderBackground->GetHeight());
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Draw Nodes
             for (auto& node : m_Nodes)
             {
-                if (node.Type == NodeType::Comment)
+                if (node.Type == NodeType::Blueprint || node.Type == NodeType::Simple)
+                    M_DrawSimpleBlueprintNode(node);
+                else if (node.Type == NodeType::Comment)
                     M_DrawCommentNode(node);
                 else if (node.Type == NodeType::Houdini)
                     M_DrawHoudiniNode(node);
                 else if (node.Type == NodeType::Tree)
                     M_DrawTreeNode(node);
+                else
+                    DrawCustomNode(node);
             }
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1069,7 +939,8 @@ namespace Ethane {
             ImGui::Separator();
             if (node)
             {
-                ImGui::Text("ID: %p", node->ID.AsPointer());
+                ImGui::Text("ID: %d", (uint32_t)(node->ID.Get()));
+                ImGui::Text("ID(pointer): %p", node->ID.AsPointer());
                 ImGui::Text("Type: %s", node->Type == NodeType::Blueprint ? "Blueprint" : (node->Type == NodeType::Tree ? "Tree" : "Comment"));
                 ImGui::Text("Inputs: %d", (int)node->Inputs.size());
                 ImGui::Text("Outputs: %d", (int)node->Outputs.size());
@@ -1090,7 +961,8 @@ namespace Ethane {
             ImGui::Separator();
             if (pin)
             {
-                ImGui::Text("ID: %p", pin->ID.AsPointer());
+                ImGui::Text("ID: %d", (uint32_t)(pin->ID.Get()));
+                ImGui::Text("ID(pointer): %p", pin->ID.AsPointer());
                 if (pin->Node)
                     ImGui::Text("Node: %p", pin->Node->ID.AsPointer());
                 else
@@ -1110,7 +982,8 @@ namespace Ethane {
             ImGui::Separator();
             if (link)
             {
-                ImGui::Text("ID: %p", link->ID.AsPointer());
+                ImGui::Text("ID: %d", (uint32_t)(link->ID.Get()));
+                ImGui::Text("ID(pointer): %p", link->ID.AsPointer());
                 ImGui::Text("From: %p", link->StartPinID.AsPointer());
                 ImGui::Text("To: %p", link->EndPinID.AsPointer());
             }
@@ -1200,46 +1073,59 @@ namespace Ethane {
         if (ImGui::BeginPopup("Create New Node"))
         {
             auto openPopupPosition = ImGui::GetMousePos();
-            auto newNodePostion = openPopupPosition;
+
+            auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+            auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+            auto viewportOffset = ImGui::GetWindowPos();
+            auto newNodePostion = ImVec2{ openPopupPosition.x - viewportMinRegion.x, openPopupPosition.y - viewportMinRegion.y };
+            // ETH_CORE_INFO("{0} {1}", );
+            newNodePostion = ImVec2{ 50, 0};
+            // newNodePostion = openPopupPosition;
+            // ETH_CORE_INFO("{0} {1}", newNodePostion.x, newNodePostion.y);
             // ImGui::SetCursorScreenPos(ImGui::GetMousePosOnOpeningCurrentPopup());
 
             Node* node = nullptr;
-            if (ImGui::MenuItem("Input Action"))
-                node = SpawnInputActionNode();
-            if (ImGui::MenuItem("Output Action"))
-                node = SpawnOutputActionNode();
-            if (ImGui::MenuItem("Branch"))
-                node = SpawnBranchNode();
-            if (ImGui::MenuItem("Do N"))
-                node = SpawnDoNNode();
-            if (ImGui::MenuItem("Set Timer"))
-                node = SpawnSetTimerNode();
-            if (ImGui::MenuItem("Less"))
-                node = SpawnLessNode();
-            if (ImGui::MenuItem("Weird"))
-                node = SpawnWeirdNode();
-            if (ImGui::MenuItem("Trace by Channel"))
-                node = SpawnTraceByChannelNode();
-            if (ImGui::MenuItem("Print String"))
-                node = SpawnPrintStringNode();
+            if (m_ShowDefaultCreateNodePopup)
+            {
+                if (ImGui::MenuItem("Input Action"))
+                    node = SpawnInputActionNode();
+                if (ImGui::MenuItem("Output Action"))
+                    node = SpawnOutputActionNode();
+                if (ImGui::MenuItem("Branch"))
+                    node = SpawnBranchNode();
+                if (ImGui::MenuItem("Do N"))
+                    node = SpawnDoNNode();
+                if (ImGui::MenuItem("Set Timer"))
+                    node = SpawnSetTimerNode();
+                if (ImGui::MenuItem("Less"))
+                    node = SpawnLessNode();
+                if (ImGui::MenuItem("Weird"))
+                    node = SpawnWeirdNode();
+                if (ImGui::MenuItem("Trace by Channel"))
+                    node = SpawnTraceByChannelNode();
+                if (ImGui::MenuItem("Print String"))
+                    node = SpawnPrintStringNode();
+                ImGui::Separator();
+                if (ImGui::MenuItem("Comment"))
+                    node = SpawnComment();
+                ImGui::Separator();
+                if (ImGui::MenuItem("Sequence"))
+                    node = SpawnTreeSequenceNode();
+                if (ImGui::MenuItem("Move To"))
+                    node = SpawnTreeTaskNode();
+                if (ImGui::MenuItem("Random Wait"))
+                    node = SpawnTreeTask2Node();
+                ImGui::Separator();
+                if (ImGui::MenuItem("Message"))
+                    node = SpawnMessageNode();
+                ImGui::Separator();
+                if (ImGui::MenuItem("Transform"))
+                    node = SpawnHoudiniTransformNode();
+                if (ImGui::MenuItem("Group"))
+                    node = SpawnHoudiniGroupNode();
+            }
             ImGui::Separator();
-            if (ImGui::MenuItem("Comment"))
-                node = SpawnComment();
-            ImGui::Separator();
-            if (ImGui::MenuItem("Sequence"))
-                node = SpawnTreeSequenceNode();
-            if (ImGui::MenuItem("Move To"))
-                node = SpawnTreeTaskNode();
-            if (ImGui::MenuItem("Random Wait"))
-                node = SpawnTreeTask2Node();
-            ImGui::Separator();
-            if (ImGui::MenuItem("Message"))
-                node = SpawnMessageNode();
-            ImGui::Separator();
-            if (ImGui::MenuItem("Transform"))
-                node = SpawnHoudiniTransformNode();
-            if (ImGui::MenuItem("Group"))
-                node = SpawnHoudiniGroupNode();
+            node = CustomCreateNodePopup(node);
 
             if (node)
             {
@@ -1275,6 +1161,144 @@ namespace Ethane {
         }
         else
             m_CreateNewNode = false;
+    }
+
+    void NodeGraph::M_DrawSimpleBlueprintNode(Node& node)
+    {
+        const auto isSimple = node.Type == NodeType::Simple;
+
+        bool hasOutputDelegates = false;
+        for (auto& output : node.Outputs)
+            if (output.Type == PinType::Delegate)
+                hasOutputDelegates = true;
+
+        m_Builder.Begin(node.ID);
+        if (!isSimple)
+        {
+            m_Builder.Header(node.Color);
+            ImGui::Spring(0);
+            ImGui::TextUnformatted(node.Name.c_str());
+            ImGui::Spring(1);
+            ImGui::Dummy(ImVec2(0, 28));
+            if (hasOutputDelegates)
+            {
+                ImGui::BeginVertical("delegates", ImVec2(0, 28));
+                ImGui::Spring(1, 0);
+                for (auto& output : node.Outputs)
+                {
+                    if (output.Type != PinType::Delegate)
+                        continue;
+
+                    auto alpha = ImGui::GetStyle().Alpha;
+                    if (m_NewLinkPin && !CanCreateLink(m_NewLinkPin, &output) && &output != m_NewLinkPin)
+                        alpha = alpha * (48.0f / 255.0f);
+
+                    ed::BeginPin(output.ID, ed::PinKind::Output);
+                    ed::PinPivotAlignment(ImVec2(1.0f, 0.5f));
+                    ed::PinPivotSize(ImVec2(0, 0));
+                    ImGui::BeginHorizontal(output.ID.AsPointer());
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+                    if (!output.Name.empty())
+                    {
+                        ImGui::TextUnformatted(output.Name.c_str());
+                        ImGui::Spring(0);
+                    }
+                    DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
+                    ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
+                    ImGui::EndHorizontal();
+                    ImGui::PopStyleVar();
+                    ed::EndPin();
+
+                    //DrawItemRect(ImColor(255, 0, 0));
+                }
+                ImGui::Spring(1, 0);
+                ImGui::EndVertical();
+                ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
+            }
+            else
+                ImGui::Spring(0);
+            m_Builder.EndHeader();
+        }
+
+        // Draw Inputs
+        for (auto& input : node.Inputs)
+        {
+            auto alpha = ImGui::GetStyle().Alpha;
+            if (m_NewLinkPin && !CanCreateLink(m_NewLinkPin, &input) && &input != m_NewLinkPin)
+                alpha = alpha * (48.0f / 255.0f);
+
+            m_Builder.Input(input.ID);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+            DrawPinIcon(input, IsPinLinked(input.ID), (int)(alpha * 255));
+            ImGui::Spring(0);
+            if (!input.Name.empty())
+            {
+                ImGui::TextUnformatted(input.Name.c_str());
+                ImGui::Spring(0);
+            }
+            if (input.Type == PinType::Bool)
+            {
+                ImGui::Button("Hello");
+                ImGui::Spring(0);
+            }
+            ImGui::PopStyleVar();
+            m_Builder.EndInput();
+        }
+
+        // Draw simple main body
+        if (isSimple)
+        {
+            m_Builder.Middle();
+
+            ImGui::Spring(1, 0);
+            ImGui::TextUnformatted(node.Name.c_str());
+            ImGui::Spring(1, 0);
+        }
+
+        // Draw Output
+        for (auto& output : node.Outputs)
+        {
+            if (!isSimple && output.Type == PinType::Delegate)
+                continue;
+
+            auto alpha = ImGui::GetStyle().Alpha;
+            if (m_NewLinkPin && !CanCreateLink(m_NewLinkPin, &output) && &output != m_NewLinkPin)
+                alpha = alpha * (48.0f / 255.0f);
+
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+            m_Builder.Output(output.ID);
+            if (output.Type == PinType::String)
+            {
+                static char buffer[128] = "Edit Me\nMultiline!";
+                static bool wasActive = false;
+
+                ImGui::PushItemWidth(100.0f);
+                ImGui::InputText("##edit", buffer, 127);
+                ImGui::PopItemWidth();
+                if (ImGui::IsItemActive() && !wasActive)
+                {
+                    ed::EnableShortcuts(false);
+                    wasActive = true;
+                }
+                else if (!ImGui::IsItemActive() && wasActive)
+                {
+                    ed::EnableShortcuts(true);
+                    wasActive = false;
+                }
+                ImGui::Spring(0);
+            }
+            if (!output.Name.empty())
+            {
+                ImGui::Spring(0);
+                ImGui::TextUnformatted(output.Name.c_str());
+            }
+            ImGui::Spring(0);
+            DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
+            ImGui::PopStyleVar();
+            m_Builder.EndOutput();
+        }
+
+        m_Builder.End();
     }
 
     void NodeGraph::M_DrawCommentNode(Node& node)
@@ -1496,10 +1520,14 @@ namespace Ethane {
 
             ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.0f);
             ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
+#if IMGUI_VERSION_NUM > 18101
             ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersBottom);
+#else
+            ed::PushStyleVar(ed::StyleVar_PinCorners, 12);
+#endif
             ed::BeginPin(pin.ID, ed::PinKind::Input);
-            ed::PinPivotRect(inputsRect.GetTL(), inputsRect.GetBR());
-            ed::PinRect(inputsRect.GetTL(), inputsRect.GetBR());
+            ed::PinPivotRect(inputsRect.GetTL() + ImVec2(1.0, 0), inputsRect.GetBR());
+            ed::PinRect(inputsRect.GetTL() + ImVec2(1.0, 0), inputsRect.GetBR());
             ed::EndPin();
             ed::PopStyleVar(3);
 
@@ -1538,10 +1566,14 @@ namespace Ethane {
             ImGui::Spring(1, 0);
             outputsRect = ImGui_GetItemRect();
 
+#if IMGUI_VERSION_NUM > 18101
             ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersTop);
+#else
+            ed::PushStyleVar(ed::StyleVar_PinCorners, 3);
+#endif
             ed::BeginPin(pin.ID, ed::PinKind::Output);
-            ed::PinPivotRect(outputsRect.GetTL(), outputsRect.GetBR());
-            ed::PinRect(outputsRect.GetTL(), outputsRect.GetBR());
+            ed::PinPivotRect(outputsRect.GetTL() + ImVec2(1.0, 0), outputsRect.GetBR());
+            ed::PinRect(outputsRect.GetTL() + ImVec2(1.0, 0), outputsRect.GetBR());
             ed::EndPin();
             ed::PopStyleVar();
 
@@ -1562,13 +1594,29 @@ namespace Ethane {
 
         auto drawList = ed::GetNodeBackgroundDrawList(node.ID);
 
+        // const auto fringeScale = ImGui::GetStyle().AntiAliasFringeScale;
+        // const auto unitSize    = 1.0f / fringeScale;
+        
+        // const auto ImDrawList_AddRect = [](ImDrawList* drawList, const ImVec2& a, const ImVec2& b, ImU32 col, float rounding, int rounding_corners, float thickness)
+        // {
+        //     if ((col >> 24) == 0)
+        //         return;
+        //     drawList->PathRect(a, b, rounding, rounding_corners);
+        //     drawList->PathStroke(col, true, thickness);
+        // };
+
+#if IMGUI_VERSION_NUM > 18101
         const auto    topRoundCornersFlags = ImDrawFlags_RoundCornersTop;
         const auto bottomRoundCornersFlags = ImDrawFlags_RoundCornersBottom;
+#else
+        const auto    topRoundCornersFlags = 1 | 2;
+        const auto bottomRoundCornersFlags = 4 | 8;
+#endif
 
-        drawList->AddRectFilled(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
+        drawList->AddRectFilled(inputsRect.GetTL() + ImVec2(1.0, 1.0), inputsRect.GetBR(),
             IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, bottomRoundCornersFlags);
         //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
-        drawList->AddRect(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
+        drawList->AddRect(inputsRect.GetTL() + ImVec2(1.0, 1.0), inputsRect.GetBR(),
             IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, bottomRoundCornersFlags);
         //ImGui::PopStyleVar();
         drawList->AddRectFilled(outputsRect.GetTL(), outputsRect.GetBR() - ImVec2(0, 1),
@@ -1584,6 +1632,641 @@ namespace Ethane {
             contentRect.GetBR(),
             IM_COL32(48, 128, 255, 100), 0.0f);
         //ImGui::PopStyleVar();
+    }
+
+
+
+
+
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+#define ETH_SERIALIZE_KAY_VALUE(propName, propVal, outputNode) outputNode << YAML::Key << #propName << YAML::Value << propVal
+#define ETH_DESERIALIZE_KAY_VALUE(propName, destination, node, defaultValue) destination = node[#propName] ? node[#propName].as<decltype(defaultValue)>() : defaultValue
+
+    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+    {
+        out << YAML::Flow;
+        out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+        return out;
+    }
+
+    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
+    {
+        out << YAML::Flow;
+        out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
+        return out;
+    }
+
+    YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
+    {
+        out << YAML::Flow;
+        out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+        return out;
+    }
+
+    static std::string NodeTypeToString(NodeType nodeType)
+    {
+        switch (nodeType)
+        {
+        default:
+        case NodeType::Blueprint: return "Blueprint";
+        case NodeType::Simple:    return "Simple";
+        case NodeType::Tree:      return "Tree";
+        case NodeType::Comment:   return "Comment";
+        case NodeType::Houdini:   return "Houdini";
+
+            // SC
+        case NodeType::SC:        return "SC";
+        }
+    }
+
+    static NodeType NodeTypeFromString(const std::string_view& nodeTypeStr)
+    {
+        if (nodeTypeStr == "Blueprint") return NodeType::Blueprint;
+        if (nodeTypeStr == "Simple")    return NodeType::Simple;
+        if (nodeTypeStr == "Tree")      return NodeType::Tree;
+        if (nodeTypeStr == "Comment")   return NodeType::Comment;
+        if (nodeTypeStr == "Houdini")   return NodeType::Houdini;
+
+        // SC
+        if (nodeTypeStr == "SC")        return NodeType::SC;
+    }
+
+    static std::string PinTypeToString(PinType pinType)
+    {
+        switch (pinType)
+        {
+        default:
+        case PinType::Flow:     return "Flow";
+        case PinType::Bool:     return "Bool";
+        case PinType::Int:      return "Int";
+        case PinType::Float:    return "Float";
+        case PinType::String:   return "String";
+        case PinType::Object:   return "Object";
+        case PinType::Function: return "Function";
+        case PinType::Delegate: return "Delegate";
+            
+        // SC
+        case PinType::StringArray: return "StringArray";
+        case PinType::IntArray:    return "IntArray";
+        }
+    }
+
+    static PinType PinTypeFromString(const std::string_view& pinTypeStr)
+    {
+        if (pinTypeStr == "Flow")     return PinType::Flow;
+        if (pinTypeStr == "Bool")     return PinType::Bool;
+        if (pinTypeStr == "Int")      return PinType::Int;
+        if (pinTypeStr == "Float")    return PinType::Float;
+        if (pinTypeStr == "String")   return PinType::String;
+        if (pinTypeStr == "Object")   return PinType::Object;
+        if (pinTypeStr == "Function") return PinType::Function;
+        if (pinTypeStr == "Delegate") return PinType::Delegate;
+        
+        // SC
+        if (pinTypeStr == "StringArray") return PinType::StringArray;
+        if (pinTypeStr == "IntArray")    return PinType::IntArray;
+    }
+
+#if 1
+    void NodeGraph::Serialize(const std::filesystem::path& filepath)
+    {
+        YAML::Emitter out;
+
+        //============================================================
+        /// Nodes
+
+        out << YAML::BeginMap; // Nodes & Links
+
+        out << YAML::Key << "Nodes" << YAML::Value;
+        out << YAML::BeginSeq;
+        for (auto& node : m_Nodes)
+        {
+            out << YAML::BeginMap; // node
+
+            const ImVec4& nodeCol = node.Color.Value;
+            const ImVec2& nodeSize = node.Size;
+            const glm::vec4 nodeColOut(nodeCol.x, nodeCol.y, nodeCol.z, nodeCol.w);
+            const glm::vec2 nodeSizeOut(nodeSize.x, nodeSize.y);
+
+            ETH_SERIALIZE_KAY_VALUE(ID, node.ID.Get(), out);
+            ETH_SERIALIZE_KAY_VALUE(Name, node.Name, out);
+            ETH_SERIALIZE_KAY_VALUE(Color, nodeColOut, out);
+            ETH_SERIALIZE_KAY_VALUE(Type, NodeTypeToString(node.Type), out);
+            ETH_SERIALIZE_KAY_VALUE(Size, nodeSizeOut, out);
+            ETH_SERIALIZE_KAY_VALUE(Location, node.State, out);
+
+            out << YAML::Key << "Inputs" << YAML::BeginSeq;
+            for (auto& in : node.Inputs)
+            {
+                out << YAML::BeginMap; // in
+                ETH_SERIALIZE_KAY_VALUE(ID, in.ID.Get(), out);
+                ETH_SERIALIZE_KAY_VALUE(Name, in.Name, out);
+                ETH_SERIALIZE_KAY_VALUE(Type, PinTypeToString(in.Type), out);
+                // TODO: test
+                if (in.Value.has_value())
+                {
+                    std::string& str = std::any_cast<std::string>(in.Value);
+                    ETH_SERIALIZE_KAY_VALUE(ValueType, in.Value.type().name(), out);
+                    ETH_SERIALIZE_KAY_VALUE(Value, str, out);
+                }
+                else
+                {
+                    ETH_SERIALIZE_KAY_VALUE(ValueType, "", out);
+                    ETH_SERIALIZE_KAY_VALUE(Value, "", out);
+                }
+                // ETH_SERIALIZE_KAY_VALUE(Storage, StorageKindToString(in.Storage), out);
+                // ETH_SERIALIZE_KAY_VALUE(Value, choc::json::toString(in.Value), out);
+                out << YAML::EndMap; // in
+            }
+            out << YAML::EndSeq; // Inputs
+
+            out << YAML::Key << "Outputs" << YAML::BeginSeq;
+            for (auto& outp : node.Outputs)
+            {
+                out << YAML::BeginMap; // outp
+                ETH_SERIALIZE_KAY_VALUE(ID, outp.ID.Get(), out);
+                ETH_SERIALIZE_KAY_VALUE(Name, outp.Name, out);
+                ETH_SERIALIZE_KAY_VALUE(Type, PinTypeToString(outp.Type), out);
+                //TODO: test
+                if (outp.Value.has_value())
+                {
+                    std::string& str = std::any_cast<std::string>(outp.Value);
+                    ETH_SERIALIZE_KAY_VALUE(ValueType, outp.Value.type().name(), out);
+                    ETH_SERIALIZE_KAY_VALUE(Value, str, out);
+                }
+                else
+                {
+                    ETH_SERIALIZE_KAY_VALUE(ValueType, "", out);
+                    ETH_SERIALIZE_KAY_VALUE(Value, "", out);
+                }
+                // ETH_SERIALIZE_KAY_VALUE(Storage, StorageKindToString(outp.Storage), out);
+                // ETH_SERIALIZE_KAY_VALUE(Value, choc::json::toString(outp.Value), out);
+                out << YAML::EndMap; // outp
+            }
+            out << YAML::EndSeq; // Outputs
+
+            out << YAML::EndMap; // node
+        }
+        out << YAML::EndSeq; // Nodes
+
+        //============================================================
+        /// Links
+
+        out << YAML::Key << "Links" << YAML::Value;
+        out << YAML::BeginSeq;
+        for (auto& link : m_Links)
+        {
+            out << YAML::BeginMap; // link
+
+            const auto& col = link.Color.Value;
+            const glm::vec4 colOut(col.x, col.y, col.z, col.w);
+
+            ETH_SERIALIZE_KAY_VALUE(ID, link.ID.Get(), out);
+            ETH_SERIALIZE_KAY_VALUE(StartPinID, link.StartPinID.Get(), out);
+            ETH_SERIALIZE_KAY_VALUE(EndPinID, link.EndPinID.Get(), out);
+            ETH_SERIALIZE_KAY_VALUE(Color, colOut, out);
+
+            out << YAML::EndMap; // link
+        }
+        out << YAML::EndSeq; // Links
+
+        out << YAML::EndMap; // Nodes & Links
+
+        // Out
+        std::ofstream fout(filepath.string());
+        fout << out.c_str();
+        fout.close();
+    }
+#endif
+
+    bool NodeGraph::Deserialize(const std::filesystem::path& filepath)
+    {
+        YAML::Node data = YAML::LoadFile(filepath.string());
+
+        for (auto& node : data["Nodes"])
+        {
+            uint32_t nodeID;
+            // UUID nodeID;
+            std::string nodeName;
+            std::string location;
+            std::string nodeType;
+            glm::vec4 nodeCol;
+            glm::vec2 nodeSize;
+
+            ETH_DESERIALIZE_KAY_VALUE(ID, nodeID, node, uint64_t(0));
+            ETH_DESERIALIZE_KAY_VALUE(Name, nodeName, node, std::string());
+            ETH_DESERIALIZE_KAY_VALUE(Color, nodeCol, node, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            ETH_DESERIALIZE_KAY_VALUE(Type, nodeType, node, std::string());
+            ETH_DESERIALIZE_KAY_VALUE(Size, nodeSize, node, glm::vec2());
+            ETH_DESERIALIZE_KAY_VALUE(Location, location, node, std::string());
+
+            auto& newNode = m_Nodes.emplace_back(nodeID, nodeName.c_str());
+            newNode.State = location;
+            newNode.Color = ImColor(nodeCol.x, nodeCol.y, nodeCol.z, nodeCol.w);
+            newNode.Type = NodeTypeFromString(nodeType);
+            newNode.Size = ImVec2(nodeSize.x, nodeSize.y);
+
+            if (node["Inputs"])
+            {
+                for (auto& in : node["Inputs"])
+                {
+                    uint32_t ID;
+                    // UUID ID;
+                    std::string pinName;
+                    std::string pinType;
+                    // TODO: test
+                    std::string pinValueType;
+                    std::string pinValue;
+                    // std::string valueStr;
+                    // std::string pinStorage;
+
+                    ETH_DESERIALIZE_KAY_VALUE(ID, ID, in, uint64_t(0));
+                    ETH_DESERIALIZE_KAY_VALUE(Name,         pinName,       in, std::string());
+                    ETH_DESERIALIZE_KAY_VALUE(Type,         pinType,       in, std::string());
+                    // TODO: test
+                    ETH_DESERIALIZE_KAY_VALUE(ValueType,    pinValueType,  in, std::string());
+                    ETH_DESERIALIZE_KAY_VALUE(Value,        pinValue,      in, std::string());
+                    // ETH_DESERIALIZE_KAY_VALUE(Storage, pinStorage, in, std::string());
+                    // ETH_DESERIALIZE_KAY_VALUE(Value, valueStr, in, std::string());
+#if 0
+                    bool isCustomValueType = choc::text::contains(valueStr, "Value");
+
+                    auto parseCustomValueType = [](const std::string& valueString) -> choc::value::Value
+                    {
+                        choc::value::Value value = choc::json::parse(valueString);
+
+                        if (value["TypeName"].isVoid())
+                        {
+                            ETH_CORE_ASSERT(false, "Failed to deserialize custom value type, missing \"TypeName\" property.");
+                            return {};
+                        }
+
+                        choc::value::Value customObject = choc::value::createObject(value["TypeName"].get<std::string>());
+                        if (value.isObject())
+                        {
+                            for (uint32_t i = 0; i < value.size(); i++)
+                            {
+                                choc::value::MemberNameAndValue nameValue = value.getObjectMemberAt(i);
+                                customObject.addMember(nameValue.name, nameValue.value);
+                            }
+                        }
+                        else
+                        {
+                            ETH_CORE_ASSERT("Failed to load custom value type. It must be serialized as object.")
+                        }
+
+                        return customObject;
+                    };
+#endif
+
+                    auto& newInput = newNode.Inputs.emplace_back(
+                        ID,
+                        pinName.c_str(),
+                        PinTypeFromString(pinType)
+                        // StorageKindFromString(pinStorage),
+                        // isCustomValueType ? parseCustomValueType(valueStr) : choc::json::parseValue(valueStr)
+                        );
+                    newInput.Kind = PinDirection::Input;
+                    if (pinValue != "")
+                    {
+                        newInput.Value = pinValue;
+                    }
+                }
+            }
+
+            if (node["Outputs"])
+            {
+                for (auto& out : node["Outputs"])
+                {
+                    uint32_t ID;
+                    //UUID ID;
+                    std::string pinName;
+                    std::string pinType;
+                    // TODO: test
+                    std::string pinValueType;
+                    std::string pinValue;
+                    // std::string valueStr;
+                    // std::string pinStorage;
+
+                    ETH_DESERIALIZE_KAY_VALUE(ID,   ID,      out, uint64_t(0));
+                    ETH_DESERIALIZE_KAY_VALUE(Name, pinName, out, std::string());
+                    ETH_DESERIALIZE_KAY_VALUE(Type, pinType, out, std::string());
+                    // TODO: test
+                    ETH_DESERIALIZE_KAY_VALUE(ValueType, pinValueType, out, std::string());
+                    ETH_DESERIALIZE_KAY_VALUE(Value, pinValue, out, std::string());
+                    // ETH_DESERIALIZE_KAY_VALUE(Storage, pinStorage, out, std::string());
+                    // ETH_DESERIALIZE_KAY_VALUE(Value, valueStr, out, std::string());
+
+                    auto& newOutput = newNode.Outputs.emplace_back(
+                        ID,
+                        pinName.c_str(),
+                        PinTypeFromString(pinType)
+                        // StorageKindFromString(pinStorage),
+                        // choc::json::parseValue(valueStr)
+                    );
+                    newOutput.Kind = PinDirection::Output;
+                    // TODO: test
+                    if (pinValue != "")
+                    {
+                        newOutput.Value = pinValue;
+                    }
+                }
+            }
+        }
+
+        for (auto& link : data["Links"])
+        {
+            uint32_t ID;
+            uint32_t StartPinID;
+            uint32_t EndPinID;
+            // UUID ID;
+            // UUID StartPinID;
+            // UUID EndPinID;
+            glm::vec4 color;
+
+            ETH_DESERIALIZE_KAY_VALUE(ID, ID, link, uint64_t(0));
+            ETH_DESERIALIZE_KAY_VALUE(StartPinID, StartPinID, link, uint64_t(0));
+            ETH_DESERIALIZE_KAY_VALUE(EndPinID, EndPinID, link, uint64_t(0));
+            ETH_DESERIALIZE_KAY_VALUE(Color, color, link, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+            m_Links.emplace_back(ID, StartPinID, EndPinID)
+                .Color = ImColor(color.x, color.y, color.z, color.w);
+        }
+
+        return true;
+    }
+
+    void NodeGraph::OnOpenGraphFile()
+    {
+        std::string filepath = FileDialogs::OpenFile("Ethane Graph (*.yaml)\0*.yaml\0");
+        if (!filepath.empty())
+        {
+            Deserialize(filepath);
+            ed::NavigateToContent();
+            BuildNodes();
+        }
+    }
+
+    void NodeGraph::OnSave()
+    {
+        std::string filepath = FileDialogs::SaveFile("Ethane Graph (*.yaml)\0*.yaml\0");
+        if (!filepath.empty())
+        {
+            Serialize(filepath);
+        }
+    }
+
+    void NodeGraph::OnCompile()
+    {
+        std::string filepath = FileDialogs::SaveFile("Ethane State (*.ts)\0*.ts\0");
+        if (!filepath.empty())
+        {
+            std::ofstream fout(filepath);
+            std::string codeBase = "";
+            fout << codeBase.c_str();
+            Compile(fout);
+        }
+    }
+
+    // helper
+    template<typename T>
+    std::ostream& operator<<(std::ostream& os, const std::vector<T> vec)
+    {
+        if (!vec.empty())
+        {
+            os << vec[0];
+            for (auto i = vec.cbegin() + 1; i != vec.cend(); ++i) {
+                os << ", " << *i;
+            }
+        }
+        return os;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const std::vector<std::string> vec)
+    {
+        if (!vec.empty())
+        {
+            os << "\"" << vec[0] << "\"";
+            for (auto i = vec.cbegin() + 1; i != vec.cend(); ++i) {
+                os << ", \"" << *i << "\"";
+            }
+        }
+        return os;
+    }
+
+    Pin* NodeGraph::FindOtherLinkedPin(ed::PinId pinID)
+    {
+        for (auto& link : m_Links)
+        {
+            if (link.EndPinID == pinID)
+            {
+                return FindPin(link.StartPinID);
+                break;
+            }
+        }
+    }
+
+    void NodeGraph::Compile(std::ofstream& out)
+    {
+        for (auto& node : m_Nodes)
+        {
+            // std::map<uint32_t, uint32_t> pin
+            if (node.Type == NodeType::SC)
+            {
+                if (node.Name == "IntArray")
+                {
+                    std::vector<uint32_t> output;
+                    for (auto& in : node.Inputs)
+                    {
+                        output.push_back(std::stoi(std::any_cast<std::string>(in.Value)));
+                    }
+                    // node.Outputs[0].Value.reset();
+                    node.Outputs[0].Value = output;
+                }
+                else if (node.Name == "StringArray")
+                {
+                    std::vector<std::string> output;
+                    for (auto& in : node.Inputs)
+                    {
+                        output.push_back(std::any_cast<std::string>(in.Value));
+                    }
+                    // node.Outputs[0].Value.reset();
+                    node.Outputs[0].Value = output;
+                }
+                else if (node.Name == "CastToIntArray")
+                {
+                    std::vector<uint32_t> output;
+                    for (auto& in : node.Inputs)
+                    {
+                        auto pin = FindOtherLinkedPin(in.ID);
+                        output.push_back(pin->Node->ID.Get());
+                    }
+                    // node.Outputs[0].Value.reset();
+                    node.Outputs[0].Value = output;
+                }
+            }
+        }
+        for (auto& node : m_Nodes)
+        {
+            if (node.Type == NodeType::SC)
+            {
+                uint32_t next_state = 0;
+                for (auto& link : m_Links)
+                {
+                    if (link.StartPinID == node.Outputs[0].ID)
+                    {
+                        next_state = FindPin(link.EndPinID)->Node->ID.Get();
+                        break;
+                    }
+                }
+
+                if (node.Name == "GameStatePlot")
+                {
+                    uint32_t plot_id;
+                    auto pin = FindOtherLinkedPin(node.Inputs[1].ID);
+                    auto& val = pin->Value;
+                    plot_id = std::stoi(std::any_cast<std::string>(val));
+                    // TODO: future: out << std::format("s = new PlotState({}, {}, [{}], [{}], {})", "this", node.ID.Get(), next_state, "", dialog_id);
+                    out << "s = new PlotState("
+                        << "this" << ", "
+                        << node.ID.Get() << ", "
+                        << "[" << next_state << "]" << ", "
+                        << "[]" << ", "
+
+                        << plot_id
+                        << ");";
+                    out << std::endl;
+                    out << "this.stateGraph.set(s.id, s);";
+                    out << std::endl;
+                }
+                else if (node.Name == "GameStatePuzzle")
+                {
+                    uint32_t puzzle_id;
+                    auto& val = FindOtherLinkedPin(node.Inputs[1].ID)->Value;
+                    puzzle_id = std::stoi(std::any_cast<std::string>(val));
+                    out << "s = new PuzzleState("
+                        << "this" << ", "
+                        << node.ID.Get() << ", "
+                        << "[" << next_state << "]" << ", "
+                        << "[]" << ", "
+
+                        << puzzle_id
+                        << ");";
+                    out << std::endl;
+                    out << "this.stateGraph.set(s.id, s);";
+                    out << std::endl;
+                }
+                else if (node.Name == "GameStateShadowClone")
+                {
+                    std::vector<std::string> nbsKey;
+                    std::vector<uint32_t> closingStates;
+                    std::vector<uint32_t> branchStates;
+
+                    nbsKey = std::any_cast<std::vector<std::string>>(FindOtherLinkedPin(node.Inputs[1].ID)->Value);
+                    auto pin = FindOtherLinkedPin(node.Inputs[2].ID);
+                    closingStates = std::any_cast<std::vector<uint32_t>>(pin->Value);
+
+                    for (uint32_t i = 1; i < node.Outputs.size(); ++i)
+                    {
+                        uint32_t branch = 0;
+                        for (auto& link : m_Links)
+                        {
+                            if (link.StartPinID == node.Outputs[i].ID)
+                            {
+                                branch = FindPin(link.EndPinID)->Node->ID.Get();
+                                break;
+                            }
+                        }
+                        branchStates.push_back(branch);
+                    }
+
+                    out << "s = new ShadowCloneState("
+                        << "this" << ", "
+                        << node.ID.Get() << ", "
+                        << "[" << next_state << "]" << ", "
+                        << "[" << nbsKey << "]" << ", " // temp test
+                        
+                        // TODO
+                        << "[" << nbsKey << "]" << ", "
+                        << "[" << branchStates << "]" << ", "
+                        << "[" << closingStates << "]"
+                        << ");";
+                    out << std::endl;
+                    out << "this.stateGraph.set(s.id, s);";
+                    out << std::endl;
+                }
+                else if (node.Name == "GameStateDialog")
+                {
+                    uint32_t dialog_id;
+                    auto& val = FindOtherLinkedPin(node.Inputs[1].ID)->Value;
+                    dialog_id = std::stoi(std::any_cast<std::string>(val));
+                    // TODO: future: out << std::format("s = new PlotState({}, {}, [{}], [{}], {})", "this", node.ID.Get(), next_state, "", dialog_id);
+                    out << "s = new PlotState("
+                        << "this" << ", "
+                        << node.ID.Get() << ", "
+                        << "[" << next_state << "]" << ", "
+                        << "[]" << ", "
+
+                        << dialog_id
+                        << ");";
+                    out << std::endl;
+                    out << "this.stateGraph.set(s.id, s);";
+                    out << std::endl;
+                }
+                else if (node.Name == "GameStateReward")
+                {
+
+                }
+                else if (node.Name == "GameStateLock")
+                {
+                    //  s = new LockState(this, 130, [131], [], [], [], [], 3);
+                    // this.stateGraph.set(s.id, s);
+                    std::vector<uint32_t> requireState;
+                    std::vector<uint32_t> requireProps;
+                    std::vector<uint32_t> requireAbiliities;
+                    uint32_t fallbackState = 0;
+
+                    auto pin = FindOtherLinkedPin(node.Inputs[1].ID);
+                    requireState = std::any_cast<std::vector<uint32_t>>(pin->Value);
+                    pin = FindOtherLinkedPin(node.Inputs[2].ID);
+                    requireProps = std::any_cast<std::vector<uint32_t>>(pin->Value);
+                    pin = FindOtherLinkedPin(node.Inputs[3].ID);
+                    requireAbiliities = std::any_cast<std::vector<uint32_t>>(pin->Value);
+
+                    fallbackState = FindOtherLinkedPin(node.Inputs[0].ID)->Node->ID.Get();
+
+                    out << "s = new LockState("
+                        << "this" << ", "
+                        << node.ID.Get() << ", "
+                        << "[" << next_state << "]" << ", "
+                        << "[]" << ", "
+
+                        << "[" << requireState << "]" << ", "
+                        << "[" << requireProps << "]" << ", "
+                        << "[" << requireAbiliities << "]" << ", "
+                        << fallbackState
+                        << ");";
+                    out << std::endl;
+                    out << "this.stateGraph.set(s.id, s);";
+                    out << std::endl;
+                }
+                // std::vector<std::string> ns;
+                // for (auto& output : node.Outputs)
+                // {
+                //     for (auto& link : m_Links)
+                //     {
+                //         if (link.StartPinID == output.ID)
+                //             ns.push_back();
+                //     }
+                // }
+                // out << "let state : State = new State(" << node.ID.AsPointer() << ", [ 456, 789]);" << std::endl;
+                // out << "stateMap.set(" << node.ID.AsPointer() << ", state);" << std::endl;
+            }
+        }
     }
 }
 

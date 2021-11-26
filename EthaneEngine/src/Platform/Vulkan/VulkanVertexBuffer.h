@@ -32,10 +32,6 @@ namespace Ethane {
 		VkBuffer GetVulkanBuffer() const { return m_VulkanBuffer; }
 		virtual const VertexBufferLayout& GetLayout() const override { return VertexBufferLayout(); } // test
 
-	private: 
-		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		// uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		void CopyBuffer(VkBuffer dstBuffer, VkBuffer srcBuffer, VkDeviceSize size);
 	private:
 		uint32_t m_Size = 0;
 		// Buffer m_LocalData;

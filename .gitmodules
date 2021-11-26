@@ -17,3 +17,6 @@
 [submodule "EthaneEngine/vendor/imgui"]
 	path = EthaneEngine/vendor/imgui
 	url = https://github.com/Ethan-Chiu/imgui_forked.git
+[submodule "EthaneEngine/vendor/Box2D"]
+	path = EthaneEngine/vendor/Box2D
+	url = https://github.com/Ethan-Chiu/box2d.git

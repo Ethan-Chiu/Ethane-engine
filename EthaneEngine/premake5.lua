@@ -40,6 +40,7 @@ project "EthaneEngine"
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.Assimp}",
+		"%{IncludeDir.Box2D}",
 	}
 
 	links
@@ -49,7 +50,7 @@ project "EthaneEngine"
 		"ImGui",
 		"yaml-cpp",
 		"opengl32.lib",
-
+		"Box2D",
 		"%{Library.Vulkan}",
 		"%{Library.VulkanUtils}",
 	}

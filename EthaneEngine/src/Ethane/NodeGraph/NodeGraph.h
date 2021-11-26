@@ -4,15 +4,20 @@
 #include "Pin.h"
 #include "Node.h"
 
+#include "builders.h"
+#include "widgets.h"
+
 #include <imgui_node_editor.h>
 #include <map>
+
+#include <filesystem>
 
 namespace ax::NodeEditor
 {
 	struct EditorContext;
 }
 
-namespace Ethane {
+namespace Ethane::NodeGraph {
 
 	struct Link
 	{
@@ -22,7 +27,7 @@ namespace Ethane {
 
 		ImColor Color;
 
-		Link(ed::LinkId id, ed::PinId startPinId, ed::PinId endPinId) :
+		Link(uint32_t id, ed::PinId startPinId, ed::PinId endPinId) :
 			ID(id), StartPinID(startPinId), EndPinID(endPinId), Color(255, 255, 255)
 		{
 		}
@@ -46,6 +51,12 @@ namespace Ethane {
 		void OnImGuiRender();
 		void OnClose();
 
+		// TODO: test
+		void OnCompile();
+
+		virtual Node* CustomCreateNodePopup(Node* node) { return node; };
+		virtual void DrawCustomNode(Node& node) {};
+
 	private:
 		bool IsLinkValid(Pin* startPin, Pin* endPin, LinkRule* violateRule = nullptr);
 
@@ -54,15 +65,26 @@ namespace Ethane {
 
 		// UI stuff
 		void M_CreateNodePopup();
+		void M_DrawSimpleBlueprintNode(Node& node);
 		void M_DrawCommentNode(Node& node);
 		void M_DrawHoudiniNode(Node& node); // remove maybe?
 		void M_DrawTreeNode(Node& node); // remove maybe?
+
 		// test
 		void ShowLeftPane(float paneWidth);
 		void ShowStyleEditor(bool* show = nullptr);
 
+		// Compile stuff
+		void Compile(std::ofstream& out);
+
+		// Save and load stuff
+		void OnSave();
+		void OnOpenGraphFile();
+		bool Deserialize(const std::filesystem::path& filepath);
+		void Serialize(const std::filesystem::path& filepath);
+
 	// Utilities: Basic functionalities
-	private:
+	protected:
 		int GetNextId();
 		ed::LinkId GetNextLinkId();
 
@@ -74,6 +96,8 @@ namespace Ethane {
 		Node* FindNode(ed::NodeId id);
 		Link* FindLink(ed::LinkId id);
 		Pin* FindPin(ed::PinId id);
+		//TODO: test
+		Pin* NodeGraph::FindOtherLinkedPin(ed::PinId pinID);
         
 		bool IsPinLinked(ed::PinId id);
 		bool CanCreateLink(Pin* a, Pin* b);
@@ -103,11 +127,13 @@ namespace Ethane {
 		ImColor GetIconColor(PinType type);
 		void DrawPinIcon(const Pin& pin, bool connected, int alpha);
 		
-	private:
+	protected:
 		// Context and Config constants
 		ax::NodeEditor::EditorContext* m_Context = nullptr;
 		const float			 m_CCommentAlpha = 0.75f;
 		const uint32_t       m_CPinIconSize = 24;
+
+		ed::Utilities::BlueprintNodeBuilder m_Builder;
 
 		// State
 		bool m_CreateNewNode = false;
@@ -124,8 +150,12 @@ namespace Ethane {
 		std::map<ed::NodeId, float, NodeIdLess> m_NodeTouchTime;
 		bool                 m_ShowOrdinals = false;
 
+		// resources
 		Ref<Texture2D> m_HeaderBackground;
 		Ref<Texture2D> m_SaveIcon;
 		Ref<Texture2D> m_RestoreIcon;
+
+		// TODO: Test
+		bool m_ShowDefaultCreateNodePopup = true;
 	};
 }

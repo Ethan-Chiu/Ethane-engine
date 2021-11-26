@@ -1,0 +1,1016 @@
+Nodes:
+  - ID: 1
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":-56,\"y\":-16}}"
+    Inputs:
+      - ID: 2
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 3
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 4
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 5
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":-292,\"y\":108}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 6
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 8
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":296,\"y\":-32}}"
+    Inputs:
+      - ID: 9
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 10
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 11
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 13
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":-20,\"y\":108}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 14
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 1
+  - ID: 16
+    Name: GameStatePuzzle
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":536,\"y\":-20}}"
+    Inputs:
+      - ID: 17
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 18
+        Name: puzzle
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 19
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 21
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":268,\"y\":108}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 22
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 1
+  - ID: 2529741103
+    Name: GameStateShadowClone
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":967,\"y\":-32}}"
+    Inputs:
+      - ID: 3066583949
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 809433598
+        Name: nbKeys
+        Type: StringArray
+        ValueType: ""
+        Value: ""
+      - ID: 4214612177
+        Name: closingStates
+        Type: IntArray
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 3845840439
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 1150871321
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 4064978936
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 1716056323
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 4025127744
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 622782689
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 870242639
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 3224972331
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 2284173705
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 3773790526
+    Name: StringArray
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":508,\"y\":127}}"
+    Inputs:
+      - ID: 3560665342
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: AJ
+      - ID: 1654414885
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: SF
+      - ID: 3932329583
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: LLZ
+      - ID: 1287866762
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: AL
+      - ID: 3202861625
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: XM
+      - ID: 1273672375
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: LJG
+      - ID: 1997070506
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: WB
+      - ID: 282448952
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: JSRY
+    Outputs:
+      - ID: 1345174576
+        Name: string array
+        Type: StringArray
+        ValueType: ""
+        Value: ""
+  - ID: 1723326457
+    Name: IntArray
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":520,\"y\":416}}"
+    Inputs:
+      - ID: 4218290465
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 3
+      - ID: 2328680729
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 10
+      - ID: 3560689552
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+      - ID: 3794240435
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+      - ID: 1561408704
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+      - ID: 1195268738
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+      - ID: 3660586362
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+      - ID: 1612484700
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+    Outputs:
+      - ID: 1796479394
+        Name: int array
+        Type: IntArray
+        ValueType: ""
+        Value: ""
+  - ID: 3976870562
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1768,\"y\":-256}}"
+    Inputs:
+      - ID: 1173789395
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 1549517769
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 4032618669
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 4022369302
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1772,\"y\":-132}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 4113193961
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 3
+  - ID: 3141153704
+    Name: GameStateShadowClone
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2151,\"y\":-285}}"
+    Inputs:
+      - ID: 1255429825
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 411467846
+        Name: nbKeys
+        Type: StringArray
+        ValueType: ""
+        Value: ""
+      - ID: 3460262939
+        Name: closingStates
+        Type: IntArray
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 645201726
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 178051832
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 4099463774
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 1902014562
+    Name: StringArray
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2152,\"y\":-145}}"
+    Inputs:
+      - ID: 4228227562
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: "MistaryAbility "
+      - ID: 4121771804
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: WAS
+    Outputs:
+      - ID: 1547856556
+        Name: string array
+        Type: StringArray
+        ValueType: ""
+        Value: ""
+  - ID: 459099339
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2712,\"y\":-256}}"
+    Inputs:
+      - ID: 32064736
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 2094400075
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 2802565299
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 2956016326
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2712,\"y\":-52}}"
+    Inputs:
+      - ID: 4149060322
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 428464899
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 2666325374
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 1046774600
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2700,\"y\":-148}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 2675032667
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 2320583767
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2732,\"y\":76}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 366725021
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 3799631094
+    Name: GameStateShadowClone
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2231,\"y\":240}}"
+    Inputs:
+      - ID: 597901642
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 2204768271
+        Name: nbKeys
+        Type: StringArray
+        ValueType: ""
+        Value: ""
+      - ID: 963272247
+        Name: closingStates
+        Type: IntArray
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 3507321048
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 980900497
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 4290890705
+        Name: branch
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 2999546188
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2936,\"y\":272}}"
+    Inputs:
+      - ID: 3417284101
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 2342732405
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 2504113278
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 3337677966
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2934,\"y\":480}}"
+    Inputs:
+      - ID: 384613267
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 686472687
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 2154506505
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 3667954782
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2938,\"y\":608}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 565360909
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 110049674
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2938,\"y\":384}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 3890782437
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 114007824
+    Name: StringArray
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2244,\"y\":403}}"
+    Inputs:
+      - ID: 3234011395
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 1
+      - ID: 290548578
+        Name: string
+        Type: String
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 2
+    Outputs:
+      - ID: 782643128
+        Name: string array
+        Type: StringArray
+        ValueType: ""
+        Value: ""
+  - ID: 174556086
+    Name: IntArray
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2168,\"y\":-4}}"
+    Inputs:
+      - ID: 2793793348
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+      - ID: 4085434709
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+    Outputs:
+      - ID: 4031559362
+        Name: int array
+        Type: IntArray
+        ValueType: ""
+        Value: ""
+  - ID: 2098192013
+    Name: IntArray
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2231,\"y\":547}}"
+    Inputs:
+      - ID: 4104485067
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+      - ID: 2674316629
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+    Outputs:
+      - ID: 761058603
+        Name: int array
+        Type: IntArray
+        ValueType: ""
+        Value: ""
+  - ID: 4132432896
+    Name: Test Comment
+    Color: [1, 1, 1, 1]
+    Type: Comment
+    Size: [300, 200]
+    Location: "{\"group_size\":{\"x\":1264,\"y\":522},\"location\":{\"x\":1712,\"y\":-384}}"
+    Inputs:
+      []
+    Outputs:
+      []
+  - ID: 444801869
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2200,\"y\":668}}"
+    Inputs:
+      - ID: 3523000793
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 3505069452
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 3272209872
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 2945029666
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2184,\"y\":924}}"
+    Inputs:
+      - ID: 2755644678
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 3035197919
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 911657709
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 3868239504
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2202,\"y\":780}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 2181083566
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 2266406408
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2188,\"y\":1052}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 2971425130
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 2162798236
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2184,\"y\":1184}}"
+    Inputs:
+      - ID: 2108534888
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 92766483
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 873286511
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 2041472034
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":2188,\"y\":1308}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 1839136605
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 2908192045
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1658,\"y\":1196}}"
+    Inputs:
+      - ID: 884285245
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 101330828
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 2924103696
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 2617476071
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1642,\"y\":1404}}"
+    Inputs:
+      - ID: 2409948762
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 3211595927
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 4090162601
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 2800489798
+    Name: GameStatePlot
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1608,\"y\":1580}}"
+    Inputs:
+      - ID: 45629454
+        Name: ""
+        Type: Flow
+        ValueType: ""
+        Value: ""
+      - ID: 1295510565
+        Name: plot
+        Type: Int
+        ValueType: ""
+        Value: ""
+    Outputs:
+      - ID: 1769516275
+        Name: next state
+        Type: Flow
+        ValueType: ""
+        Value: ""
+  - ID: 712973713
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1292,\"y\":1228}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 2370851564
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 2807340999
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1324,\"y\":1420}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 3140653386
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+  - ID: 1871809937
+    Name: Int
+    Color: [1, 1, 1, 1]
+    Type: SC
+    Size: [0, 0]
+    Location: "{\"location\":{\"x\":1356,\"y\":1612}}"
+    Inputs:
+      []
+    Outputs:
+      - ID: 1930257646
+        Name: int
+        Type: Int
+        ValueType: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >
+        Value: 0
+Links:
+  - ID: 802901946
+    StartPinID: 6
+    EndPinID: 3
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 968751334
+    StartPinID: 14
+    EndPinID: 10
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 2866356787
+    StartPinID: 4
+    EndPinID: 9
+    Color: [1, 1, 1, 1]
+  - ID: 1457949897
+    StartPinID: 11
+    EndPinID: 17
+    Color: [1, 1, 1, 1]
+  - ID: 1840934525
+    StartPinID: 22
+    EndPinID: 18
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 234803998
+    StartPinID: 19
+    EndPinID: 3066583949
+    Color: [1, 1, 1, 1]
+  - ID: 3051127356
+    StartPinID: 1345174576
+    EndPinID: 809433598
+    Color: [1, 1, 1, 1]
+  - ID: 521267964
+    StartPinID: 1796479394
+    EndPinID: 4214612177
+    Color: [1, 1, 1, 1]
+  - ID: 1710000266
+    StartPinID: 1150871321
+    EndPinID: 1173789395
+    Color: [1, 1, 1, 1]
+  - ID: 698392824
+    StartPinID: 4113193961
+    EndPinID: 1549517769
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 508762115
+    StartPinID: 4032618669
+    EndPinID: 1255429825
+    Color: [1, 1, 1, 1]
+  - ID: 331988804
+    StartPinID: 1547856556
+    EndPinID: 411467846
+    Color: [1, 1, 1, 1]
+  - ID: 4248501222
+    StartPinID: 4031559362
+    EndPinID: 3460262939
+    Color: [1, 1, 1, 1]
+  - ID: 2587712549
+    StartPinID: 178051832
+    EndPinID: 32064736
+    Color: [1, 1, 1, 1]
+  - ID: 4045013813
+    StartPinID: 2675032667
+    EndPinID: 2094400075
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 1302831707
+    StartPinID: 4099463774
+    EndPinID: 4149060322
+    Color: [1, 1, 1, 1]
+  - ID: 1407027662
+    StartPinID: 366725021
+    EndPinID: 428464899
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 1093269232
+    StartPinID: 4064978936
+    EndPinID: 597901642
+    Color: [1, 1, 1, 1]
+  - ID: 4179266211
+    StartPinID: 782643128
+    EndPinID: 2204768271
+    Color: [1, 1, 1, 1]
+  - ID: 713090111
+    StartPinID: 761058603
+    EndPinID: 963272247
+    Color: [1, 1, 1, 1]
+  - ID: 3413917114
+    StartPinID: 980900497
+    EndPinID: 3417284101
+    Color: [1, 1, 1, 1]
+  - ID: 885530867
+    StartPinID: 4290890705
+    EndPinID: 384613267
+    Color: [1, 1, 1, 1]
+  - ID: 3705921321
+    StartPinID: 3890782437
+    EndPinID: 2342732405
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 2007906483
+    StartPinID: 565360909
+    EndPinID: 686472687
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 3109698094
+    StartPinID: 1716056323
+    EndPinID: 3523000793
+    Color: [1, 1, 1, 1]
+  - ID: 279110113
+    StartPinID: 4025127744
+    EndPinID: 2755644678
+    Color: [1, 1, 1, 1]
+  - ID: 950979616
+    StartPinID: 2181083566
+    EndPinID: 3505069452
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 1307314638
+    StartPinID: 2971425130
+    EndPinID: 3035197919
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 2600744992
+    StartPinID: 622782689
+    EndPinID: 2108534888
+    Color: [1, 1, 1, 1]
+  - ID: 3165842541
+    StartPinID: 1839136605
+    EndPinID: 92766483
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 4192899481
+    StartPinID: 870242639
+    EndPinID: 884285245
+    Color: [1, 1, 1, 1]
+  - ID: 2413046747
+    StartPinID: 3224972331
+    EndPinID: 2409948762
+    Color: [1, 1, 1, 1]
+  - ID: 3420792500
+    StartPinID: 2284173705
+    EndPinID: 45629454
+    Color: [1, 1, 1, 1]
+  - ID: 3407914291
+    StartPinID: 2370851564
+    EndPinID: 101330828
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 1545722624
+    StartPinID: 3140653386
+    EndPinID: 3211595927
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]
+  - ID: 3392691657
+    StartPinID: 1930257646
+    EndPinID: 1295510565
+    Color: [0.266666681, 0.788235366, 0.611764729, 1]

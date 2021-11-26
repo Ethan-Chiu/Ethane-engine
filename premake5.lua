@@ -24,6 +24,7 @@ group "Dependencies"
 	include "EthaneEngine/vendor/Glad"
 	include "EthaneEngine/vendor/imgui"
 	include "EthaneEngine/vendor/yaml-cpp"
+	include "EthaneEngine/vendor/Box2D"
 
 group ""
 
@@ -55,6 +56,7 @@ project "Sandbox"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.ImGuiNodeEditor}",
 		"%{IncludeDir.Assimp}"
 	}
 
