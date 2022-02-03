@@ -8,6 +8,7 @@
 #include "Ethane/Renderer/Mesh.h"
 #include "Ethane/Renderer/Material.h"
 
+class b2World;
 
 namespace Ethane {
 
@@ -25,9 +26,13 @@ namespace Ethane {
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
-		void OnUpdateEditor(Ref<SceneRenderer> renderer, Timestep ts, EditorCamera& camera);
-		void OnUpdateRuntime(Timestep ts);
+		void OnRuntimeStart();
+		void OnRuntimeStop();
 
+		void OnUpdateEditor(Ref<SceneRenderer> renderer, Timestep ts, EditorCamera& camera);
+		void OnUpdateRuntime(Ref<SceneRenderer> renderer, Timestep ts);
+		
+		void SetViewportSize(uint32_t width, uint32_t height);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity GetPrimaryCameraEntity();
@@ -50,6 +55,8 @@ namespace Ethane {
 		// TODO: remove
 		Ref<Mesh> m_Mesh;
 		Ref<Material> m_Material;
+
+		b2World* m_PhysicsWorld = nullptr;
 
 		friend class Entity;
 		friend class SceneSerializer;

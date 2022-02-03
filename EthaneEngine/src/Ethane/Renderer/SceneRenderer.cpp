@@ -131,7 +131,7 @@ namespace Ethane {
 		}
 	}
 
-	void SceneRenderer::BeginScene(const EditorCamera& camera)
+	void SceneRenderer::BeginScene(const Camera& camera, const glm::mat4& viewMatrix)
 	{
 		ETH_PROFILE_FUNCTION();
 
@@ -152,14 +152,14 @@ namespace Ethane {
 		UBScreenData& screenData = ScreenDataUB;
 
 		auto& sceneCamera = camera;
-		const auto viewProjection = sceneCamera.GetViewProjection();
-		const glm::vec3 cameraPosition = glm::inverse(sceneCamera.GetViewMatrix())[3];
+		const auto viewProjection = sceneCamera.GetProjection() * viewMatrix;
+		const glm::vec3 cameraPosition = glm::inverse(viewMatrix)[3];
 		const auto inverseVP = glm::inverse(viewProjection);
 
 		cameraData.ViewProjection = viewProjection;
 		cameraData.InverseViewProjection = inverseVP;
-		cameraData.Projection = sceneCamera.GetProjectionMatrix();
-		cameraData.View = sceneCamera.GetViewMatrix();
+		cameraData.Projection = sceneCamera.GetProjection();
+		cameraData.View = viewMatrix;
 		
 		// TODO: test
 		// Ref<SceneRenderer> instance = this;

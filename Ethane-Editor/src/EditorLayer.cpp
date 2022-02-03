@@ -65,7 +65,7 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		// TODO: test
-		m_NodeGraph.OnClose();
+		// m_NodeGraph.OnClose();
 	}
 
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -114,7 +114,8 @@ namespace Ethane {
 			}
 			case SceneState::Play:
 			{
-				m_ActiveScene->OnUpdateRuntime(ts);
+				// TODO: temporary? should create a different renderer?
+				m_ActiveScene->OnUpdateRuntime(m_ViewportRenderer, ts);
 				break;
 			}
 		}
@@ -229,7 +230,7 @@ namespace Ethane {
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 		// TODO: test
-		m_NodeGraph.OnImGuiRender();
+		// m_NodeGraph.OnImGuiRender();
 		
 		//-------------------------
 		ImGui::Begin("Settings");
@@ -277,6 +278,7 @@ namespace Ethane {
 		// 	m_ViewportImage = UIImage(m_TexTest->GetImage());
 		// }
 		
+		m_ActiveScene->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		UIImage(m_ViewportRenderer->GetFinalPassImage()).Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
 
 		// Drag File in Viewport
@@ -307,7 +309,7 @@ namespace Ethane {
 			// glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
 
 			// Editor camera
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
 			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
 			//Entity Transform
@@ -348,13 +350,14 @@ namespace Ethane {
 
 	void EditorLayer::OnScenePlay()
 	{
+		m_ActiveScene->OnRuntimeStart();
 		m_SceneState = SceneState::Play;
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
+		m_ActiveScene->OnRuntimeStop();
 		m_SceneState = SceneState::Edit;
-
 	}
 
 	void EditorLayer::UI_Toolbar()
@@ -376,7 +379,7 @@ namespace Ethane {
 		std::string tempID = "PlayAndPauseIcons";
 		UIImageButton temp = UIImageButton(tempID.c_str(), icon);
 		temp.Draw(ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0);
-		if (temp.Pressed())
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) // TODO: investigate why temp.Pressed() doesn't work
 		{
 			if (m_SceneState == SceneState::Edit)
 				OnScenePlay();

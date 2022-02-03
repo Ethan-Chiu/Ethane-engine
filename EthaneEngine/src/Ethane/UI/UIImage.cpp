@@ -133,5 +133,6 @@ namespace Ethane {
 	void UIImageButton::Draw(const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
 	{
 		m_Pressed = ImGui::ImageButtonEx(m_ID, m_ImageID, size, uv0, uv1, ImVec2{ (float)frame_padding, (float)frame_padding }, bg_col, tint_col);
+		// ETH_CORE_TRACE("{0}", m_Pressed);
 	}
 }

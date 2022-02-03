@@ -26,7 +26,7 @@ namespace Ethane {
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
-		void BeginScene(const EditorCamera& camera);
+		void BeginScene(const Camera& camera, const glm::mat4& viewMatrix); // TODO: originally it is EditorCamera
 		void EndScene();
 
 		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> material = nullptr);
