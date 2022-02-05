@@ -39,28 +39,6 @@ namespace Ethane {
 
 		// Get memory properties
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
-		
-		// Get properties and features
-		// vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &m_Properties);
-		// vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &m_Features);
-		
-		// Print extensions
-		// uint32_t extCount = 0;
-		// std::vector<VkExtensionProperties> extensionProperties;
-		// vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, nullptr);
-		// if (extCount > 0)
-		// {
-		// 	extensionProperties.resize(extCount);
-		// 	if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, &extensionProperties.front()) == VK_SUCCESS)
-		// 	{
-		// 		ETH_CORE_TRACE("Selected physical device has {0} extensions", extCount);
-		// 		for (const auto& ext : extensionProperties)
-		// 		{
-		// 			m_SupportedExtensions.emplace(ext.extensionName);
-		// 			ETH_CORE_INFO("  {0}", ext.extensionName);
-		// 		}
-		// 	}
-		// }
 
 		// Queue families
 		m_QueueFamilyIndices = FindQueueFamilies(m_PhysicalDevice, m_RequestedQueueTypes);
@@ -94,14 +72,10 @@ namespace Ethane {
 
 		QueueFamilyIndices indices = FindQueueFamilies(device, VK_QUEUE_GRAPHICS_BIT);
 		
-		// TODO: add 
 		// prefer indices.Graphic == indices.Present
-		// temp
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, indices.Graphics.value(), m_Surface, &presentSupport);
 		ETH_CORE_ASSERT(presentSupport == VK_TRUE, "Present not support");
-
-		bool extensionsSupported = checkDeviceExtensionSupport(device);
 
 		// TODO: check swap chain adequate
 		// bool swapChainAdequate = false;
@@ -110,28 +84,10 @@ namespace Ethane {
 		// 	swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		// }
 
-		if (!indices.isComplete() || !extensionsSupported || !deviceFeatures.samplerAnisotropy)
+		if (!indices.isComplete() || !deviceFeatures.samplerAnisotropy)
 			return 0;
 		
 		return score;
-	}
-
-	bool VulkanPhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device)
-	{
-		uint32_t extCount = 0;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extCount, nullptr);
-		std::vector<VkExtensionProperties> availableExtensions(extCount);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extCount, availableExtensions.data());
-
-		std::set<std::string> requiredExtensions = {
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME 
-		};
-		for (const auto& ext : availableExtensions)
-		{
-			requiredExtensions.erase(ext.extensionName);
-		}
-
-		return requiredExtensions.empty();
 	}
 
 	VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies(VkPhysicalDevice device, uint32_t flags)
@@ -171,6 +127,8 @@ namespace Ethane {
 			}
 		}
 		// For other queue types or if no separate compute queue is present, return the first one to support the requested flags
+		VkBool32 presentSupport = false;
+		ETH_CORE_ASSERT(m_Surface != nullptr);
 		for (uint32_t i = 0; i < queueFamilies.size(); i++)
 		{
 			if ((flags & VK_QUEUE_TRANSFER_BIT) && !indices.Transfer.has_value())
@@ -187,11 +145,15 @@ namespace Ethane {
 
 			if (flags & VK_QUEUE_GRAPHICS_BIT)
 			{
-				// TODO: check surface present add
-				// VkBool32 presentSupport = false;
-				// vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 				if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-					indices.Graphics = i;
+				{
+					if (!presentSupport)
+					{
+						vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
+						if (presentSupport)
+							indices.Graphics = i;
+					}
+				}
 			}
 		}
 

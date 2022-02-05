@@ -16,7 +16,7 @@ namespace Ethane {
 		// 
 		// void setVersion(uint32_t major, uint32_t minor);
 		
-		// Configure additional device creation with these variables and functions
+		// Add/Remove Instance extension/layer & device extension
 		void AddInstanceExtension(const char* name, bool optional = false);
 		void AddInstanceLayer(const char* name, bool optional = false);
 		void AddDeviceExtension(const char* name, bool optional = false, void* pFeatureStruct = nullptr, uint32_t version = 0);
@@ -44,17 +44,11 @@ namespace Ethane {
 #endif
 		bool VerboseCompatibleDevices = true;
 
+		// may impact performance hence disable by default
+		bool DisableRobustBufferAccess = true;
 
 		// use device groups
 		// bool useDeviceGroups = false;
-
-		// which compatible device or device group to pick
-		// only used by All-in-one Context::init(...)
-		// uint32_t compatibleDeviceIndex = 0;
-
-		// may impact performance hence disable by default
-		// bool disableRobustBufferAccess = true;
-
 
 		struct Entry
 		{
@@ -76,8 +70,8 @@ namespace Ethane {
 		EntryArray InstanceLayers;
 		EntryArray InstanceExtensions;
 		EntryArray DeviceExtensions;
-		// void* deviceCreateInfoExt{ nullptr };
 		void* InstanceCreateInfoExt{ nullptr };
+		// void* deviceCreateInfoExt{ nullptr };
 	};
 
 	class VulkanContext : public GraphicsContext

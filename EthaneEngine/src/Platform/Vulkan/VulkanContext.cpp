@@ -52,9 +52,11 @@ namespace Ethane {
 			{
 				DeviceExtensions.erase(DeviceExtensions.begin() + i);
 			}
+		}
 	}
-}
 
+	//--------------------------------------------------------------------------------------------------
+	
 #ifdef ETH_DEBUG
 	static bool s_Validation = true;
 #else
@@ -166,6 +168,9 @@ namespace Ethane {
 		m_SwapChain.Create(m_Device, width, height, false);
 	}
 
+
+
+	//--------------------------------------------------------------------------------------------------
 	// Create the Vulkan instance
 	//
 	bool VulkanContext::InitInstance(const ContextCreateInfo& info)
@@ -235,7 +240,7 @@ namespace Ethane {
 				for (auto extension : extensionProperties)
 				{
 					// uint32_t version = extension.specVersion;
-					ETH_CORE_INFO("{0} (v. {1})", std::string(extension.extensionName), extension.specVersion);
+					ETH_CORE_INFO("  {0} (v. {1})", std::string(extension.extensionName), extension.specVersion);
 				}
 			}
 		}
@@ -247,12 +252,12 @@ namespace Ethane {
 			ETH_CORE_INFO("Used Instance Layers :");
 			for (const auto& it : m_UsedInstanceLayers)
 			{
-				ETH_CORE_INFO("{0}", it.c_str());
+				ETH_CORE_INFO("  {0}", it.c_str());
 			}
 			ETH_CORE_INFO("Used Instance Extensions :");
 			for (const auto& it : m_UsedInstanceExtensions)
 			{
-				ETH_CORE_INFO("{0}", it.c_str());
+				ETH_CORE_INFO("  {0}", it.c_str());
 			}
 			ETH_CORE_INFO("______________________");
 		}
@@ -292,6 +297,10 @@ namespace Ethane {
 		return true;
 	}
 
+
+	//--------------------------------------------------------------------------------------------------
+	// Initialize device
+	// 
 	bool VulkanContext::InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices)
 	{
 		ETH_CORE_ASSERT(s_VulkanInstance != nullptr);
@@ -317,7 +326,7 @@ namespace Ethane {
 			}
 		}
 
-		// features
+		// devices features
 		InitPhysicalFeatures(m_PhysicalInfo, physicalDevice, info.ApiMajor, info.ApiMinor);
 
 		VkPhysicalDeviceFeatures2 features2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
@@ -325,7 +334,6 @@ namespace Ethane {
 		features2.pNext = &m_PhysicalInfo.features11;
 		m_PhysicalInfo.features11.pNext = &m_PhysicalInfo.features12;
 		m_PhysicalInfo.features12.pNext = nullptr;
-
 
 		std::vector<void*> featureStructs;
 		if (FillFilteredNameArray(m_PhysicalDevice->m_UsedDeviceExtensions, extensionProperties, info.DeviceExtensions, featureStructs) != VK_SUCCESS)
@@ -341,7 +349,7 @@ namespace Ethane {
 			ETH_CORE_INFO("Used Device Extensions: ");
 			for (const auto& it : m_PhysicalDevice->m_UsedDeviceExtensions)
 			{
-				ETH_CORE_INFO("{0}", it.c_str());
+				ETH_CORE_INFO("  {0}", it.c_str());
 			}
 		}
 
@@ -373,19 +381,24 @@ namespace Ethane {
 			vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
 		}
 
-		// TODO: investigate this feature
 		// disable some features
-		// if (info.disableRobustBufferAccess)
-		// {
-		// 	features2.features.robustBufferAccess = VK_FALSE;
-		// }
+		if (info.DisableRobustBufferAccess)
+		{
+			features2.features.robustBufferAccess = VK_FALSE;
+		}
 
+		// Add some features
 		features2.features.samplerAnisotropy = VK_TRUE;
+
 		m_Device = VulkanDevice::Create(m_PhysicalDevice, features2);
 
 		return true;
 	}
 
+
+
+	//--------------------------------------------------------------------------------------------------
+	//
 	void VulkanContext::InitPhysicalFeatures(PhysicalDeviceInfo& info, VkPhysicalDevice physicalDevice, uint32_t versionMajor, uint32_t versionMinor)
 	{
 		VkPhysicalDeviceFeatures2   features2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
@@ -413,6 +426,9 @@ namespace Ethane {
 		info.features10 = features2.features;
 	}
 
+
+	//--------------------------------------------------------------------------------------------------
+	//
 	void VulkanContext::BeginFrame()
 	{
 		m_SwapChain.BeginFrame();
@@ -429,7 +445,11 @@ namespace Ethane {
 		m_SwapChain.OnResize(width, height);
 	}
 
+
+
+	//--------------------------------------------------------------------------------------------------
 	// Utility function
+	//
 	VkResult VulkanContext::FillFilteredNameArray(std::vector<std::string>& used,
 		const std::vector<VkLayerProperties>& properties,
 		const ContextCreateInfo::EntryArray& requested)
@@ -496,6 +516,7 @@ namespace Ethane {
 	}
 
 
+	//--------------------------------------------------------------------------------------------------
 	// Returns the list of devices or groups compatible with the mandatory extensions
 	//
 	std::vector<uint32_t> VulkanContext::GetCompatibleDevices(const ContextCreateInfo& info)
@@ -540,7 +561,7 @@ namespace Ethane {
 				{
 					VkPhysicalDeviceProperties props;
 					vkGetPhysicalDeviceProperties(physicalDevice, &props);
-					ETH_CORE_INFO("{0}: {1}", compatible, props.deviceName);
+					ETH_CORE_INFO("  {0}: {1}", compatible, props.deviceName);
 					compatible++;
 				}
 			}
@@ -567,6 +588,7 @@ namespace Ethane {
 		return compatibleDevices;
 	}
 
+
 	//--------------------------------------------------------------------------------------------------
 	// Return true if all extensions in info, marked as required are available on the physicalDevice
 	//
@@ -583,6 +605,9 @@ namespace Ethane {
 		return CheckEntryArray(extensionProperties, info.DeviceExtensions, bVerbose);
 	}
 
+
+	//--------------------------------------------------------------------------------------------------
+	//
 	bool VulkanContext::CheckEntryArray(const std::vector<VkExtensionProperties>& properties, const ContextCreateInfo::EntryArray& requested, bool bVerbose)
 	{
 		for (const auto& itr : requested)

@@ -42,7 +42,6 @@ namespace Ethane {
 		VkPhysicalDeviceProperties2 GetProperties() { return m_Properties; }
 	private:
 		uint32_t rateDeviceSuitability(VkPhysicalDevice device);
-		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags);
 		void QueueCreateInfo();
