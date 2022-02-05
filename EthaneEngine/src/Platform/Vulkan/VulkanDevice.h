@@ -31,15 +31,15 @@ namespace Ethane {
 		};
 
 	public:
-		VulkanPhysicalDevice(VkSurfaceKHR surface); // test param VkSurfaceKHR surface
+		VulkanPhysicalDevice(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface); // test param VkSurfaceKHR surface
 		~VulkanPhysicalDevice();
 
-		static Ref<VulkanPhysicalDevice> Pick(VkSurfaceKHR surface); // test VkSurfaceKHR surface
+		static Ref<VulkanPhysicalDevice> Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface); // test VkSurfaceKHR surface
 
 		// Getter
 		VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
 		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
-		VkPhysicalDeviceProperties GetProperties() { return m_Properties; }
+		VkPhysicalDeviceProperties2 GetProperties() { return m_Properties; }
 	private:
 		uint32_t rateDeviceSuitability(VkPhysicalDevice device);
 		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -53,11 +53,14 @@ namespace Ethane {
 		const uint32_t m_RequestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 		
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
-		VkPhysicalDeviceProperties m_Properties;
-		VkPhysicalDeviceFeatures m_Features;
+
+		// Features and properties
 		VkPhysicalDeviceMemoryProperties m_MemoryProperties;
+		VkPhysicalDeviceFeatures2 m_Features;
+		VkPhysicalDeviceProperties2 m_Properties;
 
 		std::unordered_set<std::string> m_SupportedExtensions;
+		std::vector<std::string> m_UsedDeviceExtensions;
 
 		QueueFamilyIndices m_QueueFamilyIndices;
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
@@ -66,18 +69,18 @@ namespace Ethane {
 		VkSurfaceKHR m_Surface; // no much use
 
 	friend class VulkanDevice;
-
+	friend class VulkanContext;
 	};
 
 	class VulkanDevice
 	{
 	public:
-		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures);
+		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2);
 		~VulkanDevice();
 		void Cleanup();
 
 
-		static Ref<VulkanDevice> Create(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures);
+		static Ref<VulkanDevice> Create(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2);
 
 		VkCommandBuffer CreateCommandBuffer(QueueFamilyTypes type = QueueFamilyTypes::Graphics, bool oneTimeUse = false, bool begin = false);
 		void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
@@ -97,13 +100,13 @@ namespace Ethane {
 	private:
 		VkDevice m_LogicalDevice = VK_NULL_HANDLE;
 		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
-		VkPhysicalDeviceFeatures m_EnabledFeatures;
+		VkPhysicalDeviceFeatures2 m_EnabledFeatures2;
 
 		VkQueue m_GraphicsQueue, m_ComputeQueue;
 
 		VkCommandPool m_GraphicsCommandPool, m_ComputeCommandPool;
 
-		bool m_EnableDebugMarkers = false;
+		// bool m_EnableDebugMarkers = false;
 	};
 
 	namespace Utils

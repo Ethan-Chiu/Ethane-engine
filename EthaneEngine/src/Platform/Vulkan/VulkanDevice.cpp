@@ -4,12 +4,12 @@
 
 namespace Ethane {
 
-	Ref<VulkanPhysicalDevice> VulkanPhysicalDevice::Pick(VkSurfaceKHR surface)
+	Ref<VulkanPhysicalDevice> VulkanPhysicalDevice::Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface)
 	{
-		return CreateRef<VulkanPhysicalDevice>(surface);
+		return CreateRef<VulkanPhysicalDevice>(compatibleDeviceIndices, surface);
 	}
 
-	VulkanPhysicalDevice::VulkanPhysicalDevice(VkSurfaceKHR surface)
+	VulkanPhysicalDevice::VulkanPhysicalDevice(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface)
 		:m_Surface(surface)
 	{
 		auto vkInstance = VulkanContext::GetInstance();
@@ -23,10 +23,10 @@ namespace Ethane {
 
 		// Select device 
 		std::multimap<uint32_t, VkPhysicalDevice> candidates;
-		for (const auto& device : devices)
+		for (const auto& deviceIndex : compatibleDeviceIndices)
 		{
-			int score = rateDeviceSuitability(device);
-			candidates.insert(std::make_pair(score, device));
+			int score = rateDeviceSuitability(devices[deviceIndex]);
+			candidates.insert(std::make_pair(score, devices[deviceIndex]));
 		}
 		if (candidates.rbegin()->first > 0)
 		{
@@ -37,27 +37,30 @@ namespace Ethane {
 			ETH_CORE_ASSERT("failed to find a suitable GPU");
 		}
 
-		// Get properties and features
-		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
+		// Get memory properties
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
-		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
+		
+		// Get properties and features
+		// vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &m_Properties);
+		// vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &m_Features);
 		
 		// Print extensions
-		uint32_t extCount = 0;
-		vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, nullptr);
-		if (extCount > 0)
-		{
-			std::vector<VkExtensionProperties> extensions(extCount);
-			if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, &extensions.front()) == VK_SUCCESS)
-			{
-				ETH_CORE_TRACE("Selected physical device has {0} extensions", extCount);
-				for (const auto& ext : extensions)
-				{
-					m_SupportedExtensions.emplace(ext.extensionName);
-					ETH_CORE_INFO("  {0}", ext.extensionName);
-				}
-			}
-		}
+		// uint32_t extCount = 0;
+		// std::vector<VkExtensionProperties> extensionProperties;
+		// vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, nullptr);
+		// if (extCount > 0)
+		// {
+		// 	extensionProperties.resize(extCount);
+		// 	if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, &extensionProperties.front()) == VK_SUCCESS)
+		// 	{
+		// 		ETH_CORE_TRACE("Selected physical device has {0} extensions", extCount);
+		// 		for (const auto& ext : extensionProperties)
+		// 		{
+		// 			m_SupportedExtensions.emplace(ext.extensionName);
+		// 			ETH_CORE_INFO("  {0}", ext.extensionName);
+		// 		}
+		// 	}
+		// }
 
 		// Queue families
 		m_QueueFamilyIndices = FindQueueFamilies(m_PhysicalDevice, m_RequestedQueueTypes);
@@ -226,31 +229,40 @@ namespace Ethane {
 	////////////////////////////////////////////////////////////////////////////////////
 	// Logical device 
 	////////////////////////////////////////////////////////////////////////////////////
-	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures)
-		: m_PhysicalDevice(physicalDevice), m_EnabledFeatures(enabledFeatures)
+	Ref<VulkanDevice> VulkanDevice::Create(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2)
+	{
+		return CreateRef<VulkanDevice>(physicalDevice, enabledFeatures2);
+	}
+	
+	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2)
+		: m_PhysicalDevice(physicalDevice), m_EnabledFeatures2(enabledFeatures2)
 	{
 		std::vector<const char*> deviceExtensions;
-		// ETH_CORE_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
-		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+		for (const auto& it : m_PhysicalDevice->m_UsedDeviceExtensions)
+		{
+			deviceExtensions.push_back(it.c_str());
+		}
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_PhysicalDevice->m_QueueCreateInfos.size());
 		deviceCreateInfo.pQueueCreateInfos = m_PhysicalDevice->m_QueueCreateInfos.data();
-		deviceCreateInfo.pEnabledFeatures = &m_EnabledFeatures;
 
 		// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
-		if (m_PhysicalDevice->IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
-		{
-			deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-			m_EnableDebugMarkers = true;
-		}
+		// if (m_PhysicalDevice->IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
+		// {
+		// 	deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+		// 	m_EnableDebugMarkers = true;
+		// }
 
 		if (deviceExtensions.size() > 0)
 		{
 			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 			deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 		}
+
+		deviceCreateInfo.pEnabledFeatures = nullptr;
+		deviceCreateInfo.pNext = &m_EnabledFeatures2;
 
 		VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice->GetVulkanPhysicalDevice(), &deviceCreateInfo, nullptr, &m_LogicalDevice));
 
@@ -282,11 +294,6 @@ namespace Ethane {
 		vkDeviceWaitIdle(m_LogicalDevice);
 
 		vkDestroyDevice(m_LogicalDevice, nullptr);
-	}
-
-	Ref<VulkanDevice> VulkanDevice::Create(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures)
-	{
-		return CreateRef<VulkanDevice>(physicalDevice, enabledFeatures);
 	}
 
 	VkCommandBuffer VulkanDevice::CreateCommandBuffer(QueueFamilyTypes type , bool oneTimeUse, bool begin)

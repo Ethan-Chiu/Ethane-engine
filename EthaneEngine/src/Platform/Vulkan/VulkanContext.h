@@ -10,13 +10,99 @@ struct GLFWwindow;
 
 namespace Ethane {
 
+	struct ContextCreateInfo
+	{
+		// ContextCreateInfo(bool bUseValidation = true);
+		// 
+		// void setVersion(uint32_t major, uint32_t minor);
+		
+		// Configure additional device creation with these variables and functions
+		void AddInstanceExtension(const char* name, bool optional = false);
+		void AddInstanceLayer(const char* name, bool optional = false);
+		void AddDeviceExtension(const char* name, bool optional = false, void* pFeatureStruct = nullptr, uint32_t version = 0);
+		// 
+		void RemoveInstanceExtension(const char* name);
+		void RemoveInstanceLayer(const char* name);
+		void RemoveDeviceExtension(const char* name);
+
+		// instance properties
+		std::string AppEngine = "Ethane";
+		std::string AppTitle = "EthaneEngine";
+
+		// api version
+		uint32_t ApiMajor{ 1 };
+		uint32_t ApiMinor{ 2 };
+
+		// Information printed at Context::init time
+		bool VerboseUsed = true;
+#ifdef ETH_DEBUG
+		bool Validation = true;
+		bool VerboseAvailable = true;
+#else
+		bool Validation = false;
+		bool VerboseAvailable = false;
+#endif
+		bool VerboseCompatibleDevices = true;
+
+
+		// use device groups
+		// bool useDeviceGroups = false;
+
+		// which compatible device or device group to pick
+		// only used by All-in-one Context::init(...)
+		// uint32_t compatibleDeviceIndex = 0;
+
+		// may impact performance hence disable by default
+		// bool disableRobustBufferAccess = true;
+
+
+		struct Entry
+		{
+			Entry(const char* entryName, bool isOptional = false, void* pointerFeatureStruct = nullptr, uint32_t checkVersion = 0)
+				: name(entryName)
+				, optional(isOptional)
+				, pFeatureStruct(pointerFeatureStruct)
+				, version(checkVersion)
+			{
+			}
+
+			std::string name;
+			bool        optional{ false };
+			void* pFeatureStruct{ nullptr };
+			uint32_t    version{ 0 };
+		};
+
+		using EntryArray = std::vector<Entry>;
+		EntryArray InstanceLayers;
+		EntryArray InstanceExtensions;
+		EntryArray DeviceExtensions;
+		// void* deviceCreateInfoExt{ nullptr };
+		void* InstanceCreateInfoExt{ nullptr };
+	};
+
 	class VulkanContext : public GraphicsContext
 	{
+	public:
+		// This struct holds all core feature information for a physical device
+		struct PhysicalDeviceInfo
+		{
+			VkPhysicalDeviceFeatures         features10{};
+			VkPhysicalDeviceVulkan11Features features11{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES };
+			VkPhysicalDeviceVulkan12Features features12{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES };
+
+			VkPhysicalDeviceProperties         properties10{};
+			VkPhysicalDeviceVulkan11Properties properties11{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES };
+			VkPhysicalDeviceVulkan12Properties properties12{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES };
+		};
+
 	public:
 		VulkanContext(GLFWwindow* windowHandle);
 		virtual ~VulkanContext();
 
 		virtual void Init() override;
+		
+		bool InitInstance(const ContextCreateInfo& info);
+		bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
 
 		virtual void BeginFrame() override; // TODO: test
 		virtual void SwapBuffers() override;
@@ -32,10 +118,27 @@ namespace Ethane {
 		static Ref<VulkanDevice> GetDevice() { return m_Device; } // TODO
 		static VulkanSwapChain GetSwapChain() { return m_SwapChain; } // TODO
 	private:
+		std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
+		VkResult FillFilteredNameArray(std::vector<std::string>& used,
+			const std::vector<VkLayerProperties>& properties,
+			const ContextCreateInfo::EntryArray& requested);
+		VkResult FillFilteredNameArray(std::vector<std::string>& used,
+			const std::vector<VkExtensionProperties>& properties,
+			const ContextCreateInfo::EntryArray& requested,
+			std::vector<void*>& featureStructs);
+		bool HasMandatoryExtensions(VkPhysicalDevice physicalDevice, const ContextCreateInfo& info, bool bVerbose);
+		bool CheckEntryArray(const std::vector<VkExtensionProperties>& properties, const ContextCreateInfo::EntryArray& requested, bool bVerbose);
+		void InitPhysicalFeatures(PhysicalDeviceInfo& info, VkPhysicalDevice physicalDevice, uint32_t versionMajor, uint32_t versionMinor);
+	private:
 		GLFWwindow* m_WindowHandle;
 
 		inline static VkInstance s_VulkanInstance;
 		VkDebugReportCallbackEXT m_DebugReportCallback = VK_NULL_HANDLE;
+
+		std::vector<std::string> m_UsedInstanceLayers;
+		std::vector<std::string> m_UsedInstanceExtensions;
+
+		PhysicalDeviceInfo m_PhysicalInfo;
 
 		inline static Ref<VulkanPhysicalDevice> m_PhysicalDevice; // TODO
 		inline static Ref<VulkanDevice> m_Device; // TODO
