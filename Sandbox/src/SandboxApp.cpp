@@ -3,6 +3,7 @@
 #include <Ethane/Core/EntryPoint.h>
 
 #include "SCGameStateEditorLayer.h"
+#include "RayTracingLayer.h"
 
 using namespace Ethane;
 
@@ -53,7 +54,7 @@ class Sandbox : public Ethane::Application
 public:
 	Sandbox()
 	{
-		PushLayer(new EditorLayer());
+		PushLayer(new RayTracingLayer());
 	}
 	~Sandbox()
 	{
