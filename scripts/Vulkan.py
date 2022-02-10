@@ -20,25 +20,25 @@ def InstallVulkanSDK():
     print("Done!")
     print("Running Vulkan SDK installer...")
     os.startfile(os.path.abspath(VULKAN_SDK_EXE_PATH))
-    print("Re-run this script after installation")
+    # print("Re-run this script after installation")
+    return True
 
 def InstallVulkanPrompt():
     print("Would you like to install the Vulkan SDK?")
     install = Utils.YesOrNo()
     if (install):
-        InstallVulkanSDK()
-        quit()
+        return InstallVulkanSDK()
+    else:
+        return False
 
 def CheckVulkanSDK():
     if (VULKAN_SDK is None):
         print("You don't have the Vulkan SDK installed!")
-        InstallVulkanPrompt()
-        return False
+        return InstallVulkanPrompt()
     elif (ETHANE_VULKAN_VERSION not in VULKAN_SDK):
         print(f"Located Vulkan SDK at {VULKAN_SDK}")
         print(f"You don't have the correct Vulkan SDK version! (ETHANE requires {ETHANE_VULKAN_VERSION})")
-        InstallVulkanPrompt()
-        return False
+        return InstallVulkanPrompt()
 
     print(f"Correct Vulkan SDK located at {VULKAN_SDK}")
     return True
