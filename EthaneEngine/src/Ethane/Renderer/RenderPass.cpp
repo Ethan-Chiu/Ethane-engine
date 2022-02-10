@@ -3,8 +3,8 @@
 
 #include "RendererAPI.h"
 
-#include "Platform/OpenGL/OpenGLRenderPass.h"
-#include "Platform/Vulkan/VulkanRenderPass.h"
+#include "Ethane/Platform/OpenGL/OpenGLRenderPass.h"
+#include "Ethane/Platform/Vulkan/VulkanRenderPass.h"
 
 namespace Ethane {
 	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec)

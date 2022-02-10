@@ -1,8 +1,8 @@
 #include "ethpch.h"
 #include "Framebuffer.h"
 #include "RendererAPI.h"
-#include "Platform/OpenGL/OpenGLFramebuffer.h"
-#include "Platform/Vulkan/vulkanFramebuffer.h"
+#include "Ethane/Platform/OpenGL/OpenGLFramebuffer.h"
+#include "Ethane/Platform/Vulkan/vulkanFramebuffer.h"
 
 namespace Ethane {
 

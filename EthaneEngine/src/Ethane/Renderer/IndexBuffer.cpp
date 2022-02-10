@@ -3,8 +3,8 @@
 
 #include "Renderer.h"
 
-#include "Platform/OpenGL/OpenGLIndexBuffer.h"
-#include "Platform/Vulkan/VulkanIndexBuffer.h"
+#include "Ethane/Platform/OpenGL/OpenGLIndexBuffer.h"
+#include "Ethane/Platform/Vulkan/VulkanIndexBuffer.h"
 
 namespace Ethane {
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Platform/Vulkan/Vulkan.h"
+#include "Ethane/Platform/Vulkan/Vulkan.h"
 
 namespace Ethane {
 

@@ -2,8 +2,8 @@
 #include "Texture.h"
 
 #include "RendererAPI.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
-#include "Platform/Vulkan/VulkanTexture.h"
+#include "Ethane/Platform/OpenGL/OpenGLTexture.h"
+#include "Ethane/Platform/Vulkan/VulkanTexture.h"
 
 namespace Ethane {
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Ethane/ImGui/ImGuiLayer.h"
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Ethane/Platform/Vulkan/VulkanContext.h"
 
 namespace Ethane{
 

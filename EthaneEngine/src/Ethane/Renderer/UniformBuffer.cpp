@@ -2,7 +2,7 @@
 #include "UniformBuffer.h"
 
 #include "RendererAPI.h"
-#include "Platform/OpenGL/OpenGLUniformBuffer.h"
+#include "Ethane/Platform/OpenGL/OpenGLUniformBuffer.h"
 
 namespace Ethane {
 

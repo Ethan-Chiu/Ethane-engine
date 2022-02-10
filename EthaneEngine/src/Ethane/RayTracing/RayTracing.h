@@ -33,10 +33,14 @@ namespace Ethane {
 
 		void InitRayTracing();
 		auto MeshToVkGeometryKHR(const Mesh& mesh);
+
 		void CreateBottomLevelAS();
 		void CreateTopLevelAS();
 
-		void destroyResources();
+		void CreateRtDescriptorSet();
+		void UpdateRtDescriptorSet();
+
+		// void DestroyResources();
 
 	private:
 		VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_RtProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR};
@@ -46,6 +50,11 @@ namespace Ethane {
 		std::vector<RTObjInstance> m_Instances;
 
 		RayTracingBuilder m_RTBuilder;
+
+		// nvvk::DescriptorSetBindings                     m_RTDescSetLayoutBind;
+		// VkDescriptorPool                                m_RTDescPool;
+		// VkDescriptorSetLayout                           m_RTDescSetLayout;
+		// VkDescriptorSet                                 m_RTDescSet;
 	};
 
 }

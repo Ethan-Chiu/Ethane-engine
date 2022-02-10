@@ -1,8 +1,8 @@
 #include "ethpch.h"
 #include "RenderCommand.h"
 
-#include "Platform/OpenGL/OpenGLRendererAPI.h"
-#include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "Ethane/Platform/OpenGL/OpenGLRendererAPI.h"
+#include "Ethane/Platform/Vulkan/VulkanRendererAPI.h"
 
 namespace Ethane {
 

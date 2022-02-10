@@ -4,10 +4,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // TODO: temp
-#include "Platform/Vulkan/VulkanRendererAPI.h"
-#include "Platform/Vulkan/VulkanFramebuffer.h"
+#include "Ethane/Platform/Vulkan/VulkanRendererAPI.h"
+#include "Ethane/Platform/Vulkan/VulkanFramebuffer.h"
 // TODO: remove
-#include "Platform/Vulkan/VulkanMaterial.h"
+#include "Ethane/Platform/Vulkan/VulkanMaterial.h"
 
 namespace Ethane {
 

@@ -2,7 +2,7 @@
 #include "Window.h"
 
 #ifdef ETH_PLATFORM_WINDOWS
-	#include "Platform/Windows/WindowsWindow.h"
+	#include "Ethane/Platform/Windows/WindowsWindow.h"
 #endif
 
 namespace Ethane

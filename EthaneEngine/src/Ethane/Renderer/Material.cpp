@@ -2,7 +2,7 @@
 #include "Material.h"
 
 // #include "Ethane/Platform/OpenGL/OpenGLMaterial.h"
-#include "Platform/Vulkan/VulkanMaterial.h"
+#include "Ethane/Platform/Vulkan/VulkanMaterial.h"
 
 #include "RendererAPI.h"
 

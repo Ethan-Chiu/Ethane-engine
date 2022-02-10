@@ -3,8 +3,8 @@
 
 #include <imgui.h>
 
-#include "Platform/OpenGL/OpenGLImGuiLayer.h"
-#include "Platform/Vulkan/VulkanImGuiLayer.h"
+#include "Ethane/Platform/OpenGL/OpenGLImGuiLayer.h"
+#include "Ethane/Platform/Vulkan/VulkanImGuiLayer.h"
 
 #include "Ethane/Renderer/RendererAPI.h"
 

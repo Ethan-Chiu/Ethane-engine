@@ -7,7 +7,7 @@
 
 // TODO: test
 // #include "Platform/OopnGL/OpenGLTexture.h"
-#include "Platform/Vulkan/VulkanTexture.h"
+#include "Ethane/Platform/Vulkan/VulkanTexture.h"
 #include "examples/imgui_impl_vulkan_with_textures.h"
 
 namespace Ethane {

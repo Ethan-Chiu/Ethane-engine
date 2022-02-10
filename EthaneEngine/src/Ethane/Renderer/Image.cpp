@@ -2,7 +2,7 @@
 #include "Image.h"
 
 // #include "Platform/OpenGL/OpenGLImage.h"
-#include "Platform/Vulkan/VulkanImage.h"
+#include "Ethane/Platform/Vulkan/VulkanImage.h"
 
 #include "Ethane/Renderer/RendererAPI.h"
 

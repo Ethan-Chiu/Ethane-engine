@@ -2,8 +2,8 @@
 #include "Shader.h"
 
 #include "RendererAPI.h"
-#include "Platform/OpenGL/OpenGLShader.h"
-#include "Platform/Vulkan/VulkanShader.h"
+#include "Ethane/Platform/OpenGL/OpenGLShader.h"
+#include "Ethane/Platform/Vulkan/VulkanShader.h"
 
 namespace Ethane {
 

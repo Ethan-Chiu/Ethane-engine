@@ -3,8 +3,8 @@
 
 #include "RendererAPI.h"
 
-#include "Platform/OpenGL/OpenGLPipeline.h"
-#include "Platform/Vulkan/VulkanPipeline.h"
+#include "Ethane/Platform/OpenGL/OpenGLPipeline.h"
+#include "Ethane/Platform/Vulkan/VulkanPipeline.h"
 
 namespace Ethane {
 

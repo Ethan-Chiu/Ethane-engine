@@ -3,8 +3,8 @@
 
 #include "RendererAPI.h"
 
-#include "Platform/OpenGL/OpenGLVertexBuffer.h"
-#include "Platform/Vulkan/VulkanVertexBuffer.h"
+#include "Ethane/Platform/OpenGL/OpenGLVertexBuffer.h"
+#include "Ethane/Platform/Vulkan/VulkanVertexBuffer.h"
 
 namespace Ethane {
 

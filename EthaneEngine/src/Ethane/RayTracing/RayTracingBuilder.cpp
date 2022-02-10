@@ -1,7 +1,7 @@
 #include <ethpch.h>
 #include <numeric>
 #include "RayTracingBuilder.h"
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Ethane/Platform/Vulkan/VulkanContext.h"
 
 
 namespace Ethane {

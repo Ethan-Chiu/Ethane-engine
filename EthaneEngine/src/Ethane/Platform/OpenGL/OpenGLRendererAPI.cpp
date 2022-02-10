@@ -1,6 +1,6 @@
 #include "ethpch.h"
 #include "OpenGLRendererAPI.h"
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Ethane/Platform/OpenGL/OpenGLShader.h"
 
 #include <glad/glad.h>
 

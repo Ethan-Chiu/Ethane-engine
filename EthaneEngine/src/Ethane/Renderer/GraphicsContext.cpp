@@ -2,8 +2,8 @@
 #include "GraphicsContext.h"
 
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGLContext.h"
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Ethane/Platform/OpenGL/OpenGLContext.h"
+#include "Ethane/Platform/Vulkan/VulkanContext.h"
 
 namespace Ethane {
 

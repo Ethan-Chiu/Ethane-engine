@@ -2,7 +2,7 @@
 #include "RayTracing.h"
 
 #include <numeric>
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Ethane/Platform/Vulkan/VulkanContext.h"
 
 namespace Ethane {
 
@@ -121,11 +121,57 @@ namespace Ethane {
 		m_RTBuilder.BuildTlas(tlas, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR);
 	}
 
+
+	//--------------------------------------------------------------------------------------------------
+	// This descriptor set holds the Acceleration structure and the output image
+	//
+	void RayTracing::CreateRtDescriptorSet()
+	{
+		// Top-level acceleration structure, usable by both the ray generation and the closest hit (to shoot shadow rays)
+		// m_RTDescSetLayoutBind.addBinding(RtxBindings::eTlas, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1,
+		// 	VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);  // TLAS
+		// m_RTDescSetLayoutBind.addBinding(RtxBindings::eOutImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1,
+		// 	VK_SHADER_STAGE_RAYGEN_BIT_KHR);  // Output image
+		// 
+		// m_RTDescPool = m_RTDescSetLayoutBind.createPool(m_Device);
+		// m_RTDescSetLayout = m_RTDescSetLayoutBind.createLayout(m_Device);
+		// 
+		// VkDescriptorSetAllocateInfo allocateInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+		// allocateInfo.descriptorPool = m_RTDescPool;
+		// allocateInfo.descriptorSetCount = 1;
+		// allocateInfo.pSetLayouts = &m_RTDescSetLayout;
+		// vkAllocateDescriptorSets(m_Device, &allocateInfo, &m_RTDescSet);
+		// 
+		// 
+		// VkAccelerationStructureKHR                   tlas = m_RTBuilder.GetAccelerationStructure();
+		// VkWriteDescriptorSetAccelerationStructureKHR descASInfo{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR };
+		// descASInfo.accelerationStructureCount = 1;
+		// descASInfo.pAccelerationStructures = &tlas;
+		// VkDescriptorImageInfo imageInfo{ {}, m_offscreenColor.descriptor.imageView, VK_IMAGE_LAYOUT_GENERAL };
+		// 
+		// std::vector<VkWriteDescriptorSet> writes;
+		// writes.emplace_back(m_RTDescSetLayoutBind.makeWrite(m_RTDescSet, RtxBindings::eTlas, &descASInfo));
+		// writes.emplace_back(m_RTDescSetLayoutBind.makeWrite(m_RTDescSet, RtxBindings::eOutImage, &imageInfo));
+		// vkUpdateDescriptorSets(m_Device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+	}
+
+	//--------------------------------------------------------------------------------------------------
+	// Writes the output image to the descriptor set
+	// - Required when changing resolution
+	//
+	void RayTracing::UpdateRtDescriptorSet()
+	{
+		// (1) Output buffer
+		// VkDescriptorImageInfo imageInfo{ {}, m_offscreenColor.descriptor.imageView, VK_IMAGE_LAYOUT_GENERAL };
+		// VkWriteDescriptorSet  wds = m_RTDescSetLayoutBind.makeWrite(m_RTDescSet, RtxBindings::eOutImage, &imageInfo);
+		// vkUpdateDescriptorSets(m_Device, 1, &wds, 0, nullptr);
+	}
+
 	//--------------------------------------------------------------------------------------------------
 	// Destroying all allocations
 	//
-	void RayTracing::destroyResources()
-	{
+	// void RayTracing::DestroyResources()
+	// {
 		// vkDestroyPipeline(m_Device, m_graphicsPipeline, nullptr);
 		// vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 		// vkDestroyDescriptorPool(m_device, m_descPool, nullptr);
@@ -134,13 +180,13 @@ namespace Ethane {
 		// m_alloc.destroy(m_bGlobals);
 		// m_alloc.destroy(m_bObjDesc);
 
-		for (auto& m : m_Models)
-		{
+		// for (auto& m : m_Models)
+		// {
 			// m_alloc.destroy(m.vertexBuffer);
 			// m_alloc.destroy(m.indexBuffer);
 			// m_alloc.destroy(m.matColorBuffer);
 			// m_alloc.destroy(m.matIndexBuffer);
-		}
+		// }
 
 		// for (auto& t : m_textures)
 		// {
@@ -167,5 +213,5 @@ namespace Ethane {
 		// m_alloc.destroy(m_rtSBTBuffer);
 
 		// m_alloc.deinit();
-	}
+	// }
 }

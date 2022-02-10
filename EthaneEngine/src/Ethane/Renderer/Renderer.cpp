@@ -1,7 +1,7 @@
 #include "ethpch.h"
 #include "Renderer.h"
 
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Ethane/Platform/OpenGL/OpenGLShader.h"
 
 namespace Ethane {
 
