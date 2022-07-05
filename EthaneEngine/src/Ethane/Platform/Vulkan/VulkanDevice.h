@@ -40,8 +40,9 @@ namespace Ethane {
 		VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
 		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
 		VkPhysicalDeviceProperties2 GetProperties() { return m_Properties; }
+
 	private:
-		uint32_t rateDeviceSuitability(VkPhysicalDevice device);
+		uint32_t RateDeviceSuitability(VkPhysicalDevice device);
 
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags);
 		void QueueCreateInfo();
@@ -94,7 +95,7 @@ namespace Ethane {
 		VkQueue GetComputeQueue() { return m_ComputeQueue; }
 
 		VkCommandPool GetGraphicsCommandPool() { return m_GraphicsCommandPool; }
-		VkCommandPool GetComputeCommandPool() { return m_GraphicsCommandPool; }
+		VkCommandPool GetComputeCommandPool() { return m_ComputeCommandPool; }
 
 	private:
 		VkDevice m_LogicalDevice = VK_NULL_HANDLE;

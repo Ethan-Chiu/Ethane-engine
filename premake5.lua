@@ -92,7 +92,7 @@ project "EthaneEngine"
 		"%{Library.VulkanUtils}",
 	}
 
-	filter "files:vendor/ImGuizmo/**.cpp"
+	filter "files:EthaneEngine/vendor/ImGuizmo/**.cpp"
 	flags { "NoPCH" }
 
 	filter "system:windows"
@@ -190,7 +190,7 @@ project "Sandbox"
 		postbuildcommands 
 		{
 			'{COPY} "../EthaneEngine/vendor/assimp/bin/Debug/assimp-vc141-mtd.dll" "%{cfg.targetdir}"',
-			'{COPY} "../EthaneEngine/vendor/VulkanSDK/Bin/shaderc_sharedd.dll" "%{cfg.targetdir}"'
+			-- '{COPY} "../EthaneEngine/vendor/VulkanSDK/Bin/shaderc_sharedd.dll" "%{cfg.targetdir}"'
 		}
 
 	filter "configurations:Release"
@@ -256,7 +256,7 @@ project "Ethane-Editor"
 		postbuildcommands 
 		{
 			'{COPY} "../EthaneEngine/vendor/assimp/bin/Debug/assimp-vc141-mtd.dll" "%{cfg.targetdir}"',
-			'{COPY} "../EthaneEngine/vendor/VulkanSDK/Bin/shaderc_sharedd.dll" "%{cfg.targetdir}"'
+			-- '{COPY} "../EthaneEngine/vendor/VulkanSDK/Bin/shaderc_sharedd.dll" "%{cfg.targetdir}"'
 		}
 
 	filter "configurations:Release"

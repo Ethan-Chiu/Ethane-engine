@@ -10,8 +10,8 @@ from urllib.request import urlopen
 from zipfile import ZipFile
 
 VULKAN_SDK = os.environ.get('VULKAN_SDK')
-VULKAN_SDK_INSTALLER_URL = 'https://sdk.lunarg.com/sdk/download/1.2.170.0/windows/vulkan_sdk.exe'
-ETHANE_VULKAN_VERSION = '1.2.170.0'
+VULKAN_SDK_INSTALLER_URL = 'https://sdk.lunarg.com/sdk/download/1.3.204.1/windows/VulkanSDK-1.3.204.1-Installer.exe'
+ETHANE_VULKAN_VERSION = '1.3.204.1'
 VULKAN_SDK_EXE_PATH = 'EthaneEngine/vendor/VulkanSDK/VulkanSDK.exe'
 
 def InstallVulkanSDK():
@@ -43,18 +43,11 @@ def CheckVulkanSDK():
     print(f"Correct Vulkan SDK located at {VULKAN_SDK}")
     return True
 
-VulkanSDKDebugLibsURL = 'https://files.lunarg.com/SDK-1.2.170.0/VulkanSDK-1.2.170.0-DebugLibs.zip'
-OutputDirectory = "EthaneEngine/vendor/VulkanSDK"
-TempZipFile = f"{OutputDirectory}/VulkanSDK.zip"
 
 def CheckVulkanSDKDebugLibs():
-    shadercdLib = Path(f"{OutputDirectory}/Lib/shaderc_sharedd.lib")
+    shadercdLib = Path(f"{VULKAN_SDK}/Lib/shaderc_sharedd.lib")
     if (not shadercdLib.exists()):
-        print(f"No Vulkan SDK debug libs found. (Checked {shadercdLib})")
-        print("Downloading", VulkanSDKDebugLibsURL)
-        with urlopen(VulkanSDKDebugLibsURL) as zipresp:
-            with ZipFile(BytesIO(zipresp.read())) as zfile:
-                zfile.extractall(OutputDirectory)
-
-    print(f"Vulkan SDK debug libs located at {OutputDirectory}")
+        print(f"{Style.BRIGHT}{Back.YELLOW}Warning: No Vulkan SDK debug libs found. (Checked {shadercdLib})")
+        print(f"{Back.RED}Debug builds are not possible.{Style.RESET_ALL}")
+        return False
     return True

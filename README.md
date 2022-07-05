@@ -10,7 +10,7 @@ Ethane Game Engine Windows dev
 
     1, Visual Studio 2019 or 2022
 
-    https://visualstudio.microsoft.com/downloads/
+    https://visualstudio.microsoft.com/downloads
 
     2, python installed
     
@@ -37,5 +37,7 @@ Ethane Game Engine Windows dev
 * Note: This engine is currently only supportted on Windows 
 
 ## Note ( For developer ) 
+
+Memory management: unreal Core/HAL
 
 Vulkan Descriptor pool: VulkanImGuiLayer, VulkanMaterial, 

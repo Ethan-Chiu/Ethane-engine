@@ -63,10 +63,26 @@ namespace Ethane {
 	static bool s_Validation = false;
 #endif
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
-	{
-		(void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
-		ETH_CORE_WARN("VulkanDebugCallback:\n  Object Type: {0}\n  Message: {1}", objectType, pMessage);
+	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+		VkDebugUtilsMessageTypeFlagsEXT message_types,
+		const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+		void* user_data) {
+		switch (message_severity) {
+		default:
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+			ETH_CORE_ERROR(callback_data->pMessage);
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+			ETH_CORE_WARN(callback_data->pMessage);
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+			ETH_CORE_INFO(callback_data->pMessage);
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+			ETH_CORE_TRACE(callback_data->pMessage);
+			break;
+		}
 		return VK_FALSE;
 	}
 
@@ -82,15 +98,17 @@ namespace Ethane {
 	{
 		m_SwapChain.Cleanup();
 		m_Device->Cleanup();
-		
-		if (m_DebugReportCallback != VK_NULL_HANDLE)
-		{
-			auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugReportCallbackEXT");
-			vkDestroyDebugReportCallbackEXT(s_VulkanInstance, m_DebugReportCallback, nullptr);
+
+		ETH_CORE_INFO("Destroying Vulkan debugger...");
+		if (m_DebugMessenger != VK_NULL_HANDLE) {
+			auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugUtilsMessengerEXT");
+			vkDestroyDebugUtilsMessengerEXT(s_VulkanInstance, m_DebugMessenger, nullptr);
 		}
 
+		ETH_CORE_INFO("Destroying Vulkan surface...");
 		vkDestroySurfaceKHR(s_VulkanInstance, m_SwapChain.GetSurface(), nullptr);
 
+		ETH_CORE_INFO("Destroying Vulkan instance...");
 		vkDestroyInstance(s_VulkanInstance, nullptr);
 		s_VulkanInstance = nullptr;
 	}
@@ -110,7 +128,6 @@ namespace Ethane {
 		if (s_Validation)
 		{
 			contextCreateInfo.AddInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-			contextCreateInfo.AddInstanceExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 			contextCreateInfo.AddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 			const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
 			contextCreateInfo.AddInstanceLayer(validationLayerName);
@@ -122,37 +139,21 @@ namespace Ethane {
 		contextCreateInfo.AddDeviceExtension(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME, false, &rtPipelineFeature);  // To use vkCmdTraceRaysKHR
 		contextCreateInfo.AddDeviceExtension(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);  // Required by ray tracing pipeline
 
+		// NOTE: use this to enable validation features
+		VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
+		VkValidationFeaturesEXT features = { VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT };
+		features.enabledValidationFeatureCount = 1;
+		features.pEnabledValidationFeatures = enables;
+		// contextCreateInfo.InstanceCreateInfoExt = &features;
+
 		//--------------------------------------------------------------------------------------------------
 		// Create Instance
 		ETH_CORE_ASSERT(InitInstance(contextCreateInfo), "Instance creation failed!");
-
-		//--------------------------------------------------------------------------------------------------
-		// Debug report
-		// test
-		if (s_Validation)
-		{
-			auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkCreateDebugReportCallbackEXT");
-			ETH_CORE_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "");
-			VkDebugReportCallbackCreateInfoEXT debug_report_ci = {};
-			debug_report_ci.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-			debug_report_ci.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-			debug_report_ci.pfnCallback = VulkanDebugReportCallback;
-			debug_report_ci.pUserData = NULL;
-			VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debug_report_ci, nullptr, &m_DebugReportCallback));
-		}
-
+		
 		//--------------------------------------------------------------------------------------------------
 		// Get compatible devices
 		auto compatibleDevices = GetCompatibleDevices(contextCreateInfo);
 		ETH_CORE_ASSERT(!compatibleDevices.empty(), "No compatible device found");
-
-		// TODO: investigate this feature
-		// VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
-		// VkValidationFeaturesEXT features = {};
-		// features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-		// features.enabledValidationFeatureCount = 1;
-		// features.pEnabledValidationFeatures = enables;
-
 		
 		//--------------------------------------------------------------------------------------------------
 		// Surface create
@@ -197,7 +198,6 @@ namespace Ethane {
 
 		{
 			// Get all layers
-			// TODO: Extract all validation into separate class?
 			// Check if this layer is available at instance level
 			uint32_t instanceLayerCount;
 			VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr));
@@ -239,7 +239,6 @@ namespace Ethane {
 				ETH_CORE_INFO("Available Instance Extensions :");
 				for (auto extension : extensionProperties)
 				{
-					// uint32_t version = extension.specVersion;
 					ETH_CORE_INFO("  {0} (v. {1})", std::string(extension.extensionName), extension.specVersion);
 				}
 			}
@@ -284,15 +283,15 @@ namespace Ethane {
 
 		VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
 
-		// TODO: investigate what is initDebugUtils and whether it is needed
-		// for (const auto& it : usedInstanceExtensions)
-		// {
-		// 	if (strcmp(it, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
-		// 	{
-		// 		initDebugUtils();
-		// 		break;
-		// 	}
-		// }
+		// Debug messenger
+		for (const auto& it : usedInstanceExtensions)
+		{
+			if (strcmp(it, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
+			{
+				InitDebugUtils();
+				break;
+			}
+		}
 
 		return true;
 	}
@@ -450,6 +449,23 @@ namespace Ethane {
 	//--------------------------------------------------------------------------------------------------
 	// Utility function
 	//
+	//--------------------------------------------------------------------------------------------------
+	// Debug messenger
+	void VulkanContext::InitDebugUtils() {
+		uint32_t log_severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT; // VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+		debugCreateInfo.messageSeverity = log_severity;
+		debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+		debugCreateInfo.pfnUserCallback = VulkanDebugCallback;
+
+		auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+		ETH_CORE_ASSERT(vkCreateDebugUtilsMessengerEXT != NULL, "Failed to create debug messenger!");
+		VK_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(s_VulkanInstance, &debugCreateInfo, nullptr, &m_DebugMessenger));
+		ETH_CORE_INFO("Vulkan debugger created.");
+	}
+
 	VkResult VulkanContext::FillFilteredNameArray(std::vector<std::string>& used,
 		const std::vector<VkLayerProperties>& properties,
 		const ContextCreateInfo::EntryArray& requested)

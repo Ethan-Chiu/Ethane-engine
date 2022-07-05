@@ -34,6 +34,7 @@ namespace Ethane
 		m_ImGuiLayer = ImGuiLayer::Create();
 		PushOverlay(m_ImGuiLayer);
 	}
+
 	Application::~Application()
 	{
 		ETH_PROFILE_FUNCTION();

@@ -112,6 +112,7 @@ namespace Ethane {
 		static Ref<VulkanDevice> GetDevice() { return m_Device; } // TODO
 		static VulkanSwapChain GetSwapChain() { return m_SwapChain; } // TODO
 	private:
+		void InitDebugUtils();
 		std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
 		VkResult FillFilteredNameArray(std::vector<std::string>& used,
 			const std::vector<VkLayerProperties>& properties,
@@ -127,7 +128,7 @@ namespace Ethane {
 		GLFWwindow* m_WindowHandle;
 
 		inline static VkInstance s_VulkanInstance;
-		VkDebugReportCallbackEXT m_DebugReportCallback = VK_NULL_HANDLE;
+		VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
 
 		std::vector<std::string> m_UsedInstanceLayers;
 		std::vector<std::string> m_UsedInstanceExtensions;

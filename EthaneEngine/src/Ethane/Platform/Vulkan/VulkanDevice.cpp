@@ -25,7 +25,7 @@ namespace Ethane {
 		std::multimap<uint32_t, VkPhysicalDevice> candidates;
 		for (const auto& deviceIndex : compatibleDeviceIndices)
 		{
-			int score = rateDeviceSuitability(devices[deviceIndex]);
+			int score = RateDeviceSuitability(devices[deviceIndex]);
 			candidates.insert(std::make_pair(score, devices[deviceIndex]));
 		}
 		if (candidates.rbegin()->first > 0)
@@ -52,7 +52,7 @@ namespace Ethane {
 
 	}
 
-	uint32_t VulkanPhysicalDevice::rateDeviceSuitability(VkPhysicalDevice device)
+	uint32_t VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device)
 	{
 		int score = 0;
 		VkPhysicalDeviceProperties deviceProperties;
@@ -232,7 +232,7 @@ namespace Ethane {
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Compute.value(), 0, &m_ComputeQueue);
 
-		// create command buffer
+		// create command pool
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value();

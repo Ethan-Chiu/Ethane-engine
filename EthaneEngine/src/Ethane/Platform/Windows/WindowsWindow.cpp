@@ -6,7 +6,7 @@
 #include "Ethane/Events/KeyEvent.h"
 #include "Ethane/Events/MouseEvent.h"
 
-#include "Platform/OpenGL/OpenGLContext.h"
+#include "Ethane/Platform/OpenGL/OpenGLContext.h"
 
 // test
 #include "Ethane/Renderer/Renderer.h"
