@@ -11,6 +11,11 @@ namespace Ethane {
 		Transfer = 2
 	};
 
+	struct SwapChainSupportDetails {
+		VkSurfaceCapabilitiesKHR capabilities;
+		std::vector<VkSurfaceFormatKHR> formats;
+		std::vector<VkPresentModeKHR> presentModes;
+	};
 
 	class VulkanPhysicalDevice
 	{
@@ -20,13 +25,11 @@ namespace Ethane {
 			std::optional<uint32_t> Graphics;
 			std::optional<uint32_t> Compute;
 			std::optional<uint32_t> Transfer;
-			// add
-			// std::optional<uint32_t> Present;
+			std::optional<uint32_t> Present;
 
 			bool isComplete()
 			{
-				// add
-				return Graphics.has_value() ; // && Present.has_value()
+				return Graphics.has_value();
 			}
 		};
 
@@ -35,6 +38,8 @@ namespace Ethane {
 		~VulkanPhysicalDevice();
 
 		static Ref<VulkanPhysicalDevice> Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface); // test VkSurfaceKHR surface
+
+		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
 		// Getter
 		VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
@@ -46,27 +51,28 @@ namespace Ethane {
 
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags);
 		void QueueCreateInfo();
+		void PrintSelectedDeviceInfo();
 
 		bool IsExtensionSupported(const std::string& extensionName) const;
 
 	private:
-		const uint32_t m_RequestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+		const uint32_t m_ConstRequestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 		
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 
 		// Features and properties
 		VkPhysicalDeviceMemoryProperties m_MemoryProperties;
-		VkPhysicalDeviceFeatures2 m_Features;
-		VkPhysicalDeviceProperties2 m_Properties;
+		VkPhysicalDeviceProperties2 m_Properties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+		VkPhysicalDeviceFeatures2 m_Features{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
 
-		std::unordered_set<std::string> m_SupportedExtensions;
-		std::vector<std::string> m_UsedDeviceExtensions;
+		std::unordered_set<std::string> m_SupportedExtensions; // TODO: remove
+		std::vector<std::string> m_UsedDeviceExtensions; // TODO: remove
 
 		QueueFamilyIndices m_QueueFamilyIndices;
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
 
-		// for selecting device
-		VkSurfaceKHR m_Surface; // no much use
+		// For selecting device
+		VkSurfaceKHR m_Surface;
 
 	friend class VulkanDevice;
 	friend class VulkanContext;

@@ -25,17 +25,10 @@ namespace Ethane{
 	class VulkanSwapChain
 	{
 	public:
-		struct SwapChainSupportDetails {
-			VkSurfaceCapabilitiesKHR capabilities;
-			std::vector<VkSurfaceFormatKHR> formats;
-			std::vector<VkPresentModeKHR> presentModes;
-		};
-
 		VulkanSwapChain() = default;
 		~VulkanSwapChain();
 
-		void Init(VkInstance instance, GLFWwindow* windowHandle);
-		void Create(const Ref<VulkanDevice>& device, uint32_t width, uint32_t height, bool vsync);
+		void Create(VkSurfaceKHR surface, const Ref<VulkanDevice>& device, uint32_t width, uint32_t height, bool vsync);
 		
 		void CleanupSwapChain(VkSwapchainKHR swapchain);
 		void Cleanup();
@@ -44,8 +37,6 @@ namespace Ethane{
 
 		void BeginFrame();
 		void DrawFrame();
-
-		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
 		// Getter
 		VkSurfaceKHR GetSurface() const { return m_Surface; };
@@ -60,7 +51,6 @@ namespace Ethane{
 		uint32_t GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; } // TODO
 
 	private:
-		void CreateSurface(GLFWwindow* windowHandle);
 		VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -78,7 +68,6 @@ namespace Ethane{
 	private:
 		VkSwapchainKHR m_SwapChain = nullptr;
 
-		VkInstance m_Instance;
 		Ref<VulkanDevice> m_Device;
 		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 

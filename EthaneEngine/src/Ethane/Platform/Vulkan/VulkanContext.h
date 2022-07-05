@@ -94,9 +94,6 @@ namespace Ethane {
 		virtual ~VulkanContext();
 
 		virtual void Init() override;
-		
-		bool InitInstance(const ContextCreateInfo& info);
-		bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
 
 		virtual void BeginFrame() override; // TODO: test
 		virtual void SwapBuffers() override;
@@ -111,8 +108,13 @@ namespace Ethane {
 		static Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; } // TODO
 		static Ref<VulkanDevice> GetDevice() { return m_Device; } // TODO
 		static VulkanSwapChain GetSwapChain() { return m_SwapChain; } // TODO
+
 	private:
+		bool InitInstance(const ContextCreateInfo& info);
 		void InitDebugUtils();
+		VkResult CreateSurface();
+		bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
+
 		std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
 		VkResult FillFilteredNameArray(std::vector<std::string>& used,
 			const std::vector<VkLayerProperties>& properties,
@@ -124,6 +126,7 @@ namespace Ethane {
 		bool HasMandatoryExtensions(VkPhysicalDevice physicalDevice, const ContextCreateInfo& info, bool bVerbose);
 		bool CheckEntryArray(const std::vector<VkExtensionProperties>& properties, const ContextCreateInfo::EntryArray& requested, bool bVerbose);
 		void InitPhysicalFeatures(PhysicalDeviceInfo& info, VkPhysicalDevice physicalDevice, uint32_t versionMajor, uint32_t versionMinor);
+
 	private:
 		GLFWwindow* m_WindowHandle;
 
@@ -132,6 +135,8 @@ namespace Ethane {
 
 		std::vector<std::string> m_UsedInstanceLayers;
 		std::vector<std::string> m_UsedInstanceExtensions;
+
+		VkSurfaceKHR m_Surface;
 
 		PhysicalDeviceInfo m_PhysicalInfo;
 

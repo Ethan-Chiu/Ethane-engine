@@ -14,10 +14,9 @@ namespace Ethane {
 	{
 		auto vkInstance = VulkanContext::GetInstance();
 
-		// List devices
+		// Get devices
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
-		ETH_CORE_ASSERT(deviceCount > 0, "failed to find GPUs with Vulkan support!");
 		std::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(vkInstance, &deviceCount, devices.data());
 
@@ -37,14 +36,18 @@ namespace Ethane {
 			ETH_CORE_ASSERT("failed to find a suitable GPU");
 		}
 
-		// Get memory properties
+		// Get memory properties & properties & feature of the selected device
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
+		vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &m_Properties);
+		vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &m_Features);
 
 		// Queue families
-		m_QueueFamilyIndices = FindQueueFamilies(m_PhysicalDevice, m_RequestedQueueTypes);
+		m_QueueFamilyIndices = FindQueueFamilies(m_PhysicalDevice, m_ConstRequestedQueueTypes);
 
 		// Create queue infos
 		QueueCreateInfo();
+
+		PrintSelectedDeviceInfo();
 	}
 
 	VulkanPhysicalDevice::~VulkanPhysicalDevice()
@@ -71,20 +74,17 @@ namespace Ethane {
 			return 0;
 
 		QueueFamilyIndices indices = FindQueueFamilies(device, VK_QUEUE_GRAPHICS_BIT);
-		
+		ETH_CORE_ASSERT(indices.Present.has_value(), "Present not support");
 		// prefer indices.Graphic == indices.Present
-		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, indices.Graphics.value(), m_Surface, &presentSupport);
-		ETH_CORE_ASSERT(presentSupport == VK_TRUE, "Present not support");
+		if (indices.Present.value() == indices.Graphics.value()) {
+			score += 10;
+		}
 
-		// TODO: check swap chain adequate
-		// bool swapChainAdequate = false;
-		// if (extensionsSupported) {
-		// 	SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-		// 	swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-		// }
+		// Check swap chain adequate
+		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device);
+		bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 
-		if (!indices.isComplete() || !deviceFeatures.samplerAnisotropy)
+		if (!indices.isComplete() || !deviceFeatures.samplerAnisotropy || !swapChainAdequate)
 			return 0;
 		
 		return score;
@@ -102,7 +102,7 @@ namespace Ethane {
 		// Try to find a queue family index that supports compute but not graphics
 		if (flags & VK_QUEUE_COMPUTE_BIT)
 		{
-			for (uint32_t i = 0; i < queueFamilies.size(); i++)
+			for (uint32_t i = 0; i < queueFamilyCount; i++)
 			{
 				auto& queueFamily = queueFamilies[i];
 				if ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0))
@@ -116,7 +116,7 @@ namespace Ethane {
 		// Try to find a queue family index that supports transfer but not graphics and compute
 		if (flags & VK_QUEUE_TRANSFER_BIT)
 		{
-			for (uint32_t i = 0; i < queueFamilies.size(); i++)
+			for (uint32_t i = 0; i < queueFamilyCount; i++)
 			{
 				auto& queueFamily = queueFamilies[i];
 				if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) && ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) == 0))
@@ -126,33 +126,60 @@ namespace Ethane {
 				}
 			}
 		}
-		// For other queue types or if no separate compute queue is present, return the first one to support the requested flags
+		// Graphics queue
+		// Try to find graphics queue that also support present (indices.Graphic == indices.Present)
 		VkBool32 presentSupport = false;
-		ETH_CORE_ASSERT(m_Surface != nullptr);
-		for (uint32_t i = 0; i < queueFamilies.size(); i++)
+		if (flags & VK_QUEUE_GRAPHICS_BIT)
 		{
-			if ((flags & VK_QUEUE_TRANSFER_BIT) && !indices.Transfer.has_value())
-			{
-				if (queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
-					indices.Transfer = i;
-			}
-
-			if ((flags & VK_QUEUE_COMPUTE_BIT) && !indices.Compute.has_value())
-			{
-				if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
-					indices.Compute = i;
-			}
-
-			if (flags & VK_QUEUE_GRAPHICS_BIT)
+			for (uint32_t i = 0; i < queueFamilyCount; i++)
 			{
 				if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 				{
 					if (!presentSupport)
 					{
-						vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
-						if (presentSupport)
+						VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport));
+						if (presentSupport) {
 							indices.Graphics = i;
+							indices.Present = i;
+						}
 					}
+				}
+			}
+		}
+		// For other queue types or if no separate compute queue is present, return the first one to support the requested flags
+		ETH_CORE_ASSERT(m_Surface != nullptr);
+		for (uint32_t i = 0; i < queueFamilyCount; i++)
+		{
+			if ((flags & VK_QUEUE_TRANSFER_BIT) && !indices.Transfer.has_value())
+			{
+				if (queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
+					indices.Transfer = i;
+					ETH_CORE_INFO("fallback transfer queue choice");
+				}
+			}
+
+			if ((flags & VK_QUEUE_COMPUTE_BIT) && !indices.Compute.has_value())
+			{
+				if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
+					indices.Compute = i;
+					ETH_CORE_INFO("fallback compute queue choice");
+				}
+			}
+
+			if ((flags & VK_QUEUE_GRAPHICS_BIT) && !indices.Graphics.has_value())
+			{
+				if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+					indices.Graphics = i;
+					ETH_CORE_INFO("fallback graphic queue choice");
+				}
+			}
+			if (!indices.Present.has_value())
+			{
+				VkBool32 fallbackPresentSupport = VK_FALSE;
+				VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &fallbackPresentSupport));
+				if (fallbackPresentSupport) {
+					indices.Present = i;
+					ETH_CORE_INFO("fallback present queue choice");
 				}
 			}
 		}
@@ -179,6 +206,84 @@ namespace Ethane {
 			m_QueueCreateInfos.push_back(queueCreateInfo);
 		}
 		
+	}
+
+	SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device)
+	{
+		SwapChainSupportDetails details;
+
+		// query capabilities
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.capabilities);
+
+		// query formats
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+		ETH_CORE_ASSERT(formatCount > 0, "");
+		details.formats.resize(formatCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.formats.data());
+
+		// query present mode
+		uint32_t presentModeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
+		details.presentModes.resize(presentModeCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, details.presentModes.data());
+
+		return details;
+	}
+
+	void VulkanPhysicalDevice::PrintSelectedDeviceInfo() 
+	{
+		VkPhysicalDeviceProperties properties = m_Properties.properties;
+		ETH_CORE_INFO("____________________");
+		ETH_CORE_INFO("SELECTED DEVICE: {0}", properties.deviceName);
+		ETH_CORE_INFO("queue family indices: Graphics-{0} | Present-{1} | Compute-{2} | Transfer-{3}", 
+			m_QueueFamilyIndices.Graphics.value(), 
+			m_QueueFamilyIndices.Present.value(),
+			m_QueueFamilyIndices.Compute.value(),
+			m_QueueFamilyIndices.Transfer.value());
+
+		switch (m_Properties.properties.deviceType) {
+		default:
+		case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+			ETH_CORE_INFO("GPU type is Unknown.");
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			ETH_CORE_INFO("GPU type is Integrated.");
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			ETH_CORE_INFO("GPU type is Descrete.");
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+			ETH_CORE_INFO("GPU type is Virtual.");
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_CPU:
+			ETH_CORE_INFO("GPU type is CPU.");
+			break;
+		}
+
+		ETH_CORE_INFO(
+			"GPU Driver version: {0}.{1}.{2}",
+			VK_VERSION_MAJOR(properties.driverVersion),
+			VK_VERSION_MINOR(properties.driverVersion),
+			VK_VERSION_PATCH(properties.driverVersion));
+
+		// Vulkan API version.
+		ETH_CORE_INFO(
+			"Vulkan API version: {0}.{1}.{2}",
+			VK_VERSION_MAJOR(properties.apiVersion),
+			VK_VERSION_MINOR(properties.apiVersion),
+			VK_VERSION_PATCH(properties.apiVersion));
+
+		// Memory information
+		for (uint32_t i = 0; i < m_MemoryProperties.memoryHeapCount; ++i) {
+			double memory_size_gib = (((double)m_MemoryProperties.memoryHeaps[i].size) / 1024.0f / 1024.0f / 1024.0f);
+			if (m_MemoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+				ETH_CORE_INFO("Local GPU memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
+			}
+			else {
+				ETH_CORE_INFO("Shared System memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
+			}
+		}
 	}
 
 	bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName) const

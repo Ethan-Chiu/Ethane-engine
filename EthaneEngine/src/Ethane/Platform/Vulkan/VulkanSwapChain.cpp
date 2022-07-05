@@ -18,17 +18,12 @@ namespace Ethane {
     {
     }
 
-    void VulkanSwapChain::Init(VkInstance instance, GLFWwindow* windowHandle)
-    {
-        m_Instance = instance;
-        CreateSurface(windowHandle);
-    }
-
-    void VulkanSwapChain::Create(const Ref<VulkanDevice>& _device, uint32_t width, uint32_t height, bool vsync)
+    void VulkanSwapChain::Create(VkSurfaceKHR surface, const Ref<VulkanDevice>& _device, uint32_t width, uint32_t height, bool vsync)
     {
         // for profiling
         Timer timer;
 
+        m_Surface = surface;
         m_Device = _device;
         m_PhysicalDevice = _device->GetPhysicalDevice();
         m_VSync = vsync;
@@ -40,7 +35,7 @@ namespace Ethane {
         VkDevice device = m_Device->GetVulkanDevice();
         VkPhysicalDevice physicalDevice = m_PhysicalDevice->GetVulkanPhysicalDevice();
 
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
+        SwapChainSupportDetails swapChainSupport = m_PhysicalDevice->QuerySwapChainSupport(physicalDevice);
 
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -332,35 +327,7 @@ namespace Ethane {
         timer.Reset();
     }
 
-    // private func 
-    void VulkanSwapChain::CreateSurface(GLFWwindow* windowHandle)
-    {
-        glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface);
-    }
-
-    VulkanSwapChain::SwapChainSupportDetails VulkanSwapChain::querySwapChainSupport(VkPhysicalDevice device)
-    {
-        SwapChainSupportDetails details;
-
-        // query capabilities
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.capabilities);
-
-        // query formats
-        uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
-        ETH_CORE_ASSERT(formatCount > 0, "");
-        details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.formats.data());
-        
-        // query formats
-        uint32_t presentModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
-        details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, details.presentModes.data());
-
-        return details;
-    }
-
+    // private func
     VkSurfaceFormatKHR VulkanSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
     {
         for (const auto& availableFormat : availableFormats) {
@@ -545,7 +512,7 @@ namespace Ethane {
 
         vkDeviceWaitIdle(device);
 
-        Create(m_Device, m_Width, m_Height, m_VSync);
+        Create(m_Surface, m_Device, m_Width, m_Height, m_VSync);
     }
 
     void VulkanSwapChain::BeginFrame()

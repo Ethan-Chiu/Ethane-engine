@@ -151,13 +151,13 @@ namespace Ethane {
 		ETH_CORE_ASSERT(InitInstance(contextCreateInfo), "Instance creation failed!");
 		
 		//--------------------------------------------------------------------------------------------------
+		// Surface create
+		ETH_CORE_ASSERT(CreateSurface() == VK_SUCCESS, "Surface creation failed");
+
+		//--------------------------------------------------------------------------------------------------
 		// Get compatible devices
 		auto compatibleDevices = GetCompatibleDevices(contextCreateInfo);
 		ETH_CORE_ASSERT(!compatibleDevices.empty(), "No compatible device found");
-		
-		//--------------------------------------------------------------------------------------------------
-		// Surface create
-		m_SwapChain.Init(s_VulkanInstance, m_WindowHandle); // create surface
 
 		//--------------------------------------------------------------------------------------------------
 		// Physical device & logical device
@@ -166,7 +166,7 @@ namespace Ethane {
 		//--------------------------------------------------------------------------------------------------
 		// Swapchain cerate
 		uint32_t width = 1280, height = 720;
-		m_SwapChain.Create(m_Device, width, height, false);
+		m_SwapChain.Create(m_Surface, m_Device, width, height, false);
 	}
 
 
@@ -296,6 +296,13 @@ namespace Ethane {
 		return true;
 	}
 
+	//--------------------------------------------------------------------------------------------------
+	// Create surface
+	//
+	VkResult VulkanContext::CreateSurface()
+	{
+		return glfwCreateWindowSurface(s_VulkanInstance, m_WindowHandle, nullptr, &m_Surface);
+	}
 
 	//--------------------------------------------------------------------------------------------------
 	// Initialize device
@@ -304,7 +311,7 @@ namespace Ethane {
 	{
 		ETH_CORE_ASSERT(s_VulkanInstance != nullptr);
 
-		m_PhysicalDevice = VulkanPhysicalDevice::Init(compatibleDevices, m_SwapChain.GetSurface());
+		m_PhysicalDevice = VulkanPhysicalDevice::Init(compatibleDevices, m_Surface);
 
 		// extensions
 		uint32_t extCount = 0;
