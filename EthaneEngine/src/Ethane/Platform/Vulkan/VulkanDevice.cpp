@@ -36,23 +36,19 @@ namespace Ethane {
 			ETH_CORE_ASSERT("failed to find a suitable GPU");
 		}
 
-		// Get memory properties & properties & feature of the selected device
-		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
-		vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &m_Properties);
-		vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &m_Features);
-
 		// Queue families
 		m_QueueFamilyIndices = FindQueueFamilies(m_PhysicalDevice, m_ConstRequestedQueueTypes);
-
-		// Create queue infos
-		QueueCreateInfo();
 
 		PrintSelectedDeviceInfo();
 	}
 
-	VulkanPhysicalDevice::~VulkanPhysicalDevice()
+	void VulkanPhysicalDevice::Destroy()
 	{
-
+		ETH_CORE_INFO("Destroying physical device...");
+		m_QueueFamilyIndices.Graphics.reset();
+		m_QueueFamilyIndices.Compute.reset();
+		m_QueueFamilyIndices.Transfer.reset();
+		m_QueueFamilyIndices.Present.reset();
 	}
 
 	uint32_t VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device)
@@ -187,27 +183,6 @@ namespace Ethane {
 		return indices;
 	}
 
-	void VulkanPhysicalDevice::QueueCreateInfo()
-	{
-
-		std::set<uint32_t> uniqueQueueFamilies = { 
-			m_QueueFamilyIndices.Graphics.value(), 
-			m_QueueFamilyIndices.Compute.value(),
-			m_QueueFamilyIndices.Transfer.value() 
-		};
-
-		float queuePriority(1.0f);
-		for (uint32_t queueFamily : uniqueQueueFamilies) {
-			VkDeviceQueueCreateInfo queueCreateInfo{};
-			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueCreateInfo.queueFamilyIndex = queueFamily;
-			queueCreateInfo.queueCount = 1;
-			queueCreateInfo.pQueuePriorities = &queuePriority;
-			m_QueueCreateInfos.push_back(queueCreateInfo);
-		}
-		
-	}
-
 	SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device)
 	{
 		SwapChainSupportDetails details;
@@ -233,7 +208,13 @@ namespace Ethane {
 
 	void VulkanPhysicalDevice::PrintSelectedDeviceInfo() 
 	{
-		VkPhysicalDeviceProperties properties = m_Properties.properties;
+		// Get memory properties & properties & feature of the selected device
+		VkPhysicalDeviceMemoryProperties memories;
+		VkPhysicalDeviceProperties2 properties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memories);
+		vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &properties2);
+
+		VkPhysicalDeviceProperties properties = properties2.properties;
 		ETH_CORE_INFO("____________________");
 		ETH_CORE_INFO("SELECTED DEVICE: {0}", properties.deviceName);
 		ETH_CORE_INFO("queue family indices: Graphics-{0} | Present-{1} | Compute-{2} | Transfer-{3}", 
@@ -242,7 +223,7 @@ namespace Ethane {
 			m_QueueFamilyIndices.Compute.value(),
 			m_QueueFamilyIndices.Transfer.value());
 
-		switch (m_Properties.properties.deviceType) {
+		switch (properties.deviceType) {
 		default:
 		case VK_PHYSICAL_DEVICE_TYPE_OTHER:
 			ETH_CORE_INFO("GPU type is Unknown.");
@@ -275,9 +256,9 @@ namespace Ethane {
 			VK_VERSION_PATCH(properties.apiVersion));
 
 		// Memory information
-		for (uint32_t i = 0; i < m_MemoryProperties.memoryHeapCount; ++i) {
-			double memory_size_gib = (((double)m_MemoryProperties.memoryHeaps[i].size) / 1024.0f / 1024.0f / 1024.0f);
-			if (m_MemoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+		for (uint32_t i = 0; i < memories.memoryHeapCount; ++i) {
+			double memory_size_gib = (((double)memories.memoryHeaps[i].size) / 1024.0f / 1024.0f / 1024.0f);
+			if (memories.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
 				ETH_CORE_INFO("Local GPU memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
 			}
 			else {
@@ -286,42 +267,29 @@ namespace Ethane {
 		}
 	}
 
-	bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName) const
-	{
-		return m_SupportedExtensions.find(extensionName) != m_SupportedExtensions.end();
-	}
-
-
-
 	////////////////////////////////////////////////////////////////////////////////////
 	// Logical device 
 	////////////////////////////////////////////////////////////////////////////////////
-	Ref<VulkanDevice> VulkanDevice::Create(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2)
+	Ref<VulkanDevice> VulkanDevice::Create(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2)
 	{
-		return CreateRef<VulkanDevice>(physicalDevice, enabledFeatures2);
+		return CreateRef<VulkanDevice>(physicalDevice, usedExtensions, enabledFeatures2);
 	}
 	
-	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2)
+	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2)
 		: m_PhysicalDevice(physicalDevice), m_EnabledFeatures2(enabledFeatures2)
 	{
-		std::vector<const char*> deviceExtensions;
-		for (const auto& it : m_PhysicalDevice->m_UsedDeviceExtensions)
-		{
-			deviceExtensions.push_back(it.c_str());
-		}
+		QueueCreateInfo();
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_PhysicalDevice->m_QueueCreateInfos.size());
-		deviceCreateInfo.pQueueCreateInfos = m_PhysicalDevice->m_QueueCreateInfos.data();
+		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_QueueCreateInfos.size());
+		deviceCreateInfo.pQueueCreateInfos = m_QueueCreateInfos.data();
 
-		// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
-		// if (m_PhysicalDevice->IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
-		// {
-		// 	deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-		// 	m_EnableDebugMarkers = true;
-		// }
-
+		std::vector<const char*> deviceExtensions;
+		for (const auto& it : usedExtensions)
+		{
+			deviceExtensions.push_back(it.c_str());
+		}
 		if (deviceExtensions.size() > 0)
 		{
 			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
@@ -336,6 +304,7 @@ namespace Ethane {
 		// retrieving queue handles
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Compute.value(), 0, &m_ComputeQueue);
+		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Transfer.value(), 0, &m_TransferQueue);
 
 		// create command pool
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -348,20 +317,44 @@ namespace Ethane {
 		VK_CHECK_RESULT(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_ComputeCommandPool));
 	}
 
-	VulkanDevice::~VulkanDevice()
+	void VulkanDevice::Destroy()
 	{
-	}
-
-	void VulkanDevice::Cleanup()
-	{
-		// destroy command buffers
+		// destroy command pools
 		vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool, nullptr);
 		vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool, nullptr);
 
-		vkDeviceWaitIdle(m_LogicalDevice);
+		// reset queue
+		m_GraphicsQueue = nullptr;
+		m_ComputeQueue = nullptr;
+		m_TransferQueue = nullptr;
 
+		ETH_CORE_INFO("Destroying logical device...");
+		vkDeviceWaitIdle(m_LogicalDevice);
 		vkDestroyDevice(m_LogicalDevice, nullptr);
 	}
+
+	void VulkanDevice::QueueCreateInfo()
+	{
+		VulkanPhysicalDevice::QueueFamilyIndices queueFamilyIndices = m_PhysicalDevice->GetQueueFamilyIndices();
+		std::set<uint32_t> uniqueQueueFamilies = {
+			queueFamilyIndices.Present.value(),
+			queueFamilyIndices.Graphics.value(),
+			queueFamilyIndices.Compute.value(),
+			queueFamilyIndices.Transfer.value()
+		};
+
+		float queuePriority(1.0f);
+		for (uint32_t queueFamily : uniqueQueueFamilies) {
+			VkDeviceQueueCreateInfo queueCreateInfo{};
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueFamilyIndex = queueFamily;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+			m_QueueCreateInfos.push_back(queueCreateInfo);
+		}
+
+	}
+
 
 	VkCommandBuffer VulkanDevice::CreateCommandBuffer(QueueFamilyTypes type , bool oneTimeUse, bool begin)
 	{

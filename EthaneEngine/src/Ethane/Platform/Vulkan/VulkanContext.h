@@ -31,7 +31,7 @@ namespace Ethane {
 
 		// api version
 		uint32_t ApiMajor{ 1 };
-		uint32_t ApiMinor{ 2 };
+		uint32_t ApiMinor{ 3 };
 
 		// Information printed at Context::init time
 		bool VerboseUsed = true;
@@ -91,17 +91,15 @@ namespace Ethane {
 
 	public:
 		VulkanContext(GLFWwindow* windowHandle);
-		virtual ~VulkanContext();
+		virtual ~VulkanContext() {};
 
 		virtual void Init() override;
+		virtual void Shutdown() override;
 
 		virtual void BeginFrame() override; // TODO: test
 		virtual void SwapBuffers() override;
 		
 		virtual void OnResize(uint32_t width, uint32_t height) override;
-
-		// TODO: test
-		virtual void ShutDown() override { vkDeviceWaitIdle(m_Device->GetVulkanDevice()); };
 
 		// getter
 		static VkInstance GetInstance() { return s_VulkanInstance; }
@@ -136,12 +134,16 @@ namespace Ethane {
 		std::vector<std::string> m_UsedInstanceLayers;
 		std::vector<std::string> m_UsedInstanceExtensions;
 
+		// Device Extension
+		std::unordered_set<std::string> m_SupportedDeviceExtensions;
+		std::vector<std::string> m_UsedDeviceExtensions;
+
 		VkSurfaceKHR m_Surface;
 
 		PhysicalDeviceInfo m_PhysicalInfo;
 
-		inline static Ref<VulkanPhysicalDevice> m_PhysicalDevice; // TODO
-		inline static Ref<VulkanDevice> m_Device; // TODO
+		inline static Ref<VulkanPhysicalDevice> m_PhysicalDevice;
+		inline static Ref<VulkanDevice> m_Device;
 
 		inline static VulkanSwapChain m_SwapChain; // TODO
 	};

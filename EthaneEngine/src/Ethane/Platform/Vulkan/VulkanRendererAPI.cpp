@@ -22,11 +22,9 @@ namespace Ethane {
 		s_Data->DescriptorPoolAllocationCount.resize(config.FramesInFlight);
 
 		// auto& caps = s_Data->RenderCaps;
-		auto& properties = VulkanContext::GetDevice()->GetPhysicalDevice()->GetProperties();
 		// caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
 		// caps.Device = properties.deviceName;
 		// caps.Version = std::to_string(properties.driverVersion);
-		ETH_CORE_INFO("{0}, {1}, {2}", Utils::VulkanVendorIDToString(properties.properties.vendorID), properties.properties.deviceName, std::to_string(properties.properties.driverVersion));
 
 		// Utils::DumpGPUInfo();
 

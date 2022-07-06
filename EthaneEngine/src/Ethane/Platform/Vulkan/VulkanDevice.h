@@ -34,45 +34,31 @@ namespace Ethane {
 		};
 
 	public:
-		VulkanPhysicalDevice(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface); // test param VkSurfaceKHR surface
-		~VulkanPhysicalDevice();
+		VulkanPhysicalDevice(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface);
+		~VulkanPhysicalDevice() {};
+		void Destroy();
 
-		static Ref<VulkanPhysicalDevice> Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface); // test VkSurfaceKHR surface
+		static Ref<VulkanPhysicalDevice> Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface);
 
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
 		// Getter
 		VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
 		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
-		VkPhysicalDeviceProperties2 GetProperties() { return m_Properties; }
 
 	private:
 		uint32_t RateDeviceSuitability(VkPhysicalDevice device);
-
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags);
-		void QueueCreateInfo();
 		void PrintSelectedDeviceInfo();
-
-		bool IsExtensionSupported(const std::string& extensionName) const;
 
 	private:
 		const uint32_t m_ConstRequestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 		
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 
-		// Features and properties
-		VkPhysicalDeviceMemoryProperties m_MemoryProperties;
-		VkPhysicalDeviceProperties2 m_Properties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
-		VkPhysicalDeviceFeatures2 m_Features{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-
-		std::unordered_set<std::string> m_SupportedExtensions; // TODO: remove
-		std::vector<std::string> m_UsedDeviceExtensions; // TODO: remove
-
 		QueueFamilyIndices m_QueueFamilyIndices;
-		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
 
-		// For selecting device
-		VkSurfaceKHR m_Surface;
+		VkSurfaceKHR m_Surface; // For selecting device
 
 	friend class VulkanDevice;
 	friend class VulkanContext;
@@ -81,12 +67,11 @@ namespace Ethane {
 	class VulkanDevice
 	{
 	public:
-		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2);
-		~VulkanDevice();
-		void Cleanup();
+		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2);
+		~VulkanDevice() {};
+		void Destroy();
 
-
-		static Ref<VulkanDevice> Create(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures2 enabledFeatures2);
+		static Ref<VulkanDevice> Create(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2);
 
 		VkCommandBuffer CreateCommandBuffer(QueueFamilyTypes type = QueueFamilyTypes::Graphics, bool oneTimeUse = false, bool begin = false);
 		void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
@@ -102,17 +87,19 @@ namespace Ethane {
 
 		VkCommandPool GetGraphicsCommandPool() { return m_GraphicsCommandPool; }
 		VkCommandPool GetComputeCommandPool() { return m_ComputeCommandPool; }
+	private:
+		void QueueCreateInfo();
 
 	private:
 		VkDevice m_LogicalDevice = VK_NULL_HANDLE;
 		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 		VkPhysicalDeviceFeatures2 m_EnabledFeatures2;
 
-		VkQueue m_GraphicsQueue, m_ComputeQueue;
+		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
+
+		VkQueue m_GraphicsQueue, m_ComputeQueue, m_TransferQueue;
 
 		VkCommandPool m_GraphicsCommandPool, m_ComputeCommandPool;
-
-		// bool m_EnableDebugMarkers = false;
 	};
 
 	namespace Utils

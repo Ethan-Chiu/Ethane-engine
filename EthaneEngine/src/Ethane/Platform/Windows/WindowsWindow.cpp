@@ -170,7 +170,7 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
-		m_Context->ShutDown();
+		m_Context->Shutdown();
 	}
 
 	void WindowsWindow::BeginFrame()

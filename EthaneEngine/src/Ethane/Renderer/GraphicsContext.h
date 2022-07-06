@@ -14,8 +14,7 @@ namespace Ethane {
 
 		virtual void OnResize(uint32_t width, uint32_t height) = 0;
 
-		// TODO: test
-		virtual void ShutDown() = 0;
+		virtual void Shutdown() = 0;
 
 		static Scope<GraphicsContext> Create(void* window);
 	};

@@ -19,7 +19,7 @@ namespace Ethane {
 		virtual void OnResize(uint32_t width, uint32_t height) {}
 
 		// TODO: test
-		virtual void ShutDown() override {}
+		virtual void Shutdown() override {}
 	private:
 		GLFWwindow* m_windowHandle;
 	};

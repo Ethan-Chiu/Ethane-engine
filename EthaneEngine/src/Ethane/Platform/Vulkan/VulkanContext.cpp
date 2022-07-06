@@ -94,25 +94,6 @@ namespace Ethane {
 		ETH_CORE_ASSERT(windowHandle, "Window handle is null");
 	}
 
-	VulkanContext::~VulkanContext()
-	{
-		m_SwapChain.Cleanup();
-		m_Device->Cleanup();
-
-		ETH_CORE_INFO("Destroying Vulkan debugger...");
-		if (m_DebugMessenger != VK_NULL_HANDLE) {
-			auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugUtilsMessengerEXT");
-			vkDestroyDebugUtilsMessengerEXT(s_VulkanInstance, m_DebugMessenger, nullptr);
-		}
-
-		ETH_CORE_INFO("Destroying Vulkan surface...");
-		vkDestroySurfaceKHR(s_VulkanInstance, m_SwapChain.GetSurface(), nullptr);
-
-		ETH_CORE_INFO("Destroying Vulkan instance...");
-		vkDestroyInstance(s_VulkanInstance, nullptr);
-		s_VulkanInstance = nullptr;
-	}
-
 	void VulkanContext::Init()
 	{
 		ETH_CORE_ASSERT(glfwVulkanSupported(), "GLFW vulkan support error");
@@ -169,6 +150,31 @@ namespace Ethane {
 		m_SwapChain.Create(m_Surface, m_Device, width, height, false);
 	}
 
+	void VulkanContext::Shutdown()
+	{
+		vkDeviceWaitIdle(m_Device->GetVulkanDevice());
+
+		m_SwapChain.Cleanup();
+
+		m_Device->Destroy();
+		m_Device = nullptr;
+
+		m_PhysicalDevice->Destroy();
+		m_PhysicalDevice = nullptr;
+
+		ETH_CORE_INFO("Destroying Vulkan debugger...");
+		if (m_DebugMessenger != VK_NULL_HANDLE) {
+			auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugUtilsMessengerEXT");
+			vkDestroyDebugUtilsMessengerEXT(s_VulkanInstance, m_DebugMessenger, nullptr);
+		}
+
+		ETH_CORE_INFO("Destroying Vulkan surface...");
+		vkDestroySurfaceKHR(s_VulkanInstance, m_SwapChain.GetSurface(), nullptr);
+
+		ETH_CORE_INFO("Destroying Vulkan instance...");
+		vkDestroyInstance(s_VulkanInstance, nullptr);
+		s_VulkanInstance = nullptr;
+	}
 
 
 	//--------------------------------------------------------------------------------------------------
@@ -312,11 +318,11 @@ namespace Ethane {
 		ETH_CORE_ASSERT(s_VulkanInstance != nullptr);
 
 		m_PhysicalDevice = VulkanPhysicalDevice::Init(compatibleDevices, m_Surface);
+		VkPhysicalDevice physicalDevice = m_PhysicalDevice->GetVulkanPhysicalDevice();
 
 		// extensions
 		uint32_t extCount = 0;
 		std::vector<VkExtensionProperties> extensionProperties;
-		VkPhysicalDevice physicalDevice = m_PhysicalDevice->GetVulkanPhysicalDevice();
 		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extCount, nullptr);
 		if (extCount > 0)
 		{
@@ -326,12 +332,11 @@ namespace Ethane {
 				ETH_CORE_TRACE("Selected physical device has {0} extensions", extCount);
 				for (const auto& ext : extensionProperties)
 				{
-					m_PhysicalDevice->m_SupportedExtensions.emplace(ext.extensionName);
+					m_SupportedDeviceExtensions.emplace(ext.extensionName);
 					ETH_CORE_INFO("  {0}", ext.extensionName);
 				}
 			}
 		}
-
 		// devices features
 		InitPhysicalFeatures(m_PhysicalInfo, physicalDevice, info.ApiMajor, info.ApiMinor);
 
@@ -342,7 +347,7 @@ namespace Ethane {
 		m_PhysicalInfo.features12.pNext = nullptr;
 
 		std::vector<void*> featureStructs;
-		if (FillFilteredNameArray(m_PhysicalDevice->m_UsedDeviceExtensions, extensionProperties, info.DeviceExtensions, featureStructs) != VK_SUCCESS)
+		if (FillFilteredNameArray(m_UsedDeviceExtensions, extensionProperties, info.DeviceExtensions, featureStructs) != VK_SUCCESS)
 		{
 			// deinit();
 			ETH_CORE_ERROR("Device extensions not satisfied");
@@ -353,7 +358,7 @@ namespace Ethane {
 		{
 			ETH_CORE_INFO("________________________");
 			ETH_CORE_INFO("Used Device Extensions: ");
-			for (const auto& it : m_PhysicalDevice->m_UsedDeviceExtensions)
+			for (const auto& it : m_UsedDeviceExtensions)
 			{
 				ETH_CORE_INFO("  {0}", it.c_str());
 			}
@@ -393,10 +398,7 @@ namespace Ethane {
 			features2.features.robustBufferAccess = VK_FALSE;
 		}
 
-		// Add some features
-		features2.features.samplerAnisotropy = VK_TRUE;
-
-		m_Device = VulkanDevice::Create(m_PhysicalDevice, features2);
+		m_Device = VulkanDevice::Create(m_PhysicalDevice, m_UsedDeviceExtensions, features2);
 
 		return true;
 	}
@@ -428,8 +430,8 @@ namespace Ethane {
 		vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
 		vkGetPhysicalDeviceProperties2(physicalDevice, &properties2);
 
-		info.properties10 = properties2.properties;
 		info.features10 = features2.features;
+		info.properties10 = properties2.properties;
 	}
 
 
