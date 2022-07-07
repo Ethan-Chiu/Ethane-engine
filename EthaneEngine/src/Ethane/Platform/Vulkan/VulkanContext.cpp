@@ -154,7 +154,7 @@ namespace Ethane {
 	{
 		vkDeviceWaitIdle(m_Device->GetVulkanDevice());
 
-		m_SwapChain.Cleanup();
+		m_SwapChain.Destroy();
 
 		m_Device->Destroy();
 		m_Device = nullptr;

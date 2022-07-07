@@ -1,10 +1,10 @@
 #include "ethpch.h"
 
 #define GLM_FORECE_DEPT_ZERO_TO_ONE // TODO: move
+#include <GLFW/glfw3.h>
 
 #include "VulkanSwapChain.h"
-
-#include <GLFW/glfw3.h>
+#include "VulkanImage.h"
 
 #include "Ethane/Core/timer.h"
 
@@ -35,20 +35,23 @@ namespace Ethane {
         VkDevice device = m_Device->GetVulkanDevice();
         VkPhysicalDevice physicalDevice = m_PhysicalDevice->GetVulkanPhysicalDevice();
 
+
         SwapChainSupportDetails swapChainSupport = m_PhysicalDevice->QuerySwapChainSupport(physicalDevice);
 
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+        m_Extent = ChooseSwapExtent(swapChainSupport.capabilities);
+        ETH_CORE_INFO("{0}, {1}", m_Extent.width, m_Extent.height);
 
-        VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-        VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        m_Extent = chooseSwapExtent(swapChainSupport.capabilities);
         m_ImageFormat = surfaceFormat.format;
-        ETH_CORE_INFO("{0}", m_ImageFormat);
-        m_DepthFormat = findSupportedFormat(
+        m_ImageColorSpace = surfaceFormat.colorSpace;
+        ETH_CORE_INFO("Imgae Format: {0} | Image Color Space: {1}", m_ImageFormat, m_ImageColorSpace);
+
+        m_DepthFormat = FindSupportedFormat(
             { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
         );
-        ETH_CORE_INFO("{0}, {1}", m_Extent.width, m_Extent.height);
 
         // profiling
         ETH_CORE_INFO("choose {0}", timer.ElapsedMillis());
@@ -95,27 +98,23 @@ namespace Ethane {
         swapchainCreateInfo.surface = m_Surface;
         swapchainCreateInfo.minImageCount = imageCount;
         swapchainCreateInfo.imageFormat = m_ImageFormat;
-        swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace; // save
+        swapchainCreateInfo.imageColorSpace = m_ImageColorSpace;
         swapchainCreateInfo.imageExtent = m_Extent;
         swapchainCreateInfo.imageArrayLayers = 1;
         swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        // test 
-        // deal with this latter
-        // QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-        // uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
-        // 
-        // if (indices.graphicsFamily != indices.presentFamily) {
-        //     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-        //     swapchainCreateInfo.queueFamilyIndexCount = 2;
-        //     swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
-        // }
-        // else 
-        // {
+        const auto& indices = m_PhysicalDevice->GetQueueFamilyIndices();
+        if (indices.Graphics.value() != indices.Present.value()) {
+            uint32_t queueFamilyIndices[] = { indices.Graphics.value(), indices.Present.value() };
+            swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            swapchainCreateInfo.queueFamilyIndexCount = 2;
+            swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+        }
+        else 
+        {
             swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
             swapchainCreateInfo.queueFamilyIndexCount = 0; 
             swapchainCreateInfo.pQueueFamilyIndices = nullptr;
-        // }
-        // test end
+        }
         swapchainCreateInfo.preTransform = (VkSurfaceTransformFlagBitsKHR)preTransform;
         swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         swapchainCreateInfo.presentMode = presentMode;
@@ -134,9 +133,9 @@ namespace Ethane {
         }
 
         // Get the swap chain images
-        vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, nullptr);
+        VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, nullptr));
         m_Images.resize(m_ImageCount);
-        vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_Images.data());
+        VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_Images.data()));
 
         // create imageview
         m_ImageViews.resize(m_ImageCount);
@@ -144,8 +143,8 @@ namespace Ethane {
         {
             VkImageViewCreateInfo colorAttachmentView = {};
             colorAttachmentView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            colorAttachmentView.image = m_Images[i];
             colorAttachmentView.pNext = nullptr;
+            colorAttachmentView.image = m_Images[i];
             colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
             colorAttachmentView.format = m_ImageFormat;
             colorAttachmentView.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -162,14 +161,12 @@ namespace Ethane {
             VK_CHECK_RESULT(vkCreateImageView(device, &colorAttachmentView, nullptr, &m_ImageViews[i]));
         }
 
+        m_DepthAttachment = VulkanImage2D::Create(m_Width, m_Height, 1, 1, m_DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, true);
+#if depth
+#endif
         // Render pass
         CreateRenderPass();
-
-        // TODO: remove
-        // Create depth resources
-#if depth
-        CreateDepthResources();
-#endif
 
         // Framebuffers 
         m_Framebuffers.resize(m_ImageViews.size());
@@ -240,110 +237,23 @@ namespace Ethane {
         timer.Reset();
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // TODO: remove this test 
-#if test
-        if (m_Pipeline == nullptr)
-        {
 
-            VertexBufferLayout layout = {
-                    { ShaderDataType::Float3, "a_Position" },
-                    { ShaderDataType::Float3, "a_Color" },
-                    { ShaderDataType::Float2, "a_TexCoord" }
-            };
-
-            Ref<VulkanShader> vulkanShader;
-            vulkanShader = CreateRef<VulkanShader>("assets/shaders/test.glsl"); // std::dynamic_pointer_cast<VulkanShader>(ShaderLibrary::Get("test"));
-
-            RenderPassSpecification renderPassSpec{};
-            Ref<VulkanRenderPass> renderPass = CreateRef<VulkanRenderPass>(renderPassSpec, m_RenderPass);
-            PipelineSpecification pipelineSpec{ vulkanShader, renderPass, layout };
-            if (m_Pipeline == nullptr)
-                m_Pipeline = CreateRef<VulkanPipeline>(pipelineSpec);
-
-            m_DescriptorSets = vulkanShader->CreateDescriptorSetsAndPool(0, MAX_FRAMES_IN_FLIGHT);
-
-            // Creaet Texture
-            m_Texture2D = CreateRef<VulkanTexture2D>("assets/textures/test.png");
-
-            // TODO: move
-            // create uniform buffer & update descriptor sets
-            m_UniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-            for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-            {
-                std::vector<VkWriteDescriptorSet> writeDescriptors{};
-
-                // Uniform buffer
-                m_UniformBuffers[i] = CreateRef<VulkanUniformBuffer>(sizeof(glm::mat4), 0);
-                VkWriteDescriptorSet& uboWriteDescriptor = writeDescriptors.emplace_back();
-                uboWriteDescriptor = *vulkanShader->GetWriteDescriptorSet(0, "UniformBufferObject");
-                uboWriteDescriptor.dstSet = m_DescriptorSets.DescriptorSets[i];
-                uboWriteDescriptor.dstArrayElement = 0;
-                uboWriteDescriptor.pBufferInfo = &m_UniformBuffers[i]->GetDescriptorBufferInfo();
-
-                // Image Sampler
-                VkWriteDescriptorSet& samplerWriteDescriptor = writeDescriptors.emplace_back();
-                samplerWriteDescriptor = *vulkanShader->GetWriteDescriptorSet(0, "u_Texture");
-                samplerWriteDescriptor.dstSet = m_DescriptorSets.DescriptorSets[i];
-                samplerWriteDescriptor.dstArrayElement = 0;
-                samplerWriteDescriptor.pImageInfo = &m_Texture2D->GetDescriptorImageInfo();
-                vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
-            }
-
-            struct Vertex {
-                glm::vec3 pos;
-                glm::vec3 color;
-                glm::vec2 texCoord;
-            };
-            const std::vector<Vertex> vertices = {
-                {{-0.5f, -0.5f,  0.0}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-                {{ 0.5f, -0.5f,  0.0}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-                {{ 0.5f,  0.5f,  0.0}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-                {{-0.5f,  0.5f,  0.0}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-                {{-0.5f, -0.5f, -0.5}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-                {{ 0.5f, -0.5f, -0.5}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-                {{ 0.5f,  0.5f, -0.5}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-                {{-0.5f,  0.5f, -0.5}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-                // {0.0f, -0.5f},
-                // {0.5f, 0.5f },
-                // {-0.5f, 0.5f},
-            };
-            if (m_VertexBuffer == nullptr)
-                m_VertexBuffer = CreateRef<VulkanVertexBuffer>((void*)vertices.data(), sizeof(vertices[0]) * vertices.size());
-
-            const std::vector<uint32_t> indices = {
-                0, 1, 2, 2, 3, 0,
-                4, 5, 6, 6, 7, 4
-            };
-            if (m_IndexBuffer == nullptr)
-                m_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(), sizeof(indices[0]) * indices.size());
-
-        }
-#endif
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // profiling
-        ETH_CORE_INFO("extra {0}", timer.ElapsedMillis());
-        timer.Reset();
+        ETH_CORE_INFO("SwapChain created");
     }
 
     // private func
-    VkSurfaceFormatKHR VulkanSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
+    VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
     {
         for (const auto& availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return availableFormat;
             }
-            
-            // if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-            //     return availableFormat;
-            // }
         }
 
         return availableFormats[0];
     }
 
-    VkPresentModeKHR VulkanSwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) 
+    VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) 
     {
         for (const auto& availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -354,13 +264,12 @@ namespace Ethane {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VulkanSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) 
+    VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) 
     {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
         }
         else {
-            // test
             int width, height;
             width = m_Width;
             height = m_Height;
@@ -378,7 +287,7 @@ namespace Ethane {
         }
     }
 
-    VkFormat VulkanSwapChain::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+    VkFormat VulkanSwapChain::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 
         for (VkFormat format : candidates) {
             VkFormatProperties props;
@@ -390,27 +299,10 @@ namespace Ethane {
             else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
                 return format;
             }
-
-            ETH_CORE_ASSERT("failed to find supported format!");
         }
 
+        ETH_CORE_ASSERT("failed to find supported format!");
     }
-
-    // TODO
-    uint32_t VulkanSwapChain::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
-    {
-        auto physicalDevice = m_PhysicalDevice->GetVulkanPhysicalDevice();
-
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                return i;
-            }
-        }
-    }
-
 
     void VulkanSwapChain::CreateRenderPass() {
 
@@ -620,7 +512,7 @@ namespace Ethane {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        PresentQueue(m_Device->GetGraphicsQueue(), m_RenderFinishedSemaphores[m_CurrentFrame]);
+        Present(m_Device->GetGraphicsQueue(), m_RenderFinishedSemaphores[m_CurrentFrame]);
 
         m_CurrentFrame = (++m_CurrentFrame) % MAX_FRAMES_IN_FLIGHT;
         vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
@@ -641,7 +533,7 @@ namespace Ethane {
         m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrame];
     }
 
-    void VulkanSwapChain::PresentQueue(VkQueue queue, VkSemaphore signalSemaphore)
+    void VulkanSwapChain::Present(VkQueue queue, VkSemaphore signalSemaphore)
     {
         ETH_PROFILE_FUNCTION();
 
@@ -687,19 +579,17 @@ namespace Ethane {
 
         vkDestroyRenderPass(device, m_RenderPass, nullptr); // test
 
+        m_DepthAttachment->Destroy();
+
         for (auto imageView : m_ImageViews) 
         {
             vkDestroyImageView(device, imageView, nullptr);
         }
 
-        // vkDestroyImageView(device, m_DepthImageView, nullptr);
-        // vkDestroyImage(device, m_DepthImage, nullptr);
-        // vkFreeMemory(device, m_DepthImageMemory, nullptr);
-
         vkDestroySwapchainKHR(device, swapchain, nullptr);
     }
 
-    void VulkanSwapChain::Cleanup() {
+    void VulkanSwapChain::Destroy() {
         VkDevice device = m_Device->GetVulkanDevice();
 
         CleanupSwapChain(m_SwapChain);
@@ -731,57 +621,3 @@ namespace Ethane {
     }
 
 }
-
-/*
-void VulkanSwapChain::CreateDepthResources()
-{
-    auto device = m_Device->GetVulkanDevice();
-
-    // TODO:
-    VkImageCreateInfo imageInfo{};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = m_Extent.width;
-    imageInfo.extent.height = m_Extent.height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = m_DepthFormat;
-    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.flags = 0; // Optional
-
-    VK_CHECK_RESULT(vkCreateImage(device, &imageInfo, nullptr, &m_DepthImage));
-
-    VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(device, m_DepthImage, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    if (vkAllocateMemory(device, &allocInfo, nullptr, &m_DepthImageMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate image memory!");
-    }
-
-    vkBindImageMemory(device, m_DepthImage, m_DepthImageMemory, 0);
-
-    // Create ImageView TODO: remove
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = m_DepthImage;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = m_DepthFormat;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
-
-    VK_CHECK_RESULT(vkCreateImageView(device, &viewInfo, nullptr, &m_DepthImageView));
-}
-*/

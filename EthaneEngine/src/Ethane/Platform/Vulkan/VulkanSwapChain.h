@@ -29,9 +29,9 @@ namespace Ethane{
 		~VulkanSwapChain();
 
 		void Create(VkSurfaceKHR surface, const Ref<VulkanDevice>& device, uint32_t width, uint32_t height, bool vsync);
-		
+		void Destroy();
+
 		void CleanupSwapChain(VkSwapchainKHR swapchain);
-		void Cleanup();
 
 		void OnResize(uint32_t width, uint32_t height);
 
@@ -51,12 +51,10 @@ namespace Ethane{
 		uint32_t GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; } // TODO
 
 	private:
-		VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-		VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties); // TODO: remove
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 		// void CreateDepthResources();
 		void CreateRenderPass(); //test
@@ -64,7 +62,7 @@ namespace Ethane{
 		void Resize();
 
 		void AcquireNextImage();
-		void PresentQueue(VkQueue queue, VkSemaphore signalSemaphore = VK_NULL_HANDLE);
+		void Present(VkQueue queue, VkSemaphore signalSemaphore = VK_NULL_HANDLE);
 	private:
 		VkSwapchainKHR m_SwapChain = nullptr;
 
@@ -73,19 +71,18 @@ namespace Ethane{
 
 		VkSurfaceKHR m_Surface;
 		uint32_t m_Width = 0, m_Height = 0;
+		VkExtent2D m_Extent;
 		bool m_NeedResize = false;
 
-		uint32_t m_ImageCount = 0;
+		VkFormat m_ImageFormat;
+		VkColorSpaceKHR m_ImageColorSpace;
 
+		uint32_t m_ImageCount = 0;
 		std::vector<VkImage> m_Images;
 		std::vector<VkImageView> m_ImageViews;
-		VkFormat m_ImageFormat;
-		VkExtent2D m_Extent;
 
-		// VkImage m_DepthImage;
-		// VkDeviceMemory m_DepthImageMemory;
-		// VkImageView m_DepthImageView;
 		VkFormat m_DepthFormat;
+		Ref<VulkanImage2D> m_DepthAttachment;
 
 		VkRenderPass m_RenderPass; // TODO: remove this maybe ?
 		std::vector<VkFramebuffer> m_Framebuffers;

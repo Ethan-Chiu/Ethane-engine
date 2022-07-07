@@ -19,9 +19,13 @@ namespace Ethane {
 		VulkanImage2D(ImageSpecification specification, void* buffer = nullptr);
 		virtual ~VulkanImage2D() override;
 
-		virtual void Invalidate() override;
-		virtual void Cleanup() override;
+		VulkanImage2D(uint32_t width, uint32_t height, uint32_t mip, uint32_t layers, VkFormat format, VkImageTiling tiling, 
+			VkImageUsageFlags usage, VkMemoryPropertyFlags memoryFlag, VkImageAspectFlags aspectFlag, bool createView);
 
+		static Ref<VulkanImage2D> Create(uint32_t width, uint32_t height, uint32_t mip, uint32_t layers, VkFormat format, 
+			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags memoryFlag, VkImageAspectFlags aspectFlag, bool createView);
+
+		virtual void Destroy() override;
 		void UpdateDescriptorImageInfo();
 
 		// Getter
@@ -50,7 +54,9 @@ namespace Ethane {
 
 
 		// virtual uint64_t GetHash() const override { return (uint64_t)m_Info.Image; }
-
+	private:
+		void CreateVulkanImage(VkDevice device, uint32_t width, uint32_t height, uint32_t mip, uint32_t layers, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags memoryFlag);
+		void CreateImageView(VkDevice device, VkFormat format, VkImageAspectFlags aspectMask);
 
 	private:
 		ImageSpecification m_Specification;

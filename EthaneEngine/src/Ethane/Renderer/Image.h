@@ -80,8 +80,7 @@ namespace Ethane {
 	public:
 		virtual ~Image() {}
 
-		virtual void Invalidate() = 0;
-		virtual void Cleanup() = 0;
+		virtual void Destroy() = 0;
 
 		// Getter
 		virtual uint32_t GetWidth() const = 0;

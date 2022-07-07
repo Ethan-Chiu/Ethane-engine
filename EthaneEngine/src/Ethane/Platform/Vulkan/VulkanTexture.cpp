@@ -267,7 +267,7 @@ namespace Ethane{
 	void VulkanTexture2D::Cleanup()
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-		m_Image->Cleanup();
+		m_Image->Destroy();
 		// vkDestroySampler(device, m_TextureSampler, nullptr);
 		// 
 		// vkDestroyImageView(device, m_TextureImageView, nullptr);

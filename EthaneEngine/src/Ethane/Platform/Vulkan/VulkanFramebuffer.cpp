@@ -120,7 +120,7 @@ namespace Ethane {
 						continue;
 
 					// Only destroy deinterleaved image once and prevent clearing layer views on second framebuffer invalidation
-					image->Cleanup();
+					image->Destroy();
 					attachmentIndex++;
 				}
 				m_AttachmentImages.clear();
@@ -128,7 +128,7 @@ namespace Ethane {
 				if (m_DepthAttachmentImage)
 				{
 					if (m_Specification.ExistingImages.find((uint32_t)m_Specification.Attachments.Attachments.size() - 1) == m_Specification.ExistingImages.end())
-						m_DepthAttachmentImage->Cleanup();
+						m_DepthAttachmentImage->Destroy();
 				}
 				m_DepthAttachmentImage = nullptr;
 			}
