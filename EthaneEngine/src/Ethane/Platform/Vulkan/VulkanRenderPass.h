@@ -15,7 +15,12 @@ namespace Ethane {
 		} // TODO: temp
 
 		VulkanRenderPass(const RenderPassSpecification& spec);
-		virtual ~VulkanRenderPass();
+		virtual ~VulkanRenderPass() {};
+
+		void Create();
+		void Destroy();
+		void Begin(VkCommandBuffer cmdBuffer, uint32_t width, uint32_t height, VkFramebuffer frameBuffer);
+		void End(VkCommandBuffer cmdBuffer);
 
 		// Getter
 		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
@@ -25,7 +30,7 @@ namespace Ethane {
 	private:
 		RenderPassSpecification m_Specification;
 
-		VkRenderPass m_RenderPass; // TODO: temp
+		VkRenderPass m_RenderPass;
 	};
 
 }

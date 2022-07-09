@@ -39,7 +39,9 @@ namespace Ethane{
 		void DrawFrame();
 
 		// Getter
-		VkSurfaceKHR GetSurface() const { return m_Surface; };
+		VkSurfaceKHR GetSurface() const { return m_Surface; }
+		VkFormat GetImageFormat() const { return m_ImageFormat; }
+		VkFormat GetDepthFormat() const { return m_DepthFormat; }
 		VkRenderPass GetRenderPass() { return m_RenderPass; } // test
 		uint32_t GetImageCount() { return m_ImageCount; } // test
 		uint32_t GetWidth() { return m_Extent.width; }// test
