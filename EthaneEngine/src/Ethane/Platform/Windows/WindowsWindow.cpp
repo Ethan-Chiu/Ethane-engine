@@ -173,17 +173,20 @@ namespace Ethane {
 		m_Context->Shutdown();
 	}
 
-	void WindowsWindow::BeginFrame()
+	bool WindowsWindow::BeginFrame()
 	{
-		m_Context->BeginFrame();
+		return m_Context->BeginFrame();
 	}
 
-	void WindowsWindow::OnUpdate()
+	void WindowsWindow::EndFrame()
 	{
 		ETH_PROFILE_FUNCTION();
-
-		glfwPollEvents();
 		m_Context->SwapBuffers();
+	}
+
+	void WindowsWindow::PollEvent()
+	{
+		glfwPollEvents();
 	}
 
 	void WindowsWindow::SetVSync(bool enable)

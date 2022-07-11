@@ -35,8 +35,8 @@ namespace Ethane{
 
 		void OnResize(uint32_t width, uint32_t height);
 
-		void BeginFrame();
-		void DrawFrame();
+		bool BeginFrame();
+		void EndFrame();
 
 		// Getter
 		VkSurfaceKHR GetSurface() const { return m_Surface; }
@@ -61,9 +61,9 @@ namespace Ethane{
 		// void CreateDepthResources();
 		void CreateRenderPass(); //test
 
-		void Resize();
+		bool Resize();
 
-		void AcquireNextImage();
+		bool AcquireNextImage();
 		void Present(VkQueue queue, VkSemaphore signalSemaphore = VK_NULL_HANDLE);
 	private:
 		VkSwapchainKHR m_SwapChain = nullptr;
@@ -96,7 +96,7 @@ namespace Ethane{
 
 		bool m_VSync = false;
 
-		const uint32_t MAX_FRAMES_IN_FLIGHT = 3;
+		const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_InFlightFences;
@@ -105,15 +105,7 @@ namespace Ethane{
 		uint32_t m_CurrentFrame = 0;
 		uint32_t m_CurrentImageIndex = 0;
 
-
-		// TODO: remove these
-		Ref<VulkanVertexBuffer> m_VertexBuffer = nullptr;
-		Ref<VulkanIndexBuffer> m_IndexBuffer = nullptr;
-		VulkanShader::DescriptorSetsAndPool m_DescriptorSets;
-		Ref<VulkanPipeline> m_Pipeline = nullptr;
-		std::vector<Ref<VulkanUniformBuffer>> m_UniformBuffers = {};
-		Ref<VulkanTexture2D> m_Texture2D = nullptr;
-		ImTextureID m_TextureID = nullptr;
+		bool m_IsRecreating;
 	};
 
 }

@@ -91,36 +91,39 @@ namespace Ethane
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			m_Window->BeginFrame();
-
+			m_Window->PollEvent();
+			
 			if (!m_Minimized)
 			{
-				Renderer::BeginFrame();
-
+				if (m_Window->BeginFrame())
 				{
-					ETH_PROFILE_SCOPE("LayerStack OnUpdate");
+					Renderer::BeginFrame();
 
-					for (Layer* layer : m_LayerStack)
-						layer->OnUpdate(timestep);
+					{
+						ETH_PROFILE_SCOPE("LayerStack OnUpdate");
+
+						for (Layer* layer : m_LayerStack)
+							layer->OnUpdate(timestep);
+					}
+
+					m_ImGuiLayer->Begin();
+					{
+						ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+						for (Layer* layer : m_LayerStack)
+							layer->OnImGuiRender();
+					}
+					m_ImGuiLayer->End();
+
+					Renderer::EndFrame();
+
+					// auto [x, y] = Input::GetMousePosition();
+					// ETH_CORE_TRACE("{0}, {1}", x, y);
+
+					m_Window->EndFrame();
+					// m_ImGuiLayer->End();
 				}
-
-				m_ImGuiLayer->Begin();
-				{
-					ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
-				
-					for (Layer* layer : m_LayerStack)
-						layer->OnImGuiRender();
-				}
-				m_ImGuiLayer->End();
-
-				Renderer::EndFrame();
 			}
-
-			// auto [x, y] = Input::GetMousePosition();
-			// ETH_CORE_TRACE("{0}, {1}", x, y);
-
-			m_Window->OnUpdate(); 
-			// m_ImGuiLayer->End();
 		}
 	}
 
@@ -136,6 +139,7 @@ namespace Ethane
 
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
+			ETH_CORE_INFO("App minimized");
 			m_Minimized = true;
 			return false;
 		}

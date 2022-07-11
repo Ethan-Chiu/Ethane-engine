@@ -13,9 +13,11 @@ namespace Ethane {
 		virtual ~WindowsWindow();
 
 		// TODO: test
-		void BeginFrame() override;
+		bool BeginFrame() override;
+		void EndFrame() override;
 
-		void OnUpdate() override;
+		void PollEvent() override;
+
 		void OnResize(uint32_t width, uint32_t height);
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }

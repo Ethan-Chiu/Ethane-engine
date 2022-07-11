@@ -41,7 +41,7 @@ namespace Ethane {
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
         m_Extent = ChooseSwapExtent(swapChainSupport.capabilities);
-        ETH_CORE_INFO("{0}, {1}", m_Extent.width, m_Extent.height);
+        ETH_CORE_INFO("width: {0}, height: {1}", m_Extent.width, m_Extent.height);
 
         m_ImageFormat = surfaceFormat.format;
         m_ImageColorSpace = surfaceFormat.colorSpace;
@@ -54,7 +54,7 @@ namespace Ethane {
         );
 
         // profiling
-        ETH_CORE_INFO("choose {0}", timer.ElapsedMillis());
+        ETH_CORE_TRACE("choose time: {0}ms", timer.ElapsedMillis());
         timer.Reset();
 
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -233,7 +233,7 @@ namespace Ethane {
         }
 
         // profiling
-        ETH_CORE_INFO("create {0}", timer.ElapsedMillis());
+        ETH_CORE_TRACE("create time: {0}ms", timer.ElapsedMillis());
         timer.Reset();
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -390,49 +390,67 @@ namespace Ethane {
 
     void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
     {
-        ETH_CORE_WARN("VulkanContext::OnResize");
-
+        ETH_CORE_WARN("VulkanSwapChain::OnResize");
+        // NOTE: width == 0 or height == 0 will not occur
         m_Width = width;
         m_Height = height;
         m_NeedResize = true;
     }
 
-    void VulkanSwapChain::Resize()
+    bool VulkanSwapChain::Resize()
     {
-        m_NeedResize = false;
-        auto device = m_Device->GetVulkanDevice();
+        if (m_IsRecreating) {
+            ETH_CORE_WARN("Already recreating swapchain");
+            return false;
+        }
 
+        m_IsRecreating = true;
+
+        auto device = m_Device->GetVulkanDevice();
         vkDeviceWaitIdle(device);
-
+        
         Create(m_Surface, m_Device, m_Width, m_Height, m_VSync);
+
+        m_NeedResize = false;
+        m_IsRecreating = false;
+        return true;
     }
 
-    void VulkanSwapChain::BeginFrame()
+    bool VulkanSwapChain::BeginFrame()
     {
         auto device = m_Device->GetVulkanDevice();
 
-        AcquireNextImage();
-    }
+        if(m_IsRecreating) {
+            VK_CHECK_RESULT(vkDeviceWaitIdle(device));
+            return false;
+        }
 
-    void VulkanSwapChain::DrawFrame()
-    {
-        auto device = m_Device->GetVulkanDevice();
+        if (m_NeedResize) {
+            VK_CHECK_RESULT(vkDeviceWaitIdle(device));
+            Resize();
+            return false;
+        }
 
-        // TODO: test
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        // TODO: check result
+        vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
+
+        if (!AcquireNextImage()) {
+            return false;
+        }
+
+        VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
         beginInfo.flags = 0; // Optional
         beginInfo.pInheritanceInfo = nullptr; // Optional
         VkCommandBuffer currentCommandBuffer = m_CommandBuffers[m_CurrentFrame];
+        VK_CHECK_RESULT(vkResetCommandBuffer(currentCommandBuffer, 0));
         VK_CHECK_RESULT(vkBeginCommandBuffer(currentCommandBuffer, &beginInfo));
-        
+
         std::array<VkClearValue, 1> clearValues{};
         clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 #if depth
         clearValues[1].depthStencil = { 1.0f, 0 };
 #endif        
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        VkRenderPassBeginInfo renderPassInfo{ VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
         renderPassInfo.renderPass = m_RenderPass;
         renderPassInfo.framebuffer = m_Framebuffers[m_CurrentImageIndex];
         renderPassInfo.renderArea.offset = { 0, 0 };
@@ -440,7 +458,7 @@ namespace Ethane {
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
         renderPassInfo.pClearValues = clearValues.data();
         vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-        
+
         // VkViewport viewport{};
         // viewport.x = 0.0f;
         // viewport.y = 0.0f;
@@ -454,22 +472,14 @@ namespace Ethane {
         // scissor.offset = { 0, 0 };
         // scissor.extent = m_Extent;
         // vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
-        
-#if test
-        vkCmdBindPipeline(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->GetVulkanPipeline());
-        
-        VkBuffer vertexbuffer = m_VertexBuffer->GetVulkanBuffer();
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(currentCommandBuffer, 0, 1, &vertexbuffer, offsets);
-        
-        VkBuffer indexbuffer = m_IndexBuffer->GetVulkanBuffer();
-        vkCmdBindIndexBuffer(currentCommandBuffer, indexbuffer, 0, VK_INDEX_TYPE_UINT32);
-        
-        VkDescriptorSet _descriptorSet = m_DescriptorSets.DescriptorSets[m_CurrentFrame];
-        vkCmdBindDescriptorSets(currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->GetPipelineLayout(), 0, 1, &_descriptorSet, 0, nullptr);
-        
-        vkCmdDrawIndexed(currentCommandBuffer, static_cast<uint32_t>(m_IndexBuffer->GetCount()), 1, 0, 0, 0);
-#endif
+
+        return true;
+    }
+
+    void VulkanSwapChain::EndFrame()
+    {
+        auto device = m_Device->GetVulkanDevice();
+        VkCommandBuffer currentCommandBuffer = m_CommandBuffers[m_CurrentFrame];
 
         // vkCmdNextSubpass(currentCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -481,64 +491,63 @@ namespace Ethane {
         vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrame]);
         VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffers[m_CurrentFrame]));
        
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
+        if (m_ImagesInFlight[m_CurrentImageIndex] != VK_NULL_HANDLE)
+        {
+            vkWaitForFences(device, 1, &m_ImagesInFlight[m_CurrentImageIndex], VK_TRUE, UINT64_MAX); // wait for signaled // TODO: check result
+        }
+        m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrame];
+
+        VK_CHECK_RESULT(vkResetFences(device, 1, &m_InFlightFences[m_CurrentFrame]));
+
+
+        VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+        
         VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrame] };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
+        
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.pWaitDstStageMask = waitStages;
+        
         VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrame] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
+        
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentFrame];
 
-        VK_CHECK_RESULT(vkResetFences(device, 1, &m_InFlightFences[m_CurrentFrame]));
         VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]));
 
-        // TODO: test
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if test
-        glm::mat4 model = glm::rotate(glm::mat4(1.0), m_CurrentFrame* 1.0f * glm::radians(90.0f), glm::vec3(0, 0, 1));
-        glm::mat4 proj = glm::perspectiveFov(45.0f, (float)m_Width, (float)m_Height, 0.001f, 1000.0f);
-        glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0), {0.0, 0.0, 4.0}));
-        glm::mat4 viewproj = proj * view;
-        // viewproj = glm::mat4(1.0);
-        m_UniformBuffers[m_CurrentFrame]->SetData(&viewproj, sizeof(viewproj));
-#endif
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Update command buffer state
 
         Present(m_Device->GetGraphicsQueue(), m_RenderFinishedSemaphores[m_CurrentFrame]);
 
         m_CurrentFrame = (++m_CurrentFrame) % MAX_FRAMES_IN_FLIGHT;
-        vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
     }
 
 
-    void VulkanSwapChain::AcquireNextImage()
+    bool VulkanSwapChain::AcquireNextImage()
     {
         auto device = m_Device->GetVulkanDevice(); // TODO: save device as member
-        VkResult result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &m_CurrentImageIndex);
-        VK_CHECK_RESULT(result);
 
-        // check image not in flight
-        if (m_ImagesInFlight[m_CurrentImageIndex] != VK_NULL_HANDLE)
-        {
-            vkWaitForFences(device, 1, &m_ImagesInFlight[m_CurrentImageIndex], VK_TRUE, UINT64_MAX); // wait for signaled
+        VkResult result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &m_CurrentImageIndex);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            Resize();
+            return false;
         }
-        m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrame];
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            ETH_CORE_ERROR("Swapchain require next image failed");
+            return false;
+        }
+        return true;
     }
 
     void VulkanSwapChain::Present(VkQueue queue, VkSemaphore signalSemaphore)
     {
         ETH_PROFILE_FUNCTION();
 
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        VkPresentInfoKHR presentInfo = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
         presentInfo.pNext = nullptr;
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &m_SwapChain;
@@ -555,7 +564,7 @@ namespace Ethane {
         }
 
         VkResult result = vkQueuePresentKHR(queue, &presentInfo);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_NeedResize)
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             Resize();
         }
@@ -570,12 +579,12 @@ namespace Ethane {
 
         vkDeviceWaitIdle(device);
 
+        vkFreeCommandBuffers(device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
+
         for (auto framebuffer : m_Framebuffers)
         {
             vkDestroyFramebuffer(device, framebuffer, nullptr);
         }
-
-        vkFreeCommandBuffers(device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 
         vkDestroyRenderPass(device, m_RenderPass, nullptr); // test
 
@@ -592,27 +601,15 @@ namespace Ethane {
     void VulkanSwapChain::Destroy() {
         VkDevice device = m_Device->GetVulkanDevice();
 
-        CleanupSwapChain(m_SwapChain);
-
-        // TODO: test
-        m_Pipeline->Cleanup();
-
-        // TODO: remove this 
-        m_VertexBuffer->Cleanup();
-        m_IndexBuffer->Cleanup();
-
-        m_Texture2D->Cleanup();
-
-        for (auto ubo : m_UniformBuffers)
-        {
-            ubo->Cleanup();
-        }
+        vkDeviceWaitIdle(device);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
             vkDestroyFence(device, m_InFlightFences[i], nullptr);
         }
+
+        CleanupSwapChain(m_SwapChain);
 
         // destroy commandpool
         vkDestroyCommandPool(device, m_CommandPool, nullptr);

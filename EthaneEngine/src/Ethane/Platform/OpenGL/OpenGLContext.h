@@ -13,7 +13,7 @@ namespace Ethane {
 
 		virtual void Init() override;
 		
-		virtual void BeginFrame() override {}; // TODO: test
+		virtual bool BeginFrame() override { return true; }; // TODO: test
 		virtual void SwapBuffers() override;
 
 		virtual void OnResize(uint32_t width, uint32_t height) {}

@@ -437,15 +437,15 @@ namespace Ethane {
 
 	//--------------------------------------------------------------------------------------------------
 	//
-	void VulkanContext::BeginFrame()
+	bool VulkanContext::BeginFrame()
 	{
-		m_SwapChain.BeginFrame();
+		return m_SwapChain.BeginFrame();
 	}
 
 	void VulkanContext::SwapBuffers()
 	{
 		ETH_PROFILE_FUNCTION();
-		m_SwapChain.DrawFrame();
+		m_SwapChain.EndFrame();
 	}
 
 	void VulkanContext::OnResize(uint32_t width, uint32_t height)
