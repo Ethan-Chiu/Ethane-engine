@@ -3,20 +3,13 @@
 #include "Vulkan.h"
 #include "VulkanDevice.h"
 
-#include "VulkanPipeline.h" // TODO: remove this
-#include "VulkanVertexBuffer.h" // TODO: remove this
-#include "VulkanIndexBuffer.h" // TODO: remove this
-#include "VulkanUniformBuffer.h" // TODO: remove this
-#include "VulkanTexture.h" // TODO: remove this
-#include "VulkanShader.h" // TODO: remove this
-#include "VulkanRenderPass.h"// TODO: remove this
-
-// TODO: test
-#include "VulkanFramebuffer.h"
+#include "VulkanImage.h"
 
 // TODO: remove
+#include "VulkanVertexBuffer.h"
+#include "VulkanIndexBuffer.h"
+
 #include "imgui.h"
-#include "examples/imgui_impl_vulkan_with_textures.h"
 
 struct GLFWwindow;
 
@@ -50,7 +43,7 @@ namespace Ethane{
 		VkFramebuffer GetCurrentFramebuffer() { return m_Framebuffers[m_CurrentImageIndex]; } // test
 		VkCommandBuffer GetCurrentCommandBuffer() { return m_CommandBuffers[m_CurrentFrame]; } // test
 		VkCommandBuffer GetCommandBuffer(uint32_t frameIndex) { return m_CommandBuffers[frameIndex]; } // test
-		uint32_t GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; } // TODO
+		uint32_t GetMaxFramesInFlight() { return m_MaxFramesInFlight; } // TODO
 
 	private:
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -96,7 +89,7 @@ namespace Ethane{
 
 		bool m_VSync = false;
 
-		const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+		uint32_t m_MaxFramesInFlight = 2;
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_InFlightFences;

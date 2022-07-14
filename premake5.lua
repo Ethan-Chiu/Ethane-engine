@@ -108,11 +108,20 @@ project "EthaneEngine"
 		defines "ETH_DEBUG"
 		runtime "Debug"
 		symbols "on"
+		
+		includedirs
+		{
+			"%{IncludeDir.shaderc_util}",
+			"%{IncludeDir.shaderc_glslc}"
+		}
+
 		links
 		{
 			"%{Library.ShaderC_Debug}",
 			"%{Library.SPIRV_Cross_Debug}",
-			"%{Library.SPIRV_Cross_GLSL_Debug}"
+			"%{Library.SPIRV_Cross_GLSL_Debug}",
+			"%{Library.ShaderC_Utils_Debug}",
+			"%{Library.SPIRV_Tools_Debug}",
 		}
 
 	filter "configurations:Release"

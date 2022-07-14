@@ -63,6 +63,10 @@ namespace Ethane {
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
 
+        m_MaxFramesInFlight = imageCount - 1;
+        ETH_CORE_TRACE("Max frames in flight is {0}", m_MaxFramesInFlight);
+
+
         // Find the transformation of the surface
         VkSurfaceTransformFlagsKHR preTransform;
         if (swapChainSupport.capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
@@ -213,9 +217,9 @@ namespace Ethane {
         if (m_ImageAvailableSemaphores.empty() || m_RenderFinishedSemaphores.empty() || m_InFlightFences.empty())
         {
             ETH_CORE_TRACE("Create Synchronization Objects");
-            m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-            m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-            m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+            m_ImageAvailableSemaphores.resize(m_MaxFramesInFlight);
+            m_RenderFinishedSemaphores.resize(m_MaxFramesInFlight);
+            m_InFlightFences.resize(m_MaxFramesInFlight);
             m_ImagesInFlight.resize(m_Images.size(), VK_NULL_HANDLE);
 
             VkSemaphoreCreateInfo semaphoreInfo{};
@@ -225,7 +229,7 @@ namespace Ethane {
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            for (size_t i = 0; i < m_MaxFramesInFlight; i++) {
                 VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]));
                 VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]));
                 VK_CHECK_RESULT(vkCreateFence(device, &fenceInfo, nullptr, &m_InFlightFences[i]));
@@ -523,7 +527,7 @@ namespace Ethane {
 
         Present(m_Device->GetGraphicsQueue(), m_RenderFinishedSemaphores[m_CurrentFrame]);
 
-        m_CurrentFrame = (++m_CurrentFrame) % MAX_FRAMES_IN_FLIGHT;
+        m_CurrentFrame = (++m_CurrentFrame) % m_MaxFramesInFlight;
     }
 
 
@@ -603,7 +607,7 @@ namespace Ethane {
 
         vkDeviceWaitIdle(device);
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        for (size_t i = 0; i < m_MaxFramesInFlight; i++) {
             vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
             vkDestroyFence(device, m_InFlightFences[i], nullptr);
