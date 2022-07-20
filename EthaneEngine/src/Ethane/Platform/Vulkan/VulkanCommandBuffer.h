@@ -18,11 +18,9 @@ namespace Ethane {
         VulkanCommandBuffer();
 
         void Allocate(VkCommandPool pool, bool isPrimary);
-
         void Free(VkCommandPool pool);
 
         void Begin(bool isOneTimeUse, bool isRenderpassContinue, bool isSimultaneousUse);
-
         void End();
 
         void UpdateSubmitted();
@@ -30,8 +28,10 @@ namespace Ethane {
         void Reset();
 
         void AllocateAndBeginSingleUse(VkCommandPool pool);
-
         void EndSingleUse(VkCommandPool pool, VkQueue queue);
+
+        VkCommandBuffer GetHandle() { return m_CommandBuffer; };
+
     private:
         VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
         CommandBufferState m_State;

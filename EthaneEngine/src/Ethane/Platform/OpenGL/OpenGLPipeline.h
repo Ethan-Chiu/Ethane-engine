@@ -13,7 +13,7 @@ namespace Ethane {
 		virtual PipelineSpecification& GetSpecification() { return m_Specification; }
 		virtual const PipelineSpecification& GetSpecification() const { return m_Specification; }
 
-		virtual void Invalidate() override;
+		virtual void Create() override;
 
 		virtual void Bind() override;
 	private:

@@ -3,7 +3,6 @@
 
 #include "VulkanContext.h"
 
-// TODO: 
 #include "VulkanShader.h"
 #include "VulkanRenderPass.h"
 
@@ -32,29 +31,22 @@ namespace Ethane {
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& spec)
 		:m_Specification(spec)
 	{
-		Invalidate();
+		Create();
 	}
-
-
-	// VulkanPipeline::VulkanPipeline(Ref<VulkanShader> vulkanShader, VkRenderPass renderPass, VertexBufferLayout layout)
-	// 	:m_VulkanShader(vulkanShader), m_RenderPass(renderPass), m_Layout(layout)
-	// {
-	// 	Invalidate();
-	// }
 
 	VulkanPipeline::~VulkanPipeline()
 	{
 	}
 
-	void VulkanPipeline::Cleanup()
+	void VulkanPipeline::Destroy()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader)->Cleanup(); // TODO test
+		std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader)->Destroy(); // TODO test
 		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 	}
 
-	void VulkanPipeline::Invalidate()
+	void VulkanPipeline::Create()
 	{
 		// Shader Stage
 		Ref<VulkanShader> vulkanShader = std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader);
@@ -169,14 +161,27 @@ namespace Ethane {
 		// dynamic state
 		VkDynamicState dynamicStates[] = {
 			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
+			VK_DYNAMIC_STATE_SCISSOR,
+			VK_DYNAMIC_STATE_LINE_WIDTH
 		};
 
 		VkPipelineDynamicStateCreateInfo dynamicState{};
 		dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamicState.dynamicStateCount = 2;
+		dynamicState.dynamicStateCount = 3;
 		dynamicState.pDynamicStates = dynamicStates;
 
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+
+		// descriptor set layouts
+		auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
+		auto vulkanPushConstantRanges = vulkanShader->GetPushConstantRanges();
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+		pipelineLayoutInfo.pushConstantRangeCount = (uint32_t)vulkanPushConstantRanges.size();
+		pipelineLayoutInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
+		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 
 		// Create pipeline
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -192,21 +197,8 @@ namespace Ethane {
 		pipelineInfo.pDepthStencilState = &depthStencil; // Optional
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState; // Optional
-
-		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
-		auto vulkanPushConstantRanges = vulkanShader->GetPushConstantRanges();
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
-		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-		pipelineLayoutInfo.pushConstantRangeCount = (uint32_t)vulkanPushConstantRanges.size();
-		pipelineLayoutInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
-		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 		pipelineInfo.layout = m_PipelineLayout;
 
-		// TODO: 
 		Ref<VulkanRenderPass> renderPass = std::dynamic_pointer_cast<VulkanRenderPass>(m_Specification.RenderPass);
 		pipelineInfo.renderPass = renderPass->GetVulkanRenderPass();
 		pipelineInfo.subpass = 0;
@@ -217,5 +209,10 @@ namespace Ethane {
 		if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create graphics pipeline!");
 		}
+	}
+
+	void VulkanPipeline::Bind(Ref<VulkanCommandBuffer> cmdBuffer, VkPipelineBindPoint bindPoint)
+	{
+		vkCmdBindPipeline(cmdBuffer->GetHandle(), bindPoint, m_GraphicsPipeline);
 	}
 }

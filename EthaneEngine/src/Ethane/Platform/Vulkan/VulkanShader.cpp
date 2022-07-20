@@ -44,7 +44,7 @@ namespace Ethane {
 	{
 	}
 
-	void VulkanShader::Cleanup()
+	void VulkanShader::Destroy()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
 		for (auto descriptorSetLayout : m_DescriptorSetLayouts)

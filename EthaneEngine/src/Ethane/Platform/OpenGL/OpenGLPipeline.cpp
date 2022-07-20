@@ -29,7 +29,7 @@ namespace Ethane {
 	OpenGLPipeline::OpenGLPipeline(const PipelineSpecification& spec)
 		:m_Specification(spec)
 	{
-		Invalidate();
+		Create();
 	}
 
 	OpenGLPipeline::~OpenGLPipeline()
@@ -41,7 +41,7 @@ namespace Ethane {
 		// });
 	}
 
-	void OpenGLPipeline::Invalidate()
+	void OpenGLPipeline::Create()
 	{
 		ETH_PROFILE_FUNCTION();
 
