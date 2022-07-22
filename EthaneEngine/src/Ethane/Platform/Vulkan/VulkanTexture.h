@@ -55,16 +55,11 @@ namespace Ethane {
 	private:
 		std::string m_Path;
 		uint32_t m_Width, m_Height;
+		uint32_t m_ChannelCount;
 
 		Ref<VulkanImage2D> m_Image = nullptr;
+		VkSampler m_TextureSampler;
 
-
-		// TODO: remove
-		// VkImage m_TextureImage;
-		// VkDeviceMemory m_TextureImageMemory;
-		// VkImageView m_TextureImageView;
-		// VkSampler m_TextureSampler;
-		
 		// Buffer m_ImageData
 
 		// TextureProperties m_Properties;

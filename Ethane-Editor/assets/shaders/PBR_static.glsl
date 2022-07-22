@@ -14,7 +14,7 @@ layout(location = 4) in vec2 a_TexCoord;
 // 	mat4 u_ViewProjection;
 // };
 
-layout(binding = 0) uniform UniformBufferObject{
+layout(std140, set = 0, binding = 0) uniform UniformBufferObject{
 	mat4 viewproj;
 } ubo;
 

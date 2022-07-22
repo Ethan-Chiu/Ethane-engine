@@ -32,7 +32,7 @@ namespace Ethane {
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
 		const std::vector<VkPushConstantRange> GetPushConstantRanges() const { return m_PushConstantRanges; } // TODO
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
-		const std::vector<VulkanShaderCompiler::ShaderDescriptorSetData>& GetShaderDescriptorSetData() const { return m_ShaderDescriptorSets; }
+		const std::vector<VulkanShaderCompiler::ShaderDescriptorSetData>& GetShaderDescriptorSetData() const { return m_ShaderDescriptorSetsReflect; }
 		const VkWriteDescriptorSet* GetWriteDescriptorSet(uint32_t set, const std::string& name) const;
 
 		// TODO: remove this
@@ -57,8 +57,9 @@ namespace Ethane {
 		std::string m_Name;
 
 		// Datas from Reflect
-		std::vector<VulkanShaderCompiler::ShaderDescriptorSetData> m_ShaderDescriptorSets;
-		
+		std::vector<VulkanShaderCompiler::ShaderDescriptorSetData> m_ShaderDescriptorSetsReflect;
+		std::vector<VkPushConstantRange> m_PushConstantRanges;
+
 		// Discripter Set Layouts
 		std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
 
@@ -69,6 +70,5 @@ namespace Ethane {
 
 		// For pipeine creation
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
-		std::vector<VkPushConstantRange> m_PushConstantRanges;
 	};
 }

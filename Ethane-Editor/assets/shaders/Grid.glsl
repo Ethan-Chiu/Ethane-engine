@@ -6,7 +6,7 @@ layout(location = 1) in vec2 a_TexCoord;
 
 layout(location = 0) out vec2 v_TexCoord;
 
-layout(std140, binding = 0) uniform UniformBufferObject{
+layout(std140, set = 0, binding = 0) uniform UniformBufferObject{
 	mat4 viewproj;
 } ubo;
 

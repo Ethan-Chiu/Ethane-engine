@@ -27,7 +27,7 @@ namespace Ethane {
 
 		VulkanShaderCompiler& compiler = VulkanShaderCompiler::GetInstance();
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> ShaderBinary;
-		VulkanShaderCompiler::CompileOutput outputs{ ShaderBinary, m_ShaderDescriptorSets, m_PushConstantRanges };
+		VulkanShaderCompiler::CompileOutput outputs{ ShaderBinary, m_ShaderDescriptorSetsReflect, m_PushConstantRanges };
 		VulkanShaderCompiler::CompileParam param{ m_FilePath, source, false };
 		compiler.Compile(param, outputs);
 		
@@ -85,10 +85,9 @@ namespace Ethane {
 	void VulkanShader::CreateDescriptorLayouts()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		// m_TypeCounts.clear();
-		for (uint32_t set = 0; set < m_ShaderDescriptorSets.size(); set++)
+		for (uint32_t set = 0; set < m_ShaderDescriptorSetsReflect.size(); set++)
 		{
-			auto& shaderDescriptorSet = m_ShaderDescriptorSets[set];
+			auto& shaderDescriptorSet = m_ShaderDescriptorSetsReflect[set];
 
 			// Uniform Buffers
 			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
@@ -102,8 +101,7 @@ namespace Ethane {
 				layoutBinding.pImmutableSamplers = nullptr;
 
 				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer->Name];
-				set = {};
-				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
 				set.descriptorType = layoutBinding.descriptorType;
 				set.dstBinding = layoutBinding.binding;
 				set.descriptorCount = 1;
@@ -129,14 +127,13 @@ namespace Ethane {
 				set.descriptorCount = imageSampler.ArraySize;
 			}
 
-			VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-			descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			VkDescriptorSetLayoutCreateInfo descriptorLayout = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
 			descriptorLayout.pNext = nullptr;
 			descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
 			descriptorLayout.pBindings = layoutBindings.data();
 
-			// ETH_CORE_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
-			//	shaderDescriptorSet.UniformBuffers.size(), 0, shaderDescriptorSet.ImageSamplers.size(), 0);
+			ETH_CORE_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
+				shaderDescriptorSet.UniformBuffers.size(), 0, shaderDescriptorSet.ImageSamplers.size(), 0);
 				// shaderDescriptorSet.StorageBuffers.size(),
 				// shaderDescriptorSet.StorageImages.size());
 			if (set >= m_DescriptorSetLayouts.size())
@@ -145,6 +142,7 @@ namespace Ethane {
 		}
 	}
 
+	// For pipeline creation
 	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts()
 	{
 		std::vector<VkDescriptorSetLayout> result;
@@ -157,14 +155,14 @@ namespace Ethane {
 
 	const VkWriteDescriptorSet* VulkanShader::GetWriteDescriptorSet(uint32_t set, const std::string& name) const
 	{
-		ETH_CORE_ASSERT(set < m_ShaderDescriptorSets.size());
-		ETH_CORE_ASSERT(m_ShaderDescriptorSets[set]);
-		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
+		ETH_CORE_ASSERT(set < m_ShaderDescriptorSetsReflect.size());
+		ETH_CORE_ASSERT(m_ShaderDescriptorSetsReflect[set]);
+		if (m_ShaderDescriptorSetsReflect.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSetsReflect.at(set).WriteDescriptorSets.end())
 		{
 			ETH_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
 			return nullptr;
 		}
-		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
+		return &m_ShaderDescriptorSetsReflect.at(set).WriteDescriptorSets.at(name);
 	}
 
 	VulkanShader::DescriptorSetsAndPool VulkanShader::CreateDescriptorSetsAndPool(uint32_t set, uint32_t numberOfSets)
@@ -174,9 +172,9 @@ namespace Ethane {
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
 
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> poolSizes;
-		for (uint32_t set = 0; set < m_ShaderDescriptorSets.size(); set++)
+		for (uint32_t set = 0; set < m_ShaderDescriptorSetsReflect.size(); set++)
 		{
-			auto& shaderDescriptorSet = m_ShaderDescriptorSets[set];
+			auto& shaderDescriptorSet = m_ShaderDescriptorSetsReflect[set];
 			if (!shaderDescriptorSet) // Empty descriptor set
 				continue;
 
@@ -241,7 +239,7 @@ namespace Ethane {
 		ETH_CORE_ASSERT(set < m_DescriptorSetLayouts.size());
 		DescriptorSetsAndPool result;
 
-		if (m_ShaderDescriptorSets.empty())
+		if (m_ShaderDescriptorSetsReflect.empty())
 		{
 			ETH_CORE_INFO("Empty descriptor set {0}", set);
 			return result;

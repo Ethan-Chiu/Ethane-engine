@@ -56,6 +56,7 @@ namespace Ethane {
 		// Create Image view
 		CreateImageView(device, vulkanFormat, aspectMask);
 		
+		// TODO: move sampler away
 		// TODO: Renderer should contain some kind of sampler cache
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -210,6 +211,30 @@ namespace Ethane {
 		// m_MipImageViews.clear();
 	}
 
+	void VulkanImage2D::UpdateDescriptorImageInfo()
+	{
+		if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8 || m_Specification.Format == ImageFormat::DEPTH32F)
+			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+		else if (m_Specification.Usage == ImageUsage::Storage)
+			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		else
+			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		if (m_Specification.Usage == ImageUsage::Storage)
+			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+		m_DescriptorImageInfo.imageView = m_Info.ImageView;
+		m_DescriptorImageInfo.sampler = m_Info.Sampler;
+
+		ETH_CORE_TRACE("VulkanImage2D::UpdateDescriptorImageInfo to ImageView = {0}", (const void*)m_Info.ImageView);
+	}
+
+	// const std::map<VkImage, WeakRef<VulkanImage2D>>& VulkanImage2D::GetImageRefs()
+	// {
+	// 	return s_ImageReferences;
+	// }
+
+
 	// void VulkanImage2D::CreatePerLayerImageViews()
 	// {
 	// 	HZ_CORE_ASSERT(m_Specification.Layers > 1);
@@ -316,28 +341,4 @@ namespace Ethane {
 	// 	}
 	// 
 	// }
-
-	void VulkanImage2D::UpdateDescriptorImageInfo()
-	{
-		if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8 || m_Specification.Format == ImageFormat::DEPTH32F)
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-		else if (m_Specification.Usage == ImageUsage::Storage)
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-		else
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		if (m_Specification.Usage == ImageUsage::Storage)
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-		m_DescriptorImageInfo.imageView = m_Info.ImageView;
-		m_DescriptorImageInfo.sampler = m_Info.Sampler;
-
-		ETH_CORE_TRACE("VulkanImage2D::UpdateDescriptorImageInfo to ImageView = {0}", (const void*)m_Info.ImageView);
-	}
-
-	// const std::map<VkImage, WeakRef<VulkanImage2D>>& VulkanImage2D::GetImageRefs()
-	// {
-	// 	return s_ImageReferences;
-	// }
-
 }

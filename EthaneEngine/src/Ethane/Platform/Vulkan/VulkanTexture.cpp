@@ -7,12 +7,8 @@
 
 namespace Ethane{
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///  temporary   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-		// create command buffer
+		// create command buffer //TODO: change command buffer to be a param
 		VkCommandBuffer commandBuffer = VulkanContext::GetDevice()->CreateCommandBuffer(QueueFamilyTypes::Graphics, true, true);
 
 		VkBufferImageCopy region{};
@@ -26,11 +22,10 @@ namespace Ethane{
 		region.imageSubresource.layerCount = 1;
 
 		region.imageOffset = { 0, 0, 0 };
-		region.imageExtent = {
-			width,
-			height,
-			1
-		};
+
+		region.imageExtent.width = width;
+		region.imageExtent.height = height;
+		region.imageExtent.depth = 1;
 
 		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
@@ -39,11 +34,10 @@ namespace Ethane{
 	}
 
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-		// create command buffer
+		// create command buffer //TODO: change command buffer to be a param
 		VkCommandBuffer commandBuffer = VulkanContext::GetDevice()->CreateCommandBuffer(QueueFamilyTypes::Graphics, true, true);
 
-		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		VkImageMemoryBarrier barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
 		barrier.oldLayout = oldLayout;
 		barrier.newLayout = newLayout;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -82,74 +76,6 @@ namespace Ethane{
 		// submit command buffer
 		VulkanContext::GetDevice()->SubmitCommandBuffer(commandBuffer);
 	}
-
-	// TODO: remove
-	void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
-	{
-
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		VkImageCreateInfo imageInfo{};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.extent.width = width;
-		imageInfo.extent.height = height;
-		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.format = format;
-		imageInfo.tiling = tiling;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageInfo.usage = usage;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.flags = 0; // Optional
-
-		if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create image!");
-		}
-
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(device, image, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = Utils::FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-		if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate image memory!");
-		}
-
-		vkBindImageMemory(device, image, imageMemory, 0);
-	}
-
-	// TODO: remove
-	VkImageView CreateImageView(VkImage image, VkFormat format) {
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		VkImageViewCreateInfo viewInfo{};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = image;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = format;
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
-
-		VkImageView imageView;
-		if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create texture image view!");
-		}
-
-		return imageView;
-	}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///  temporary   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	VulkanTexture2D::VulkanTexture2D(const std::string& path)
 		:m_Path(path)
@@ -223,9 +149,9 @@ namespace Ethane{
 
 		m_Width = width;
 		m_Height = height;
-		uint32_t channels = 4;
-		VkDeviceSize imageSize = m_Width * m_Height * channels;
-		ETH_CORE_TRACE("w: {0}, h: {1}, ch: {2}", m_Width, m_Height, channels);
+		m_ChannelCount = 4;
+		VkDeviceSize imageSize = m_Width * m_Height * m_ChannelCount;
+		ETH_CORE_TRACE("w: {0}, h: {1}, ch: {2}", m_Width, m_Height, m_ChannelCount);
 
 		// Create Imgae
 		ImageSpecification imageSpec;
@@ -236,8 +162,6 @@ namespace Ethane{
 
 	void VulkanTexture2D::SetData(void* data, uint32_t imageSize)
 	{
-		// size = width * height * 4
-
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
 		// create staging buffer
@@ -277,31 +201,30 @@ namespace Ethane{
 	}
 
 	void VulkanTexture2D::CreateTextureSampler() {
-		// auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-		// 
-		// VkSamplerCreateInfo samplerInfo{};
-		// samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		// samplerInfo.magFilter = VK_FILTER_LINEAR;
-		// samplerInfo.minFilter = VK_FILTER_LINEAR;
-		// 
-		// samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		// samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		// samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		// 
-		// samplerInfo.anisotropyEnable = VK_TRUE;
-		// samplerInfo.maxAnisotropy = 16;
-		// 
-		// samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		// samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		// 
-		// samplerInfo.compareEnable = VK_FALSE;
-		// samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		// 
-		// samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		// samplerInfo.mipLodBias = 0.0f;
-		// samplerInfo.minLod = 0.0f;
-		// samplerInfo.maxLod = 0.0f;
-		// 
-		// VK_CHECK_RESULT(vkCreateSampler(device, &samplerInfo, nullptr, &m_TextureSampler));
+		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+		
+		VkSamplerCreateInfo samplerInfo{ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = 16;
+		
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = 0.0f;
+		
+		VK_CHECK_RESULT(vkCreateSampler(device, &samplerInfo, nullptr, &m_TextureSampler));
 	}
 }
