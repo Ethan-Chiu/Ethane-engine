@@ -8,7 +8,7 @@ namespace Ethane {
 
     bool VulkanBuffer::CreateVulkanBuffer(
         uint32_t size, 
-        VkBufferUsageFlagBits usage,
+        VkBufferUsageFlags usage,
         uint32_t memory_property_flags,
         bool bind_on_create) {
 
@@ -146,12 +146,12 @@ namespace Ethane {
         vkUnmapMemory(device, m_Memory);
     }
 
-    void VulkanBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t flags) {
+    void VulkanBuffer::SetData(const void* data, uint32_t srcOffset, uint32_t size, uint32_t dstOffset, uint32_t flags) {
         auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
         void* dstData;
-        VK_CHECK_RESULT(vkMapMemory(device, m_Memory, offset, size, flags, &dstData));
-        memcpy(dstData, (uint8_t*)data, size); // add offset or not
+        VK_CHECK_RESULT(vkMapMemory(device, m_Memory, dstOffset, size, flags, &dstData));
+        memcpy(dstData, (uint8_t*)data + srcOffset, size); // add offset or not
         vkUnmapMemory(device, m_Memory);
     }
 

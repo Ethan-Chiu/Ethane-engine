@@ -3,35 +3,31 @@
 #include "Ethane/Renderer/IndexBuffer.h"
 
 #include "Vulkan.h"
+#include "VulkanBuffer.h"
 
 namespace Ethane {
 
-	class VulkanIndexBuffer : public IndexBuffer
+	class VulkanIndexBuffer : public IndexBuffer, public VulkanBuffer
 	{
 	public:
 		VulkanIndexBuffer(uint32_t size); // size in byte
 		VulkanIndexBuffer(void* data, uint32_t size = 0);
 		virtual ~VulkanIndexBuffer();
 
-		void Cleanup();
+		void Destroy();
 
 		void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override;
+
+		// TODO: REMOVE
 		virtual void Bind() const override {};
 		virtual void Unbind() const override {};
-
-
-		// virtual RendererID GetRendererID() const;
 
 		//Getter
 		virtual uint32_t GetCount() const override { return m_Size / sizeof(uint32_t); }
 		virtual uint32_t GetSize() const { return m_Size; }
-		VkBuffer GetVulkanBuffer() { return m_VulkanBuffer; }
+		VkBuffer GetVulkanBuffer() { return m_Buffer; } // TODO: REMOVE use GetHandle instead
 
 	private:
-		uint32_t m_Size = 0;
-
-		VkBuffer m_VulkanBuffer = nullptr;
-		VkDeviceMemory m_IndexBufferMemory = nullptr;
 		// Buffer m_LocalData;
 	};
 

@@ -7,7 +7,7 @@ namespace Ethane {
     class VulkanBuffer
     {
     public:
-        bool CreateVulkanBuffer(uint32_t size, VkBufferUsageFlagBits usage, uint32_t memory_property_flags, bool bind_on_create);
+        bool CreateVulkanBuffer(uint32_t size, VkBufferUsageFlags usage, uint32_t memory_property_flags, bool bind_on_create);
 
         void Destroy();
 
@@ -19,7 +19,7 @@ namespace Ethane {
 
         void UnlockMemory();
 
-        void SetData(const void* data, uint32_t size, uint32_t offset, uint32_t flags);
+        void SetData(const void* data, uint32_t srcOffset, uint32_t size, uint32_t dstOffset, uint32_t flags);
 
         static void CopyTo(
             VkCommandPool pool,
@@ -31,9 +31,12 @@ namespace Ethane {
             uint32_t dest_offset,
             uint32_t size);
 
-    private:
+        // Getter
+        VkBuffer GetHandle() { return m_Buffer; }
+
+    protected:
         uint32_t m_Size = 0;
-        VkBufferUsageFlagBits m_Usage;
+        VkBufferUsageFlags m_Usage;
         
         VkBuffer m_Buffer = nullptr;
 
