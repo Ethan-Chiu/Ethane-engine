@@ -2,6 +2,7 @@
 #include "VulkanTexture.h"
 
 #include "VulkanContext.h";
+#include "VulkanBuffer.h"
 
 #include "stb_image.h"
 
@@ -80,6 +81,7 @@ namespace Ethane{
 	VulkanTexture2D::VulkanTexture2D(const std::string& path)
 		:m_Path(path)
 	{
+		// TODO: Invalidate
 		ETH_PROFILE_FUNCTION();
 
 		int width, height, channels;
@@ -97,16 +99,11 @@ namespace Ethane{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
 		// create staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		Utils::CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory);
+		VulkanBuffer stagingBuffer;
+		stagingBuffer.CreateVulkanBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
 		// copy data to staging buffer
-		void* dstData;
-		vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &dstData);
-		memcpy(dstData, data, imageSize);
-		vkUnmapMemory(device, stagingBufferMemory);
+		stagingBuffer.SetData(data, 0, imageSize, 0, 0);
 
 		stbi_image_free(data);
 
@@ -124,7 +121,7 @@ namespace Ethane{
 
 		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		CopyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
+		CopyBufferToImage(stagingBuffer.GetHandle(), textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
 
 		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -139,12 +136,12 @@ namespace Ethane{
 		// m_DescriptorInfo.sampler = m_TextureSampler;
 
 		// cleanup staging buffer
-		vkDestroyBuffer(device, stagingBuffer, nullptr);
-		vkFreeMemory(device, stagingBufferMemory, nullptr);
+		stagingBuffer.Destroy();
 	}
 
 	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height)
 	{
+		// TODO: Invalidate
 		ETH_PROFILE_FUNCTION();
 
 		m_Width = width;
@@ -165,32 +162,29 @@ namespace Ethane{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
 		// create staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		Utils::CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory);
+		VulkanBuffer stagingBuffer;
+		stagingBuffer.CreateVulkanBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
 		// copy data to staging buffer
-		void* dstData;
-		vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &dstData);
-		memcpy(dstData, data, imageSize);
-		vkUnmapMemory(device, stagingBufferMemory);
-
+		stagingBuffer.SetData(data, 0, imageSize, 0, 0);
+	
 		// transition
 		VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
 		VkImage textureImage = m_Image->GetImageInfo().Image;
 		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		CopyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
+		CopyBufferToImage(stagingBuffer.GetHandle(), textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
 		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		// cleanup staging buffer
-		vkDestroyBuffer(device, stagingBuffer, nullptr);
-		vkFreeMemory(device, stagingBufferMemory, nullptr);
+		stagingBuffer.Destroy();
 	}
 
 	void VulkanTexture2D::Cleanup()
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+
+		vkDeviceWaitIdle(device);
+
 		m_Image->Destroy();
 		// vkDestroySampler(device, m_TextureSampler, nullptr);
 		// 
