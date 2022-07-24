@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.h>
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
+#include "VulkanCommandBuffer.h"
 
 struct GLFWwindow;
 
@@ -106,12 +107,14 @@ namespace Ethane {
 		static Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; }
 		static Ref<VulkanDevice> GetDevice() { return m_Device; }
 		static VulkanSwapChain GetSwapChain() { return m_SwapChain; }
+		static VulkanCommandBuffer GetCurrentCommandBuffer(uint32_t frame) { return m_GraphicsCommandBuffers[frame]; }
 
 	private:
 		bool InitInstance(const ContextCreateInfo& info);
 		void InitDebugUtils();
 		VkResult CreateSurface();
 		bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
+		void CreateCommandBuffers();
 
 		std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
 		VkResult FillFilteredNameArray(std::vector<std::string>& used,
@@ -131,6 +134,7 @@ namespace Ethane {
 		inline static VkInstance s_VulkanInstance;
 		VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
 
+		// Instance Extension
 		std::vector<std::string> m_UsedInstanceLayers;
 		std::vector<std::string> m_UsedInstanceExtensions;
 
@@ -141,11 +145,14 @@ namespace Ethane {
 		VkSurfaceKHR m_Surface;
 
 		PhysicalDeviceInfo m_PhysicalInfo;
-
+		
+		// TODO: change to non-static
 		inline static Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 		inline static Ref<VulkanDevice> m_Device;
 
 		inline static VulkanSwapChain m_SwapChain;
+
+		inline static std::vector<VulkanCommandBuffer> m_GraphicsCommandBuffers;
 	};
 
 

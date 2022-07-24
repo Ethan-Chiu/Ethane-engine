@@ -18,7 +18,7 @@ namespace Ethane {
 			m_CommandBuffers.resize(framesInFlight);
 			VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();// Application::Get().GetWindow().GetSwapChain();
 			for (uint32_t frame = 0; frame < framesInFlight; frame++)
-				m_CommandBuffers[frame] = swapChain.GetCommandBuffer(frame);
+				m_CommandBuffers[frame] = VulkanContext::GetCurrentCommandBuffer(frame).GetHandle();//swapChain.GetCommandBuffer(frame);
 
 			// VkQueryPoolCreateInfo queryPoolCreateInfo = {};
 			// queryPoolCreateInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;

@@ -5,6 +5,8 @@
 
 #include "VulkanImage.h"
 
+#include "VulkanCommandBuffer.h"
+
 // TODO: remove
 #include "VulkanVertexBuffer.h"
 #include "VulkanIndexBuffer.h"
@@ -29,7 +31,9 @@ namespace Ethane{
 		void OnResize(uint32_t width, uint32_t height);
 
 		bool BeginFrame();
-		void EndFrame();
+		// TODO: test
+		void BeginRenderPass(VulkanCommandBuffer currentCommandBuffer);
+		void EndFrame(VulkanCommandBuffer currentCommandBuffer);
 
 		// Getter
 		VkSurfaceKHR GetSurface() const { return m_Surface; }
@@ -41,8 +45,6 @@ namespace Ethane{
 		uint32_t GetHeight() { return m_Extent.height; }// test
 		uint32_t GetCurrentFrameIndex() { return m_CurrentFrame; }// test
 		VkFramebuffer GetCurrentFramebuffer() { return m_Framebuffers[m_CurrentImageIndex]; } // test
-		VkCommandBuffer GetCurrentCommandBuffer() { return m_CommandBuffers[m_CurrentFrame]; } // test
-		VkCommandBuffer GetCommandBuffer(uint32_t frameIndex) { return m_CommandBuffers[frameIndex]; } // test
 		uint32_t GetMaxFramesInFlight() { return m_MaxFramesInFlight; } // TODO
 
 	private:
@@ -79,13 +81,11 @@ namespace Ethane{
 		VkFormat m_DepthFormat;
 		Ref<VulkanImage2D> m_DepthAttachment;
 
-		VkRenderPass m_RenderPass; // TODO: remove this maybe ?
 		std::vector<VkFramebuffer> m_Framebuffers;
 
 
+		VkRenderPass m_RenderPass;
 
-		VkCommandPool m_CommandPool = nullptr;
-		std::vector<VkCommandBuffer> m_CommandBuffers;
 
 		bool m_VSync = false;
 

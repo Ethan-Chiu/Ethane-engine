@@ -9,8 +9,9 @@
 #include "Ethane/Core/timer.h"
 
 // test
-#include "Ethane/Asset/ShaderLibrary.h";
+#include "Ethane/Asset/ShaderLibrary.h"
 #include "VulkanImGuiLayer.h"
+
 
 namespace Ethane {
 
@@ -193,25 +194,6 @@ namespace Ethane {
 
             VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffers[i]));
         }
-
-        // Create command pool TODO: don't create command pool here?
-        if (m_CommandPool == nullptr)
-        {
-            VkCommandPoolCreateInfo poolInfo{};
-            poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-            poolInfo.queueFamilyIndex = m_PhysicalDevice->GetQueueFamilyIndices().Graphics.value();
-            poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional 
-            vkCreateCommandPool(device, &poolInfo, nullptr, &m_CommandPool);
-        }
-
-        // Command buffers
-        m_CommandBuffers.resize(m_Framebuffers.size());
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = m_CommandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)m_CommandBuffers.size();
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &allocInfo, m_CommandBuffers.data()));
 
         // Synchronization Objects
         if (m_ImageAvailableSemaphores.empty() || m_RenderFinishedSemaphores.empty() || m_InFlightFences.empty())
@@ -442,13 +424,11 @@ namespace Ethane {
             return false;
         }
 
-        VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-        beginInfo.flags = 0; // Optional
-        beginInfo.pInheritanceInfo = nullptr; // Optional
-        VkCommandBuffer currentCommandBuffer = m_CommandBuffers[m_CurrentFrame];
-        VK_CHECK_RESULT(vkResetCommandBuffer(currentCommandBuffer, 0));
-        VK_CHECK_RESULT(vkBeginCommandBuffer(currentCommandBuffer, &beginInfo));
+        return true;
+    }
 
+    void VulkanSwapChain::BeginRenderPass(VulkanCommandBuffer currentCommandBuffer)
+    {
         std::array<VkClearValue, 1> clearValues{};
         clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 #if depth
@@ -461,7 +441,7 @@ namespace Ethane {
         renderPassInfo.renderArea.extent = m_Extent;
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
         renderPassInfo.pClearValues = clearValues.data();
-        vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        vkCmdBeginRenderPass(currentCommandBuffer.GetHandle(), &renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         // VkViewport viewport{};
         // viewport.x = 0.0f;
@@ -476,24 +456,22 @@ namespace Ethane {
         // scissor.offset = { 0, 0 };
         // scissor.extent = m_Extent;
         // vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
-
-        return true;
     }
 
-    void VulkanSwapChain::EndFrame()
+    void VulkanSwapChain::EndFrame(VulkanCommandBuffer currentCommandBuffer)
     {
         auto device = m_Device->GetVulkanDevice();
-        VkCommandBuffer currentCommandBuffer = m_CommandBuffers[m_CurrentFrame];
+        VkCommandBuffer currentCmdBufferHandle = currentCommandBuffer.GetHandle();
 
         // vkCmdNextSubpass(currentCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         std::vector<VkCommandBuffer> secondaryCommandBuffers;
         secondaryCommandBuffers.push_back((VulkanImGuiLayer::GetImGuiCommandBuffer())[m_CurrentFrame]);
 
-        vkCmdExecuteCommands(currentCommandBuffer, uint32_t(secondaryCommandBuffers.size()), secondaryCommandBuffers.data());
+        vkCmdExecuteCommands(currentCmdBufferHandle, uint32_t(secondaryCommandBuffers.size()), secondaryCommandBuffers.data());
         
-        vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrame]);
-        VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffers[m_CurrentFrame]));
+        vkCmdEndRenderPass(currentCmdBufferHandle);
+        VK_CHECK_RESULT(vkEndCommandBuffer(currentCmdBufferHandle));
        
 
         if (m_ImagesInFlight[m_CurrentImageIndex] != VK_NULL_HANDLE)
@@ -519,11 +497,9 @@ namespace Ethane {
         submitInfo.pSignalSemaphores = signalSemaphores;
         
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentFrame];
+        submitInfo.pCommandBuffers = &currentCmdBufferHandle;
 
         VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]));
-
-        // Update command buffer state
 
         Present(m_Device->GetGraphicsQueue(), m_RenderFinishedSemaphores[m_CurrentFrame]);
 
@@ -583,8 +559,6 @@ namespace Ethane {
 
         vkDeviceWaitIdle(device);
 
-        vkFreeCommandBuffers(device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
-
         for (auto framebuffer : m_Framebuffers)
         {
             vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -614,9 +588,6 @@ namespace Ethane {
         }
 
         CleanupSwapChain(m_SwapChain);
-
-        // destroy commandpool
-        vkDestroyCommandPool(device, m_CommandPool, nullptr);
 
         VulkanImGuiLayer::Cleanup();
     }

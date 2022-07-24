@@ -7,11 +7,12 @@ namespace Ethane {
 
     VulkanCommandBuffer::VulkanCommandBuffer()
     {
-        m_Device = VulkanContext::GetDevice()->GetVulkanDevice();
     }
 
     void VulkanCommandBuffer::Allocate(VkCommandPool pool, bool isPrimary)
     {
+        m_Device = VulkanContext::GetDevice()->GetVulkanDevice();
+
         VkCommandBufferAllocateInfo cmdBufAllocateInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
         cmdBufAllocateInfo.pNext = nullptr;
         cmdBufAllocateInfo.commandPool = pool;
@@ -33,19 +34,19 @@ namespace Ethane {
 
     void VulkanCommandBuffer::Begin(bool isOneTimeUse, bool isRenderpassContinue, bool isSimultaneousUse) 
     {
-        VkCommandBufferBeginInfo begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-        begin_info.flags = 0;
+        VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+        beginInfo.flags = 0;
         if (isOneTimeUse) {
-            begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         }
         if (isRenderpassContinue) {
-            begin_info.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
         }
         if (isSimultaneousUse) {
-            begin_info.flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
         }
-
-        VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &begin_info));
+        beginInfo.pInheritanceInfo = nullptr;
+        VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
         m_State = CommandBufferState::RECORDING;
     }
 
