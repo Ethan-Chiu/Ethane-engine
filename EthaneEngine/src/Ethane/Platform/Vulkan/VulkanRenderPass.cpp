@@ -12,7 +12,7 @@ namespace Ethane {
 		m_RenderPass = std::dynamic_pointer_cast<VulkanFramebuffer>(m_Specification.TargetFramebuffer)->GetRenderPass();
 	}
 
-	void VulkanRenderPass::Create()
+	void VulkanRenderPass::Create(bool hasDepth)
 	{
         std::vector<VkAttachmentDescription> allAttachments;
         std::vector<VkAttachmentReference>   colorAttachmentRefs;
@@ -38,22 +38,23 @@ namespace Ethane {
         allAttachments.push_back(colorAttachment);
         colorAttachmentRefs.push_back(colorAttachmentRef);
 
-        // if (hasDepth)
-        VkAttachmentDescription depthAttachment = {};
-        depthAttachment.format = VulkanContext::GetSwapChain().GetDepthFormat(); //TODO
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // TODO: configuration check nvvk
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
         VkAttachmentReference depthAttachmentRef = {};
-        depthAttachmentRef.attachment = static_cast<uint32_t>(allAttachments.size());
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        if (hasDepth) {
+            VkAttachmentDescription depthAttachment = {};
+            depthAttachment.format = VulkanContext::GetSwapChain().GetDepthFormat(); //TODO
+            depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // TODO: configuration check nvvk
+            depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        allAttachments.push_back(depthAttachment);
+            depthAttachmentRef.attachment = static_cast<uint32_t>(allAttachments.size());
+            depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            allAttachments.push_back(depthAttachment);
+        }
 
         std::vector<VkSubpassDescription> subpasses;
         std::vector<VkSubpassDependency>  subpassDependencies;
@@ -63,7 +64,7 @@ namespace Ethane {
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
         subpass.pColorAttachments = colorAttachmentRefs.data();
-        subpass.pDepthStencilAttachment = &depthAttachmentRef;  // TODO: hasDepth ? : VK_NULL_HANDLE;
+        subpass.pDepthStencilAttachment = hasDepth ? &depthAttachmentRef : VK_NULL_HANDLE;
         subpass.inputAttachmentCount = 0;
         subpass.pInputAttachments = VK_NULL_HANDLE;
         subpass.pResolveAttachments = VK_NULL_HANDLE;
@@ -76,7 +77,7 @@ namespace Ethane {
         dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.srcAccessMask = 0;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
         dependency.dependencyFlags = 0;
 
         subpasses.push_back(subpass);

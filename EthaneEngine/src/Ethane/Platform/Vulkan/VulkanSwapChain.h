@@ -8,6 +8,7 @@
 #include "VulkanCommandBuffer.h"
 
 // TODO: remove
+#include "VulkanRenderPass.h"
 #include "VulkanVertexBuffer.h"
 #include "VulkanIndexBuffer.h"
 
@@ -39,7 +40,7 @@ namespace Ethane{
 		VkSurfaceKHR GetSurface() const { return m_Surface; }
 		VkFormat GetImageFormat() const { return m_ImageFormat; }
 		VkFormat GetDepthFormat() const { return m_DepthFormat; }
-		VkRenderPass GetRenderPass() { return m_RenderPass; } // test
+		VkRenderPass GetRenderPass() { return m_RenderPass.GetHandle(); } // test
 		uint32_t GetImageCount() { return m_ImageCount; } // test
 		uint32_t GetWidth() { return m_Extent.width; }// test
 		uint32_t GetHeight() { return m_Extent.height; }// test
@@ -52,9 +53,6 @@ namespace Ethane{
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-
-		// void CreateDepthResources();
-		void CreateRenderPass(); //test
 
 		bool Resize();
 
@@ -83,9 +81,7 @@ namespace Ethane{
 
 		std::vector<VkFramebuffer> m_Framebuffers;
 
-
-		VkRenderPass m_RenderPass;
-
+		VulkanRenderPass m_RenderPass;
 
 		bool m_VSync = false;
 

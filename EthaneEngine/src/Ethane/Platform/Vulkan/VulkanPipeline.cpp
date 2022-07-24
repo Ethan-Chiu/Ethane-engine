@@ -200,7 +200,7 @@ namespace Ethane {
 		pipelineInfo.layout = m_PipelineLayout;
 
 		Ref<VulkanRenderPass> renderPass = std::dynamic_pointer_cast<VulkanRenderPass>(m_Specification.RenderPass);
-		pipelineInfo.renderPass = renderPass->GetVulkanRenderPass();
+		pipelineInfo.renderPass = renderPass->GetHandle();
 		pipelineInfo.subpass = 0;
 
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional

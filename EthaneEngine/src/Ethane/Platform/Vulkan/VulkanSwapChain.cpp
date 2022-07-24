@@ -171,7 +171,7 @@ namespace Ethane {
 #if depth
 #endif
         // Render pass
-        CreateRenderPass();
+        m_RenderPass.Create(false);
 
         // Framebuffers 
         m_Framebuffers.resize(m_ImageViews.size());
@@ -182,7 +182,7 @@ namespace Ethane {
         };
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = m_RenderPass;
+        framebufferInfo.renderPass = m_RenderPass.GetHandle();
         framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = m_Extent.width;
@@ -290,90 +290,6 @@ namespace Ethane {
         ETH_CORE_ASSERT("failed to find supported format!");
     }
 
-    void VulkanSwapChain::CreateRenderPass() {
-
-        std::array<VkAttachmentDescription, 1> attachments = {};
-        // Color attachment
-        VkAttachmentDescription colorAttachment{};
-        attachments[0].format = m_ImageFormat;
-        attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-        attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-#if depth
-        // Depth attachment
-        VkAttachmentDescription depthAttachment{};
-        attachments[1].format = m_DepthFormat;
-        attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-        attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = 1;
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-#endif
-
-        VkSubpassDescription subpass{};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-#if depth
-        subpass.pDepthStencilAttachment = &depthAttachmentRef;
-#endif
-
-        // TODO: test
-#if subpassTest
-        VkSubpassDescription subpass2{};
-        subpass2.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass2.colorAttachmentCount = 1;
-        subpass2.pColorAttachments = &colorAttachmentRef;
-        VkSubpassDescription subpasses[] = { subpass, subpass2 };
-        VkSubpassDependency dependency2{};
-        dependency2.srcSubpass = 0;
-        dependency2.dstSubpass = 1;
-        dependency2.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency2.srcAccessMask = 0;
-        dependency2.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency2.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        //
-#endif
-        VkSubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.srcAccessMask = 0;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        // TODO: test
-        VkSubpassDependency dependencies[] = { dependency };
-
-        VkRenderPassCreateInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = 1; // TODO
-        renderPassInfo.pSubpasses = &subpass; // TODO
-        renderPassInfo.dependencyCount = 1; // TODO
-        renderPassInfo.pDependencies = dependencies; // TODO
-
-        VkDevice device = m_Device->GetVulkanDevice();
-        VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
-    }
-
     void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
     {
         ETH_CORE_WARN("VulkanSwapChain::OnResize");
@@ -435,7 +351,7 @@ namespace Ethane {
         clearValues[1].depthStencil = { 1.0f, 0 };
 #endif        
         VkRenderPassBeginInfo renderPassInfo{ VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
-        renderPassInfo.renderPass = m_RenderPass;
+        renderPassInfo.renderPass = m_RenderPass.GetHandle();
         renderPassInfo.framebuffer = m_Framebuffers[m_CurrentImageIndex];
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = m_Extent;
@@ -564,7 +480,7 @@ namespace Ethane {
             vkDestroyFramebuffer(device, framebuffer, nullptr);
         }
 
-        vkDestroyRenderPass(device, m_RenderPass, nullptr); // test
+        m_RenderPass.Destroy();
 
         m_DepthAttachment->Destroy();
 
