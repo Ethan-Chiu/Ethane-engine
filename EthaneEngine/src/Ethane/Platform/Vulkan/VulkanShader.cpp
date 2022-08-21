@@ -6,6 +6,7 @@
 #include "VulkanRendererAPI.h"
 
 #include "Ethane/Core/timer.h"
+#include "ShaderUtils/VulkanShaderSystem.h"
 
 namespace Ethane {
 
@@ -27,9 +28,12 @@ namespace Ethane {
 
 		VulkanShaderCompiler& compiler = VulkanShaderCompiler::GetInstance();
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> ShaderBinary;
-		VulkanShaderCompiler::CompileOutput outputs{ ShaderBinary, m_ShaderDescriptorSetsReflect, m_PushConstantRanges };
+		VulkanShaderCompiler::CompileOutput outputs{ ShaderBinary };
 		VulkanShaderCompiler::CompileParam param{ m_FilePath, source, false };
 		compiler.Compile(param, outputs);
+		VulkanShaderCompiler::ReflectOutput reflectOutputs{ m_ShaderDescriptorSetsReflect, m_PushConstantRanges };
+		VulkanShaderCompiler::ReflectParam reflectParam{ outputs.ShaderBinary };
+		compiler.Reflect(reflectParam, reflectOutputs);
 		
 		// profiling
 		ETH_CORE_TRACE("[Time] compile: {0}ms", timer.ElapsedMillis());
@@ -85,7 +89,10 @@ namespace Ethane {
 	void VulkanShader::CreateDescriptorLayouts()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		for (uint32_t set = 0; set < m_ShaderDescriptorSetsReflect.size(); set++)
+
+		uint32_t setCount = m_ShaderDescriptorSetsReflect.size();
+		m_WriteDescriptorSetsBase.resize(setCount);
+		for (uint32_t set = 0; set < setCount; set++)
 		{
 			auto& shaderDescriptorSet = m_ShaderDescriptorSetsReflect[set];
 
@@ -100,11 +107,11 @@ namespace Ethane {
 				layoutBinding.stageFlags = uniformBuffer->ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
 
-				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer->Name];
-				set = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-				set.descriptorType = layoutBinding.descriptorType;
-				set.dstBinding = layoutBinding.binding;
-				set.descriptorCount = 1;
+				VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][uniformBuffer->Name].WriteDescriptor;
+				wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+				wds.descriptorType = layoutBinding.descriptorType;
+				wds.dstBinding = layoutBinding.binding;
+				wds.descriptorCount = 1;
 			}
 
 			// Image Sampler
@@ -119,12 +126,11 @@ namespace Ethane {
 
 				ETH_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present!");
 
-				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[imageSampler.Name];
-				set = {};
-				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				set.descriptorType = layoutBinding.descriptorType;
-				set.dstBinding = layoutBinding.binding;
-				set.descriptorCount = imageSampler.ArraySize;
+				VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][imageSampler.Name].WriteDescriptor;
+				wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+				wds.descriptorType = layoutBinding.descriptorType;
+				wds.dstBinding = layoutBinding.binding;
+				wds.descriptorCount = imageSampler.ArraySize;
 			}
 
 			VkDescriptorSetLayoutCreateInfo descriptorLayout = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
@@ -153,16 +159,15 @@ namespace Ethane {
 		return result;
 	}
 
-	const VkWriteDescriptorSet* VulkanShader::GetWriteDescriptorSet(uint32_t set, const std::string& name) const
+	const VulkanShader::WriteDescriptorSetBase* VulkanShader::RetrieveWriteDescriptorSetBase(uint32_t set, const std::string& name) const
 	{
-		ETH_CORE_ASSERT(set < m_ShaderDescriptorSetsReflect.size());
-		ETH_CORE_ASSERT(m_ShaderDescriptorSetsReflect[set]);
-		if (m_ShaderDescriptorSetsReflect.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSetsReflect.at(set).WriteDescriptorSets.end())
+		ETH_CORE_ASSERT(set < m_WriteDescriptorSetsBase.size());
+		if (m_WriteDescriptorSetsBase[set].find(name) == m_WriteDescriptorSetsBase[set].end())
 		{
 			ETH_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
 			return nullptr;
 		}
-		return &m_ShaderDescriptorSetsReflect.at(set).WriteDescriptorSets.at(name);
+		return &m_WriteDescriptorSetsBase[set].at(name);
 	}
 
 	VulkanShader::DescriptorSetsAndPool VulkanShader::CreateDescriptorSetsAndPool(uint32_t set, uint32_t numberOfSets)
@@ -184,12 +189,7 @@ namespace Ethane {
 				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
 			}
-			// if (shaderDescriptorSet.StorageBuffers.size())
-			// {
-			// 	VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
-			// 	typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			// 	typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageBuffers.size() * numberOfSets;
-			// }
+			
 			if (shaderDescriptorSet.ImageSamplers.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
@@ -200,13 +200,6 @@ namespace Ethane {
 				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				typeCount.descriptorCount = descriptorSetCount * numberOfSets;
 			}
-			// if (shaderDescriptorSet.StorageImages.size())
-			// {
-			// 	VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
-			// 	typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			// 	typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageImages.size() * numberOfSets;
-			// }
-
 		}
 
 		ETH_CORE_ASSERT(poolSizes.find(set) != poolSizes.end());

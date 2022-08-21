@@ -113,7 +113,9 @@ namespace Ethane {
 			if (m_Texture2D == nullptr)
 				m_Texture2D = Texture2D::Create("assets/textures/test.png");
 			m_CompositeMaterial = Material::Create(ShaderLibrary::Get("SceneComposite"), "Composite material");
-			// VulkanRendererAPI::UpdateMaterialForRendering(std::dynamic_pointer_cast<VulkanMaterial>(m_CompositeMaterial));
+			
+			auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
+			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
 		}
 
 #endif 
@@ -141,7 +143,9 @@ namespace Ethane {
 		
 			m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
 			m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
-		
+
+			auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
+			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
 		}
 
 		// m_SceneData.SceneCamera = camera;
@@ -179,7 +183,6 @@ namespace Ethane {
 		// instance->m_UniformBufferSet->Get(17, 0, bufferIndex)->RT_SetData(&screenData, sizeof(screenData));
 		// });
 		// VulkanRendererAPI::SetUniform(17, 0, &cameraData.ViewProjection, sizeof(cameraData.ViewProjection), 0);
-
 	}
 
 	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material)
@@ -276,7 +279,7 @@ namespace Ethane {
 		// CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
 		// CompositeMaterial->Set("u_BloomDirtTexture", m_BloomDirtTexture);
 
-		m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
+		// m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
 
 		VulkanRendererAPI::DrawFullscreenQuad(m_CompositePipeline, m_CompositeMaterial);
 		// VulkanRendererAPI::SubmitFullscreenQuad(m_CommandBuffer, m_JumpFloodCompositePipeline, nullptr, m_JumpFloodCompositeMaterial);

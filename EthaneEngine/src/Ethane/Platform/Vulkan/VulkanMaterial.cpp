@@ -10,6 +10,7 @@
 #include "VulkanUniformBuffer.h"
 
 // #include "Ethane/Core/Timer.h"
+#include "ShaderUtils/VulkanShaderSystem.h"
 
 namespace Ethane {
 
@@ -18,7 +19,6 @@ namespace Ethane {
 		m_WriteDescriptors(Renderer::GetConfig().FramesInFlight)
 	{
 		Init();
-		// Renderer::RegisterShaderDependency(shader, this);
 	}
 
 	VulkanMaterial::VulkanMaterial(Ref<Material> material, const std::string& name)
@@ -28,19 +28,11 @@ namespace Ethane {
 		if (name.empty())
 			m_Name = material->GetName();
 
-		// Renderer::RegisterShaderDependency(m_Shader, this);
-
 		auto vulkanMaterial = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		
-		// m_UniformStorageBuffer = Buffer::Copy(vulkanMaterial->m_UniformStorageBuffer.Data, vulkanMaterial->m_UniformStorageBuffer.Size);
-
-		// m_ResidentDescriptors = vulkanMaterial->m_ResidentDescriptors;
-		// m_ResidentDescriptorArrays = vulkanMaterial->m_ResidentDescriptorArrays;
-		// m_PendingDescriptors = vulkanMaterial->m_PendingDescriptors;
 		m_Textures = vulkanMaterial->m_Textures;
 		m_TextureArrays = vulkanMaterial->m_TextureArrays;
 		m_Images = vulkanMaterial->m_Images;
-		// m_ImageHashes = vulkanMaterial->m_ImageHashes;
 	}
 
 	VulkanMaterial::~VulkanMaterial()
@@ -62,74 +54,74 @@ namespace Ethane {
 
 		uint32_t framesInFlight = Renderer::GetConfig().FramesInFlight;
 		auto shader = std::dynamic_pointer_cast<VulkanShader>(m_Shader);
+
+		m_ResourceBindings.clear();
+		const auto& WDSetsBase = shader->RetrieveWriteDescriptorSetsBase();
+		for (uint32_t set = 0; set < WDSetsBase.size(); ++set) {
+			const auto& WdsBase = WDSetsBase[set];
+			for (auto&& [name, wdsMeta] : WdsBase)
+			{
+				ResourceBinding resource;
+				resource.Name = name;
+
+				VkWriteDescriptorSet wds = wdsMeta.WriteDescriptor;
+				if(wds.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+				{
+					for (uint32_t frame = 0; frame < framesInFlight; ++frame) {
+						auto uniformBuffer = VulkanShaderSystem::GetUniformBuffer(frame, set, wds.dstBinding);
+						wds.dstArrayElement = 0;
+						wds.pBufferInfo = &uniformBuffer->GetDescriptorBufferInfo();
+						resource.WriteDescriptors.push_back(wds);
+					}
+
+				} else if(wds.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+				{
+					for (uint32_t frame = 0; frame < framesInFlight; ++frame) {
+						auto tex = VulkanShaderSystem::GetDefaultTexture();
+						wds.dstArrayElement = 0;
+						wds.pImageInfo = &(std::dynamic_pointer_cast<VulkanTexture2D>(tex)->GetDescriptorImageInfo());
+						resource.WriteDescriptors.push_back(wds);
+					}
+				}
+				
+				m_ResourceBindings.push_back(resource);
+			}
+		}
+		m_DescriptorSetsAndPool = shader->CreateDescriptorSetsAndPool(0, 3); // TODO: only set 0 
 	}
-
-	// void VulkanMaterial::AllocateStorage()
-	// {
-	// 	const auto& shaderBuffers = m_Shader->GetShaderBuffers();
-	// 
-	// 	if (shaderBuffers.size() > 0)
-	// 	{
-	// 		uint32_t size = 0;
-	// 		for (auto [name, shaderBuffer] : shaderBuffers)
-	// 			size += shaderBuffer.Size;
-	// 
-	// 		m_UniformStorageBuffer.Allocate(size);
-	// 		m_UniformStorageBuffer.ZeroInitialize();
-	// 	}
-	// }
-	// 
-	// void VulkanMaterial::OnShaderReloaded()
-	// {
-	// 	return;
-	// 	AllocateStorage();
-	// }
-
-	// const ShaderUniform* VulkanMaterial::FindUniformDeclaration(const std::string& name)
-	// {
-	// 	const auto& shaderBuffers = m_Shader->GetShaderBuffers();
-	// 
-	// 	ETH_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
-	// 
-	// 	if (shaderBuffers.size() > 0)
-	// 	{
-	// 		const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
-	// 		if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
-	// 			return nullptr;
-	// 
-	// 		return &buffer.Uniforms.at(name);
-	// 	}
-	// 	return nullptr;
-	// }
-
-	// const ShaderResourceDeclaration* VulkanMaterial::FindResourceDeclaration(const std::string& name)
-	// {
-	// 	auto& resources = m_Shader->GetResources();
-	// 	for (const auto& [n, resource] : resources)
-	// 	{
-	// 		if (resource.GetName() == name)
-	// 			return &resource;
-	// 	}
-	// 	return nullptr;
-	// }
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture)
 	{
-		uint32_t binding = 0; // TODO
+		// find resource // TODO: improve this
+		uint32_t id = 0;
+		for (uint32_t i = 0; i < m_ResourceBindings.size(); ++i) {
+			if (m_ResourceBindings[i].Name == name) {
+				id = i;
+				break;
+			}
+		}
+		ResourceBinding& resource = m_ResourceBindings[id];
+
+		uint32_t binding = resource.WriteDescriptors[0].dstBinding;
+
 		// Texture is already set
-		if (binding < m_Textures.size() && m_Textures[binding] ) // already in list TODO: check if they are the same
-			return;
+		// if (binding < m_Textures.size() && m_Textures[binding] ) // already in list TODO: check if they are the same
+		// 	return;
 		if (binding >= m_Textures.size())
 			m_Textures.resize(binding + 1);
 
 		m_Textures[binding] = texture;
 	
-		const VkWriteDescriptorSet* wds = std::dynamic_pointer_cast<VulkanShader>(m_Shader)->GetWriteDescriptorSet(0, name);
-		ETH_CORE_ASSERT(wds);
+		for (uint32_t f = 0; f < resource.WriteDescriptors.size(); ++f) {
+			auto tex = VulkanShaderSystem::GetDefaultTexture();
+			resource.WriteDescriptors[f].pImageInfo = &(std::dynamic_pointer_cast<VulkanTexture2D>(m_Textures[binding])->GetDescriptorImageInfo());
+		}
 	}
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex)
 	{
+		// TODO: broken code
+
 		uint32_t binding = 1; // TODO
 		// Texture is already set
 		if (binding < m_TextureArrays.size() && m_TextureArrays[binding].size() < arrayIndex) // already in list TODO: check if they are the same
@@ -143,7 +135,7 @@ namespace Ethane {
 
 		if (m_DescriptorArrays.find(binding) == m_DescriptorArrays.end())
 		{
-			const VkWriteDescriptorSet* wds = std::dynamic_pointer_cast<VulkanShader>(m_Shader)->GetWriteDescriptorSet(0, name);
+			const VkWriteDescriptorSet* wds = &(std::dynamic_pointer_cast<VulkanShader>(m_Shader)->RetrieveWriteDescriptorSetBase(0, name)->WriteDescriptor);
 			ETH_CORE_ASSERT(wds);
 			m_DescriptorArrays[binding] = *wds;
 		}
@@ -153,7 +145,17 @@ namespace Ethane {
 	{
 		ETH_CORE_ASSERT(std::dynamic_pointer_cast<VulkanImage2D>(image)->GetImageInfo().ImageView, "ImageView is null");
 
-		uint32_t binding = 0; // TODO
+		// find resource // TODO: improve this
+		uint32_t id = 0;
+		for (uint32_t i = 0; i < m_ResourceBindings.size(); ++i) {
+			if (m_ResourceBindings[i].Name == name) {
+				id = i;
+				break;
+			}
+		}
+		ResourceBinding& resource = m_ResourceBindings[id];
+
+		uint32_t binding = resource.WriteDescriptors[0].dstBinding;
 		// TODO: replace with set/map
 		// if (binding < m_Images.size() && m_Images[binding]) // already in list TODO: check if they are the same
 		// 	return;
@@ -162,43 +164,11 @@ namespace Ethane {
 
 		m_Images[binding] = image;
 
-		const VkWriteDescriptorSet* wds = std::dynamic_pointer_cast<VulkanShader>(m_Shader)->GetWriteDescriptorSet(0, name);
-		ETH_CORE_ASSERT(wds);
-
-		// TODO: test
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
-
-		VkWriteDescriptorSet writeDescriptor{};
-
-		writeDescriptor = *wds;
-		writeDescriptor.dstArrayElement = 0;
-		writeDescriptor.pImageInfo = &(std::dynamic_pointer_cast<VulkanImage2D>(m_Images[binding])->GetDescriptor()); // TODO: change
-
-		m_WriteDescriptors[frameIndex].push_back(writeDescriptor);
-		
+		for (uint32_t f = 0; f < resource.WriteDescriptors.size(); ++f) {
+			auto tex = VulkanShaderSystem::GetDefaultTexture();
+			resource.WriteDescriptors[f].pImageInfo = &(std::dynamic_pointer_cast<VulkanImage2D>(m_Images[binding])->GetDescriptor());
+		}
 	}
-
-	// void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<TextureCube>& texture)
-	// {
-	// 	const ShaderResourceDeclaration* resource = FindResourceDeclaration(name);
-	// 	ETH_CORE_ASSERT(resource);
-	// 
-	// 	uint32_t binding = resource->GetRegister();
-	// 	// Texture is already set
-	// 	if (binding < m_Textures.size() && m_Textures[binding] && texture->GetHash() == m_Textures[binding]->GetHash())
-	// 		return;
-	// 
-	// 	if (binding >= m_Textures.size())
-	// 		m_Textures.resize(binding + 1);
-	// 	m_Textures[binding] = texture;
-	// 
-	// 	const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
-	// 	ETH_CORE_ASSERT(wds);
-	// 	m_ResidentDescriptors[binding] = std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<Texture>(), nullptr });
-	// 	m_PendingDescriptors.push_back(m_ResidentDescriptors.at(binding));
-	// 
-	// }
 
 	void VulkanMaterial::Set(const std::string& name, float value)
 	{
@@ -322,78 +292,28 @@ namespace Ethane {
 		return Get<glm::mat4>(name);
 	}
 
-	// Ref<Texture2D> VulkanMaterial::GetTexture2D(const std::string& name)
-	// {
-	// 	return GetResource<Texture2D>(name);
-	// }
-	// 
-	// Ref<Texture2D> VulkanMaterial::TryGetTexture2D(const std::string& name)
-	// {
-	// 	return TryGetResource<Texture2D>(name);
-	// }
-
-	void VulkanMaterial::UpdateForRendering(const std::vector<std::vector<VkWriteDescriptorSet>>& uniformBufferWriteDescriptors)
+	void VulkanMaterial::ApplyMaterial()
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
 		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
-
-		// std::vector<VkDescriptorImageInfo> arrayImageInfos;
-
-		// for (auto&& [binding, pd] : m_ResidentDescriptors)
-		// {
-		// 	if (pd->Type == PendingDescriptorType::Texture2D)
-		// 	{
-		// 		Ref<VulkanTexture2D> texture = std::dynamic_pointer_cast<VulkanTexture2D>(pd->Texture);
-		// 		pd->ImageInfo = texture->GetVulkanDescriptorInfo();
-		// 		pd->WDS.pImageInfo = &pd->ImageInfo;
-		// 	}
-		// 	else if (pd->Type == PendingDescriptorType::Image2D)
-		// 	{
-		// 		Ref<VulkanImage2D> image = std::dynamic_pointer_cast<VulkanImage2D>(pd->Image);
-		// 		pd->ImageInfo = image->GetDescriptor();
-		// 		pd->WDS.pImageInfo = &pd->ImageInfo;
-		// 	}
-		// 
-		// 	m_WriteDescriptors[frameIndex].push_back(pd->WDS);
-		// }
-
-		// for (auto&& [binding, pd] : m_ResidentDescriptorArrays)
-		// {
-		// 	if (pd->Type == PendingDescriptorType::Texture2D)
-		// 	{
-		// 		for (auto tex : pd->Textures)
-		// 		{
-		// 			Ref<VulkanTexture2D> texture = tex.As<VulkanTexture2D>();
-		// 			arrayImageInfos.emplace_back(texture->GetVulkanDescriptorInfo());
-		// 		}
-		// 	}
-		// 	pd->WDS.pImageInfo = arrayImageInfos.data();
-		// 	pd->WDS.descriptorCount = arrayImageInfos.size();
-		// 	m_WriteDescriptors[frameIndex].push_back(pd->WDS);
-		// }
-
 		
 		auto vulkanShader = std::dynamic_pointer_cast<VulkanShader>(m_Shader);
-		// auto descriptorSet = vulkanShader->CreateDescriptorSets(0);
-		// m_DescriptorSets[frameIndex] = descriptorSet;
-		// for (auto& writeDescriptor : m_WriteDescriptors[frameIndex])
-		// 	writeDescriptor.dstSet = descriptorSet.DescriptorSets[0];
-		// vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors[frameIndex].size(), m_WriteDescriptors[frameIndex].data(), 0, nullptr);
-		
+
 		// TODO: test
 		std::vector<VkDescriptorImageInfo> arrayImageInfos;
 		std::vector<VkWriteDescriptorSet> writeDescriptors{};
 
-		auto descriptorSet = vulkanShader->CreateDescriptorSets(0);
-		m_DescriptorSetsAndPool[frameIndex] = descriptorSet;
-
 		// update uniform buffer
-		if (!uniformBufferWriteDescriptors.empty())
-		{
-			for (auto& wds : uniformBufferWriteDescriptors[frameIndex])
+		for (auto&& resource : m_ResourceBindings) {
+			auto& wds = resource.WriteDescriptors[frameIndex];
+			if (wds.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 			{
-				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSetsAndPool[frameIndex].DescriptorSets[0];
+				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSetsAndPool.DescriptorSets[frameIndex];
+			}
+			else if (wds.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+			{
+				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSetsAndPool.DescriptorSets[frameIndex];
 			}
 		}
 		// update array descriptors
@@ -407,17 +327,9 @@ namespace Ethane {
 					arrayImageInfos.emplace_back(texture->GetDescriptorImageInfo());
 				}
 				auto& writeDescritorSet = writeDescriptors.emplace_back(wds);
-				writeDescritorSet.dstSet = m_DescriptorSetsAndPool[frameIndex].DescriptorSets[0];
+				writeDescritorSet.dstSet = m_DescriptorSetsAndPool.DescriptorSets[frameIndex];
 				writeDescritorSet.descriptorCount = arrayImageInfos.size();
 				writeDescritorSet.pImageInfo = arrayImageInfos.data();
-			}
-		}
-		// update other descriptors ( textures )
-		if (!m_WriteDescriptors.empty())
-		{
-			for (auto& wds : m_WriteDescriptors[frameIndex])
-			{
-				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSetsAndPool[frameIndex].DescriptorSets[0];
 			}
 		}
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);

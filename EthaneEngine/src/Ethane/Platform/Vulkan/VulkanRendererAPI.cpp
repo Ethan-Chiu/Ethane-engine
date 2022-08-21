@@ -6,6 +6,8 @@
 #include "VulkanIndexBuffer.h"
 #include "VulkanContext.h"
 
+#include "./ShaderUtils/VulkanShaderSystem.h"
+
 // #include "VulkanShader.h"
 #include "VulkanTexture.h"
 #include "VulkanFramebuffer.h"
@@ -29,37 +31,35 @@ namespace Ethane {
 		// Utils::DumpGPUInfo();
 
 		// Create descriptor pools
-		// Renderer::Submit([]() mutable
-		//	{
-				// Create Descriptor Pool
-				VkDescriptorPoolSize pool_sizes[] =
-				{
-					{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-					{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-					{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-				};
-				VkDescriptorPoolCreateInfo pool_info = {};
-				pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-				pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-				pool_info.maxSets = 100000;
-				pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
-				pool_info.pPoolSizes = pool_sizes;
-				VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-				uint32_t framesInFlight = Renderer::GetConfig().FramesInFlight;
-				for (uint32_t i = 0; i < framesInFlight; i++)
-				{
-					VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &s_Data->DescriptorPools[i]));
-					s_Data->DescriptorPoolAllocationCount[i] = 0;
-				}
-		//	});
+		VkDescriptorPoolSize pool_sizes[] =
+		{
+			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+		};
+		VkDescriptorPoolCreateInfo pool_info = {};
+		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		pool_info.maxSets = 100000;
+		pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+		pool_info.pPoolSizes = pool_sizes;
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		uint32_t framesInFlight = Renderer::GetConfig().FramesInFlight;
+		for (uint32_t i = 0; i < framesInFlight; i++)
+		{
+			VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &s_Data->DescriptorPools[i]));
+			s_Data->DescriptorPoolAllocationCount[i] = 0;
+		}
+
+		VulkanShaderSystem::Init();
 
 		// Create fullscreen quad
 		float x = -1;
@@ -88,26 +88,6 @@ namespace Ethane {
 		s_Data->QuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data->QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
-
-		// s_Data->BRDFLut = Renderer::GetBRDFLutTexture();
-
-		// TODO: temp
-		s_UniformBufferSet = CreateRef<VulkanUniformBufferSet>(framesInFlight);
-		s_UniformBufferSet->Create(sizeof(glm::mat4), 0);
-		// TODO: test remove
-		// for (uint32_t i = 0; i < Renderer::GetConfig().FramesInFlight; i++)
-		// {
-		// 	std::vector<VkWriteDescriptorSet> writeDescriptors{};
-		// 
-		// 	// Uniform buffer
-		// 	VkWriteDescriptorSet& uboWriteDescriptor = writeDescriptors.emplace_back();
-		// 	uboWriteDescriptor = *vulkanShader->GetWriteDescriptorSet(0, "UniformBufferObject");
-		// 	uboWriteDescriptor.dstSet = m_DescriptorSets.DescriptorSets[i];
-		// 	uboWriteDescriptor.dstArrayElement = 0;
-		// 	uboWriteDescriptor.pBufferInfo = &s_UniformBufferSet->Get(0, 0, i)->GetDescriptorBufferInfo();
-		// 
-		// 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
-		// }
 	}
 
 	VkDescriptorSet VulkanRendererAPI::AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
@@ -123,68 +103,17 @@ namespace Ethane {
 		return result;
 	}
 
-	static const std::vector<std::vector<VkWriteDescriptorSet>> RetrieveOrCreateUniformBufferWriteDescriptors(Ref<VulkanUniformBufferSet> uniformBufferSet, Ref<VulkanMaterial> vulkanMaterial)
-	{
-		ETH_PROFILE_FUNCTION();
-
-		// size_t shaderHash = vulkanMaterial->GetShader()->GetHash();
-		// if (s_Data->UniformBufferWriteDescriptorCache.find(uniformBufferSet.Raw()) != s_Data->UniformBufferWriteDescriptorCache.end())
-		// {
-		// 	const auto& shaderMap = s_Data->UniformBufferWriteDescriptorCache.at(uniformBufferSet.Raw());
-		// 	if (shaderMap.find(shaderHash) != shaderMap.end())
-		// 	{
-		// 		const auto& writeDescriptors = shaderMap.at(shaderHash);
-		// 		return writeDescriptors;
-		// 	}
-		// }
-
-		uint32_t framesInFlight = Renderer::GetConfig().FramesInFlight;
-		Ref<VulkanShader> vulkanShader = std::dynamic_pointer_cast<VulkanShader>(vulkanMaterial->GetShader());
-
-		// TODO: currently no cache
-		std::vector<std::vector<VkWriteDescriptorSet>> UniformBufferWriteDescriptorCache; // frame -> writeDescriptorSets
-
-		// if (vulkanShader->HasDescriptorSet(0))
-		// {
-			const auto& shaderDescriptorSets = vulkanShader->GetShaderDescriptorSetData();
-			if (!shaderDescriptorSets.empty())
-			{
-				for (auto&& [binding, shaderUB] : shaderDescriptorSets[0].UniformBuffers)
-				{
-					auto& writeDescriptors = UniformBufferWriteDescriptorCache;
-					writeDescriptors.resize(framesInFlight);
-					for (uint32_t frame = 0; frame < framesInFlight; frame++)
-					{
-						Ref<VulkanUniformBuffer> uniformBuffer = uniformBufferSet->Get(binding, 0, frame); // set = 0 for now
-
-						VkWriteDescriptorSet writeDescriptorSet = {};
-						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-						writeDescriptorSet.dstBinding = binding;
-						writeDescriptorSet.descriptorCount = 1;
-						writeDescriptorSet.dstArrayElement = 0;
-						writeDescriptorSet.pBufferInfo = &uniformBuffer->GetDescriptorBufferInfo();
-						writeDescriptors[frame].push_back(writeDescriptorSet);
-					}
-				}
-
-			}
-		// }
-			return UniformBufferWriteDescriptorCache;
-	}
-
 	void VulkanRendererAPI::UpdateMaterialForRendering(Ref<VulkanMaterial> material)
 	{
 		ETH_PROFILE_FUNCTION();
 
 		if (s_UniformBufferSet)
 		{
-			auto writeDescriptors = RetrieveOrCreateUniformBufferWriteDescriptors(s_UniformBufferSet, material);
-			material->UpdateForRendering(writeDescriptors);
+			material->ApplyMaterial();
 		}
 		else
 		{
-			material->UpdateForRendering();
+			material->ApplyMaterial();
 		}
 		
 	}
@@ -209,8 +138,6 @@ namespace Ethane {
 
 	void VulkanRendererAPI::BeginRenderPass(const Ref<RenderPass>& renderPass, bool explicitClear) // Ref<RenderCommandBuffer> renderCommandBuffer, 
 	{
-		// Renderer::Submit([renderCommandBuffer, renderPass, explicitClear]()
-		// 	{
 		ETH_PROFILE_FUNCTION(fmt::format("VulkanRenderer::BeginRenderPass ({})", renderPass->GetSpecification().DebugName).c_str());
 
 		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
@@ -316,27 +243,21 @@ namespace Ethane {
 		scissor.offset.x = 0;
 		scissor.offset.y = 0;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-			// });
 	}
 
 	void VulkanRendererAPI::EndRenderPass() // Ref<RenderCommandBuffer> renderCommandBuffer
 	{
-		// Renderer::Submit([renderCommandBuffer]()
-		// 	{
 		ETH_PROFILE_FUNCTION("VulkanRenderer::EndRenderPass");
 
 		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanRenderCommandBuffer>(s_RenderCommandBuffer)->GetCommandBuffer(frameIndex);// VulkanContext::GetSwapChain().GetCurrentCommandBuffer();
 
 		vkCmdEndRenderPass(commandBuffer);
-		// 	});
 	}
 
 	void VulkanRendererAPI::DrawQuad( Ref<Pipeline> pipeline, Ref<Material> material, const glm::mat4& transform) // Ref<RenderCommandBuffer> renderCommandBuffer,
 	{
 		Ref<VulkanMaterial> vulkanMaterial = std::dynamic_pointer_cast<VulkanMaterial>(material);
-		// Renderer::Submit([renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, vulkanMaterial, transform]() mutable
-		// 	{
 		ETH_PROFILE_FUNCTION("VulkanRenderer::RenderQuad");
 
 		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
@@ -369,7 +290,6 @@ namespace Ethane {
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		vkCmdDrawIndexed(commandBuffer, s_Data->QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
-		// });
 	}
 
 	void VulkanRendererAPI::DrawFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material) // Ref<RenderCommandBuffer> renderCommandBuffer, 
@@ -507,8 +427,7 @@ namespace Ethane {
 	// TODO: test
 	void VulkanRendererAPI::SetUniformBuffer(uint32_t binding, uint32_t set , const void* data, uint32_t size, uint32_t offset)
 	{
-		uint32_t bufferIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
-		s_UniformBufferSet->Get(binding, set, bufferIndex)->SetData(data, size);
+		VulkanShaderSystem::SetUniformBuffer(set, binding, data, size, offset);
 	}
 
 }

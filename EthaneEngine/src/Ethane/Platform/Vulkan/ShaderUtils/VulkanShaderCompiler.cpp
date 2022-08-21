@@ -7,6 +7,7 @@
 #include <spirv_cross/spirv_glsl.hpp>
 
 #include "Ethane/Core/timer.h"
+#include "VulkanShaderSystem.h"
 
 namespace Ethane {
 
@@ -88,9 +89,6 @@ namespace Ethane {
 		ETH_CORE_TRACE("[Time] compiler: {0}ms", timer.ElapsedMillis());
 		timer.Reset();
 
-		Reflect(output);
-		ETH_CORE_TRACE("[Time] reflect: {0}ms", timer.ElapsedMillis());
-		timer.Reset();
 		return true;
 	}
 
@@ -177,10 +175,10 @@ namespace Ethane {
 		}
 	}
 
-	void VulkanShaderCompiler::Reflect(CompileOutput& outputs)
+	void VulkanShaderCompiler::Reflect(const ReflectParam& param, ReflectOutput& outputs)
 	{
 		// TODO: check binary exist
-		for (auto [stage, data] : outputs.ShaderBinary)
+		for (auto&& [stage, data] : param.ShaderBinary)
 		{
 			ReflectStage(stage, data, outputs.ShaderDescriptorSets, outputs.PushConstantRanges);
 		}
@@ -212,11 +210,9 @@ namespace Ethane {
 			if (descriptorSet >= shaderDescriptorSets.size())
 				shaderDescriptorSets.resize(descriptorSet + 1);
 
-			ShaderDescriptorSetData& shaderDescriptorSet = shaderDescriptorSets[descriptorSet];
 			if (s_UniformBuffers[descriptorSet].find(binding) == s_UniformBuffers[descriptorSet].end())
 			{
 				UniformBuffer* uniformBuffer = new UniformBuffer();
-				// uniformBuffer->BindingPoint = binding;
 				uniformBuffer->Size = bufferSize;
 				uniformBuffer->Name = name;
 				uniformBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
@@ -230,7 +226,10 @@ namespace Ethane {
 
 			}
 
+			ShaderDescriptorSetData& shaderDescriptorSet = shaderDescriptorSets[descriptorSet];
 			shaderDescriptorSet.UniformBuffers[binding] = s_UniformBuffers[descriptorSet][binding];
+
+			VulkanShaderSystem::ReflectBufferData(descriptorSet, binding, s_UniformBuffers[descriptorSet][binding]);
 
 			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 			ETH_CORE_TRACE("  Member Count: {0}", memberCount);
@@ -261,9 +260,8 @@ namespace Ethane {
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = stage;
 			imageSampler.ArraySize = arraySize;
-			// imageSampler.BindingPoint = binding;
 
-			// m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+			VulkanShaderSystem::ReflectSamplerData(descriptorSet, binding, shaderDescriptorSets[descriptorSet].ImageSamplers[binding]);
 
 			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
@@ -284,98 +282,6 @@ namespace Ethane {
 			pushConstantRange.stageFlags = stage;
 			pushConstantRange.offset = bufferOffset;
 			pushConstantRange.size = bufferSize - bufferOffset;
-
-			// Skip empty push constant buffers - these are for the renderer only
-			// if (bufferName.empty() || bufferName == "u_Renderer")
-			// 	continue;
-			// 
-			// ShaderBuffer& buffer = m_Buffers[bufferName];
-			// buffer.Name = bufferName;
-			// buffer.Size = bufferSize - bufferOffset;
-			// 
-			// ETH_CORE_TRACE("  Name: {0}", bufferName);
-			// ETH_CORE_TRACE("  Member Count: {0}", memberCount);
-			// ETH_CORE_TRACE("  Size: {0}", bufferSize);
-			// 
-			// for (uint32_t i = 0; i < memberCount; i++)
-			// {
-			// 	const auto& memberName = compiler.get_member_name(bufferType.self, i);
-			// 	auto type = compiler.get_type(bufferType.member_types[i]);
-			// 	auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
-			// 	auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
-			// 
-			// 	std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
-			// 	buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
-			// }
 		}
-#ifdef reflect
-
-		ETH_CORE_INFO("Storage Buffers:");
-		for (const auto& resource : resources.storage_buffers)
-		{
-			const auto& name = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			uint32_t memberCount = (uint32_t)bufferType.member_types.size();
-			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-			uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
-
-			if (descriptorSet >= m_ShaderDescriptorSets.size())
-				m_ShaderDescriptorSets.resize(descriptorSet + 1);
-
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			if (s_StorageBuffers[descriptorSet].find(binding) == s_StorageBuffers[descriptorSet].end())
-			{
-				StorageBuffer* storageBuffer = new StorageBuffer();
-				storageBuffer->BindingPoint = binding;
-				storageBuffer->Size = size;
-				storageBuffer->Name = name;
-				storageBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_StorageBuffers.at(descriptorSet)[binding] = storageBuffer;
-			}
-			else
-			{
-				StorageBuffer* storageBuffer = s_StorageBuffers.at(descriptorSet).at(binding);
-				if (size > storageBuffer->Size)
-					storageBuffer->Size = size;
-			}
-
-			shaderDescriptorSet.StorageBuffers[binding] = s_StorageBuffers.at(descriptorSet).at(binding);
-
-			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
-			ETH_CORE_TRACE("  Member Count: {0}", memberCount);
-			ETH_CORE_TRACE("  Size: {0}", size);
-			ETH_CORE_TRACE("-------------------");
-		}
-
-		ETH_CORE_INFO("Storage Images:");
-		for (const auto& resource : resources.storage_images)
-		{
-			const auto& name = resource.name;
-			auto& type = compiler.get_type(resource.base_type_id);
-			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-			uint32_t dimension = type.image.dim;
-
-			if (descriptorSet >= m_ShaderDescriptorSets.size())
-				m_ShaderDescriptorSets.resize(descriptorSet + 1);
-
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			auto& imageSampler = shaderDescriptorSet.StorageImages[binding];
-			imageSampler.BindingPoint = binding;
-			imageSampler.DescriptorSet = descriptorSet;
-			imageSampler.Name = name;
-			imageSampler.ShaderStage = shaderStage;
-
-			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
-
-			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
-		}
-
-		ETH_CORE_INFO("===========================");
-
-#endif
-
 	}
-
 }

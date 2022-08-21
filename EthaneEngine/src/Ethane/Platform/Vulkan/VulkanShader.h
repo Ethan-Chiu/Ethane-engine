@@ -33,7 +33,6 @@ namespace Ethane {
 		const std::vector<VkPushConstantRange> GetPushConstantRanges() const { return m_PushConstantRanges; } // TODO
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
 		const std::vector<VulkanShaderCompiler::ShaderDescriptorSetData>& GetShaderDescriptorSetData() const { return m_ShaderDescriptorSetsReflect; }
-		const VkWriteDescriptorSet* GetWriteDescriptorSet(uint32_t set, const std::string& name) const;
 
 		// TODO: remove this
 		//Uniform
@@ -52,11 +51,12 @@ namespace Ethane {
 	public:
 		DescriptorSetsAndPool CreateDescriptorSetsAndPool(uint32_t set, uint32_t numberOfSets = 1);
 		DescriptorSetsAndPool CreateDescriptorSets(uint32_t set);
+
 	private:
 		std::string m_FilePath;
 		std::string m_Name;
 
-		// Datas from Reflect
+		// Data from Reflect
 		std::vector<VulkanShaderCompiler::ShaderDescriptorSetData> m_ShaderDescriptorSetsReflect;
 		std::vector<VkPushConstantRange> m_PushConstantRanges;
 
@@ -66,9 +66,21 @@ namespace Ethane {
 		// Descriptor pool size info
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_DescriptorCounts;
 
-		std::unordered_map<VkShaderStageFlagBits, VkShaderModule>  m_ShaderModule;
-
 		// For pipeine creation
+		std::unordered_map<VkShaderStageFlagBits, VkShaderModule>  m_ShaderModule;
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
+
+	public:
+		struct WriteDescriptorSetBase {
+			VkWriteDescriptorSet WriteDescriptor;
+		};
+
+		const WriteDescriptorSetBase* RetrieveWriteDescriptorSetBase(uint32_t set, const std::string& name) const;
+		const std::vector<std::unordered_map<std::string, WriteDescriptorSetBase>>& RetrieveWriteDescriptorSetsBase() const {
+			return m_WriteDescriptorSetsBase;
+		};
+	private:
+		// Write Descriptors Templates
+		std::vector<std::unordered_map<std::string, WriteDescriptorSetBase>> m_WriteDescriptorSetsBase;
 	};
 }
