@@ -27,15 +27,9 @@ void main()
 #type fragment
 #version 450 core
 
-layout(location = 0) out vec4 color;
-
-// layout(std140, binding = 1) uniform Settings
-// {
-// 	float u_Scale;
-// 	float u_Res;
-// };
-
 layout(location = 0) in vec2 v_TexCoord;
+
+layout(location = 0) out vec4 color;
 
 float grid(vec2 st, float res)
 {

@@ -33,7 +33,7 @@ layout(location = 0) in OutputBlock Input;
 layout(location = 0) out vec4 o_Color;
 
 // layout(binding = 0) uniform sampler2D u_Texture;
-layout(binding = 1) uniform sampler2D u_Texture;
+layout(set = 0, binding = 1) uniform sampler2D u_Texture;
 
 // layout(binding = 1) uniform sampler2D u_BloomTexture;
 // layout(binding = 2) uniform sampler2D u_BloomDirtTexture;
