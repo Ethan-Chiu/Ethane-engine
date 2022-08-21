@@ -112,6 +112,8 @@ namespace Ethane {
 			contextCreateInfo.AddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 			const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
 			contextCreateInfo.AddInstanceLayer(validationLayerName);
+			const char* fpsLayerName = "VK_LAYER_LUNARG_monitor";
+			contextCreateInfo.AddInstanceLayer(fpsLayerName, true);
 		}
 		// RayTracing: Activate the ray tracing extension
 		VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR };
