@@ -148,12 +148,9 @@ namespace Ethane {
 			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
 		}
 
-		// m_SceneData.SceneCamera = camera;
 
 		// Update uniform buffers
 		UBCamera& cameraData = CameraDataUB;
-		// UBRendererData& rendererData = RendererDataUB;
-		UBScreenData& screenData = ScreenDataUB;
 
 		auto& sceneCamera = camera;
 		const auto viewProjection = sceneCamera.GetProjection() * viewMatrix;
@@ -164,25 +161,12 @@ namespace Ethane {
 		cameraData.InverseViewProjection = inverseVP;
 		cameraData.Projection = sceneCamera.GetProjection();
 		cameraData.View = viewMatrix;
+
+		UBGlobal& globalData = m_GlobalUB;
+		globalData.ViewProjection = viewProjection;
+		globalData.AmbientColor = glm::vec4(0.2, 0.3, 0.8, 1);
 		
-		// TODO: test
-		// Ref<SceneRenderer> instance = this;
-		// Renderer::Submit([instance, cameraData]() mutable
-		// {
-		// uint32_t bufferIndex = Renderer::GetCurrentFrameIndex();
-		// m_UniformBufferSet->Get(0, 0, bufferIndex)->RT_SetData(&cameraData, sizeof(cameraData));
-		// });
-		VulkanRendererAPI::SetUniformBuffer(0, 0, &cameraData.ViewProjection, sizeof(cameraData.ViewProjection), 0);
-
-
-		screenData.FullResolution = { m_ViewportWidth, m_ViewportHeight };
-		screenData.InvFullResolution = { m_InvViewportWidth, m_InvViewportHeight };
-		// Renderer::Submit([instance, screenData]() mutable
-		// {
-		// const uint32_t bufferIndex = Renderer::GetCurrentFrameIndex();
-		// instance->m_UniformBufferSet->Get(17, 0, bufferIndex)->RT_SetData(&screenData, sizeof(screenData));
-		// });
-		// VulkanRendererAPI::SetUniform(17, 0, &cameraData.ViewProjection, sizeof(cameraData.ViewProjection), 0);
+		VulkanRendererAPI::SetUniformBuffer(0, 0, &globalData, sizeof(globalData), 0);
 	}
 
 	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material)

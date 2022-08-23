@@ -55,6 +55,12 @@ namespace Ethane {
 
 		Ref<RenderCommandBuffer> m_CommandBuffer;
 
+		struct UBGlobal
+		{
+			glm::mat4 ViewProjection;
+			glm::vec4 AmbientColor;
+		} m_GlobalUB;
+
 		struct UBCamera
 		{
 			glm::mat4 ViewProjection;
