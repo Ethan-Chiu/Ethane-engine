@@ -15,8 +15,10 @@ namespace Ethane {
 
 		s_DefaultTexture = CreateRef<VulkanTexture2D>("assets/textures/test.png");
 
-		for (auto&& [binding, pShaderUBO] : s_ShaderDescriptorSets.UniformBuffers) {
-			s_UniformBufferSet->Create(pShaderUBO->Size, binding);
+		for (uint32_t set = 0; set < s_ShaderDescriptorSets.size(); ++set) {
+			for (auto&& [binding, pShaderUBO] : s_ShaderDescriptorSets[set].UniformBuffers) {
+				s_UniformBufferSet->Create(pShaderUBO->Size, set, binding);
+			}
 		}
 
 		return true;
@@ -29,16 +31,17 @@ namespace Ethane {
 
 	bool VulkanShaderSystem::ReflectBufferData(uint32_t set, uint32_t binding, VulkanShaderCompiler::UniformBuffer* uniform)
 	{
-		if (set == 0) {
-			s_ShaderDescriptorSets.UniformBuffers[binding] = uniform;
+		if (set >= s_ShaderDescriptorSets.size()) {
+			s_ShaderDescriptorSets.resize(set+1);
 		}
+		s_ShaderDescriptorSets[set].UniformBuffers[binding] = uniform;
 		return true;
 	}
 
 	bool VulkanShaderSystem::ReflectSamplerData(uint32_t set, uint32_t binding, VulkanShaderCompiler::ImageSampler sampler)
 	{
 		if (set == 0) {
-			s_ShaderDescriptorSets.ImageSamplers[binding] = sampler;
+			s_ShaderDescriptorSets[set].ImageSamplers[binding] = sampler;
 		}
 		return true;
 	}

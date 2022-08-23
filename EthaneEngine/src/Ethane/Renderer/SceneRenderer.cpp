@@ -166,7 +166,10 @@ namespace Ethane {
 		globalData.ViewProjection = viewProjection;
 		globalData.AmbientColor = glm::vec4(0.2, 0.3, 0.8, 1);
 		
+		glm::vec4 diffuseColor = glm::vec4(1, 1, 1, 1);
+
 		VulkanRendererAPI::SetUniformBuffer(0, 0, &globalData, sizeof(globalData), 0);
+		VulkanRendererAPI::SetUniformBuffer(0, 1, &diffuseColor, sizeof(diffuseColor), 0);
 	}
 
 	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material)

@@ -52,7 +52,11 @@ void main()
 #type fragment
 #version 450 core
 
-layout(set = 1, binding = 0) uniform sampler2D u_DiffuseSampler;
+layout(set = 1, binding = 0) uniform LocalUBO {
+    vec4 diffuse_color;
+} u_LocalUBO;
+
+layout(set = 1, binding = 1) uniform sampler2D u_DiffuseSampler;
 
 struct VertexOutput
 {
@@ -99,7 +103,7 @@ vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal)
 	float directional_factor = max(dot(normal, -dir_light.Direction), 0.0);
 	
 	vec4 diffuse_texture = texture(u_DiffuseSampler, Input.TexCoord);
-	vec4 ambient_color = vec4(vec3(Input.AmbientColor), diffuse_texture.a);
+	vec4 ambient_color = vec4(vec3(Input.AmbientColor * u_LocalUBO.diffuse_color), diffuse_texture.a);
 	vec4 diffuse_color = vec4(vec3(dir_light.Color * directional_factor), diffuse_texture.a);
 
 	ambient_color *= diffuse_texture;

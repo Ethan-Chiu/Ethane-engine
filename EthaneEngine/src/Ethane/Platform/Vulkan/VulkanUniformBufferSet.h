@@ -13,12 +13,12 @@ namespace Ethane {
 			: m_Frames(frames) {}
 		virtual ~VulkanUniformBufferSet() {}
 
-		virtual void Create(uint32_t size, uint32_t binding) 
+		virtual void Create(uint32_t size, uint32_t set, uint32_t binding) 
 		{
 			for (uint32_t frame = 0; frame < m_Frames; frame++)
 			{
 				Ref<VulkanUniformBuffer> uniformBuffer = CreateRef<VulkanUniformBuffer>(size, binding);
-				Set(uniformBuffer, frame, 0);
+				Set(uniformBuffer, frame, set);
 			}
 		}
 

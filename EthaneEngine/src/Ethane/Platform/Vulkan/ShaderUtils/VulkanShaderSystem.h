@@ -35,7 +35,7 @@ namespace Ethane {
 		inline static Ref<VulkanTexture2D> s_DefaultTexture;
 
 		// reflect data
-		inline static VulkanShaderCompiler::ShaderDescriptorSetData s_ShaderDescriptorSets;
+		inline static std::vector<VulkanShaderCompiler::ShaderDescriptorSetData> s_ShaderDescriptorSets;
 		inline static std::vector<VkPushConstantRange> s_PushConstantRanges;
 
 	friend VulkanShaderCompiler;
