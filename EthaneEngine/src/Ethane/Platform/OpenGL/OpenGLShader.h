@@ -17,6 +17,7 @@ namespace Ethane {
 		OpenGLShader(const std::string& filepath);
 		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 		virtual ~OpenGLShader();
+		virtual void Destroy() override {}
 
 		virtual void Bind() const;
 		virtual void Unbind() const;

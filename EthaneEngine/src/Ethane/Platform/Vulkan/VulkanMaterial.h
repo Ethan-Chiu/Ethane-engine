@@ -74,7 +74,8 @@ namespace Ethane {
 
 		virtual Ref<Shader> GetShader() override { return m_Shader; }
 		virtual const std::string& GetName() const override { return m_Name; }
-		VkDescriptorSet GetDescriptorSet(uint32_t frameIndex) const { return !m_DescriptorSetsAndPool.DescriptorSets.empty() ? m_DescriptorSetsAndPool.DescriptorSets[frameIndex] : nullptr; }
+		VkDescriptorSet GetDescriptorSet(uint32_t frameIndex) const { return !m_DescriptorSets.empty() ? m_DescriptorSets[frameIndex][0] : nullptr; }
+		std::vector<VkDescriptorSet> GetDescriptorSets(uint32_t frameIndex) const { return m_DescriptorSets[frameIndex]; }
 		
 		// Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
 
@@ -97,6 +98,7 @@ namespace Ethane {
 		// resource binding map
 		struct ResourceBinding {
 			std::string Name;
+			uint32_t Set;
 			std::vector<VkWriteDescriptorSet> WriteDescriptors; // frame
 		};
 		std::vector<ResourceBinding> m_ResourceBindings;
@@ -106,12 +108,12 @@ namespace Ethane {
 		std::vector<std::vector<Ref<Texture>>> m_TextureArrays;
 		std::vector<Ref<Image>> m_Images;
 
-		VulkanShader::DescriptorSetsAndPool m_DescriptorSetsAndPool;
-
+		VkDescriptorPool m_Pool;
+		std::vector < std::vector < VkDescriptorSet>> m_DescriptorSets; // frame -> set
 
 		// Write Descriptors
 		std::unordered_map<uint32_t, VkWriteDescriptorSet> m_DescriptorArrays; // binding
-		std::vector<std::vector<VkWriteDescriptorSet>> m_WriteDescriptors; // frame
+		std::vector<std::vector<VkWriteDescriptorSet>> m_WriteDescriptors; // frame -> set
 	};
 
 }

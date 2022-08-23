@@ -34,13 +34,10 @@ namespace Ethane {
 			// TODO: stats
 			std::vector<uint32_t> DescriptorPoolAllocationCount;
 
-			// UniformBufferSet -> Shader Hash -> Frame -> WriteDescriptor
-			// std::unordered_map<UniformBufferSet*, std::unordered_map<uint64_t, std::vector<std::vector<VkWriteDescriptorSet>>>> UniformBufferWriteDescriptorCache;
-			// std::unordered_map<StorageBufferSet*, std::unordered_map<uint64_t, std::vector<std::vector<VkWriteDescriptorSet>>>> StorageBufferWriteDescriptorCache;
-
 			// Default samplers
 			VkSampler SamplerClamp = nullptr;
 
+			std::set<Ref<VulkanMaterial>> UpdatedMaterial = {};
 			// int32_t SelectedDrawCall = -1;
 			// int32_t DrawCallCount = 0;
 		};
@@ -58,9 +55,11 @@ namespace Ethane {
 
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool explicitClear = false); // Ref<RenderCommandBuffer> renderCommandBuffer, 
 		static void EndRenderPass(); // Ref<RenderCommandBuffer> renderCommandBuffer
-
+	private:
 		static void UpdateMaterialForRendering(Ref<VulkanMaterial> material);
+		static void CmdBindMaterial(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, Ref<VulkanMaterial> material, uint32_t frameIndex);
 
+	public:
 		// TODO:
 		void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override {};
 		void SetClearColor(const glm::vec4& color) override {};
@@ -85,7 +84,6 @@ namespace Ethane {
 		// Update uniform buffer value
 		static void SetUniformBuffer(uint32_t binding, uint32_t set, const void* data, uint32_t size, uint32_t offset = 0);
 	private:
-		inline static Ref<VulkanUniformBufferSet> s_UniformBufferSet;
 		inline static Ref<RenderCommandBuffer> s_RenderCommandBuffer;
 
 		static VulkanRendererData* s_Data;

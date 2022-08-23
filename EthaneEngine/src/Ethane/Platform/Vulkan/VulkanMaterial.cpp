@@ -57,12 +57,14 @@ namespace Ethane {
 
 		m_ResourceBindings.clear();
 		const auto& WDSetsBase = shader->RetrieveWriteDescriptorSetsBase();
-		for (uint32_t set = 0; set < WDSetsBase.size(); ++set) {
+		const uint32_t maxSet = WDSetsBase.size();
+		for (uint32_t set = 0; set < maxSet; ++set) {
 			const auto& WdsBase = WDSetsBase[set];
 			for (auto&& [name, wdsMeta] : WdsBase)
 			{
 				ResourceBinding resource;
 				resource.Name = name;
+				resource.Set = set;
 
 				VkWriteDescriptorSet wds = wdsMeta.WriteDescriptor;
 				if(wds.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
@@ -87,7 +89,14 @@ namespace Ethane {
 				m_ResourceBindings.push_back(resource);
 			}
 		}
-		m_DescriptorSetsAndPool = shader->CreateDescriptorSetsAndPool(0, 3); // TODO: only set 0 
+
+		m_Pool = shader->CreateDescriptorPool(framesInFlight);
+		m_DescriptorSets.resize(framesInFlight);
+		for (uint32_t frame = 0; frame < framesInFlight; ++frame) {
+			for (uint32_t set = 0; set < maxSet; ++set) {
+				m_DescriptorSets[frame].push_back(shader->CreateDescriptorSet(set, m_Pool));
+			}
+		}
 	}
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<Texture2D>& texture)
@@ -304,16 +313,16 @@ namespace Ethane {
 		std::vector<VkDescriptorImageInfo> arrayImageInfos;
 		std::vector<VkWriteDescriptorSet> writeDescriptors{};
 
-		// update uniform buffer
+		// update uniform buffer and texture sampler
 		for (auto&& resource : m_ResourceBindings) {
 			auto& wds = resource.WriteDescriptors[frameIndex];
 			if (wds.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 			{
-				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSetsAndPool.DescriptorSets[frameIndex];
+				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSets[frameIndex][resource.Set];
 			}
 			else if (wds.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
 			{
-				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSetsAndPool.DescriptorSets[frameIndex];
+				writeDescriptors.emplace_back(wds).dstSet = m_DescriptorSets[frameIndex][resource.Set];
 			}
 		}
 		// update array descriptors
@@ -327,7 +336,7 @@ namespace Ethane {
 					arrayImageInfos.emplace_back(texture->GetDescriptorImageInfo());
 				}
 				auto& writeDescritorSet = writeDescriptors.emplace_back(wds);
-				writeDescritorSet.dstSet = m_DescriptorSetsAndPool.DescriptorSets[frameIndex];
+				writeDescritorSet.dstSet = m_DescriptorSets[frameIndex][0];
 				writeDescritorSet.descriptorCount = arrayImageInfos.size();
 				writeDescritorSet.pImageInfo = arrayImageInfos.data();
 			}

@@ -24,8 +24,7 @@ namespace Ethane {
 		VulkanShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {}; // temp
 		virtual ~VulkanShader();
 
-		//TODO should override
-		void Destroy();
+		void Destroy() override;
 
 		// Getter
 		virtual const std::string& GetName() const override { return  m_Name; }
@@ -43,15 +42,15 @@ namespace Ethane {
 		virtual void SetUniformBufferByName(const std::string& name, const void* data, uint32_t size) {}; // test
 
 	private:
-		std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
-
 		void CreatePipelineShaderStage(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
-
 		void CreateDescriptorLayouts();
+
 	public:
+		VkDescriptorPool CreateDescriptorPool(uint32_t numberOfSets = 1);
+		VkDescriptorSet CreateDescriptorSet(uint32_t set, VkDescriptorPool pool);
 		DescriptorSetsAndPool CreateDescriptorSetsAndPool(uint32_t set, uint32_t numberOfSets = 1);
 		DescriptorSetsAndPool CreateDescriptorSets(uint32_t set);
-
+	
 	private:
 		std::string m_FilePath;
 		std::string m_Name;

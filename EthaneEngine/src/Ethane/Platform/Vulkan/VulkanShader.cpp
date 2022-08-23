@@ -170,6 +170,61 @@ namespace Ethane {
 		return &m_WriteDescriptorSetsBase[set].at(name);
 	}
 
+	VkDescriptorPool VulkanShader::CreateDescriptorPool(uint32_t numberOfSets)
+	{
+		VkDescriptorPool out_pool;
+		std::vector<VkDescriptorPoolSize> poolSizes;
+		uint32_t setCount = m_ShaderDescriptorSetsReflect.size();
+		for (uint32_t set = 0; set < setCount; set++)
+		{
+			auto& shaderDescriptorSet = m_ShaderDescriptorSetsReflect[set];
+			if (!shaderDescriptorSet) // Empty descriptor set
+				continue;
+
+			if (shaderDescriptorSet.UniformBuffers.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
+			}
+
+			if (shaderDescriptorSet.ImageSamplers.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
+				uint32_t descriptorSetCount = 0;
+				for (auto&& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
+					descriptorSetCount += imageSampler.ArraySize;
+
+				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				typeCount.descriptorCount = descriptorSetCount * numberOfSets;
+			}
+		}
+
+		VkDescriptorPoolCreateInfo descriptorPoolInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
+		descriptorPoolInfo.pNext = nullptr;
+		descriptorPoolInfo.poolSizeCount = (uint32_t)poolSizes.size();
+		descriptorPoolInfo.pPoolSizes = poolSizes.data();
+		descriptorPoolInfo.maxSets = numberOfSets * setCount;
+
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &out_pool));
+
+		return out_pool;
+	}
+
+	VkDescriptorSet VulkanShader::CreateDescriptorSet(uint32_t set, VkDescriptorPool pool)
+	{
+		VkDescriptorSet out_descriptorSet;
+		VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+		allocInfo.descriptorPool = pool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
+		
+		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &out_descriptorSet));
+		return out_descriptorSet;
+	}
+
 	VulkanShader::DescriptorSetsAndPool VulkanShader::CreateDescriptorSetsAndPool(uint32_t set, uint32_t numberOfSets)
 	{
 		DescriptorSetsAndPool result;

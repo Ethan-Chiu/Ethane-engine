@@ -10,6 +10,7 @@ namespace Ethane {
 	{
 	public:
 		virtual ~Shader() = default;
+		virtual void Destroy() = 0;
 
 		// virtual void SetInt(const std::string& name, const int value) = 0;
 		// virtual void SetIntArray(const std::string& name, int* values, uint32_t count) = 0;
