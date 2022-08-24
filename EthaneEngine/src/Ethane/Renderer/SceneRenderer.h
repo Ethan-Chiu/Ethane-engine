@@ -59,7 +59,15 @@ namespace Ethane {
 		{
 			glm::mat4 ViewProjection;
 			glm::vec4 AmbientColor;
+			glm::vec3 ViewPosition;
 		} m_GlobalUB;
+
+		//TODO: temporary 
+		struct UBLocal
+		{
+			glm::vec4 DiffuseColor;
+			float Shininess;
+		};
 
 		struct UBCamera
 		{
@@ -123,6 +131,8 @@ namespace Ethane {
 		// TODO: remove
 		Ref<Texture2D> m_Texture2D = nullptr;
 		Ref<Material> m_testMaterial = nullptr;
+		Ref<Texture2D> m_TestDiffuse = nullptr;
+		Ref<Texture2D> m_TestSpecular = nullptr;
 	};
 
 }
