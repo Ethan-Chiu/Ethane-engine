@@ -24,9 +24,9 @@ struct VertexOutput
 	vec3 WorldPosition;
 	vec3 Normal;
 	vec2 TexCoord;
-	mat3 WorldNormals;
-	mat3 WorldTransform;
-	vec3 Binormal;
+	mat3 TBN;
+	mat3 WorldTransform; // no use for now
+	vec3 Binormal; 		 // no use for now
 	vec4 AmbientColor;
 	vec3 ViewPosition;
 };
@@ -39,7 +39,7 @@ void main()
 	Output.WorldPosition = vec3(u_TransformUniform.transform * vec4(a_Position, 1.0)); 
 	Output.Normal = mat3(u_TransformUniform.transform) * a_Normal;
 	Output.TexCoord = vec2(a_TexCoord.x, 1.0- a_TexCoord.y);
-	Output.WorldNormals = mat3(a_Tangent, a_Binormal, a_Normal); // mat3(u_TransformUniform.Transform) * 
+	Output.TBN = mat3(u_TransformUniform.transform) * mat3(a_Tangent, a_Binormal, a_Normal); 
 	Output.WorldTransform = mat3(1.0);// mat3(u_TransformUniform.Transform);
 	Output.Binormal = a_Binormal;
 	Output.AmbientColor = u_UBO.ambient_color;
@@ -62,15 +62,16 @@ layout(set = 1, binding = 0) uniform LocalUBO {
 
 layout(set = 1, binding = 1) uniform sampler2D u_DiffuseSampler;
 layout(set = 1, binding = 2) uniform sampler2D u_SpecularSampler;
+layout(set = 1, binding = 3) uniform sampler2D u_NormalSampler;
 
 struct VertexOutput
 {
 	vec3 WorldPosition;
 	vec3 Normal;
 	vec2 TexCoord;
-	mat3 WorldNormals;
-	mat3 WorldTransform;
-	vec3 Binormal;
+	mat3 TBN;
+	mat3 WorldTransform; // no use for now
+	vec3 Binormal;		 // no use for now
 	vec4 AmbientColor;
 	vec3 ViewPosition;
 };
@@ -101,9 +102,12 @@ vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal, vec3 v
 
 void main()
 {
+	vec3 normal_texture = 2.0f * texture(u_NormalSampler, Input.TexCoord).rgb - 1.0f;
+	vec3 normal = normalize(Input.TBN * normal_texture);
+
 	vec3 view_direction = normalize(Input.ViewPosition - Input.WorldPosition);
 
-	OutColor = calculate_directional_light(test_dir_light, Input.Normal, view_direction);
+	OutColor = calculate_directional_light(test_dir_light, normal, view_direction);
 }
 
 vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal, vec3 view_direction)

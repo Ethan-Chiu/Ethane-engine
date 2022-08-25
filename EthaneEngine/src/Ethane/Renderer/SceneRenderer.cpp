@@ -53,12 +53,14 @@ namespace Ethane {
 			// pipelineSpecification.DebugName = "PBR-Static";
 			m_GeometryPipeline = Pipeline::Create(pipelineSpecification);
 
-			m_TestDiffuse = Texture2D::Create("assets/textures/FloorSandStone/FloorDiffuse.png");
-			m_TestSpecular = Texture2D::Create("assets/textures/FloorSandStone/FloorSpecular.png");
+			m_TestDiffuse = Texture2D::Create("assets/textures/FloorSandStone/cobblestone.png");
+			m_TestSpecular = Texture2D::Create("assets/textures/FloorSandStone/cobblestone_SPEC.png");
+			m_TestNormal = Texture2D::Create("assets/textures/FloorSandStone/cobblestone_NRM.png");
 			// TODO: test remove
 			m_testMaterial = Material::Create(ShaderLibrary::Get("PBR_static"), "tset Geo material");
 			m_testMaterial->Set("u_DiffuseSampler", m_TestDiffuse);
 			m_testMaterial->Set("u_SpecularSampler", m_TestSpecular);
+			m_testMaterial->Set("u_NormalSampler", m_TestNormal);
 			// VulkanRendererAPI::UpdateMaterialForRendering(std::dynamic_pointer_cast<VulkanMaterial>(m_testMaterial));
 		}
 
@@ -168,12 +170,12 @@ namespace Ethane {
 
 		UBGlobal& globalData = m_GlobalUB;
 		globalData.ViewProjection = viewProjection;
-		globalData.AmbientColor = glm::vec4(1, 1, 1, 1);
+		globalData.AmbientColor = glm::vec4(0.8, 0.8, 0.8, 1);
 		globalData.ViewPosition = cameraPosition;
 		
 		UBLocal localUB;
 		localUB.DiffuseColor = glm::vec4(1, 1, 1, 1);
-		localUB.Shininess = 0.5;
+		localUB.Shininess = 32;
 
 		VulkanRendererAPI::SetUniformBuffer(0, 0, &globalData, sizeof(globalData), 0);
 		VulkanRendererAPI::SetUniformBuffer(0, 1, &localUB, sizeof(localUB), 0);

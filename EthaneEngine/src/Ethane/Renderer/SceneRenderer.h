@@ -133,6 +133,7 @@ namespace Ethane {
 		Ref<Material> m_testMaterial = nullptr;
 		Ref<Texture2D> m_TestDiffuse = nullptr;
 		Ref<Texture2D> m_TestSpecular = nullptr;
+		Ref<Texture2D> m_TestNormal = nullptr;
 	};
 
 }
