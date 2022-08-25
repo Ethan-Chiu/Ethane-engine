@@ -93,12 +93,37 @@ struct DirectionalLight
 	vec4 Color;
 };
 
+struct PointLight {
+    vec3 Position;
+    vec4 Color;
+    float Constant;
+    float Linear;
+    float Quadratic;
+};
+
 DirectionalLight test_dir_light = {
 	vec3(-0.57735, -0.57735, -0.57735),
 	vec4(0.8, 0.8, 0.8, 1.0)
 };
 
+PointLight p_light_0 = {
+    vec3(-5.5, 0.0, -5.5),
+    vec4(0.0, 1.0, 0.0, 1.0),
+    1.0, // Constant
+    0.35, // Linear
+    0.44  // Quadratic
+};
+
+PointLight p_light_1 = {
+    vec3(5.5, 0.0, -5.5),
+    vec4(1.0, 0.0, 0.0, 1.0),
+    1.0, // Constant
+    0.35, // Linear
+    0.44  // Quadratic
+};
+
 vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal, vec3 view_direction);
+vec4 calculate_point_light(PointLight pt_light, vec3 normal, vec3 frag_position, vec3 view_direction);
 
 void main()
 {
@@ -108,6 +133,9 @@ void main()
 	vec3 view_direction = normalize(Input.ViewPosition - Input.WorldPosition);
 
 	OutColor = calculate_directional_light(test_dir_light, normal, view_direction);
+
+	OutColor += calculate_point_light(p_light_0, normal, Input.WorldPosition, view_direction);
+	OutColor += calculate_point_light(p_light_1, normal, Input.WorldPosition, view_direction);
 }
 
 vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal, vec3 view_direction)
@@ -127,4 +155,31 @@ vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal, vec3 v
 	specular_color *= vec4(texture(u_SpecularSampler, Input.TexCoord).rgb, diffuse_color.a);
 
 	return (ambient_color + diffuse_color + specular_color);
+}
+
+vec4 calculate_point_light(PointLight pt_light, vec3 normal, vec3 frag_position, vec3 view_direction) {
+    vec3 light_direction =  normalize(pt_light.Position - frag_position);
+	float diffuse_dir_factor = max(dot(normal, light_direction), 0.0);
+
+    vec3 reflect_direction = reflect(-light_direction, normal);
+	float specular_dir_factor = pow(max(dot(view_direction, reflect_direction), 0.0), u_LocalUBO.shininess);
+
+    // Calculate attenuation, or light falloff over distance.
+    float distance = length(pt_light.Position - frag_position);
+    float attenuation = 1.0 / (pt_light.Quadratic * (distance * distance) + pt_light.Linear * distance + pt_light.Constant);
+
+	vec4 diffuse_texture = texture(u_DiffuseSampler, Input.TexCoord);
+    vec4 ambient_color = Input.AmbientColor;
+    vec4 diffuse_color = pt_light.Color * diffuse_dir_factor;
+    vec4 specular_color = pt_light.Color * specular_dir_factor;
+    
+	ambient_color *= diffuse_texture;
+	diffuse_color *= diffuse_texture;
+	specular_color *= vec4(texture(u_SpecularSampler, Input.TexCoord).rgb, diffuse_color.a);
+
+    ambient_color *= attenuation;
+    diffuse_color *= attenuation;
+    specular_color *= attenuation;
+
+    return (ambient_color + diffuse_color + specular_color);
 }
