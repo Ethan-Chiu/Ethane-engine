@@ -1,8 +1,7 @@
 #include "ethpch.h"
 #include "Framebuffer.h"
 #include "RendererAPI.h"
-#include "Ethane/Platform/OpenGL/OpenGLFramebuffer.h"
-#include "Ethane/Platform/Vulkan/vulkanFramebuffer.h"
+#include "Vulkan/vulkanFramebuffer.h"
 
 namespace Ethane {
 
@@ -13,8 +12,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLFramebuffer>(spec);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanFramebuffer>(spec);
 		}

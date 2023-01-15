@@ -1,12 +1,11 @@
 #include "ethpch.h"
 #include "RenderCommand.h"
 
-#include "Ethane/Platform/OpenGL/OpenGLRendererAPI.h"
-#include "Ethane/Platform/Vulkan/VulkanRendererAPI.h"
+#include "Vulkan/VulkanRendererAPI.h"
 
 namespace Ethane {
 
-	Ref<RendererAPI> RenderCommand::s_RendererAPI = CreateRef<OpenGLRendererAPI>();
+	Ref<RendererAPI> RenderCommand::s_RendererAPI = CreateRef<VulkanRendererAPI>();
 
 	void RenderCommand::Init()
 	{
@@ -14,10 +13,6 @@ namespace Ethane {
 		{
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT("endererAPI::None is currently not supported!");
-			break;
-		case RendererAPI::API::OpenGL:
-			s_RendererAPI = CreateRef<OpenGLRendererAPI>();
-			ETH_CORE_INFO("OpenGL graphic API selected");
 			break;
 		case RendererAPI::API::Vulkan:
 			s_RendererAPI = CreateRef<VulkanRendererAPI>();

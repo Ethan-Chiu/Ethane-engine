@@ -3,8 +3,7 @@
 
 #include <imgui.h>
 
-#include "Ethane/Platform/OpenGL/OpenGLImGuiLayer.h"
-#include "Ethane/Platform/Vulkan/VulkanImGuiLayer.h"
+#include "Ethane/Renderer/Vulkan/VulkanImGuiLayer.h"
 
 #include "Ethane/Renderer/RendererAPI.h"
 
@@ -14,9 +13,8 @@ namespace Ethane {
 	{
 		switch (RendererAPI::GetAPI())
 		{
-		case RendererAPI::API::None:    return nullptr;
-		case RendererAPI::API::Vulkan:  return new VulkanImGuiLayer();
-		case RendererAPI::API::OpenGL:  return new OpenGLImGuiLayer();
+			case RendererAPI::API::None:    return nullptr;
+			case RendererAPI::API::Vulkan:  return new VulkanImGuiLayer();
 		}
 		ETH_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;

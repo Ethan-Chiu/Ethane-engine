@@ -3,8 +3,7 @@
 
 #include "RendererAPI.h"
 
-#include "Ethane/Platform/OpenGL/OpenGLVertexBuffer.h"
-#include "Ethane/Platform/Vulkan/VulkanVertexBuffer.h"
+#include "Vulkan/VulkanVertexBuffer.h"
 
 namespace Ethane {
 
@@ -15,8 +14,6 @@ namespace Ethane {
 		case RendererAPI::API::None: 
 				ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 				return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLVertexBuffer>(size);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanVertexBuffer>(size);
 		}
@@ -32,8 +29,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLVertexBuffer>(vertices, size);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanVertexBuffer>(vertices, size);
 		}

@@ -1,8 +1,7 @@
 #include "ethpch.h"
 #include "Image.h"
 
-// #include "Platform/OpenGL/OpenGLImage.h"
-#include "Ethane/Platform/Vulkan/VulkanImage.h"
+#include "Vulkan/VulkanImage.h"
 
 #include "Ethane/Renderer/RendererAPI.h"
 

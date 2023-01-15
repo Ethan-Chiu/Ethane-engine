@@ -2,8 +2,7 @@
 #include "Shader.h"
 
 #include "RendererAPI.h"
-#include "Ethane/Platform/OpenGL/OpenGLShader.h"
-#include "Ethane/Platform/Vulkan/VulkanShader.h"
+#include "Vulkan/VulkanShader.h"
 
 namespace Ethane {
 
@@ -14,8 +13,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLShader>(filepath);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanShader>(filepath);
 		}
@@ -31,8 +28,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLShader>(name, vertexSrc, fragmentSrc);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanShader>(name, vertexSrc, fragmentSrc);
 		}

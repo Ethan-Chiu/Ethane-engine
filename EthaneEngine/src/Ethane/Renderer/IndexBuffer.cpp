@@ -3,8 +3,7 @@
 
 #include "Renderer.h"
 
-#include "Ethane/Platform/OpenGL/OpenGLIndexBuffer.h"
-#include "Ethane/Platform/Vulkan/VulkanIndexBuffer.h"
+#include "Vulkan/VulkanIndexBuffer.h"
 
 namespace Ethane {
 
@@ -15,8 +14,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLIndexBuffer>(indices, size/sizeof(uint32_t));
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanIndexBuffer>(indices, size);
 		}

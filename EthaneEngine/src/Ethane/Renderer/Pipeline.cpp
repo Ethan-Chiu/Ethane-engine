@@ -3,8 +3,7 @@
 
 #include "RendererAPI.h"
 
-#include "Ethane/Platform/OpenGL/OpenGLPipeline.h"
-#include "Ethane/Platform/Vulkan/VulkanPipeline.h"
+#include "Vulkan/VulkanPipeline.h"
 
 namespace Ethane {
 
@@ -15,8 +14,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLPipeline>(spec);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanPipeline>(spec);
 		}

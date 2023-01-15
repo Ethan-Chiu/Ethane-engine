@@ -1,8 +1,7 @@
 #include "ethpch.h"
 #include "Material.h"
 
-// #include "Ethane/Platform/OpenGL/OpenGLMaterial.h"
-#include "Ethane/Platform/Vulkan/VulkanMaterial.h"
+#include "Vulkan/VulkanMaterial.h"
 
 #include "RendererAPI.h"
 

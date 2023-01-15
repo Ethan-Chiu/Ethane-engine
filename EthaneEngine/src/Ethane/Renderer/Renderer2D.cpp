@@ -12,7 +12,7 @@
 #include "IndexBuffer.h"
 
 // TODO: temp
-#include "Ethane/Platform/Vulkan/VulkanRendererAPI.h"
+#include "Vulkan/VulkanRendererAPI.h"
 
 namespace Ethane {
 

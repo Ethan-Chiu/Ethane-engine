@@ -2,8 +2,7 @@
 #include "Texture.h"
 
 #include "RendererAPI.h"
-#include "Ethane/Platform/OpenGL/OpenGLTexture.h"
-#include "Ethane/Platform/Vulkan/VulkanTexture.h"
+#include "Vulkan/VulkanTexture.h"
 
 namespace Ethane {
 
@@ -14,8 +13,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLTexture2D>(width, height);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanTexture2D>(width, height);
 		}
@@ -31,8 +28,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLTexture2D>(path);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanTexture2D>(path);
 		}

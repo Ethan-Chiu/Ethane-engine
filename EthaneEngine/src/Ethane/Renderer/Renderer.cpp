@@ -1,8 +1,6 @@
 #include "ethpch.h"
 #include "Renderer.h"
 
-#include "Ethane/Platform/OpenGL/OpenGLShader.h"
-
 namespace Ethane {
 
 	RenderCommandQueue* Renderer::s_CommandQueue = nullptr;

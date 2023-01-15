@@ -3,8 +3,7 @@
 
 #include "RendererAPI.h"
 
-#include "Ethane/Platform/OpenGL/OpenGLRenderPass.h"
-#include "Ethane/Platform/Vulkan/VulkanRenderPass.h"
+#include "Vulkan/VulkanRenderPass.h"
 
 namespace Ethane {
 	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec)
@@ -14,8 +13,6 @@ namespace Ethane {
 		case RendererAPI::API::None:
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLRenderPass>(spec);
 		case RendererAPI::API::Vulkan:
 			return CreateRef<VulkanRenderPass>(spec);
 		}
