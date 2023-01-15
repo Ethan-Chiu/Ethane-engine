@@ -11,16 +11,13 @@
 
 #include "Ethane/Math/Math.h"
 
-// TODO: test temp remove
-// #include "Platform/Vulkan/VulkanTexture.h"
-
 namespace Ethane {
 
 	// TODO: temp
 	extern const std::filesystem::path g_AssetsPath;
 
 	EditorLayer::EditorLayer()
-		:Layer("EditorLayer") // , m_CameraController(1280.0f / 720.0f)
+		:Layer("EditorLayer")
 	{
 	}
 
@@ -56,7 +53,6 @@ namespace Ethane {
 		m_IconPlay = Texture2D::Create("Resources/Icons/Viewport/PlayButton.png");
 		m_IconStop = Texture2D::Create("Resources/Icons/Viewport/StopButton.png");
 
-		// TODO: test
 		// m_NodeGraph = NodeGraph();
 	}
 
@@ -92,16 +88,6 @@ namespace Ethane {
 			// m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
 		}
 #endif
-		
-
-		//Update
-		// if (m_ViewportFocused)
-		// {
-		// 	m_CameraController.OnUpdate(ts);
-		// }
-
-		// Update Scene and Render
-		// Renderer2D::ResetStats();
 
 		switch (m_SceneState)
 		{
@@ -270,13 +256,6 @@ namespace Ethane {
 		// OpenGL
 		// uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		// ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
-
-		// TODO: test remove
-		// if (!m_ViewportImage)
-		// {
-		// 	m_TexTest = Texture2D::Create("assets/textures/test.png");
-		// 	m_ViewportImage = UIImage(m_TexTest->GetImage());
-		// }
 		
 		m_ActiveScene->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		UIImage(m_ViewportRenderer->GetFinalPassImage()).Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
@@ -300,13 +279,6 @@ namespace Ethane {
 			ImGuizmo::SetDrawlist();
 
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
-
-			// Camera
-			// Runtime camera
-			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			// const glm::mat4& cameraProjection = camera.GetProjection();
-			// glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
 
 			// Editor camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();

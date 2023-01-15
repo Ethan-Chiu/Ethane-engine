@@ -11,7 +11,6 @@
 
 // TODO: test
 #include "Ethane/UI/UIImage.h"
-#include "Ethane/NodeGraph/NodeGraph.h"
 
 namespace Ethane {
 
@@ -73,8 +72,6 @@ namespace Ethane {
 		//Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
-		// TODO: test
-		NodeGraph::NodeGraph m_NodeGraph;
 
 		bool m_PrimaryCamera = true;
 
