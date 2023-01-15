@@ -53,8 +53,6 @@ namespace Ethane::Utils {
 		return nullptr;
 	}
 
-	// void RetrieveDiagnosticCheckpoints();
-
 	inline void VulkanCheckResult(VkResult result)
 	{
 		if (result != VK_SUCCESS)
@@ -64,8 +62,6 @@ namespace Ethane::Utils {
 			{
 				using namespace std::chrono_literals;
 				std::this_thread::sleep_for(3s);
-				//::Hazel::Utils::RetrieveDiagnosticCheckpoints();
-				// ::Hazel::Utils::DumpGPUInfo();
 			}
 			ETH_CORE_ASSERT(result == VK_SUCCESS);
 		}

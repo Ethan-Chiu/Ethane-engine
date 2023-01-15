@@ -131,20 +131,28 @@ namespace Ethane {
 
 		//--------------------------------------------------------------------------------------------------
 		// Create Instance
-		ETH_CORE_ASSERT(InitInstance(contextCreateInfo), "Instance creation failed!");
+		if (!InitInstance(contextCreateInfo)) {
+			ETH_CORE_ERROR("Instance creation failed!");
+		}
 		
 		//--------------------------------------------------------------------------------------------------
 		// Surface create
-		ETH_CORE_ASSERT(CreateSurface() == VK_SUCCESS, "Surface creation failed");
+		if (!CreateSurface() == VK_SUCCESS) {
+			ETH_CORE_ERROR("Surface creation failed");
+		}
 
 		//--------------------------------------------------------------------------------------------------
 		// Get compatible devices
 		auto compatibleDevices = GetCompatibleDevices(contextCreateInfo);
-		ETH_CORE_ASSERT(!compatibleDevices.empty(), "No compatible device found");
+		if (compatibleDevices.empty()) {
+			ETH_CORE_ERROR("No compatible device found");
+		}
 
 		//--------------------------------------------------------------------------------------------------
 		// Physical device & logical device
-		ETH_CORE_ASSERT(InitDevice(contextCreateInfo, compatibleDevices), "Device initialization failed");
+		if (!InitDevice(contextCreateInfo, compatibleDevices)) {
+			ETH_CORE_ERROR("Device initialization failed");
+		}
 
 		//--------------------------------------------------------------------------------------------------
 		// Swapchain cerate
