@@ -224,6 +224,8 @@ namespace Ethane {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        CreateCommandBuffers();
+
         ETH_CORE_INFO("SwapChain created");
     }
 
@@ -290,6 +292,22 @@ namespace Ethane {
         ETH_CORE_ASSERT("failed to find supported format!");
     }
 
+    void VulkanSwapChain::CreateCommandBuffers()
+    {
+        if (m_GraphicsCommandBuffers.empty()) {
+            m_GraphicsCommandBuffers.resize(m_ImageCount);
+        }
+
+        for (uint32_t i = 0; i < m_ImageCount; ++i) {
+            if (m_GraphicsCommandBuffers[i].GetHandle()) {
+                m_GraphicsCommandBuffers[i].Free(m_Device->GetGraphicsCommandPool());
+            }
+            m_GraphicsCommandBuffers[i].Allocate(m_Device->GetGraphicsCommandPool(), true);
+        }
+
+        ETH_CORE_INFO("Vulkan command buffers created.");
+    }
+
     void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
     {
         ETH_CORE_WARN("VulkanSwapChain::OnResize");
@@ -335,16 +353,26 @@ namespace Ethane {
 
         // TODO: check result
         vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
+        VK_CHECK_RESULT(vkResetFences(device, 1, &m_InFlightFences[m_CurrentFrame]));
+
 
         if (!AcquireNextImage()) {
             return false;
         }
 
+        VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
+        currentCommandBuffer.Reset();
+        currentCommandBuffer.Begin(false, false, false);
+
+        BeginRenderPass();
+
         return true;
     }
 
-    void VulkanSwapChain::BeginRenderPass(VulkanCommandBuffer currentCommandBuffer)
+    void VulkanSwapChain::BeginRenderPass()
     {
+        VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
+
         std::array<VkClearValue, 1> clearValues{};
         clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 #if depth
@@ -374,12 +402,11 @@ namespace Ethane {
         // vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
     }
 
-    void VulkanSwapChain::EndFrame(VulkanCommandBuffer currentCommandBuffer)
+    void VulkanSwapChain::EndFrame()
     {
         auto device = m_Device->GetVulkanDevice();
+        VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
         VkCommandBuffer currentCmdBufferHandle = currentCommandBuffer.GetHandle();
-
-        // vkCmdNextSubpass(currentCommandBuffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         std::vector<VkCommandBuffer> secondaryCommandBuffers;
         secondaryCommandBuffers.push_back((VulkanImGuiLayer::GetImGuiCommandBuffer())[m_CurrentFrame]);
@@ -388,15 +415,6 @@ namespace Ethane {
         
         vkCmdEndRenderPass(currentCmdBufferHandle);
         VK_CHECK_RESULT(vkEndCommandBuffer(currentCmdBufferHandle));
-       
-
-        if (m_ImagesInFlight[m_CurrentImageIndex] != VK_NULL_HANDLE)
-        {
-            vkWaitForFences(device, 1, &m_ImagesInFlight[m_CurrentImageIndex], VK_TRUE, UINT64_MAX); // wait for signaled // TODO: check result
-        }
-        m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrame];
-
-        VK_CHECK_RESULT(vkResetFences(device, 1, &m_InFlightFences[m_CurrentFrame]));
 
 
         VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
@@ -496,6 +514,14 @@ namespace Ethane {
         VkDevice device = m_Device->GetVulkanDevice();
 
         vkDeviceWaitIdle(device);
+
+        ETH_CORE_INFO("Destroying Vulkan command buffers...");
+        for (uint32_t i = 0; i < m_ImageCount; ++i) {
+            if (m_GraphicsCommandBuffers[i].GetHandle()) {
+                m_GraphicsCommandBuffers[i].Free(m_Device->GetGraphicsCommandPool());
+            }
+        }
+        m_GraphicsCommandBuffers.clear();
 
         for (size_t i = 0; i < m_MaxFramesInFlight; i++) {
             vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);

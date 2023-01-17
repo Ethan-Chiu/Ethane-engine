@@ -8,7 +8,7 @@ namespace Ethane {
 	class VulkanRenderCommandBuffer : public RenderCommandBuffer
 	{
 	public:
-		VulkanRenderCommandBuffer(uint32_t count = 0, std::string debugName = "", bool swapchain = false);
+		VulkanRenderCommandBuffer(uint32_t count = 0, std::string debugName = "");
 		~VulkanRenderCommandBuffer() override;
 
 		virtual void Begin() override;
@@ -31,8 +31,6 @@ namespace Ethane {
 		VkCommandPool m_CommandPool = nullptr;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 		std::vector<VkFence> m_WaitFences;
-
-		bool m_OwnedBySwapChain = true;
 	};
 
 }

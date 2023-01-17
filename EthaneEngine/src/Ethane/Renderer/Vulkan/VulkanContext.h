@@ -107,14 +107,12 @@ namespace Ethane {
 		static Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; }
 		static Ref<VulkanDevice> GetDevice() { return m_Device; }
 		static VulkanSwapChain GetSwapChain() { return m_SwapChain; }
-		static VulkanCommandBuffer GetCurrentCommandBuffer(uint32_t frame) { return m_GraphicsCommandBuffers[frame]; }
 
 	private:
 		bool InitInstance(const ContextCreateInfo& info);
 		void InitDebugUtils();
 		VkResult CreateSurface();
 		bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
-		void CreateCommandBuffers();
 
 		std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
 		VkResult FillFilteredNameArray(std::vector<std::string>& used,
@@ -151,8 +149,6 @@ namespace Ethane {
 		inline static Ref<VulkanDevice> m_Device;
 
 		inline static VulkanSwapChain m_SwapChain;
-
-		inline static std::vector<VulkanCommandBuffer> m_GraphicsCommandBuffers;
 	};
 
 
@@ -160,7 +156,7 @@ namespace Ethane {
 	// helper funtions ////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 
-
+	// TODO: move
 	namespace Utils {
 
 		inline uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)

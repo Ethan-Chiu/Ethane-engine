@@ -7,12 +7,12 @@
 
 namespace Ethane {
 
-	Ref<RenderCommandBuffer> RenderCommandBuffer::Create(uint32_t count, const std::string& debugName, bool fromSwapChain)
+	Ref<RenderCommandBuffer> RenderCommandBuffer::Create(uint32_t count, const std::string& debugName)
 	{
 		switch (RendererAPI::GetAPI())
 		{
 			case RendererAPI::API::None:    return nullptr;
-			case RendererAPI::API::Vulkan:  return CreateRef<VulkanRenderCommandBuffer>(count, debugName, fromSwapChain);
+			case RendererAPI::API::Vulkan:  return CreateRef<VulkanRenderCommandBuffer>(count, debugName);
 		}
 		ETH_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;

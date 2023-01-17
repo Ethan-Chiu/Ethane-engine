@@ -159,20 +159,12 @@ namespace Ethane {
 		uint32_t width = 1280, height = 720;
 		m_SwapChain.Create(m_Surface, m_Device, width, height, false);
 
-		CreateCommandBuffers();
 	}
+
 
 	void VulkanContext::Shutdown()
 	{
 		vkDeviceWaitIdle(m_Device->GetVulkanDevice());
-
-		ETH_CORE_INFO("Destroying Vulkan command buffers...");
-		for (uint32_t i = 0; i < m_SwapChain.GetImageCount(); ++i) {
-			if (m_GraphicsCommandBuffers[i].GetHandle()) {
-				m_GraphicsCommandBuffers[i].Free(m_Device->GetGraphicsCommandPool());
-			}
-		}
-		m_GraphicsCommandBuffers.clear();
 
 		m_SwapChain.Destroy();
 
@@ -454,22 +446,6 @@ namespace Ethane {
 		info.properties10 = properties2.properties;
 	}
 
-	void VulkanContext::CreateCommandBuffers()
-	{
-		if (m_GraphicsCommandBuffers.empty()) {
-			m_GraphicsCommandBuffers.resize(m_SwapChain.GetImageCount());
-		}
-
-		for (uint32_t i = 0; i < m_SwapChain.GetImageCount(); ++i) {
-			if (m_GraphicsCommandBuffers[i].GetHandle()) {
-				m_GraphicsCommandBuffers[i].Free(m_Device->GetGraphicsCommandPool());
-			}
-			m_GraphicsCommandBuffers[i].Allocate(m_Device->GetGraphicsCommandPool(), true);
-		}
-
-		ETH_CORE_INFO("Vulkan command buffers created.");
-	}
-
 
 	//--------------------------------------------------------------------------------------------------
 	//
@@ -477,18 +453,13 @@ namespace Ethane {
 	{
 		if (!m_SwapChain.BeginFrame())
 			return false;
-		VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_SwapChain.GetCurrentFrameIndex()];
-		currentCommandBuffer.Reset();
-		currentCommandBuffer.Begin(false, false, false);
-		m_SwapChain.BeginRenderPass(currentCommandBuffer);
 		return true;
 	}
 
 	void VulkanContext::SwapBuffers()
 	{
 		ETH_PROFILE_FUNCTION();
-		VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_SwapChain.GetCurrentFrameIndex()];
-		m_SwapChain.EndFrame(currentCommandBuffer);
+		m_SwapChain.EndFrame();
 	}
 
 	void VulkanContext::OnResize(uint32_t width, uint32_t height)

@@ -106,14 +106,17 @@ namespace Ethane
 							layer->OnUpdate(timestep);
 					}
 
-					m_ImGuiLayer->Begin();
+					if (m_ImGuiLayer)
 					{
-						ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
+						m_ImGuiLayer->Begin();
+						{
+							ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
 
-						for (Layer* layer : m_LayerStack)
-							layer->OnImGuiRender();
+							for (Layer* layer : m_LayerStack)
+								layer->OnImGuiRender();
+						}
+						m_ImGuiLayer->End();
 					}
-					m_ImGuiLayer->End();
 
 					Renderer::EndFrame();
 

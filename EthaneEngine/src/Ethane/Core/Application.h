@@ -50,7 +50,7 @@ namespace Ethane
 	private:
 		ApplicationCommandLineArgs m_CommandLineArgs;
 		Scope<Window> m_Window;
-		ImGuiLayer* m_ImGuiLayer;
+		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true;
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;

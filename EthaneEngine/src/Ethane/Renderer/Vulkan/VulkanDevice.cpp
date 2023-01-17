@@ -354,7 +354,7 @@ namespace Ethane {
 
 	}
 
-
+	// TODO: refacter 
 	VkCommandBuffer VulkanDevice::CreateCommandBuffer(QueueFamilyTypes type , bool oneTimeUse, bool begin)
 	{
 		VkCommandBuffer cmdBuffer;
@@ -425,6 +425,7 @@ namespace Ethane {
 		}
 	}
 
+	// TODO: refacter 
 	VkCommandBuffer VulkanDevice::CreateSecondaryCommandBuffer()
 	{
 		VkCommandBuffer cmdBuffer;

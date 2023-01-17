@@ -205,21 +205,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		// VulkanRendererAPI::BeginRenderPass(m_SelectedGeometryPipeline->GetSpecification().RenderPass);
-		// for (auto& dc : m_SelectedMeshDrawList)
-		// {
-		// 	Renderer::RenderMeshWithMaterial(m_CommandBuffer, m_SelectedGeometryPipeline, m_UniformBufferSet, nullptr, dc.Mesh, dc.Transform, m_SelectedGeometryMaterial);
-		// }
-		// Renderer::EndRenderPass(m_CommandBuffer);
-
 		VulkanRendererAPI::BeginRenderPass(m_GeometryPipeline->GetSpecification().RenderPass);
-		// Skybox
-		// m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SceneData.SkyboxLod);
-		// m_SkyboxMaterial->Set("u_Uniforms.Intensity", m_SceneData.SceneEnvironmentIntensity);
-
-		// const Ref<TextureCube> radianceMap = m_SceneData.SceneEnvironment ? m_SceneData.SceneEnvironment->RadianceMap : Renderer::GetBlackCubeTexture();
-		// m_SkyboxMaterial->Set("u_Texture", radianceMap);
-		// Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_SkyboxPipeline, m_UniformBufferSet, nullptr, m_SkyboxMaterial);
 
 		// Render entities
 		for (auto& dc : m_DrawList)
@@ -227,15 +213,7 @@ namespace Ethane {
 			// VulkanRendererAPI::DrawMesh(m_GeometryPipeline, dc.Mesh, dc.Material, dc.Transform);
 			VulkanRendererAPI::DrawMesh(m_GeometryPipeline, dc.Mesh, m_testMaterial, dc.Transform);
 		}
-		 // test VulkanRendererAPI::DrawMesh(m_GeometryPipeline, m_testMesh, m_testMaterial, glm::mat4(1.0f));
-
-		// for (auto& dc : m_SelectedMeshDrawList)
-		// {
-		// 	Renderer::RenderMesh(m_CommandBuffer, m_GeometryPipeline, m_UniformBufferSet, m_StorageBufferSet, dc.Mesh, dc.MaterialTable ? dc.MaterialTable : dc.Mesh->GetMaterials(), dc.Transform);
-		// 	if (m_Options.ShowSelectedInWireframe)
-		// 		Renderer::RenderMeshWithMaterial(m_CommandBuffer, m_GeometryWireframePipeline, m_UniformBufferSet, nullptr, dc.Mesh, dc.Transform, m_WireframeMaterial);
-		// }
-
+		
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
@@ -253,47 +231,9 @@ namespace Ethane {
 		VulkanRendererAPI::BeginRenderPass(m_CompositePipeline->GetSpecification().RenderPass, false);
 
 		auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-		// float exposure = 0.5;// m_SceneData.SceneCamera.Camera.GetExposure();
-		// int textureSamples = framebuffer->GetSpecification().Samples;
-
-		// CompositeMaterial->Set("u_Uniforms.Exposure", exposure);
-		// if (m_BloomSettings.Enabled)
-		// {
-		// 	CompositeMaterial->Set("u_Uniforms.BloomIntensity", m_BloomSettings.Intensity);
-		// 	CompositeMaterial->Set("u_Uniforms.BloomDirtIntensity", m_BloomSettings.DirtIntensity);
-		// }
-		// else
-		// {
-		// 	CompositeMaterial->Set("u_Uniforms.BloomIntensity", 0.0f);
-		// 	CompositeMaterial->Set("u_Uniforms.BloomDirtIntensity", 0.0f);
-		// }
-		// 
-		// CompositeMaterial->Set("u_Uniforms.TextureSamples", textureSamples);
-
-		// TODO:
-		// m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(framebuffer)->GetImage());
-		// CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
-		// CompositeMaterial->Set("u_BloomDirtTexture", m_BloomDirtTexture);
-
-		// m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
 
 		VulkanRendererAPI::DrawFullscreenQuad(m_CompositePipeline, m_CompositeMaterial);
-		// VulkanRendererAPI::SubmitFullscreenQuad(m_CommandBuffer, m_JumpFloodCompositePipeline, nullptr, m_JumpFloodCompositeMaterial);
 		VulkanRendererAPI::EndRenderPass();
-
-		//Renderer::BeginRenderPass(m_CommandBuffer, m_JumpFloodCompositePipeline->GetSpecification().RenderPass);
-		//Renderer::EndRenderPass(m_CommandBuffer);
-
-		// if (m_Options.ShowPhysicsColliders != SceneRendererOptions::PhysicsColliderView::None)
-		// {
-		// 	Renderer::BeginRenderPass(m_CommandBuffer, m_ExternalCompositeRenderPass);
-		// 	auto pipeline = m_Options.ShowPhysicsColliders == SceneRendererOptions::PhysicsColliderView::Normal ? m_GeometryWireframePipeline : m_GeometryWireframeOnTopPipeline;
-		// 	for (DrawCommand& dc : m_ColliderDrawList)
-		// 	{
-		// 		Renderer::RenderMeshWithMaterial(m_CommandBuffer, pipeline, m_UniformBufferSet, nullptr, dc.Mesh, dc.Transform, m_ColliderMaterial);
-		// 	}
-		// 	Renderer::EndRenderPass(m_CommandBuffer);
-		// }
 	}
 
 	void SceneRenderer::Flush()

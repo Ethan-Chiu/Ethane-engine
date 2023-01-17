@@ -32,9 +32,7 @@ namespace Ethane{
 		void OnResize(uint32_t width, uint32_t height);
 
 		bool BeginFrame();
-		// TODO: test
-		void BeginRenderPass(VulkanCommandBuffer currentCommandBuffer);
-		void EndFrame(VulkanCommandBuffer currentCommandBuffer);
+		void EndFrame();
 
 		// Getter
 		VkSurfaceKHR GetSurface() const { return m_Surface; }
@@ -53,9 +51,11 @@ namespace Ethane{
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		void CreateCommandBuffers();
 
 		bool Resize();
 
+		void BeginRenderPass();
 		bool AcquireNextImage();
 		void Present(VkQueue queue, VkSemaphore signalSemaphore = VK_NULL_HANDLE);
 	private:
@@ -82,6 +82,7 @@ namespace Ethane{
 		std::vector<VkFramebuffer> m_Framebuffers;
 
 		VulkanRenderPass m_RenderPass;
+		std::vector<VulkanCommandBuffer> m_GraphicsCommandBuffers;
 
 		bool m_VSync = false;
 

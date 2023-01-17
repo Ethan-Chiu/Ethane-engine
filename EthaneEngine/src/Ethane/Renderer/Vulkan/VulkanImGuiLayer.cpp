@@ -190,33 +190,6 @@ namespace Ethane {
 
 		uint32_t width = swapChain.GetWidth();
 		uint32_t height = swapChain.GetHeight();
-
-
-		// VkClearValue clearValues[2];
-		// clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
-		// clearValues[1].depthStencil = { 1.0f, 0 };
-		// 
-		// VkCommandBufferBeginInfo drawCmdBufInfo = {};
-		// drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		// drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		// drawCmdBufInfo.pNext = nullptr;
-		// 
-		// VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
-		// VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
-		// 
-		// VkRenderPassBeginInfo renderPassBeginInfo = {};
-		// renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		// renderPassBeginInfo.pNext = nullptr;
-		// renderPassBeginInfo.renderPass = swapChain.GetRenderPass();
-		// renderPassBeginInfo.renderArea.offset.x = 0;
-		// renderPassBeginInfo.renderArea.offset.y = 0;
-		// renderPassBeginInfo.renderArea.extent.width = width;
-		// renderPassBeginInfo.renderArea.extent.height = height;
-		// renderPassBeginInfo.clearValueCount = 2; // Color + depth
-		// renderPassBeginInfo.pClearValues = clearValues;
-		// renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-		// 
-		// vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 		
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -250,15 +223,7 @@ namespace Ethane {
 		ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffers[commandBufferIndex]);
 		
 		VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex]));
-		
-		// std::vector<VkCommandBuffer> commandBuffers;
-		// commandBuffers.push_back(s_ImGuiCommandBuffers[commandBufferIndex]);
-		
-		// vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
-		// 
-		// vkCmdEndRenderPass(drawCommandBuffer);
-		// 
-		// VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
+
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
