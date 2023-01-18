@@ -305,7 +305,7 @@ namespace Ethane {
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
 		
 		auto vulkanShader = std::dynamic_pointer_cast<VulkanShader>(m_Shader);
 

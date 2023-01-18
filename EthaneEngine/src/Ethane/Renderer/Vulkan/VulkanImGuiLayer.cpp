@@ -105,10 +105,10 @@ namespace Ethane {
 		init_info.DescriptorPool = descriptorPool;
 		init_info.Allocator = nullptr;
 		init_info.MinImageCount = 2;
-		VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();// Application::Get().GetWindow().GetSwapChain();
-		init_info.ImageCount = swapChain.GetImageCount();
+		const Ref<VulkanSwapChain> swapChain = VulkanContext::GetSwapChain();// Application::Get().GetWindow().GetSwapChain();
+		init_info.ImageCount = swapChain->GetImageCount();
 		init_info.CheckVkResultFn = Utils::VulkanCheckResult;
-		ImGui_ImplVulkan_Init(&init_info, swapChain.GetRenderPass());
+		ImGui_ImplVulkan_Init(&init_info, swapChain->GetRenderPass());
 
 		// Load Fonts
 		// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -139,7 +139,7 @@ namespace Ethane {
 
 		SetDarkThemeColors();
 
-		uint32_t framesInFlight = swapChain.GetMaxFramesInFlight();// Renderer::GetConfig().FramesInFlight;
+		uint32_t framesInFlight = swapChain->GetMaxFramesInFlight();// Renderer::GetConfig().FramesInFlight;
 		s_ImGuiCommandBuffers.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++)
 			s_ImGuiCommandBuffers[i] = VulkanContext::GetDevice()->CreateSecondaryCommandBuffer();
@@ -183,16 +183,16 @@ namespace Ethane {
 
 		ImGui::Render();
 		
-		VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
-		uint32_t commandBufferIndex = swapChain.GetCurrentFrameIndex();
+		const Ref<VulkanSwapChain> swapChain = VulkanContext::GetSwapChain();
+		uint32_t commandBufferIndex = swapChain->GetCurrentFrameIndex();
 
-		uint32_t width = swapChain.GetWidth();
-		uint32_t height = swapChain.GetHeight();
+		uint32_t width = swapChain->GetWidth();
+		uint32_t height = swapChain->GetHeight();
 		
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritanceInfo.renderPass = swapChain.GetRenderPass();
-		inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+		inheritanceInfo.renderPass = swapChain->GetRenderPass();
+		inheritanceInfo.framebuffer = swapChain->GetCurrentFramebuffer();
 		
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -206,7 +206,7 @@ namespace Ethane {
 		
 		VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex]));
 
-		swapChain.RegisterSecondaryCmdBuffer(s_ImGuiCommandBuffers[commandBufferIndex]);
+		swapChain->RegisterSecondaryCmdBuffer(s_ImGuiCommandBuffers[commandBufferIndex]);
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

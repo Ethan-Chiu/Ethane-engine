@@ -24,11 +24,10 @@ namespace Ethane{
 		VulkanSwapChain() = default;
 		~VulkanSwapChain();
 
-		//VulkanSwapChain(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
-
-		//static Ref<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface,  Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
+		VulkanSwapChain(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
+		static Ref<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface,  Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
 		
-		void Create(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
+		void Init();
 		void Destroy();
 
 		void CleanupSwapChain(VkSwapchainKHR swapchain);
@@ -43,7 +42,7 @@ namespace Ethane{
 		VkSurfaceKHR GetSurface() const { return m_Surface; }
 		VkFormat GetImageFormat() const { return m_ImageFormat; }
 		VkFormat GetDepthFormat() const { return m_DepthFormat; }
-		VkRenderPass GetRenderPass() { return m_RenderPass.GetHandle(); } // test
+		VkRenderPass GetRenderPass() const { return m_RenderPass.GetHandle(); } // test
 		uint32_t GetImageCount() const { return m_ImageCount; } // test
 		uint32_t GetWidth() const { return m_Extent.width; }// test
 		uint32_t GetHeight() const { return m_Extent.height; }// test
@@ -66,8 +65,8 @@ namespace Ethane{
 	private:
 		VkSwapchainKHR m_SwapChain = nullptr;
 
-		Ref<VulkanDevice> m_Device;
-		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
+		Ref<VulkanDevice> m_Device = nullptr;
+		Ref<VulkanPhysicalDevice> m_PhysicalDevice = nullptr;
 
 		VkSurfaceKHR m_Surface;
 		uint32_t m_Width = 0, m_Height = 0;
@@ -101,7 +100,7 @@ namespace Ethane{
 		uint32_t m_CurrentFrame = 0;
 		uint32_t m_CurrentImageIndex = 0;
 
-		bool m_IsRecreating;
+		bool m_IsRecreating = false;
 	};
 
 }

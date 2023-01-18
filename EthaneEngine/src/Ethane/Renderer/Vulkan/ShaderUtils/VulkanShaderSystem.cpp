@@ -48,7 +48,7 @@ namespace Ethane {
 
 	void VulkanShaderSystem::SetUniformBuffer(uint32_t set, uint32_t binding, const void* data, uint32_t size, uint32_t offset)
 	{
-		uint32_t bufferIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();
+		uint32_t bufferIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex();
 		s_UniformBufferSet->Get(bufferIndex, set, binding)->SetData(data, size, offset);
 	}
 }

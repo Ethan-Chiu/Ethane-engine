@@ -106,7 +106,7 @@ namespace Ethane {
 		static VkInstance GetInstance() { return s_VulkanInstance; }
 		static Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; }
 		static Ref<VulkanDevice> GetDevice() { return m_Device; }
-		static VulkanSwapChain& GetSwapChain() { return m_SwapChain; }
+		static const Ref<VulkanSwapChain> GetSwapChain() { return m_SwapChain; }
 
 	private:
 		bool InitInstance(const ContextCreateInfo& info);
@@ -148,7 +148,7 @@ namespace Ethane {
 		inline static Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 		inline static Ref<VulkanDevice> m_Device;
 
-		inline static VulkanSwapChain m_SwapChain;
+		inline static Ref<VulkanSwapChain> m_SwapChain;
 	};
 
 

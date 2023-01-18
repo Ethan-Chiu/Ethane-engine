@@ -51,7 +51,7 @@ namespace Ethane {
 
 	void VulkanRenderCommandBuffer::Begin()
 	{
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex();// Renderer::GetCurrentFrameIndex();
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -64,14 +64,14 @@ namespace Ethane {
 
 	void VulkanRenderCommandBuffer::End()
 	{
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 	}
 
 	void VulkanRenderCommandBuffer::Submit()
 	{
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex();
 
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 

@@ -18,7 +18,7 @@ namespace Ethane {
 		VulkanRenderPass(const RenderPassSpecification& spec);
 		virtual ~VulkanRenderPass() {};
 
-		void Create(bool hasDepth);
+		void Create(bool hasDepth, VkFormat imageFormat, VkFormat depthFormat);
 		void Destroy();
 		void Begin(VkCommandBuffer cmdBuffer, uint32_t width, uint32_t height, VkFramebuffer frameBuffer);
 		void End(VkCommandBuffer cmdBuffer);
@@ -27,7 +27,7 @@ namespace Ethane {
 		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 
-		VkRenderPass GetHandle() { return m_RenderPass; }
+		VkRenderPass GetHandle() const { return m_RenderPass; }
 	private:
 		RenderPassSpecification m_Specification;
 

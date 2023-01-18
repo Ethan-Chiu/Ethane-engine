@@ -20,32 +20,25 @@ namespace Ethane {
         ETH_CORE_TRACE("VulkanSwapChain destructed");
     }
 
-    //VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
-    //    : m_Surface(surface),
-    //    m_Device(device),
-    //    m_PhysicalDevice(device->GetPhysicalDevice()),
-    //    m_VSync(vsync),
-    //    m_Width(width),
-    //    m_Height(height)
-    //{
-    //}
+    VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
+        : m_Surface(surface),
+        m_Device(device),
+        m_PhysicalDevice(device->GetPhysicalDevice()),
+        m_VSync(vsync),
+        m_Width(width),
+        m_Height(height)
+    {
+    }
 
- //   Ref<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
-	//{
-	//	return CreateRef<VulkanSwapChain>(surface, device, width, height, vsync);
-	//}
+    Ref<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
+	{
+		return CreateRef<VulkanSwapChain>(surface, device, width, height, vsync);
+	}
 
-    void VulkanSwapChain::Create(VkSurfaceKHR surface, Ref<VulkanDevice> _device, uint32_t width, uint32_t height, bool vsync)
+    void VulkanSwapChain::Init()
     {
         // for profiling
         Timer timer;
-
-        m_Surface = surface;
-        m_Device = _device;
-        m_PhysicalDevice = _device->GetPhysicalDevice();
-        m_VSync = vsync;
-        m_Width = width;
-        m_Height = height;
 
         VkSwapchainKHR oldSwapchain = m_SwapChain;
 
@@ -187,7 +180,7 @@ namespace Ethane {
 #if depth
 #endif
         // Render pass
-        m_RenderPass.Create(false);
+        m_RenderPass.Create(false, m_ImageFormat, m_DepthFormat);
 
         // Framebuffers 
         m_Framebuffers.resize(m_ImageViews.size());
@@ -345,7 +338,7 @@ namespace Ethane {
         auto device = m_Device->GetVulkanDevice();
         vkDeviceWaitIdle(device);
         
-        Create(m_Surface, m_Device, m_Width, m_Height, m_VSync);
+        Init();
 
         m_NeedResize = false;
         m_IsRecreating = false;

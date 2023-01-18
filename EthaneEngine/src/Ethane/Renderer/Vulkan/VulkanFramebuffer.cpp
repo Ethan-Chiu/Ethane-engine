@@ -80,8 +80,8 @@ namespace Ethane {
 		else
 		{
 			ETH_CORE_ASSERT("Haven't done");
-			VulkanSwapChain& swapChain = VulkanContext::GetSwapChain(); // Application::Get().GetWindow().GetSwapChain();
-			m_RenderPass = swapChain.GetRenderPass();
+			const Ref<VulkanSwapChain> swapChain = VulkanContext::GetSwapChain(); // Application::Get().GetWindow().GetSwapChain();
+			m_RenderPass = swapChain->GetRenderPass();
 
 			m_ClearValues.clear();
 			m_ClearValues.emplace_back().color = { 0.0f, 0.0f, 0.0f, 1.0f };

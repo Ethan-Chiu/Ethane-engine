@@ -12,7 +12,7 @@ namespace Ethane {
 		m_RenderPass = std::dynamic_pointer_cast<VulkanFramebuffer>(m_Specification.TargetFramebuffer)->GetRenderPass();
 	}
 
-	void VulkanRenderPass::Create(bool hasDepth)
+	void VulkanRenderPass::Create(bool hasDepth, VkFormat imageFormat, VkFormat depthFormat)
 	{
         std::vector<VkAttachmentDescription> allAttachments;
         std::vector<VkAttachmentReference>   colorAttachmentRefs;
@@ -22,7 +22,7 @@ namespace Ethane {
         // TODO: 2 attachment for now
         // for (const auto& format : colorAttachmentFormats) {}
         VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = VulkanContext::GetSwapChain().GetImageFormat(); // TODO
+        colorAttachment.format = imageFormat; // TODO
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // TODO: configuration check nvvk
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -41,7 +41,7 @@ namespace Ethane {
         VkAttachmentReference depthAttachmentRef = {};
         if (hasDepth) {
             VkAttachmentDescription depthAttachment = {};
-            depthAttachment.format = VulkanContext::GetSwapChain().GetDepthFormat(); //TODO
+            depthAttachment.format = depthFormat; //TODO
             depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // TODO: configuration check nvvk
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;

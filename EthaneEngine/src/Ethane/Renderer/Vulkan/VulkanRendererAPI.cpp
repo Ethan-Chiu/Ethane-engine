@@ -94,7 +94,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
 		allocInfo.descriptorPool = s_Data->DescriptorPools[frameIndex];
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
 		VkDescriptorSet result;
@@ -106,7 +106,7 @@ namespace Ethane {
 	void VulkanRendererAPI::BeginFrame()
 	{
 		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // // Application::Get().GetWindow().GetSwapChain();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex(); // // Application::Get().GetWindow().GetSwapChain();
 		vkResetDescriptorPool(device, s_Data->DescriptorPools[frameIndex], 0);
 		s_Data->UpdatedMaterial.clear();
 	}
@@ -126,7 +126,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION(fmt::format("VulkanRenderer::BeginRenderPass ({})", renderPass->GetSpecification().DebugName).c_str());
 
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanRenderCommandBuffer>(s_RenderCommandBuffer)->GetCommandBuffer(frameIndex);// VulkanContext::GetSwapChain().GetCurrentCommandBuffer();
 
 		auto fb = renderPass->GetSpecification().TargetFramebuffer;
@@ -142,9 +142,9 @@ namespace Ethane {
 		VkRenderPassBeginInfo renderPassBeginInfo = {};
 		if (framebuffer->GetSpecification().SwapChainTarget)
 		{
-			VulkanSwapChain& swapChain = VulkanContext::GetSwapChain(); // Application::Get().GetWindow().GetSwapChain();
-			width = swapChain.GetWidth();
-			height = swapChain.GetHeight();
+			const Ref<VulkanSwapChain> swapChain = VulkanContext::GetSwapChain(); // Application::Get().GetWindow().GetSwapChain();
+			width = swapChain->GetWidth();
+			height = swapChain->GetHeight();
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
 			renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
@@ -152,7 +152,7 @@ namespace Ethane {
 			renderPassBeginInfo.renderArea.offset.y = 0;
 			renderPassBeginInfo.renderArea.extent.width = width;
 			renderPassBeginInfo.renderArea.extent.height = height;
-			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+			renderPassBeginInfo.framebuffer = swapChain->GetCurrentFramebuffer();
 
 			viewport.x = 0.0f;
 			viewport.y = (float)height;
@@ -235,7 +235,7 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION("VulkanRenderer::EndRenderPass");
 
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanRenderCommandBuffer>(s_RenderCommandBuffer)->GetCommandBuffer(frameIndex);// VulkanContext::GetSwapChain().GetCurrentCommandBuffer();
 
 		vkCmdEndRenderPass(commandBuffer);
@@ -266,7 +266,7 @@ namespace Ethane {
 		Ref<VulkanMaterial> vulkanMaterial = std::dynamic_pointer_cast<VulkanMaterial>(material);
 		ETH_PROFILE_FUNCTION("VulkanRenderer::RenderQuad");
 
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
 		// VkCommandBuffer commandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameIndex);
 		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanRenderCommandBuffer>(s_RenderCommandBuffer)->GetCommandBuffer(frameIndex);// VulkanContext::GetSwapChain().GetCurrentCommandBuffer();
 
@@ -299,7 +299,7 @@ namespace Ethane {
 		
 		ETH_PROFILE_FUNCTION("VulkanRenderer::SubmitFullscreenQuad");
 
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex(); // Renderer::GetCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanRenderCommandBuffer>(s_RenderCommandBuffer)->GetCommandBuffer(frameIndex);// VulkanContext::GetSwapChain().GetCurrentCommandBuffer();
 
 		auto vulkanMeshVB = std::dynamic_pointer_cast<VulkanVertexBuffer>(s_Data->QuadVertexBuffer);
@@ -326,7 +326,7 @@ namespace Ethane {
 	{
 		ETH_CORE_ASSERT(mesh);
 		
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanRenderCommandBuffer>(s_RenderCommandBuffer)->GetCommandBuffer(frameIndex);
 
 		Ref<VulkanMaterial> vulkanMaterial = std::dynamic_pointer_cast<VulkanMaterial>(material);
@@ -376,7 +376,7 @@ namespace Ethane {
 
 		ETH_PROFILE_FUNCTION("VulkanRenderer::RenderGeometry");
 
-		uint32_t frameIndex = VulkanContext::GetSwapChain().GetCurrentFrameIndex();
+		uint32_t frameIndex = VulkanContext::GetSwapChain()->GetCurrentFrameIndex();
 		VkCommandBuffer commandBuffer = std::dynamic_pointer_cast<VulkanRenderCommandBuffer>(s_RenderCommandBuffer)->GetCommandBuffer(frameIndex);
 
 		auto vulkanMeshVB = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
