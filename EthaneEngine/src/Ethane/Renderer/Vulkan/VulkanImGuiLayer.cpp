@@ -16,8 +16,6 @@
 
 namespace Ethane {
 
-	std::vector<VkCommandBuffer> VulkanImGuiLayer::s_ImGuiCommandBuffers = {};
-
 	VulkanImGuiLayer::VulkanImGuiLayer()
 	{
 
@@ -140,17 +138,20 @@ namespace Ethane {
 		SetDarkThemeColors();
 
 		uint32_t framesInFlight = swapChain->GetMaxFramesInFlight();// Renderer::GetConfig().FramesInFlight;
-		s_ImGuiCommandBuffers.resize(framesInFlight);
+		m_ImGuiCommandBuffers.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++)
-			s_ImGuiCommandBuffers[i] = VulkanContext::GetDevice()->CreateSecondaryCommandBuffer();
+			m_ImGuiCommandBuffers[i] = VulkanContext::GetDevice()->CreateSecondaryCommandBuffer();
 
 	}
 
 	void VulkanImGuiLayer::Cleanup()
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		vkFreeCommandBuffers(device, VulkanContext::GetDevice()->GetGraphicsCommandPool(), static_cast<uint32_t>(VulkanImGuiLayer::GetImGuiCommandBuffer().size()), VulkanImGuiLayer::GetImGuiCommandBuffer().data());
+		
+		if (m_ImGuiCommandBuffers.size() > 0)
+		{
+			vkFreeCommandBuffers(device, VulkanContext::GetDevice()->GetGraphicsCommandPool(), static_cast<uint32_t>(m_ImGuiCommandBuffers.size()), m_ImGuiCommandBuffers.data());
+		}
 	}
 
 	void VulkanImGuiLayer::OnDetach()
@@ -158,6 +159,7 @@ namespace Ethane {
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
 		VK_CHECK_RESULT(vkDeviceWaitIdle(device));
+		Cleanup();
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -199,14 +201,14 @@ namespace Ethane {
 		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 		
-		VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
+		VK_CHECK_RESULT(vkBeginCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
 		
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffers[commandBufferIndex]);
+		ImGui_ImplVulkan_RenderDrawData(main_draw_data, m_ImGuiCommandBuffers[commandBufferIndex]);
 		
-		VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex]));
+		VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
 
-		swapChain->RegisterSecondaryCmdBuffer(s_ImGuiCommandBuffers[commandBufferIndex]);
+		swapChain->RegisterSecondaryCmdBuffer(m_ImGuiCommandBuffers[commandBufferIndex]);
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

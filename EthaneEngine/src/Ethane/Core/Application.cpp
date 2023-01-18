@@ -26,13 +26,13 @@ namespace Ethane
 
 		m_Window = Window::Create(WindowProps(name));
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
-		// m_Window->SetVSync(false); // deal with this tomorrow
+		// m_Window->SetVSync(false);
 		
 		AssetManager::Init();
 		Renderer::Init();
 
-		m_ImGuiLayer = ImGuiLayer::Create();
-		PushOverlay(m_ImGuiLayer);
+		//m_ImGuiLayer = ImGuiLayer::Create();
+		//PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -120,11 +120,7 @@ namespace Ethane
 
 					Renderer::EndFrame();
 
-					// auto [x, y] = Input::GetMousePosition();
-					// ETH_CORE_TRACE("{0}, {1}", x, y);
-
 					m_Window->EndFrame();
-					// m_ImGuiLayer->End();
 				}
 			}
 		}
@@ -133,6 +129,9 @@ namespace Ethane
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		m_Running = false;
+
+		m_Window->Shutdown();
+
 		return true;
 	}
 

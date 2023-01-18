@@ -23,13 +23,6 @@ namespace Ethane {
 		s_Data->DescriptorPools.resize(config.FramesInFlight);
 		s_Data->DescriptorPoolAllocationCount.resize(config.FramesInFlight);
 
-		// auto& caps = s_Data->RenderCaps;
-		// caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
-		// caps.Device = properties.deviceName;
-		// caps.Version = std::to_string(properties.driverVersion);
-
-		// Utils::DumpGPUInfo();
-
 		// Create descriptor pools
 		VkDescriptorPoolSize pool_sizes[] =
 		{

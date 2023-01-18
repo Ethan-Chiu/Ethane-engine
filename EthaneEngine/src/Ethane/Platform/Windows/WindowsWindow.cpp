@@ -35,9 +35,6 @@ namespace Ethane {
 
 	WindowsWindow::~WindowsWindow()
 	{
-		ETH_PROFILE_FUNCTION();
-
-		Shutdown();
 	}
 
 	void WindowsWindow::Init(const WindowProps& props)

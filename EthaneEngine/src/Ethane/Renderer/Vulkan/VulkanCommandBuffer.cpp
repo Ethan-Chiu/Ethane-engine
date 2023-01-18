@@ -6,13 +6,13 @@
 namespace Ethane {
 
     VulkanCommandBuffer::VulkanCommandBuffer()
+        :m_State(CommandBufferState::NOT_ALLOCATED)
     {
+        m_Device = VulkanContext::GetDevice()->GetVulkanDevice();
     }
 
     void VulkanCommandBuffer::Allocate(VkCommandPool pool, bool isPrimary)
     {
-        m_Device = VulkanContext::GetDevice()->GetVulkanDevice();
-
         VkCommandBufferAllocateInfo cmdBufAllocateInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
         cmdBufAllocateInfo.pNext = nullptr;
         cmdBufAllocateInfo.commandPool = pool;

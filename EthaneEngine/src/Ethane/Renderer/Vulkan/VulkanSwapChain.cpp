@@ -429,8 +429,11 @@ namespace Ethane {
         VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
         VkCommandBuffer currentCmdBufferHandle = currentCommandBuffer.GetHandle();
 
-        vkCmdExecuteCommands(currentCmdBufferHandle, uint32_t(m_SecondaryCommandBuffers.size()), m_SecondaryCommandBuffers.data());
-        m_SecondaryCommandBuffers.clear();
+        if (uint32_t(m_SecondaryCommandBuffers.size()) > 0)
+        {
+            vkCmdExecuteCommands(currentCmdBufferHandle, uint32_t(m_SecondaryCommandBuffers.size()), m_SecondaryCommandBuffers.data());
+            m_SecondaryCommandBuffers.clear();
+        }
 
         vkCmdEndRenderPass(currentCmdBufferHandle);
         VK_CHECK_RESULT(vkEndCommandBuffer(currentCmdBufferHandle));
@@ -542,6 +545,7 @@ namespace Ethane {
         }
         m_GraphicsCommandBuffers.clear();
 
+        ETH_CORE_INFO("Destroying Vulkan swapchain sync objects...");
         for (size_t i = 0; i < m_MaxFramesInFlight; i++) {
             vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
@@ -550,7 +554,6 @@ namespace Ethane {
 
         CleanupSwapChain(m_SwapChain);
 
-        VulkanImGuiLayer::Cleanup();
     }
 
 }

@@ -20,14 +20,14 @@ namespace Ethane{
 
 		virtual void BlockEvents(bool block) override { m_BlockEvents = block; }
 
-		// TODO: test
-		static void Cleanup();
-		static std::vector<VkCommandBuffer>& GetImGuiCommandBuffer() { return s_ImGuiCommandBuffers; };
+	private: 
+		void Cleanup();
+
 	private:
 		bool m_BlockEvents = true;
 		float m_Time = 0.0f;
 
-		static std::vector<VkCommandBuffer> s_ImGuiCommandBuffers;
+		std::vector<VkCommandBuffer> m_ImGuiCommandBuffers = {};
 	};
 
 }

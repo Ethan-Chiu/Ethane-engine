@@ -12,13 +12,13 @@ namespace Ethane {
 		WindowsWindow(const WindowProps& props);
 		virtual ~WindowsWindow();
 
-		// TODO: test
 		bool BeginFrame() override;
 		void EndFrame() override;
 
 		void PollEvent() override;
 
-		void OnResize(uint32_t width, uint32_t height);
+		void OnResize(uint32_t width, uint32_t height) override;
+		void Shutdown() override;
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
@@ -29,9 +29,10 @@ namespace Ethane {
 		bool IsVSync() const;
 
 		inline virtual void* GetNativeWindow() const { return m_Window; };
+	
 	private:
 		virtual void Init(const WindowProps& props);
-		virtual void Shutdown();
+
 	private:
 		GLFWwindow* m_Window;
 		Scope<GraphicsContext> m_Context;
