@@ -17,9 +17,25 @@ namespace Ethane {
 
     VulkanSwapChain::~VulkanSwapChain()
     {
+        ETH_CORE_TRACE("VulkanSwapChain destructed");
     }
 
-    void VulkanSwapChain::Create(VkSurfaceKHR surface, const Ref<VulkanDevice>& _device, uint32_t width, uint32_t height, bool vsync)
+    //VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
+    //    : m_Surface(surface),
+    //    m_Device(device),
+    //    m_PhysicalDevice(device->GetPhysicalDevice()),
+    //    m_VSync(vsync),
+    //    m_Width(width),
+    //    m_Height(height)
+    //{
+    //}
+
+ //   Ref<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
+	//{
+	//	return CreateRef<VulkanSwapChain>(surface, device, width, height, vsync);
+	//}
+
+    void VulkanSwapChain::Create(VkSurfaceKHR surface, Ref<VulkanDevice> _device, uint32_t width, uint32_t height, bool vsync)
     {
         // for profiling
         Timer timer;
@@ -364,9 +380,29 @@ namespace Ethane {
         currentCommandBuffer.Reset();
         currentCommandBuffer.Begin(false, false, false);
 
+        SetViewportAndScissor();
         BeginRenderPass();
 
         return true;
+    }
+
+    void VulkanSwapChain::SetViewportAndScissor()
+    {
+        VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = (float)m_Extent.width;
+        viewport.height = (float)m_Extent.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(currentCommandBuffer.GetHandle(), 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = { 0, 0 };
+        scissor.extent = m_Extent;
+        vkCmdSetScissor(currentCommandBuffer.GetHandle(), 0, 1, &scissor);
     }
 
     void VulkanSwapChain::BeginRenderPass()
@@ -378,6 +414,7 @@ namespace Ethane {
 #if depth
         clearValues[1].depthStencil = { 1.0f, 0 };
 #endif        
+
         VkRenderPassBeginInfo renderPassInfo{ VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
         renderPassInfo.renderPass = m_RenderPass.GetHandle();
         renderPassInfo.framebuffer = m_Framebuffers[m_CurrentImageIndex];
@@ -386,20 +423,11 @@ namespace Ethane {
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
         renderPassInfo.pClearValues = clearValues.data();
         vkCmdBeginRenderPass(currentCommandBuffer.GetHandle(), &renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+    }
 
-        // VkViewport viewport{};
-        // viewport.x = 0.0f;
-        // viewport.y = 0.0f;
-        // viewport.width = (float)m_Extent.width;
-        // viewport.height = (float)m_Extent.height;
-        // viewport.minDepth = 0.0f;
-        // viewport.maxDepth = 1.0f;
-        // vkCmdSetViewport(currentCommandBuffer, 0, 1, &viewport);
-        // 
-        // VkRect2D scissor{};
-        // scissor.offset = { 0, 0 };
-        // scissor.extent = m_Extent;
-        // vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
+    void VulkanSwapChain::RegisterSecondaryCmdBuffer(VkCommandBuffer secondaryBuffer)
+    {
+        m_SecondaryCommandBuffers.push_back(secondaryBuffer);
     }
 
     void VulkanSwapChain::EndFrame()
@@ -408,11 +436,9 @@ namespace Ethane {
         VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
         VkCommandBuffer currentCmdBufferHandle = currentCommandBuffer.GetHandle();
 
-        std::vector<VkCommandBuffer> secondaryCommandBuffers;
-        secondaryCommandBuffers.push_back((VulkanImGuiLayer::GetImGuiCommandBuffer())[m_CurrentFrame]);
+        vkCmdExecuteCommands(currentCmdBufferHandle, uint32_t(m_SecondaryCommandBuffers.size()), m_SecondaryCommandBuffers.data());
+        m_SecondaryCommandBuffers.clear();
 
-        vkCmdExecuteCommands(currentCmdBufferHandle, uint32_t(secondaryCommandBuffers.size()), secondaryCommandBuffers.data());
-        
         vkCmdEndRenderPass(currentCmdBufferHandle);
         VK_CHECK_RESULT(vkEndCommandBuffer(currentCmdBufferHandle));
 

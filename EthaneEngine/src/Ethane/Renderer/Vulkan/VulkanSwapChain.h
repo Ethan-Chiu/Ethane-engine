@@ -24,7 +24,11 @@ namespace Ethane{
 		VulkanSwapChain() = default;
 		~VulkanSwapChain();
 
-		void Create(VkSurfaceKHR surface, const Ref<VulkanDevice>& device, uint32_t width, uint32_t height, bool vsync);
+		//VulkanSwapChain(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
+
+		//static Ref<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface,  Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
+		
+		void Create(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync);
 		void Destroy();
 
 		void CleanupSwapChain(VkSwapchainKHR swapchain);
@@ -32,6 +36,7 @@ namespace Ethane{
 		void OnResize(uint32_t width, uint32_t height);
 
 		bool BeginFrame();
+		void RegisterSecondaryCmdBuffer(VkCommandBuffer secondaryCmdBuffer);
 		void EndFrame();
 
 		// Getter
@@ -39,12 +44,12 @@ namespace Ethane{
 		VkFormat GetImageFormat() const { return m_ImageFormat; }
 		VkFormat GetDepthFormat() const { return m_DepthFormat; }
 		VkRenderPass GetRenderPass() { return m_RenderPass.GetHandle(); } // test
-		uint32_t GetImageCount() { return m_ImageCount; } // test
-		uint32_t GetWidth() { return m_Extent.width; }// test
-		uint32_t GetHeight() { return m_Extent.height; }// test
-		uint32_t GetCurrentFrameIndex() { return m_CurrentFrame; }// test
-		VkFramebuffer GetCurrentFramebuffer() { return m_Framebuffers[m_CurrentImageIndex]; } // test
-		uint32_t GetMaxFramesInFlight() { return m_MaxFramesInFlight; } // TODO
+		uint32_t GetImageCount() const { return m_ImageCount; } // test
+		uint32_t GetWidth() const { return m_Extent.width; }// test
+		uint32_t GetHeight() const { return m_Extent.height; }// test
+		uint32_t GetCurrentFrameIndex() const { return m_CurrentFrame; }// test
+		VkFramebuffer GetCurrentFramebuffer() const { return m_Framebuffers[m_CurrentImageIndex]; } // test
+		uint32_t GetMaxFramesInFlight() const { return m_MaxFramesInFlight; } // TODO
 
 	private:
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -54,7 +59,7 @@ namespace Ethane{
 		void CreateCommandBuffers();
 
 		bool Resize();
-
+		void SetViewportAndScissor();
 		void BeginRenderPass();
 		bool AcquireNextImage();
 		void Present(VkQueue queue, VkSemaphore signalSemaphore = VK_NULL_HANDLE);
@@ -83,6 +88,7 @@ namespace Ethane{
 
 		VulkanRenderPass m_RenderPass;
 		std::vector<VulkanCommandBuffer> m_GraphicsCommandBuffers;
+		std::vector<VkCommandBuffer> m_SecondaryCommandBuffers;
 
 		bool m_VSync = false;
 
