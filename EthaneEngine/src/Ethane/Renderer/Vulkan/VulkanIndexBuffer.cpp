@@ -26,7 +26,7 @@ namespace Ethane {
 		CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
 
 		// copy from staging buffer
-		Utils::CopyBuffer(m_Buffer, stagingBuffer.GetHandle(), m_Size);
+		VulkanBuffer::CopyTo(VulkanContext::GetDevice()->GetGraphicsCommandPool(), 0, VulkanContext::GetDevice()->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, m_Buffer, 0, m_Size);
 
 		// cleanup staging buffer
 		stagingBuffer.Destroy();
@@ -43,21 +43,15 @@ namespace Ethane {
 
 	void VulkanIndexBuffer::SetData(void* data, uint32_t size, uint32_t offset)
 	{
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
 		// create staging buffer
 		VulkanBuffer stagingBuffer;
 		stagingBuffer.CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
 		// copy data to staging buffer
 		stagingBuffer.SetData(data, offset, size, 0, 0);
-		// void* dstData;
-		// vkMapMemory(device, stagingBufferMemory, 0, size, 0, &dstData);
-		// memcpy(dstData, (uint8_t*)data + offset, size);
-		// vkUnmapMemory(device, stagingBufferMemory);
 
 		// copy from staging buffer
-		Utils::CopyBuffer(m_Buffer, stagingBuffer.GetHandle(), size);
+		VulkanBuffer::CopyTo(VulkanContext::GetDevice()->GetGraphicsCommandPool(), 0, VulkanContext::GetDevice()->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, m_Buffer, 0, size);
 
 		// cleanup staging buffer
 		stagingBuffer.Destroy();

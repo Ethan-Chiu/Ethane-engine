@@ -73,10 +73,7 @@ namespace Ethane {
 
 		static Ref<VulkanDevice> Create(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2);
 
-		VkCommandBuffer CreateCommandBuffer(QueueFamilyTypes type = QueueFamilyTypes::Graphics, bool oneTimeUse = false, bool begin = false);
 		void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
-
-		VkCommandBuffer CreateSecondaryCommandBuffer();
 
 		// Getter
 		VkDevice GetVulkanDevice() { return m_LogicalDevice; }

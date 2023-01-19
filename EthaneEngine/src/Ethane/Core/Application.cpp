@@ -31,8 +31,8 @@ namespace Ethane
 		AssetManager::Init();
 		Renderer::Init();
 
-		//m_ImGuiLayer = ImGuiLayer::Create();
-		//PushOverlay(m_ImGuiLayer);
+		m_ImGuiLayer = ImGuiLayer::Create();
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -83,7 +83,7 @@ namespace Ethane
 	{
 		ETH_PROFILE_FUNCTION();
 
-		while (m_Running)
+		while (true)
 		{
 			ETH_PROFILE_SCOPE("RunLoop");
 
@@ -92,7 +92,8 @@ namespace Ethane
 			m_LastFrameTime = time;
 
 			m_Window->PollEvent();
-			
+			if (!m_Running) break;
+
 			if (!m_Minimized)
 			{
 				if (m_Window->BeginFrame())
@@ -128,7 +129,7 @@ namespace Ethane
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
-		m_Running = false;
+		Close();
 
 		m_Window->Shutdown();
 

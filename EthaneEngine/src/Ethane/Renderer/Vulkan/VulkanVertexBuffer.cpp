@@ -5,84 +5,53 @@
 
 namespace Ethane {
 
-	VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size) // VertexBufferUsage usage
-		: m_Size(size)
+	VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size)
 	{
-		//Ref<VulkanVertexBuffer> instance = this;
-		//Renderer::Submit([instance]() mutable
-			{
-				auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-				
-				// VulkanAllocator allocator("VertexBuffer");
-				Utils::CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-					m_VulkanBuffer, m_VertexBufferMemory);
-			}
-		// );
+		m_Size = size;
+		CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
 	}
 
-	VulkanVertexBuffer::VulkanVertexBuffer(void* data, uint32_t size) //, VertexBufferUsage usage
-		: m_Size(size)
+	VulkanVertexBuffer::VulkanVertexBuffer(void* data, uint32_t size)
 	{
-		// Ref<VulkanVertexBuffer> instance = this;
-		// Renderer::Submit([instance]() mutable
-			{
-				auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+		m_Size = size;
 
-				// create staging buffer
-				VkBuffer stagingBuffer;
-				VkDeviceMemory stagingBufferMemory;
-				Utils::CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-					stagingBuffer, stagingBufferMemory);
+		// create staging buffer
+		VulkanBuffer stagingBuffer;
+		stagingBuffer.CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+		
+		// copy data to staging buffer
+		stagingBuffer.SetData(data, 0, size, 0, 0);
 				
-				// copy data to staging buffer
-				void* dstData;
-				vkMapMemory(device, stagingBufferMemory, 0, m_Size, 0, &dstData);
-				memcpy(dstData, data, m_Size);
-				vkUnmapMemory(device, stagingBufferMemory);
-				
-				// create vertex buffer (gpu local memory)
-				Utils::CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-					m_VulkanBuffer, m_VertexBufferMemory);
+		// create vertex buffer (gpu local memory)
+		CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
 
-				// copy from staging buffer
-				Utils::CopyBuffer(m_VulkanBuffer, stagingBuffer, m_Size);
+		// copy from staging buffer
+		VulkanBuffer::CopyTo(VulkanContext::GetDevice()->GetGraphicsCommandPool(), 0, VulkanContext::GetDevice()->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, m_Buffer, 0, m_Size);
 				
-				// cleanup staging buffer
-				vkDestroyBuffer(device, stagingBuffer, nullptr);
-				vkFreeMemory(device, stagingBufferMemory, nullptr);
-			}
-		// );
+		// cleanup staging buffer
+		stagingBuffer.Destroy();
 	}
 
 	void VulkanVertexBuffer::Cleanup()
 	{
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-		vkDestroyBuffer(device, m_VulkanBuffer, nullptr);
-		vkFreeMemory(device, m_VertexBufferMemory, nullptr);
+		VulkanBuffer::Destroy();
 	}
 
 
 	void VulkanVertexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
 		// create staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		Utils::CreateBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		VulkanBuffer stagingBuffer;
+		stagingBuffer.CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
 		// copy data to staging buffer
-		void* dstData;
-		vkMapMemory(device, stagingBufferMemory, 0, size, 0, &dstData);
-		memcpy(dstData, (uint8_t*)data + offset, size);
-		vkUnmapMemory(device, stagingBufferMemory);
+		stagingBuffer.SetData(data, offset, size, 0, 0);
 
 		// copy from staging buffer
-		Utils::CopyBuffer(m_VulkanBuffer, stagingBuffer, m_Size);
+		VulkanBuffer::CopyTo(VulkanContext::GetDevice()->GetGraphicsCommandPool(), 0, VulkanContext::GetDevice()->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, m_Buffer, 0, size);
 
 		// cleanup staging buffer
-		vkDestroyBuffer(device, stagingBuffer, nullptr);
-		vkFreeMemory(device, stagingBufferMemory, nullptr);
+		stagingBuffer.Destroy();
 	}
 
 }

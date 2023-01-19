@@ -39,21 +39,6 @@ namespace Ethane {
 		const VulkanImageInfo& GetImageInfo() const { return m_Info; }
 		const VkDescriptorImageInfo& GetDescriptor() { return m_DescriptorImageInfo; }
 
-		// virtual void CreatePerLayerImageViews() override;
-		// void RT_CreatePerLayerImageViews();
-		// void RT_CreatePerSpecificLayerImageViews(const std::vector<uint32_t>& layerIndices);
-
-		// virtual VkImageView GetLayerImageView(uint32_t layer)
-		// {
-		// 	ETH_CORE_ASSERT(layer < m_PerLayerImageViews.size());
-		// 	return m_PerLayerImageViews[layer];
-		// }
-
-		// VkImageView GetMipImageView(uint32_t mip);
-		// VkImageView RT_GetMipImageView(uint32_t mip);
-
-
-		// virtual uint64_t GetHash() const override { return (uint64_t)m_Info.Image; }
 	private:
 		void CreateVulkanImage(VkDevice device, uint32_t width, uint32_t height, uint32_t mip, uint32_t layers, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags memoryFlag);
 		void CreateImageView(VkDevice device, VkFormat format, VkImageAspectFlags aspectMask);
@@ -65,8 +50,6 @@ namespace Ethane {
 		VkDeviceMemory m_ImageMemory;
 
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
-		// std::vector<VkImageView> m_PerLayerImageViews;
-		// std::map<uint32_t, VkImageView> m_MipImageViews;
 	};
 
 	

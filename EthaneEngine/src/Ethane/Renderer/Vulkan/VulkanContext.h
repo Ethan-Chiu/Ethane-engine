@@ -201,20 +201,6 @@ namespace Ethane {
 			vkBindBufferMemory(device, buffer, bufferMemory, 0);
 		}
 
-		inline void CopyBuffer(VkBuffer dstBuffer, VkBuffer srcBuffer, VkDeviceSize size) {
-			// create command buffer
-			VkCommandBuffer copyCmdBuffer = VulkanContext::GetDevice()->CreateCommandBuffer(QueueFamilyTypes::Graphics, true, true);
-
-			// record command
-			VkBufferCopy copyRegion{};
-			copyRegion.srcOffset = 0;
-			copyRegion.dstOffset = 0;
-			copyRegion.size = size;
-			vkCmdCopyBuffer(copyCmdBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-			// submit command buffer
-			VulkanContext::GetDevice()->SubmitCommandBuffer(copyCmdBuffer);
-		}
 	}
 
 }

@@ -3,11 +3,7 @@
 
 #include "VulkanImage.h"
 
-// #include "VulkanRenderer.h
-
 namespace Ethane {
-
-	// static std::map<VkImage, WeakRef<VulkanImage2D>> s_ImageReferences;
 
 	VulkanImage2D::VulkanImage2D(ImageSpecification specification, void* buffer)
 		: m_Specification(specification)
@@ -76,26 +72,6 @@ namespace Ethane {
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = 0.0f;
 		VK_CHECK_RESULT(vkCreateSampler(device, &samplerInfo, nullptr, &m_Info.Sampler));
-
-		// if (m_Specification.Usage == ImageUsage::Storage)
-		// {
-		// 	// Transition image to GENERAL layout
-		// 	VkCommandBuffer commandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
-		// 
-		// 	VkImageSubresourceRange subresourceRange = {};
-		// 	subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		// 	subresourceRange.baseMipLevel = 0;
-		// 	subresourceRange.levelCount = m_Specification.Mips;
-		// 	subresourceRange.layerCount = m_Specification.Layers;
-		// 
-		// 	Utils::InsertImageMemoryBarrier(commandBuffer, m_Info.Image,
-		// 		0, 0,
-		// 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
-		// 		VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-		// 		subresourceRange);
-		// 
-		// 	VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
-		// }
 
 		UpdateDescriptorImageInfo();
 	}
@@ -192,23 +168,12 @@ namespace Ethane {
 			m_ImageMemory = nullptr;
 		}
 
-		// for (auto& view : layerViews)
-		// {
-		// 	if (view)
-		// 		vkDestroyImageView(vulkanDevice, view, nullptr);
-		// }
-
 		if (m_Info.Image)
 			vkDestroyImage(device, m_Info.Image, nullptr);
-		
 
 		m_Info.Image = nullptr;
 		m_Info.ImageView = nullptr;
 		m_Info.Sampler = nullptr;
-		
-		// m_PerLayerImageViews.clear();
-
-		// m_MipImageViews.clear();
 	}
 
 	void VulkanImage2D::UpdateDescriptorImageInfo()
@@ -228,117 +193,4 @@ namespace Ethane {
 
 		ETH_CORE_TRACE("VulkanImage2D::UpdateDescriptorImageInfo to ImageView = {0}", (const void*)m_Info.ImageView);
 	}
-
-	// const std::map<VkImage, WeakRef<VulkanImage2D>>& VulkanImage2D::GetImageRefs()
-	// {
-	// 	return s_ImageReferences;
-	// }
-
-
-	// void VulkanImage2D::CreatePerLayerImageViews()
-	// {
-	// 	HZ_CORE_ASSERT(m_Specification.Layers > 1);
-	// 
-	// 	VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-	// 
-	// 	VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	// 	if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8)
-	// 		aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	// 
-	// 	const VkFormat vulkanFormat = Utils::VulkanImageFormat(m_Specification.Format);
-	// 
-	// 	m_PerLayerImageViews.resize(m_Specification.Layers);
-	// 	for (uint32_t layer = 0; layer < m_Specification.Layers; layer++)
-	// 	{
-	// 		VkImageViewCreateInfo imageViewCreateInfo = {};
-	// 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	// 		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	// 		imageViewCreateInfo.format = vulkanFormat;
-	// 		imageViewCreateInfo.flags = 0;
-	// 		imageViewCreateInfo.subresourceRange = {};
-	// 		imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
-	// 		imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-	// 		imageViewCreateInfo.subresourceRange.levelCount = m_Specification.Mips;
-	// 		imageViewCreateInfo.subresourceRange.baseArrayLayer = layer;
-	// 		imageViewCreateInfo.subresourceRange.layerCount = 1;
-	// 		imageViewCreateInfo.image = m_Info.Image;
-	// 		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_PerLayerImageViews[layer]));
-	// 	}
-	// }
-
-	// VkImageView VulkanImage2D::GetMipImageView(uint32_t mip)
-	// {
-	// 	if (m_MipImageViews.find(mip) == m_MipImageViews.end())
-	// 	{
-	// 		Ref<VulkanImage2D> instance = this;
-	// 		Renderer::Submit([instance, mip]() mutable
-	// 			{
-	// 				if (m_MipImageViews.find(mip) == m_MipImageViews.end())
-	// 				{
-	// 					VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-	// 
-	// 					VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	// 					if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8)
-	// 						aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	// 
-	// 					VkFormat vulkanFormat = Utils::VulkanImageFormat(m_Specification.Format);
-	// 
-	// 					m_PerLayerImageViews.resize(m_Specification.Layers);
-	// 					VkImageViewCreateInfo imageViewCreateInfo = {};
-	// 					imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	// 					imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	// 					imageViewCreateInfo.format = vulkanFormat;
-	// 					imageViewCreateInfo.flags = 0;
-	// 					imageViewCreateInfo.subresourceRange = {};
-	// 					imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
-	// 					imageViewCreateInfo.subresourceRange.baseMipLevel = mip;
-	// 					imageViewCreateInfo.subresourceRange.levelCount = 1;
-	// 					imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-	// 					imageViewCreateInfo.subresourceRange.layerCount = 1;
-	// 					imageViewCreateInfo.image = m_Info.Image;
-	// 
-	// 					VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_MipImageViews[mip]));
-	// 				}
-	// 				return m_MipImageViews.at(mip);
-	// 			});
-	// 		return nullptr;
-	// 	}
-	// 
-	// 	return m_MipImageViews.at(mip);
-	// }
-
-	// void VulkanImage2D::RT_CreatePerSpecificLayerImageViews(const std::vector<uint32_t>& layerIndices)
-	// {
-	// 	HZ_CORE_ASSERT(m_Specification.Layers > 1);
-	// 
-	// 	VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-	// 
-	// 	VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	// 	if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8)
-	// 		aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	// 
-	// 	const VkFormat vulkanFormat = Utils::VulkanImageFormat(m_Specification.Format);
-	// 
-	// 	//HZ_CORE_ASSERT(m_PerLayerImageViews.size() == m_Specification.Layers);
-	// 	if (m_PerLayerImageViews.empty())
-	// 		m_PerLayerImageViews.resize(m_Specification.Layers);
-	// 
-	// 	for (uint32_t layer : layerIndices)
-	// 	{
-	// 		VkImageViewCreateInfo imageViewCreateInfo = {};
-	// 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	// 		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	// 		imageViewCreateInfo.format = vulkanFormat;
-	// 		imageViewCreateInfo.flags = 0;
-	// 		imageViewCreateInfo.subresourceRange = {};
-	// 		imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
-	// 		imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-	// 		imageViewCreateInfo.subresourceRange.levelCount = m_Specification.Mips;
-	// 		imageViewCreateInfo.subresourceRange.baseArrayLayer = layer;
-	// 		imageViewCreateInfo.subresourceRange.layerCount = 1;
-	// 		imageViewCreateInfo.image = m_Info.Image;
-	// 		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_PerLayerImageViews[layer]));
-	// 	}
-	// 
-	// }
 }

@@ -32,36 +32,6 @@ namespace Ethane {
 		Storage
 	};
 
-	enum class TextureWrap
-	{
-		None = 0,
-		Clamp,
-		Repeat
-	};
-
-	enum class TextureFilter
-	{
-		None = 0,
-		Linear,
-		Nearest
-	};
-
-	enum class TextureType
-	{
-		None = 0,
-		Texture2D,
-		TextureCube
-	};
-
-	struct TextureProperties
-	{
-		TextureWrap SamplerWrap = TextureWrap::Repeat;
-		TextureFilter SamplerFilter = TextureFilter::Linear;
-		bool GenerateMips = true;
-		bool SRGB = false;
-		bool Storage = false;
-	};
-
 	struct ImageSpecification
 	{
 		ImageFormat Format = ImageFormat::RGBA;
@@ -88,10 +58,6 @@ namespace Ethane {
 		virtual float GetAspectRatio() const = 0;
 		virtual ImageSpecification& GetSpecification() = 0;
 		virtual const ImageSpecification& GetSpecification() const = 0;
-
-		// virtual void CreatePerLayerImageViews() = 0;
-
-		// virtual uint64_t GetHash() const = 0;
 	};
 
 	class Image2D : public Image

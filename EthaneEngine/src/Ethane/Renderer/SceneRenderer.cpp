@@ -8,6 +8,7 @@
 #include "Vulkan/VulkanFramebuffer.h"
 // TODO: remove
 #include "Vulkan/VulkanMaterial.h"
+#include "Vulkan/VulkanContext.h"
 
 namespace Ethane {
 
@@ -36,7 +37,6 @@ namespace Ethane {
 			Ref<Framebuffer> framebuffer = Framebuffer::Create(geoFramebufferSpec);
 
 			PipelineSpecification pipelineSpecification;
-			// pipelineSpecification.LineWidth = m_LineWidth;
 			pipelineSpecification.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float3, "a_Normal" },
@@ -44,13 +44,11 @@ namespace Ethane {
 				{ ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = ShaderLibrary::Get("PBR_static");// Renderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			pipelineSpecification.Shader = ShaderLibrary::Get("PBR_static");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = framebuffer;
-			// renderPassSpec.DebugName = "Geometry";
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-			// pipelineSpecification.DebugName = "PBR-Static";
 			m_GeometryPipeline = Pipeline::Create(pipelineSpecification);
 
 			m_TestDiffuse = Texture2D::Create("assets/textures/FloorSandStone/cobblestone.png");
@@ -61,7 +59,6 @@ namespace Ethane {
 			m_testMaterial->Set("u_DiffuseSampler", m_TestDiffuse);
 			m_testMaterial->Set("u_SpecularSampler", m_TestSpecular);
 			m_testMaterial->Set("u_NormalSampler", m_TestNormal);
-			// VulkanRendererAPI::UpdateMaterialForRendering(std::dynamic_pointer_cast<VulkanMaterial>(m_testMaterial));
 		}
 
 		// Grid
@@ -70,13 +67,9 @@ namespace Ethane {
 			const float gridScale = 16.025f;
 			const float gridSize = 0.025f;
 			m_GridMaterial = Material::Create(m_GridShader);
-			// m_GridMaterial->Set("u_Settings.Scale", gridScale);
-			// m_GridMaterial->Set("u_Settings.Size", gridSize);
 		
 			PipelineSpecification pipelineSpec;
-			// pipelineSpec.DebugName = "Grid";
 			pipelineSpec.Shader = m_GridShader;
-			// pipelineSpec.BackfaceCulling = false;
 			pipelineSpec.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float2, "a_TexCoord" }
@@ -89,7 +82,6 @@ namespace Ethane {
 		{
 			FramebufferSpecification compFramebufferSpec;
 			compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
-			// compFramebufferSpec.SwapChainTarget = true;
 			compFramebufferSpec.DebugName = "SceneComposite";
 			// TODO: width and height
 			compFramebufferSpec.Width = 1600;
@@ -109,10 +101,8 @@ namespace Ethane {
 				{ ShaderDataType::Float2, "a_TexCoord" }
 			};
 			// pipelineSpecification.BackfaceCulling = false;
-			pipelineSpecification.Shader = ShaderLibrary::Get("SceneComposite");// Renderer::GetShaderLibrary()->Get("SceneComposite");
+			pipelineSpecification.Shader = ShaderLibrary::Get("SceneComposite");
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-			// pipelineSpecification.DebugName = "SceneComposite";
-			// pipelineSpecification.DepthWrite = false;
 			m_CompositePipeline = Pipeline::Create(pipelineSpecification);
 			
 			// TODO: test

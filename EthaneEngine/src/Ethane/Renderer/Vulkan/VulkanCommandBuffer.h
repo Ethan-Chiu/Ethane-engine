@@ -3,6 +3,8 @@
 
 namespace Ethane {
 
+    enum class QueueFamilyTypes;
+
     class VulkanCommandBuffer
     {
     public:
@@ -29,6 +31,9 @@ namespace Ethane {
 
         void AllocateAndBeginSingleUse(VkCommandPool pool);
         void EndSingleUse(VkCommandPool pool, VkQueue queue);
+
+        void AllocateAndBeginSingleUse(QueueFamilyTypes type);
+        void EndSingleUse(QueueFamilyTypes type);
 
         VkCommandBuffer GetHandle() { return m_CommandBuffer; };
 

@@ -10,7 +10,8 @@ namespace Ethane{
 
 	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
 		// create command buffer //TODO: change command buffer to be a param
-		VkCommandBuffer commandBuffer = VulkanContext::GetDevice()->CreateCommandBuffer(QueueFamilyTypes::Graphics, true, true);
+		VulkanCommandBuffer commandBuffer;
+		commandBuffer.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
 
 		VkBufferImageCopy region{};
 		region.bufferOffset = 0;
@@ -28,15 +29,16 @@ namespace Ethane{
 		region.imageExtent.height = height;
 		region.imageExtent.depth = 1;
 
-		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		vkCmdCopyBufferToImage(commandBuffer.GetHandle(), buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 		// submit command buffer
-		VulkanContext::GetDevice()->SubmitCommandBuffer(commandBuffer);
+		commandBuffer.EndSingleUse(QueueFamilyTypes::Graphics);
 	}
 
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
 		// create command buffer //TODO: change command buffer to be a param
-		VkCommandBuffer commandBuffer = VulkanContext::GetDevice()->CreateCommandBuffer(QueueFamilyTypes::Graphics, true, true);
+		VulkanCommandBuffer commandBuffer;
+		commandBuffer.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
 
 		VkImageMemoryBarrier barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
 		barrier.oldLayout = oldLayout;
@@ -72,10 +74,10 @@ namespace Ethane{
 			throw std::invalid_argument("unsupported layout transition!");
 		}
 
-		vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier(commandBuffer.GetHandle(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		// submit command buffer
-		VulkanContext::GetDevice()->SubmitCommandBuffer(commandBuffer);
+		commandBuffer.EndSingleUse(QueueFamilyTypes::Graphics);
 	}
 
 	VulkanTexture2D::VulkanTexture2D(const std::string& path)

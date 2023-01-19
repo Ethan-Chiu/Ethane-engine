@@ -1,6 +1,5 @@
 #include "ethpch.h"
 #include "VulkanCommandBuffer.h"
-
 #include "VulkanContext.h"
 
 namespace Ethane {
@@ -70,7 +69,58 @@ namespace Ethane {
         Begin(true, false, false);
     }
 
-    void VulkanCommandBuffer::EndSingleUse(VkCommandPool pool, VkQueue queue) {
+    void VulkanCommandBuffer::EndSingleUse(VkCommandPool pool, VkQueue queue) 
+    {
+        End();
+
+        // Submit the queue
+        VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &m_CommandBuffer;
+        VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submit_info, 0));
+
+        // Wait for it to finish
+        VK_CHECK_RESULT(vkQueueWaitIdle(queue));
+
+        // Free the command buffer.
+        Free(pool);
+    }
+
+    void VulkanCommandBuffer::AllocateAndBeginSingleUse(QueueFamilyTypes type)
+    {
+        VkCommandPool pool;
+        switch (type)
+        {
+        case QueueFamilyTypes::Graphics: {pool = VulkanContext::GetDevice()->GetGraphicsCommandPool(); break; }
+        case QueueFamilyTypes::Compute: {pool = VulkanContext::GetDevice()->GetComputeCommandPool(); break; }
+        default:
+            ETH_CORE_ASSERT(false, "No command pool");
+        }
+        AllocateAndBeginSingleUse(pool);
+    }
+
+    void VulkanCommandBuffer::EndSingleUse(QueueFamilyTypes type)
+    {
+        VkCommandPool pool;
+        VkQueue queue;
+        switch (type)
+        {
+        case QueueFamilyTypes::Graphics: 
+        {
+            pool = VulkanContext::GetDevice()->GetGraphicsCommandPool(); 
+            queue = VulkanContext::GetDevice()->GetGraphicsQueue();
+            break; 
+        }
+        case QueueFamilyTypes::Compute: 
+        {
+            pool = VulkanContext::GetDevice()->GetComputeCommandPool();
+            queue = VulkanContext::GetDevice()->GetComputeQueue();
+            break; 
+        }
+        default:
+            ETH_CORE_ASSERT(false, "No command pool");
+        }
+
         End();
 
         // Submit the queue

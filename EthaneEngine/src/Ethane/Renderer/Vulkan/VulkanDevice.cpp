@@ -354,37 +354,6 @@ namespace Ethane {
 
 	}
 
-	// TODO: refacter 
-	VkCommandBuffer VulkanDevice::CreateCommandBuffer(QueueFamilyTypes type , bool oneTimeUse, bool begin)
-	{
-		VkCommandBuffer cmdBuffer;
-
-		VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
-		cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdBufAllocateInfo.commandBufferCount = 1;
-
-		switch (type)
-		{
-		case QueueFamilyTypes::Graphics: {cmdBufAllocateInfo.commandPool = m_GraphicsCommandPool; break; }
-		case QueueFamilyTypes::Compute: {cmdBufAllocateInfo.commandPool = m_ComputeCommandPool; break; }
-		default: 
-			ETH_CORE_ASSERT(false, "No command pool");
-		}
-
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
-
-		if (begin)
-		{
-			VkCommandBufferBeginInfo cmdBufferBeginInfo{};
-			cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			cmdBufferBeginInfo.flags = oneTimeUse ? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 0;
-			VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBeginInfo));
-		}
-
-		return cmdBuffer;
-	}
-
 	void VulkanDevice::SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type)
 	{
 		ETH_CORE_ASSERT(commandBuffer != VK_NULL_HANDLE);
@@ -423,20 +392,5 @@ namespace Ethane {
 		default:
 			ETH_CORE_ASSERT(false, "No command pool");
 		}
-	}
-
-	// TODO: refacter 
-	VkCommandBuffer VulkanDevice::CreateSecondaryCommandBuffer()
-	{
-		VkCommandBuffer cmdBuffer;
-
-		VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
-		cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-		cmdBufAllocateInfo.commandBufferCount = 1;
-		cmdBufAllocateInfo.commandPool = m_GraphicsCommandPool;
-
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
-		return cmdBuffer;
 	}
 }

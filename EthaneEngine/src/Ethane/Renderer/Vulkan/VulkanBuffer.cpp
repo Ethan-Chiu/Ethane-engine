@@ -165,8 +165,6 @@ namespace Ethane {
         uint32_t dest_offset,
         uint32_t size) {
 
-        vkQueueWaitIdle(queue);
-
         // create command buffer
         VulkanCommandBuffer tempCommandBuf;
         tempCommandBuf.AllocateAndBeginSingleUse(pool);

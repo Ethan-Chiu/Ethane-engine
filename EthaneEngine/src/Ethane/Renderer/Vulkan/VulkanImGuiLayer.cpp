@@ -126,10 +126,10 @@ namespace Ethane {
 		// Upload Fonts
 		{
 			// Use any command queue
-
-			VkCommandBuffer commandBuffer = VulkanContext::GetDevice()->CreateCommandBuffer(QueueFamilyTypes::Graphics, false, true);
-			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-			VulkanContext::GetDevice()->SubmitCommandBuffer(commandBuffer);
+			VulkanCommandBuffer commandBuffer;
+			commandBuffer.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
+			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer.GetHandle());
+			commandBuffer.EndSingleUse(QueueFamilyTypes::Graphics);
 
 			VK_CHECK_RESULT(vkDeviceWaitIdle(device));
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
@@ -140,18 +140,20 @@ namespace Ethane {
 		uint32_t framesInFlight = swapChain->GetMaxFramesInFlight();// Renderer::GetConfig().FramesInFlight;
 		m_ImGuiCommandBuffers.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++)
-			m_ImGuiCommandBuffers[i] = VulkanContext::GetDevice()->CreateSecondaryCommandBuffer();
-
+		{
+			m_ImGuiCommandBuffers[i].Allocate(VulkanContext::GetDevice()->GetGraphicsCommandPool(), false);
+		}
 	}
 
 	void VulkanImGuiLayer::Cleanup()
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 		
-		if (m_ImGuiCommandBuffers.size() > 0)
+		for (uint32_t i = 0; i < m_ImGuiCommandBuffers.size(); i++)
 		{
-			vkFreeCommandBuffers(device, VulkanContext::GetDevice()->GetGraphicsCommandPool(), static_cast<uint32_t>(m_ImGuiCommandBuffers.size()), m_ImGuiCommandBuffers.data());
+			m_ImGuiCommandBuffers[i].Free(VulkanContext::GetDevice()->GetGraphicsCommandPool());
 		}
+		//vkFreeCommandBuffers(device, VulkanContext::GetDevice()->GetGraphicsCommandPool(), static_cast<uint32_t>(m_ImGuiCommandBuffers.size()), m_ImGuiCommandBuffers.data());
 	}
 
 	void VulkanImGuiLayer::OnDetach()
@@ -201,14 +203,16 @@ namespace Ethane {
 		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 		
-		VK_CHECK_RESULT(vkBeginCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
+		VkCommandBuffer cmdBuffer = m_ImGuiCommandBuffers[commandBufferIndex].GetHandle();
+
+		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 		
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		ImGui_ImplVulkan_RenderDrawData(main_draw_data, m_ImGuiCommandBuffers[commandBufferIndex]);
+		ImGui_ImplVulkan_RenderDrawData(main_draw_data, cmdBuffer);
 		
-		VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
+		VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
 
-		swapChain->RegisterSecondaryCmdBuffer(m_ImGuiCommandBuffers[commandBufferIndex]);
+		swapChain->RegisterSecondaryCmdBuffer(cmdBuffer);
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

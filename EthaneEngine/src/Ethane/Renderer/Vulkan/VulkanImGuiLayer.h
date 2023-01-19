@@ -27,7 +27,7 @@ namespace Ethane{
 		bool m_BlockEvents = true;
 		float m_Time = 0.0f;
 
-		std::vector<VkCommandBuffer> m_ImGuiCommandBuffers = {};
+		std::vector<VulkanCommandBuffer> m_ImGuiCommandBuffers = {};
 	};
 
 }
