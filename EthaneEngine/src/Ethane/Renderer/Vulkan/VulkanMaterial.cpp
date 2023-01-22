@@ -175,7 +175,7 @@ namespace Ethane {
 
 		for (uint32_t f = 0; f < resource.WriteDescriptors.size(); ++f) {
 			auto tex = VulkanShaderSystem::GetDefaultTexture();
-			resource.WriteDescriptors[f].pImageInfo = &(std::dynamic_pointer_cast<VulkanImage2D>(m_Images[binding])->GetDescriptor());
+			resource.WriteDescriptors[f].pImageInfo = &(tex->GetDescriptorImageInfo());
 		}
 	}
 

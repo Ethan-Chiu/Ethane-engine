@@ -47,7 +47,7 @@ namespace Ethane {
 		Ref<RenderPass> renderPass = RenderPass::Create(renderPassSpec);
 
 		// White Texture
-		m_WhiteTexture = Texture2D::Create(1, 1);
+		m_WhiteTexture = Texture2D::Create(TextureSpec{ 1, 1, 4});
 		uint32_t whiteTextureData = 0xffffffff;
 		m_WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 

@@ -9,8 +9,9 @@ namespace Ethane {
 	class VulkanTexture2D : public Texture2D
 	{
 	public:
-		VulkanTexture2D(const std::string& path); // TextureProperties properties
-		VulkanTexture2D(uint32_t width, uint32_t height); // ImageFormat format, TextureProperties properties, const void* data
+		VulkanTexture2D(const std::string& path);
+		VulkanTexture2D(TextureSpec spec);
+		VulkanTexture2D(Ref<Image2D> image);
 		~VulkanTexture2D() override = default;
 
 		void Cleanup();
@@ -22,23 +23,25 @@ namespace Ethane {
 		// Getter
 		virtual uint32_t GetWidth() const override { return m_Width; } 
 		virtual uint32_t GetHeight() const override { return m_Height; } 
-		const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_Image->GetDescriptor(); }
+		const VkDescriptorImageInfo& GetDescriptorImageInfo() const { return m_DescriptorInfo; }
 		VkImageView GetImageView() { return m_Image->GetImageInfo().ImageView; }
-		VkSampler GetImageSampler() { return m_Image->GetImageInfo().Sampler; }
+		VkSampler GetImageSampler() { return m_TextureSampler; }
 
-		virtual void Bind(uint32_t slot = 0) const override {}
+		virtual Ref<Image2D> GetImage() const { return std::dynamic_pointer_cast<Image2D>(m_Image); }
+
+		// TODO: remove
 		virtual bool operator==(const Texture& other) const { return this->m_Path == ((VulkanTexture2D&)other).m_Path; };
-		virtual Ref<Image2D> GetImage() const override { return std::dynamic_pointer_cast<Image2D>(m_Image); } // TODO: 
-		
 	private:
 		void CreateTextureSampler();
+		void UpdateDescriptorImageInfo();
 	private:
-		std::string m_Path;
-		uint32_t m_Width, m_Height;
-		uint32_t m_ChannelCount;
+		uint32_t m_Width, m_Height, m_ChannelCount;
+
+		// TODO: remove
+		std::string m_Path{};
 
 		Ref<VulkanImage2D> m_Image = nullptr;
-		VkSampler m_TextureSampler;
+		VkSampler m_TextureSampler = nullptr;
 
 		VkDescriptorImageInfo m_DescriptorInfo{};
 	};

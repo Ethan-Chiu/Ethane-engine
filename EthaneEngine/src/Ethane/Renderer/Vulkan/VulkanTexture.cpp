@@ -8,78 +8,6 @@
 
 namespace Ethane{
 
-	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-		// create command buffer //TODO: change command buffer to be a param
-		VulkanCommandBuffer commandBuffer;
-		commandBuffer.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
-
-		VkBufferImageCopy region{};
-		region.bufferOffset = 0;
-		region.bufferRowLength = 0;
-		region.bufferImageHeight = 0;
-
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel = 0;
-		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount = 1;
-
-		region.imageOffset = { 0, 0, 0 };
-
-		region.imageExtent.width = width;
-		region.imageExtent.height = height;
-		region.imageExtent.depth = 1;
-
-		vkCmdCopyBufferToImage(commandBuffer.GetHandle(), buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-		// submit command buffer
-		commandBuffer.EndSingleUse(QueueFamilyTypes::Graphics);
-	}
-
-	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-		// create command buffer //TODO: change command buffer to be a param
-		VulkanCommandBuffer commandBuffer;
-		commandBuffer.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
-
-		VkImageMemoryBarrier barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
-
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = 0;
-		barrier.subresourceRange.levelCount = 1;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-
-		VkPipelineStageFlags sourceStage;
-		VkPipelineStageFlags destinationStage;
-
-		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		}
-		else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		}
-		else {
-			throw std::invalid_argument("unsupported layout transition!");
-		}
-
-		vkCmdPipelineBarrier(commandBuffer.GetHandle(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-		// submit command buffer
-		commandBuffer.EndSingleUse(QueueFamilyTypes::Graphics);
-	}
-
 	VulkanTexture2D::VulkanTexture2D(const std::string& path)
 		:m_Path(path)
 	{
@@ -100,55 +28,27 @@ namespace Ethane{
 
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 
-		// create staging buffer
-		VulkanBuffer stagingBuffer;
-		stagingBuffer.CreateVulkanBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-
-		// copy data to staging buffer
-		stagingBuffer.SetData(data, 0, imageSize, 0, 0);
-
-		stbi_image_free(data);
-
 		// Create Imgae
 		ImageSpecification imageSpec;
 		imageSpec.Width = m_Width;
 		imageSpec.Height = m_Height;
 		m_Image = CreateRef<VulkanImage2D>(imageSpec);
 
-		
-		VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
-		// CreateImage(m_Width, m_Height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-		// 	VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImage, m_TextureImageMemory);
-		VkImage textureImage = m_Image->GetImageInfo().Image;
+		SetData(data ,imageSize);
+		stbi_image_free(data);
 
-		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		// create sampler
+		CreateTextureSampler();
 
-		CopyBufferToImage(stagingBuffer.GetHandle(), textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
-
-		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-		// Create ImageView
-		// m_TextureImageView = CreateImageView(m_TextureImage, format);
-
-		// Create Sampler
-		// CreateTextureSampler();
-
-		// m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		// m_DescriptorInfo.imageView = m_TextureImageView;
-		// m_DescriptorInfo.sampler = m_TextureSampler;
-
-		// cleanup staging buffer
-		stagingBuffer.Destroy();
+		UpdateDescriptorImageInfo();
 	}
 
-	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height)
+	VulkanTexture2D::VulkanTexture2D(TextureSpec spec)
+		:m_Width(spec.Width), m_Height(spec.Height), m_ChannelCount(spec.ChannelCount)
 	{
 		// TODO: Invalidate
 		ETH_PROFILE_FUNCTION();
 
-		m_Width = width;
-		m_Height = height;
-		m_ChannelCount = 4;
 		VkDeviceSize imageSize = m_Width * m_Height * m_ChannelCount;
 		ETH_CORE_TRACE("w: {0}, h: {1}, ch: {2}", m_Width, m_Height, m_ChannelCount);
 
@@ -157,6 +57,20 @@ namespace Ethane{
 		imageSpec.Width = m_Width;
 		imageSpec.Height = m_Height;
 		m_Image = CreateRef<VulkanImage2D>(imageSpec);
+
+		CreateTextureSampler();
+
+		UpdateDescriptorImageInfo();
+	}
+
+	VulkanTexture2D::VulkanTexture2D(Ref<Image2D> image)
+		:m_Width(image->GetWidth()), m_Height(image->GetHeight()), m_ChannelCount(4)
+	{
+		m_Image = std::dynamic_pointer_cast<VulkanImage2D>(image);
+
+		CreateTextureSampler();
+
+		UpdateDescriptorImageInfo();
 	}
 
 	void VulkanTexture2D::SetData(void* data, uint32_t imageSize)
@@ -173,9 +87,15 @@ namespace Ethane{
 		// transition
 		VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
 		VkImage textureImage = m_Image->GetImageInfo().Image;
-		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		CopyBufferToImage(stagingBuffer.GetHandle(), textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
-		TransitionImageLayout(textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		
+		VulkanCommandBuffer commandBuffer;
+		commandBuffer.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
+		m_Image->TransitionLayout(commandBuffer.GetHandle(), format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		m_Image->CopyFromBuffer(commandBuffer.GetHandle(), stagingBuffer.GetHandle());
+
+		m_Image->TransitionLayout(commandBuffer.GetHandle(), format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		commandBuffer.EndSingleUse(QueueFamilyTypes::Graphics);
 
 		// cleanup staging buffer
 		stagingBuffer.Destroy();
@@ -188,12 +108,9 @@ namespace Ethane{
 		vkDeviceWaitIdle(device);
 
 		m_Image->Destroy();
-		// vkDestroySampler(device, m_TextureSampler, nullptr);
-		// 
-		// vkDestroyImageView(device, m_TextureImageView, nullptr);
-		// vkDestroyImage(device, m_TextureImage, nullptr);
-		// 
-		// vkFreeMemory(device, m_TextureImageMemory, nullptr);
+
+		if (m_TextureSampler)
+			vkDestroySampler(device, m_TextureSampler, nullptr);
 	}
 
 	void VulkanTexture2D::CreateTextureSampler() {
@@ -222,5 +139,23 @@ namespace Ethane{
 		samplerInfo.maxLod = 0.0f;
 		
 		VK_CHECK_RESULT(vkCreateSampler(device, &samplerInfo, nullptr, &m_TextureSampler));
+	}
+
+	void VulkanTexture2D::UpdateDescriptorImageInfo()
+	{
+		//TODO: fix
+		//if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8 || m_Specification.Format == ImageFormat::DEPTH32F)
+		//	m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+		//else if (m_Specification.Usage == ImageUsage::Storage)
+		//	m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		//else
+			m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+
+		m_DescriptorInfo.imageView = m_Image->GetImageInfo().ImageView;
+		m_DescriptorInfo.sampler = m_TextureSampler;
+
+		ETH_CORE_ASSERT(m_DescriptorInfo.imageView != VK_NULL_HANDLE, "image view is null");
+		ETH_CORE_TRACE("VulkanImage2D::UpdateDescriptorImageInfo to ImageView = {0}", (const void*)m_DescriptorInfo.imageView);
 	}
 }

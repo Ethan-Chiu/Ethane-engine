@@ -10,7 +10,7 @@ namespace Ethane {
 	{
 		VkImage Image = nullptr;
 		VkImageView ImageView = nullptr;
-		VkSampler Sampler = nullptr;
+		//VkSampler Sampler = nullptr;
 	};
 
 	class VulkanImage2D  : public Image2D
@@ -26,7 +26,9 @@ namespace Ethane {
 			VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags memoryFlag, VkImageAspectFlags aspectFlag, bool createView);
 
 		virtual void Destroy() override;
-		void UpdateDescriptorImageInfo();
+
+		void CopyFromBuffer(VkCommandBuffer cmdBuffer, VkBuffer buffer);
+		void TransitionLayout(VkCommandBuffer cmdBuffer, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		// Getter
 		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
@@ -37,7 +39,6 @@ namespace Ethane {
 		
 		VulkanImageInfo& GetImageInfo() { return m_Info; }
 		const VulkanImageInfo& GetImageInfo() const { return m_Info; }
-		const VkDescriptorImageInfo& GetDescriptor() { return m_DescriptorImageInfo; }
 
 	private:
 		void CreateVulkanImage(VkDevice device, uint32_t width, uint32_t height, uint32_t mip, uint32_t layers, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags memoryFlag);
@@ -48,8 +49,6 @@ namespace Ethane {
 
 		VulkanImageInfo m_Info;
 		VkDeviceMemory m_ImageMemory;
-
-		VkDescriptorImageInfo m_DescriptorImageInfo = {};
 	};
 
 	

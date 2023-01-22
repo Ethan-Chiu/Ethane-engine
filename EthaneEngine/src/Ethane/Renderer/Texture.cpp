@@ -6,7 +6,7 @@
 
 namespace Ethane {
 
-	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+	Ref<Texture2D> Texture2D::Create(TextureSpec spec)
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -14,7 +14,22 @@ namespace Ethane {
 			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::Vulkan:
-			return CreateRef<VulkanTexture2D>(width, height);
+			return CreateRef<VulkanTexture2D>(spec);
+		}
+
+		ETH_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
+	}
+
+	Ref<Texture2D> Texture2D::Create(Ref<Image2D> image)
+	{
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::None:
+			ETH_CORE_ASSERT(false, "endererAPI::None is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::Vulkan:
+			return CreateRef<VulkanTexture2D>(image);
 		}
 
 		ETH_CORE_ASSERT(false, "Unknown RendererAPI");

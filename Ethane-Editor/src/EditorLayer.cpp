@@ -258,7 +258,8 @@ namespace Ethane {
 		// ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
 		
 		m_ActiveScene->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		UIImage(m_ViewportRenderer->GetFinalPassImage()).Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
+		//TODO
+		//UIImage(m_ViewportRenderer->GetFinalPassImage()).Draw(ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, uv_min, uv_max, tint_col, border_col);
 
 		// Drag File in Viewport
 		if (ImGui::BeginDragDropTarget())
