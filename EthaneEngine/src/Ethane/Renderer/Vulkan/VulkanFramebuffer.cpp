@@ -10,55 +10,44 @@ namespace Ethane {
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& specification)
 		: m_Specification(specification)
 	{
-		// if (specification.Width == 0)
-		// {
-		// 	m_Width = Application::Get().GetWindow().GetWidth();
-		// 	m_Height = Application::Get().GetWindow().GetHeight();
-		// }
-		// else
-		{
-			m_Width = specification.Width;
-			m_Height = specification.Height;
-		}
+		m_Width = specification.Width;
+		m_Height = specification.Height;
 
 		// Create all image objects immediately so we can start referencing them elsewhere
 		uint32_t attachmentIndex = 0;
-		if (!m_Specification.ExistingFramebuffer)
+		
+		for (auto& attachmentSpec : m_Specification.Attachments.Attachments)
 		{
-			for (auto& attachmentSpec : m_Specification.Attachments.Attachments)
+			if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
 			{
-				if (m_Specification.ExistingImage && m_Specification.ExistingImage->GetSpecification().Deinterleaved)
+				if (!Utils::IsDepthFormat(attachmentSpec.Format))
 				{
-					ETH_CORE_ASSERT(!Utils::IsDepthFormat(attachmentSpec.Format), "Only supported for color attachments");
-					m_AttachmentImages.emplace_back(m_Specification.ExistingImage);
+					m_AttachmentImages.emplace_back();
+					m_AttachmentTextures.emplace_back();
 				}
-				else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
-				{
-					if (!Utils::IsDepthFormat(attachmentSpec.Format))
-						m_AttachmentImages.emplace_back(); // This will be set later
-				}
-				else if (Utils::IsDepthFormat(attachmentSpec.Format))
-				{
-					ImageSpecification spec;
-					spec.Format = attachmentSpec.Format;
-					spec.Usage = ImageUsage::Attachment;
-					spec.Width = m_Width; // * m_Specification.Scale;
-					spec.Height = m_Height; // *m_Specification.Scale;
-					spec.DebugName = fmt::format("{0}-DepthAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
-					m_DepthAttachmentImage = Image2D::Create(spec);
-				}
-				else
-				{
-					ImageSpecification spec;
-					spec.Format = attachmentSpec.Format;
-					spec.Usage = ImageUsage::Attachment;
-					spec.Width = m_Width; // *m_Specification.Scale;
-					spec.Height = m_Height; // *m_Specification.Scale;
-					spec.DebugName = fmt::format("{0}-ColorAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
-					m_AttachmentImages.emplace_back(Image2D::Create(spec));
-				}
-				attachmentIndex++;
 			}
+			else if (Utils::IsDepthFormat(attachmentSpec.Format))
+			{
+				ImageSpecification spec;
+				spec.Format = attachmentSpec.Format;
+				spec.Usage = ImageUsage::Attachment;
+				spec.Width = m_Width;
+				spec.Height = m_Height;
+				spec.DebugName = fmt::format("{0}-DepthAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
+				m_DepthAttachmentImage = Image2D::Create(spec);
+			}
+			else
+			{
+				ImageSpecification spec;
+				spec.Format = attachmentSpec.Format;
+				spec.Usage = ImageUsage::Attachment;
+				spec.Width = m_Width;
+				spec.Height = m_Height;
+				spec.DebugName = fmt::format("{0}-ColorAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
+				auto image = std::dynamic_pointer_cast<VulkanImage2D>(m_AttachmentImages.emplace_back(Image2D::Create(spec)));
+				m_AttachmentTextures.emplace_back(CreateRef<VulkanTexture2D>(image));
+			}
+			attachmentIndex++;
 		}
 
 		ETH_CORE_ASSERT(specification.Attachments.Attachments.size());
@@ -71,8 +60,8 @@ namespace Ethane {
 		// if (m_Width == width && m_Height == height)
 		// 	return;
 
-		m_Width = width; // *m_Specification.Scale;
-		m_Height = height; // *m_Specification.Scale;
+		m_Width = width;
+		m_Height = height;
 		if (!m_Specification.SwapChainTarget)
 		{
 			Invalidate();
@@ -80,21 +69,14 @@ namespace Ethane {
 		else
 		{
 			ETH_CORE_ASSERT("Haven't done");
-			const Ref<VulkanSwapChain> swapChain = VulkanContext::GetSwapChain(); // Application::Get().GetWindow().GetSwapChain();
+			const Ref<VulkanSwapChain> swapChain = VulkanContext::GetSwapChain();
 			m_RenderPass = swapChain->GetRenderPass();
 
 			m_ClearValues.clear();
 			m_ClearValues.emplace_back().color = { 0.0f, 0.0f, 0.0f, 1.0f };
 		}
 
-		// for (auto& callback : m_ResizeCallbacks)
-		// 	callback(this);
 	}
-
-	// void VulkanFramebuffer::AddResizeCallback(const std::function<void(Ref<Framebuffer>)>& func)
-	// {
-	// 	m_ResizeCallbacks.push_back(func);
-	// }
 
 	void VulkanFramebuffer::Invalidate()
 	{
@@ -110,28 +92,26 @@ namespace Ethane {
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
 			vkDestroyRenderPass(device, m_RenderPass, nullptr);
 
-			// Don't free the images if we don't own them
-			if (!m_Specification.ExistingFramebuffer)
+
+			uint32_t attachmentIndex = 0;
+			for (Ref<Image2D> image : m_AttachmentImages)
 			{
-				uint32_t attachmentIndex = 0;
-				for (Ref<Image2D> image : m_AttachmentImages)
-				{
-					if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
-						continue;
+				if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
+					continue;
 
-					// Only destroy deinterleaved image once and prevent clearing layer views on second framebuffer invalidation
-					image->Destroy();
-					attachmentIndex++;
-				}
-				m_AttachmentImages.clear();
-
-				if (m_DepthAttachmentImage)
-				{
-					if (m_Specification.ExistingImages.find((uint32_t)m_Specification.Attachments.Attachments.size() - 1) == m_Specification.ExistingImages.end())
-						m_DepthAttachmentImage->Destroy();
-				}
-				m_DepthAttachmentImage = nullptr;
+				// Only destroy deinterleaved image once and prevent clearing layer views on second framebuffer invalidation
+				image->Destroy();
+				attachmentIndex++;
 			}
+			m_AttachmentImages.clear();
+			m_AttachmentTextures.clear();
+
+			if (m_DepthAttachmentImage)
+			{
+				if (m_Specification.ExistingImages.find((uint32_t)m_Specification.Attachments.Attachments.size() - 1) == m_Specification.ExistingImages.end())
+					m_DepthAttachmentImage->Destroy();
+			}
+			m_DepthAttachmentImage = nullptr;
 		}
 
 		std::vector<VkAttachmentDescription> attachmentDescriptions;
@@ -143,25 +123,13 @@ namespace Ethane {
 
 		bool createImages = m_AttachmentImages.empty();
 
-		if (m_Specification.ExistingFramebuffer)
-			m_AttachmentImages.clear();
-
 		uint32_t attachmentIndex = 0;
 		for (auto attachmentSpec : m_Specification.Attachments.Attachments)
 		{
 			// Depth attachment
 			if (Utils::IsDepthFormat(attachmentSpec.Format))
 			{
-				if (m_Specification.ExistingImage)
-				{
-					m_DepthAttachmentImage = m_Specification.ExistingImage;
-				}
-				else if (m_Specification.ExistingFramebuffer)
-				{
-					Ref<VulkanFramebuffer> existingFramebuffer = std::dynamic_pointer_cast<VulkanFramebuffer>(m_Specification.ExistingFramebuffer);
-					m_DepthAttachmentImage = existingFramebuffer->GetDepthImage();
-				}
-				else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
+				if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
 				{
 					Ref<Image2D> existingImage = m_Specification.ExistingImages.at(attachmentIndex);
 					ETH_CORE_ASSERT(Utils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach non-depth image as depth attachment");
@@ -209,13 +177,7 @@ namespace Ethane {
 			else
 			{
 				Ref<VulkanImage2D> colorAttachment;
-				if (m_Specification.ExistingFramebuffer)
-				{
-					Ref<VulkanFramebuffer> existingFramebuffer = std::dynamic_pointer_cast<VulkanFramebuffer>(m_Specification.ExistingFramebuffer);
-					Ref<Image2D> existingImage = existingFramebuffer->GetImage(attachmentIndex);
-					colorAttachment = std::dynamic_pointer_cast<VulkanImage2D>(m_AttachmentImages.emplace_back(existingImage));
-				}
-				else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
+				if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
 				{
 					Ref<Image2D> existingImage = m_Specification.ExistingImages[attachmentIndex];
 					ETH_CORE_ASSERT(!Utils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach depth image as color attachment");
@@ -232,30 +194,8 @@ namespace Ethane {
 						spec.Width = m_Width;
 						spec.Height = m_Height;
 						colorAttachment = std::dynamic_pointer_cast<VulkanImage2D>(m_AttachmentImages.emplace_back(Image2D::Create(spec)));
+						m_AttachmentTextures.emplace_back(CreateRef<VulkanTexture2D>(colorAttachment));
 					}
-					else
-					{
-						Ref<Image2D> image = m_AttachmentImages[attachmentIndex];
-						ImageSpecification& spec = image->GetSpecification();
-						spec.Width = m_Width;
-						spec.Height = m_Height;
-						colorAttachment = std::dynamic_pointer_cast<VulkanImage2D>(image);
-						if (!colorAttachment->GetSpecification().Deinterleaved)
-						{
-							// TODO: colorAttachment->Invalidate(); // Create immediately
-						}
-						else if (attachmentIndex == 0 && m_Specification.ExistingImageLayers[0] == 0)// Only invalidate the first layer from only the first framebuffer
-						{
-							// TODO: test
-							// colorAttachment->Invalidate(); // Create immediately
-							// colorAttachment->RT_CreatePerSpecificLayerImageViews(m_Specification.ExistingImageLayers);
-						}
-						else if (attachmentIndex == 0)
-						{
-							// colorAttachment->RT_CreatePerSpecificLayerImageViews(m_Specification.ExistingImageLayers);
-						}
-					}
-
 				}
 
 				VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
@@ -379,17 +319,8 @@ namespace Ethane {
 		if (m_DepthAttachmentImage)
 		{
 			Ref<VulkanImage2D> image = std::dynamic_pointer_cast<VulkanImage2D>(m_DepthAttachmentImage);
-			if (m_Specification.ExistingImage)
-			{
-				ETH_CORE_ASSERT(m_Specification.ExistingImageLayers.size() == 1, "Depth attachments do not support deinterleaving");
-				// attachments.emplace_back(image->GetLayerImageView(m_Specification.ExistingImageLayers[0]));
-				ETH_CORE_ASSERT(attachments.back());
-			}
-			else
-			{
-				attachments.emplace_back(image->GetImageInfo().ImageView);
-				ETH_CORE_ASSERT(attachments.back());
-			}
+			attachments.emplace_back(image->GetImageInfo().ImageView);
+			ETH_CORE_ASSERT(attachments.back());
 		}
 
 		VkFramebufferCreateInfo framebufferCreateInfo = {};

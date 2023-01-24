@@ -35,6 +35,7 @@ namespace Ethane {
 		// Getter
 		SceneRendererOptions& GetOptions() { return m_Options; }
 		Ref<Image2D> GetFinalPassImage();
+		Ref<Texture2D> GetFinalPassTexture();
 
 	private:
 		void Flush();

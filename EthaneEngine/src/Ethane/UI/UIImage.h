@@ -11,7 +11,6 @@ namespace Ethane {
 
 	public:
 		UIImage() = default;
-		//UIImage(Ref<Image2D> image);
 		UIImage(Texture2D* texture);
 		UIImage(uint32_t rendererID); // TODO: remove this maybe
 		~UIImage() = default;
@@ -30,8 +29,6 @@ namespace Ethane {
 
 	public:
 		UIImageButton() = default;
-		//UIImageButton(const Ref<Image2D>& image);
-		//UIImageButton(const char* stringID, const Ref<Image2D>& image);
 		UIImageButton(const Ref<Texture2D>& texture);
 		UIImageButton(const char* stringID, const Ref<Texture2D>& texture);
 		~UIImageButton() = default;
@@ -43,7 +40,7 @@ namespace Ethane {
 	private:
 		bool m_Initialized = false;
 		ImTextureID m_ImageID = nullptr;
-		ImGuiID m_ID;
+		ImGuiID m_ID = 0;
 		bool m_Pressed = false;
 	};
 

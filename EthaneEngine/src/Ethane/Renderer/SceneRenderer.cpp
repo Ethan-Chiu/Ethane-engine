@@ -111,7 +111,7 @@ namespace Ethane {
 			m_CompositeMaterial = Material::Create(ShaderLibrary::Get("SceneComposite"), "Composite material");
 			
 			auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
+			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetTexture());
 		}
 
 #endif 
@@ -141,7 +141,7 @@ namespace Ethane {
 			m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
 
 			auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetImage());
+			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetTexture());
 		}
 
 
@@ -243,5 +243,10 @@ namespace Ethane {
 	Ref<Image2D> SceneRenderer::GetFinalPassImage()
 	{
 		return std::dynamic_pointer_cast<VulkanFramebuffer>(m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer)->GetImage();
+	}
+
+	Ref<Texture2D> SceneRenderer::GetFinalPassTexture()
+	{
+		return std::dynamic_pointer_cast<VulkanFramebuffer>(m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer)->GetTexture();
 	}
 }

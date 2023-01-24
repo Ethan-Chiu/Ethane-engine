@@ -8,33 +8,13 @@ namespace Ethane {
 
 	class Framebuffer;
 
-	// enum class FramebufferTextureFormat
-	// {
-	// 	None = 0,
-	// 
-	// 	// Color
-	// 	RGBA8,
-	// 	RED_INTEGER,
-	// 
-	// 	// Depth/stencil
-	// 	DEPTH24STENCIL8,
-	// 
-	// 	// Defaults
-	// 	Depth = DEPTH24STENCIL8
-	// };
-
 	struct FramebufferTextureSpecification
 	{
-		// TODO: remove FramebufferTextureFormat
 		FramebufferTextureSpecification() = default;
-		// FramebufferTextureSpecification(FramebufferTextureFormat format)
-		// 	: TextureFormat(format) {}
 		FramebufferTextureSpecification(ImageFormat format)
 			: Format(format) {}
 	
-
-		ImageFormat Format; // TODO
-		// FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
+		ImageFormat Format;
 		// TODO: filtering/wrap
 	};
 
@@ -64,13 +44,6 @@ namespace Ethane {
 		// Specify existing images to attach instead of creating
 		// new images. attachment index -> image
 		std::map<uint32_t, Ref<Image2D>> ExistingImages;
-
-		// Note: these are used to attach multi-layered depth images and color image arrays
-		Ref<Image2D> ExistingImage;
-		std::vector<uint32_t> ExistingImageLayers;
-
-		// At the moment this will just create a new render pass with an existing framebuffer
-		Ref<Framebuffer> ExistingFramebuffer;
 
 		std::string DebugName = "framebuffer";
 	};

@@ -6,6 +6,8 @@
 
 #include "VulkanImage.h"
 
+#include "VulkanTexture.h"
+
 namespace Ethane {
 
 	class VulkanFramebuffer : public Framebuffer
@@ -13,7 +15,7 @@ namespace Ethane {
 	public:
 		VulkanFramebuffer(const FramebufferSpecification& spec);
 
-		virtual void Resize(uint32_t width, uint32_t height) override; // , bool forceRecreate = false
+		virtual void Resize(uint32_t width, uint32_t height) override;
 		// virtual void AddResizeCallback(const std::function<void(Ref<Framebuffer>)>& func) override;
 
 		virtual void Bind() override {}
@@ -36,6 +38,7 @@ namespace Ethane {
 		virtual uint32_t GetDepthAttachmentRendererID() const { return 0; }
 
 		virtual Ref<Image2D> GetImage(uint32_t attachmentIndex = 0) const { ETH_CORE_ASSERT(attachmentIndex < m_AttachmentImages.size()); return m_AttachmentImages[attachmentIndex]; }
+		virtual Ref<VulkanTexture2D> GetTexture(uint32_t attachmentIndex = 0) const { ETH_CORE_ASSERT(attachmentIndex < m_AttachmentTextures.size()); return m_AttachmentTextures[attachmentIndex]; }
 		virtual Ref<Image2D> GetDepthImage() const { return m_DepthAttachmentImage; }
 		size_t GetColorAttachmentCount() const { return m_Specification.SwapChainTarget ? 1 : m_AttachmentImages.size(); }
 		VkRenderPass GetRenderPass() const { return m_RenderPass; }
@@ -50,7 +53,9 @@ namespace Ethane {
 		uint32_t m_Width = 0, m_Height = 0;
 
 		std::vector<Ref<Image2D>> m_AttachmentImages;
+		std::vector<Ref<VulkanTexture2D>> m_AttachmentTextures;
 		Ref<Image2D> m_DepthAttachmentImage;
+		Ref<VulkanTexture2D> m_DepthAttachmentTexture;
 
 		std::vector<VkClearValue> m_ClearValues;
 
