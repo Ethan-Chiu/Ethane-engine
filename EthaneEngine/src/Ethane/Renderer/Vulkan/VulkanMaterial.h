@@ -104,8 +104,8 @@ namespace Ethane {
 		std::vector<ResourceBinding> m_ResourceBindings;
 
 
-		std::vector<Ref<Texture>> m_Textures; // TODO: Texture should only be stored as images
-		std::vector<std::vector<Ref<Texture>>> m_TextureArrays;
+		std::vector<Ref<TextureOld>> m_Textures; // TODO: Texture should only be stored as images
+		std::vector<std::vector<Ref<TextureOld>>> m_TextureArrays;
 		std::vector<Ref<Image>> m_Images;
 
 		VkDescriptorPool m_Pool;
