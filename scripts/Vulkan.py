@@ -9,22 +9,33 @@ from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
 
+import platform
+
 VULKAN_SDK = os.environ.get('VULKAN_SDK')
-VULKAN_SDK_INSTALLER_URL = 'https://sdk.lunarg.com/sdk/download/1.3.204.1/windows/VulkanSDK-1.3.204.1-Installer.exe'
-ETHANE_VULKAN_VERSION = '1.3.204.1'
+ETHANE_VULKAN_VERSION = '1.3.250.0'
+VULKAN_SDK_INSTALLER_URL = f'https://sdk.lunarg.com/sdk/download/{ETHANE_VULKAN_VERSION}/windows/VulkanSDK-{ETHANE_VULKAN_VERSION}-Installer.exe'
 VULKAN_SDK_EXE_PATH = 'EthaneEngine/vendor/VulkanSDK/VulkanSDK.exe'
+
+if platform.system() == 'Darwin':
+    from colorama import init, Fore, Back, Style
+    print("Vulkan for Mac")
+    opener = "open"
+    VULKAN_SDK_INSTALLER_URL = f'https://sdk.lunarg.com/sdk/download/{ETHANE_VULKAN_VERSION}/mac/vulkansdk-macos-{ETHANE_VULKAN_VERSION}.dmg'
+    VULKAN_SDK_EXE_PATH = 'EthaneEngine/vendor/VulkanSDK/VulkanSDK.dmg'
 
 def InstallVulkanSDK():
     print('Downloading {} to {}'.format(VULKAN_SDK_INSTALLER_URL, VULKAN_SDK_EXE_PATH))
     Utils.DownloadFile(VULKAN_SDK_INSTALLER_URL, VULKAN_SDK_EXE_PATH)
     print("Done!")
     print("Running Vulkan SDK installer...")
-    os.startfile(os.path.abspath(VULKAN_SDK_EXE_PATH))
-    # print("Re-run this script after installation")
+    if platform.system() == 'Darwin':
+        subprocess.call([opener, os.path.abspath(VULKAN_SDK_EXE_PATH)])
+    else:
+        os.startfile(os.path.abspath(VULKAN_SDK_EXE_PATH))
     return True
 
 def InstallVulkanPrompt():
-    print("Would you like to install the Vulkan SDK?")
+    print(f"Would you like to install the Vulkan SDK({ETHANE_VULKAN_VERSION})?")
     install = Utils.YesOrNo()
     if (install):
         return InstallVulkanSDK()

@@ -1,10 +1,12 @@
 import requests
 import sys
 import time
+import os
 
 from fake_useragent import UserAgent
 
 def DownloadFile(url, filepath):
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, 'wb') as f:
         ua = UserAgent()
         headers = {'User-Agent': ua.chrome}

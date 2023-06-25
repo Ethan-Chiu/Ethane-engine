@@ -8,7 +8,7 @@ Ethane Game Engine Windows dev
 
 * Requirement:
 
-    1, Visual Studio 2019 or 2022
+    1, Visual Studio 2019 or 2022 / Xcode / make 
 
     https://visualstudio.microsoft.com/downloads
 
@@ -22,19 +22,17 @@ Ethane Game Engine Windows dev
     
         git clone https://github.com/Ethan-Chiu/EthaneEngineWindows.git 
 
-    2, Go into <code> EthaneEngineWindows/scripts </code>
+    2, Go into `EthaneEngineWindows/scripts`
             
         cd EthaneEngineWindows/scripts
 
-    3, Run  setup.bat by double click it
+    3, Run  `Setup.bat/Setup.sh` by double click it
 
-    4, Open the generated <code> EthaneEngine.sln </code>
+    4, Open the generated `EthaneEngine.sln`
 
-    5, Once you open it, you will see Visual studio boots up and you can click <code> Local Windows Debugger </code> to run it (or by pressing <code> F5 </code>).
+    5, Once you open it, you will see Visual studio boots up and you can click `Local Windows Debugger` to run it (or by pressing `F5`).
 
 </br>
-
-* Note: This engine is currently only supportted on Windows 
 
 ## Note ( For developer ) 
 
