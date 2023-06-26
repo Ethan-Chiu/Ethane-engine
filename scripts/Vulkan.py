@@ -1,41 +1,27 @@
 import os
 import subprocess
-import sys
 from pathlib import Path
-
-import Utils
-
-from io import BytesIO
-from urllib.request import urlopen
-from zipfile import ZipFile
-
 import platform
 
-VULKAN_SDK = os.environ.get('VULKAN_SDK')
-ETHANE_VULKAN_VERSION = '1.3.250.0'
-VULKAN_SDK_INSTALLER_URL = f'https://sdk.lunarg.com/sdk/download/{ETHANE_VULKAN_VERSION}/windows/VulkanSDK-{ETHANE_VULKAN_VERSION}-Installer.exe'
-VULKAN_SDK_EXE_PATH = 'EthaneEngine/vendor/VulkanSDK/VulkanSDK.exe'
+import Config
+import Utils
 
-if platform.system() == 'Darwin':
-    from colorama import init, Fore, Back, Style
-    print("Vulkan for Mac")
-    opener = "open"
-    VULKAN_SDK_INSTALLER_URL = f'https://sdk.lunarg.com/sdk/download/{ETHANE_VULKAN_VERSION}/mac/vulkansdk-macos-{ETHANE_VULKAN_VERSION}.dmg'
-    VULKAN_SDK_EXE_PATH = 'EthaneEngine/vendor/VulkanSDK/VulkanSDK.dmg'
+from colorama import init, Fore, Back, Style
+
+VULKAN_SDK = os.environ.get('VULKAN_SDK')
 
 def InstallVulkanSDK():
-    print('Downloading {} to {}'.format(VULKAN_SDK_INSTALLER_URL, VULKAN_SDK_EXE_PATH))
-    Utils.DownloadFile(VULKAN_SDK_INSTALLER_URL, VULKAN_SDK_EXE_PATH)
+    cfg = Config.vulkan_config
+    print('Downloading {} to {}'.format(cfg.installer_url, cfg.filepath))
+    Utils.download_file(cfg.installer_url, cfg.filepath)
     print("Done!")
     print("Running Vulkan SDK installer...")
-    if platform.system() == 'Darwin':
-        subprocess.call([opener, os.path.abspath(VULKAN_SDK_EXE_PATH)])
-    else:
-        os.startfile(os.path.abspath(VULKAN_SDK_EXE_PATH))
+    Utils.open_file(cfg.filepath, cfg.opener)
     return True
 
 def InstallVulkanPrompt():
-    print(f"Would you like to install the Vulkan SDK({ETHANE_VULKAN_VERSION})?")
+    cfg = Config.vulkan_config
+    print(f"Would you like to install the Vulkan SDK({cfg.vulkan_sdk_version})?")
     install = Utils.YesOrNo()
     if (install):
         return InstallVulkanSDK()
@@ -43,15 +29,16 @@ def InstallVulkanPrompt():
         return False
 
 def CheckVulkanSDK():
+    cfg = Config.vulkan_config
     if (VULKAN_SDK is None):
         print("You don't have the Vulkan SDK installed!")
         return InstallVulkanPrompt()
-    elif (ETHANE_VULKAN_VERSION not in VULKAN_SDK):
+    elif (cfg.vulkan_sdk_version not in VULKAN_SDK):
         print(f"Located Vulkan SDK at {VULKAN_SDK}")
-        print(f"You don't have the correct Vulkan SDK version! (ETHANE requires {ETHANE_VULKAN_VERSION})")
+        print(f"You don't have the correct Vulkan SDK version! (ETHANE requires {cfg.vulkan_sdk_version})")
         return InstallVulkanPrompt()
 
-    print(f"Correct Vulkan SDK located at {VULKAN_SDK}")
+    Utils.CheckMarkMsg(f"Correct Vulkan SDK located at {VULKAN_SDK}")
     return True
 
 

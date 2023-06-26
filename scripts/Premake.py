@@ -1,46 +1,26 @@
-import os
+import Config
 import Utils
 
-from io import BytesIO
-from urllib.request import urlopen
-from zipfile import ZipFile
-import tarfile
+def check_premake_installed():
+    cfg = Config.premake_config
+    if (not Utils.filename_exists_in_dir("premake5", cfg.install_dir)):
+        print("You don't have the premake installed!")
+        return install_premake_prompt()
 
-import platform
-
-PREMAKE_INSTALLER_URL = "https://github.com/premake/premake-core/releases/download/v5.0.0-beta1/premake-5.0.0-beta1-windows.zip"
-OUTPUT_DIRECTORY = "vendor/premake/bin"
-PREMAKE_EXE_PATH = f"{OUTPUT_DIRECTORY}/premake5.exe"
-
-if platform.system() == 'Darwin':
-    print("Premake for Mac")
-    PREMAKE_INSTALLER_URL = "https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-macosx.tar.gz"
-    PREMAKE_EXE_PATH = f"{OUTPUT_DIRECTORY}/premake5"
-
-def InstallPremake():
-    print('Downloading {} to {}'.format(PREMAKE_INSTALLER_URL, PREMAKE_EXE_PATH))
-    with urlopen(PREMAKE_INSTALLER_URL) as resp:
-        if platform.system() == 'Darwin':
-            with tarfile.open(fileobj=BytesIO(resp.read())) as tfile:
-                tfile.extractall(OUTPUT_DIRECTORY)
-        else:
-            with ZipFile(BytesIO(resp.read())) as zfile:
-                zfile.extractall(OUTPUT_DIRECTORY)
-    print("premake5.exe downloaded at: ", PREMAKE_EXE_PATH)
+    Utils.CheckMarkMsg(f"Correct Premake.exe located at {cfg.install_dir}")
     return True
 
-def InstallPremakePrompt():
+def install_premake():
+    cfg = Config.premake_config
+    print('Downloading {} to {}'.format(cfg.installer_url, cfg.install_dir))
+    Utils.download_archive(cfg.installer_url, cfg.install_dir)
+    print("premake5.exe downloaded at: ", cfg.install_dir)
+    return True
+
+def install_premake_prompt():
     print("Would you like to install the Premake.exe?")
     install = Utils.YesOrNo()
     if (install):
-        return InstallPremake()
+        return install_premake()
     else:
         return False
-
-def CheckPremakeExe():
-    if (not os.path.isfile(PREMAKE_EXE_PATH)):
-        print("You don't have the premake installed!")
-        return InstallPremakePrompt()
-
-    print(f"Correct Premake.exe located at {PREMAKE_EXE_PATH}")
-    return True

@@ -15,4 +15,5 @@ def ValidatePackage(package):
 
 def ValidatePackages():
     ValidatePackage('requests')
-    ValidatePackage('fake-useragent')
+    ValidatePackage('tqdm')
+    ValidatePackage('colorama')

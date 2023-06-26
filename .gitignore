@@ -2,13 +2,16 @@
 
 bin/
 bin-int/
-vendor/
+./vendor/
 EthaneEngine/vendor/VulkanSDK
 Ethane-Editor/assets/cache
 scripts/__pycache__ 
 
 # Files
 *.user
+.DS_Store
+EthaneProfile-Startup.json
+*~
 
 # Ethane files
 *.log

@@ -2,14 +2,15 @@ import os
 import subprocess
 
 import CheckPython
-
+import Config
 # Make sure everything we need is installed
 CheckPython.ValidatePackages()
 
 import Vulkan
 import Premake
-
-import platform
+import Cmake
+import Utils
+import PostProcess
 
 # Change from Scripts directory to root
 os.chdir('../')
@@ -24,16 +25,23 @@ print("----------------------------------------")
 #     quit()
 # print("----------------------------------------")
 
-if (not Premake.CheckPremakeExe()):
-    print("Premake5.exe not installed. ")
+if (not Premake.check_premake_installed()):
+    print("Premake not installed. ")
+    quit()
+print("----------------------------------------")
+
+if (not Cmake.check_cmake_installed()):
+    print("Cmake not installed. ")
     quit()
 print("----------------------------------------")
 
 print("Running premake...")
-if platform.system() == 'Darwin':
-    subprocess.call([Premake.PREMAKE_EXE_PATH, "xcode4"])
-else: 
-    subprocess.call([Premake.PREMAKE_EXE_PATH, "vs2022"])
+subprocess.call([Utils.filename_in_dir('premake', Config.premake_config.install_dir), Config.premake_config.action])
+print("----------------------------------------")
+
+
+print("Post processing...")
+PostProcess.assimp_build()
 print("----------------------------------------")
 
 input("Program ended. Press [Enter] to close ... ")
