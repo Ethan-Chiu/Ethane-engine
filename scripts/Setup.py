@@ -42,6 +42,7 @@ print("----------------------------------------")
 
 print("Post processing...")
 PostProcess.assimp_build()
+PostProcess.yaml_cpp_build()
 print("----------------------------------------")
 
 input("Program ended. Press [Enter] to close ... ")
