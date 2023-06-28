@@ -1,17 +1,16 @@
 #include "ethpch.h"
 #include "Application.h"
 #include "Ethane/Core/Log.h"
-#include "Input.h"
-
-#include "Ethane/Asset/AssetManager.h"
-#include "Ethane/Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
-
+#include "Ethane/Renderer/Renderer.h"
+#include "Ethane/Asset/AssetManager.h"
+#include "Ethane/Systems/ResourceSystem.h"
+#include "Ethane/Systems/TextureSystem.h"
+#include "Ethane/Systems/ShaderSystem.h"
 
 namespace Ethane
 {
-
 #define BIND_EVENT_FUNCTION(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 	Application* Application::s_Instance = nullptr;
@@ -22,14 +21,26 @@ namespace Ethane
 		ETH_PROFILE_FUNCTION();
 
 		ETH_CORE_ASSERT(!s_Instance, "Application already exists!")
-		s_Instance = this;
+			s_Instance = this;
 
-		m_Window = Window::Create(WindowProps(name));
+		m_Window = Window::Create(WindowProps(name, 400, 300));
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
-		// m_Window->SetVSync(false);
-		
+		m_Window->SetVSync(false);
+
+		RendererConfig config = {
+			m_Window->GetWidth(),
+			m_Window->GetHeight(),
+			glm::vec2(m_Window->GetWidth() / 400, m_Window->GetHeight() / 300)
+		};
+		Renderer::Init(m_Window->GetGraphicsContext(), config);
+
+		ResourceSystem::Init();
+
+		TextureSystem::Init();
+
+		ShaderSystem::Init();
+
 		AssetManager::Init();
-		Renderer::Init();
 
 		m_ImGuiLayer = ImGuiLayer::Create();
 		PushOverlay(m_ImGuiLayer);
@@ -38,8 +49,6 @@ namespace Ethane
 	Application::~Application()
 	{
 		ETH_PROFILE_FUNCTION();
-
-		Renderer::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -83,6 +92,9 @@ namespace Ethane
 	{
 		ETH_PROFILE_FUNCTION();
 
+		//        uint64_t frameCount = 0;
+		//        float frameTime = 0;
+
 		while (true)
 		{
 			ETH_PROFILE_SCOPE("RunLoop");
@@ -90,6 +102,10 @@ namespace Ethane
 			float time = glfwGetTime(); //plateform GetTime()
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
+
+			//            frameCount++;
+			//            frameTime += timestep;
+			//            ETH_CORE_INFO("fps: {0}", 1/(frameTime/frameCount));
 
 			m_Window->PollEvent();
 			if (!m_Running) break;
@@ -99,7 +115,6 @@ namespace Ethane
 				if (m_Window->BeginFrame())
 				{
 					Renderer::BeginFrame();
-
 					{
 						ETH_PROFILE_SCOPE("LayerStack OnUpdate");
 
@@ -120,7 +135,6 @@ namespace Ethane
 					}
 
 					Renderer::EndFrame();
-
 					m_Window->EndFrame();
 				}
 			}
@@ -130,6 +144,19 @@ namespace Ethane
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		Close();
+
+		// shutdown all layers first
+		m_LayerStack.Detach();
+
+		AssetManager::Shutdown();
+
+		ShaderSystem::Shutdown();
+
+		TextureSystem::Shutdown();
+
+		ResourceSystem::Shutdown();
+
+		Renderer::Shutdown();
 
 		m_Window->Shutdown();
 
@@ -148,7 +175,6 @@ namespace Ethane
 		}
 
 		m_Minimized = false;
-		// Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 		m_Window->OnResize(e.GetWidth(), e.GetHeight());
 		return false;
 	}

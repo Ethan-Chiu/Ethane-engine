@@ -1,7 +1,6 @@
 #include "ethpch.h"
-#include "VertexBuffer.h"
-
 #include "RendererAPI.h"
+#include "VertexBuffer.h"
 
 #include "Vulkan/VulkanVertexBuffer.h"
 

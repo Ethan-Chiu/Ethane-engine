@@ -14,8 +14,6 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-#include "Ethane/Asset/ShaderLibrary.h"
-
 struct aiNode;
 struct aiAnimation;
 struct aiNodeAnim;
@@ -71,13 +69,17 @@ namespace Ethane {
 		Mesh(const std::string& filename);
 		~Mesh() = default;
 
+        void Upload();
+        void Unload();
+        
 		// Getter
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Triangle> GetTrianglesCacheInSubmesh(uint32_t index) const { return m_TriangleCache.at(index); }
+        const std::unordered_map<uint32_t, std::vector<Triangle>>& GetTriangles() const { return m_TriangleCache; };
 		Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
 		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
-		uint32_t GetVertexNum() const { return m_StaticVertices.size(); };
-		uint32_t GetIndexNum() const { return m_Indices.size();}
+		uint64_t GetVertexNum() const { return m_StaticVertices.size(); };
+		uint64_t GetIndexNum() const { return m_Indices.size();}
 	private:
 		void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 	private:
@@ -90,10 +92,8 @@ namespace Ethane {
 		std::vector<Submesh> m_Submeshes;
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 
-		Ref<Shader> m_MeshShader;
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<IndexBuffer> m_IndexBuffer;
-		Ref<Pipeline> m_Pipeline;
 
 		std::vector<Vertex> m_StaticVertices;
 		std::vector<Index> m_Indices;
@@ -103,11 +103,7 @@ namespace Ethane {
 		std::unordered_map<aiNode*, std::vector<uint32_t>> m_NodeMap;
 
 	friend class Renderer;
-	friend class OpenGLRendererAPI;
 	friend class VulkanRendererAPI;
-
-	// test
-	friend class RayTracing;
 	};
 
 }

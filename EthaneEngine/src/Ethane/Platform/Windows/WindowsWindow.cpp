@@ -1,16 +1,12 @@
 #include "ethpch.h"
 
+#ifdef ETH_PLATFORM_WINDOWS
+
 #include "WindowsWindow.h"
 
 #include "Ethane/Events/ApplicationEvent.h"
 #include "Ethane/Events/KeyEvent.h"
 #include "Ethane/Events/MouseEvent.h"
-
-// test
-#include "Ethane/Renderer/Renderer.h"
-
-// TODO: remove this 
-#include <vulkan/vulkan.h>
 
 namespace Ethane {
 
@@ -42,10 +38,8 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		m_Data.Title = props.Title;
-		m_Data.Width = props.Width;
-		m_Data.Height = props.Height;
 
-		ETH_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+		ETH_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.ScreenCoordWidth, props.ScreenCoordHeight);
 
 
 		if (!s_WindowInitialized)
@@ -57,20 +51,24 @@ namespace Ethane {
 			s_WindowInitialized = true;
 		}
 
-		// test
-		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		// if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow((int)props.ScreenCoordWidth, (int)props.ScreenCoordHeight, m_Data.Title.c_str(), nullptr, nullptr);
 
 		m_Context = GraphicsContext::Create(m_Window);
 		m_Context->Init();
+
+		int width, height;
+		glfwGetFramebufferSize(m_Window, &width, &height);
+		m_Data.Width = width;
+		m_Data.Height = height;
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
 		//Set GLFW callback
-		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
@@ -145,7 +143,7 @@ namespace Ethane {
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			
+
 			MouseScrolledEvent event((float)xOffset, (float)yOffset);
 			data.EventCallback(event);
 		});
@@ -187,14 +185,14 @@ namespace Ethane {
 	void WindowsWindow::SetVSync(bool enable)
 	{
 		ETH_PROFILE_FUNCTION();
-		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+		/*if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
 		{
 			if (enable)
 				glfwSwapInterval(1);
 			else
 				glfwSwapInterval(0);
 			m_Data.VSync = enable;
-		}
+		}*/
 	}
 
 	void WindowsWindow::OnResize(uint32_t width, uint32_t height)
@@ -208,3 +206,5 @@ namespace Ethane {
 	}
 
 }
+
+#endif

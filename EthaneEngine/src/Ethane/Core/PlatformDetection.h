@@ -21,7 +21,7 @@
 		#error "IOS is not supported!"
 	#elif TARGET_OS_MAC == 1
 		#define ETH_PLATFORM_MACOS
-		#error "MacOS is not supported!"
+		#define __FUNCSIG__ __PRETTY_FUNCTION__
 	#else
 		#error "Unknown Apple platform!"
 	#endif

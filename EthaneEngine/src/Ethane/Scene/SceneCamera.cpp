@@ -24,7 +24,7 @@ namespace Ethane {
 		m_ProjectionType = ProjectionType::Orthographic;
 		m_OrthographicSize = size;
 		m_OrthographicNear = nearClip;
-		m_OrthographicFar - farClip;
+		m_OrthographicFar = farClip;
 		RecalculateProjection();
 	}
 

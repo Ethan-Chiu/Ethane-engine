@@ -1,16 +1,12 @@
 #include "ethpch.h"
+#include "Ethane/Core/timer.h"
 
 #define GLM_FORECE_DEPT_ZERO_TO_ONE // TODO: move
 #include <GLFW/glfw3.h>
 
 #include "VulkanSwapChain.h"
-#include "VulkanImage.h"
-
-#include "Ethane/Core/timer.h"
-
-// test
-#include "Ethane/Asset/ShaderLibrary.h"
-#include "VulkanImGuiLayer.h"
+#include "VulkanRenderPass.h"
+#include "VulkanTargetImage.h"
 
 
 namespace Ethane {
@@ -20,19 +16,18 @@ namespace Ethane {
         ETH_CORE_TRACE("VulkanSwapChain destructed");
     }
 
-    VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
+    VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, VulkanDevice* device, bool vsync)
         : m_Surface(surface),
         m_Device(device),
         m_PhysicalDevice(device->GetPhysicalDevice()),
-        m_VSync(vsync),
-        m_Width(width),
-        m_Height(height)
+        m_VSync(vsync)
     {
+        m_TargetImage = nullptr;
     }
 
-    Ref<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface, Ref<VulkanDevice> device, uint32_t width, uint32_t height, bool vsync)
+    Scope<VulkanSwapChain> VulkanSwapChain::Create(VkSurfaceKHR surface, VulkanDevice* device, bool vsync)
 	{
-		return CreateRef<VulkanSwapChain>(surface, device, width, height, vsync);
+		return CreateScope<VulkanSwapChain>(surface, device, vsync);
 	}
 
     void VulkanSwapChain::Init()
@@ -51,17 +46,13 @@ namespace Ethane {
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
         m_Extent = ChooseSwapExtent(swapChainSupport.capabilities);
-        ETH_CORE_INFO("width: {0}, height: {1}", m_Extent.width, m_Extent.height);
+        m_Width = m_Extent.width;
+        m_Height = m_Extent.height;
+        ETH_CORE_INFO("width: {0}, height: {1}", m_Width, m_Height);
 
         m_ImageFormat = surfaceFormat.format;
         m_ImageColorSpace = surfaceFormat.colorSpace;
-        ETH_CORE_INFO("Imgae Format: {0} | Image Color Space: {1}", m_ImageFormat, m_ImageColorSpace);
-
-        m_DepthFormat = FindSupportedFormat(
-            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-        );
+        ETH_CORE_INFO("Swapchain imgae Format: {0} | Image Color Space: {1}", m_ImageFormat, m_ImageColorSpace);
 
         // profiling
         ETH_CORE_TRACE("choose time: {0}ms", timer.ElapsedMillis());
@@ -115,7 +106,7 @@ namespace Ethane {
         swapchainCreateInfo.imageColorSpace = m_ImageColorSpace;
         swapchainCreateInfo.imageExtent = m_Extent;
         swapchainCreateInfo.imageArrayLayers = 1;
-        swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT; // TODO: make this configurable?
         const auto& indices = m_PhysicalDevice->GetQueueFamilyIndices();
         if (indices.Graphics.value() != indices.Present.value()) {
             uint32_t queueFamilyIndices[] = { indices.Graphics.value(), indices.Present.value() };
@@ -123,10 +114,10 @@ namespace Ethane {
             swapchainCreateInfo.queueFamilyIndexCount = 2;
             swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
         }
-        else 
+        else
         {
             swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            swapchainCreateInfo.queueFamilyIndexCount = 0; 
+            swapchainCreateInfo.queueFamilyIndexCount = 0;
             swapchainCreateInfo.pQueueFamilyIndices = nullptr;
         }
         swapchainCreateInfo.preTransform = (VkSurfaceTransformFlagBitsKHR)preTransform;
@@ -137,9 +128,6 @@ namespace Ethane {
 
         VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &m_SwapChain));
 
-        // test
-        // destroy the old swap chain, if exist
-        // This also cleans up all the presentable images
         if (oldSwapchain != VK_NULL_HANDLE)
         {
             ETH_CORE_WARN("Clean up old swapchain");
@@ -151,6 +139,7 @@ namespace Ethane {
         m_Images.resize(m_ImageCount);
         VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_Images.data()));
 
+        std::vector<ImageUtils::VulkanImageInfo> imageInfos;
         // create imageview
         m_ImageViews.resize(m_ImageCount);
         for (uint32_t i = 0; i < m_ImageCount; i++)
@@ -173,37 +162,24 @@ namespace Ethane {
             colorAttachmentView.flags = 0;
 
             VK_CHECK_RESULT(vkCreateImageView(device, &colorAttachmentView, nullptr, &m_ImageViews[i]));
+            imageInfos.push_back(ImageUtils::VulkanImageInfo{m_Images[i], m_ImageViews[i]});
         }
-
-        m_DepthAttachment = VulkanImage2D::Create(m_Width, m_Height, 1, 1, m_DepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT, true);
-#if depth
-#endif
-        // Render pass
-        m_RenderPass.Create(false, m_ImageFormat, m_DepthFormat);
-
-        // Framebuffers 
-        m_Framebuffers.resize(m_ImageViews.size());
-
-        std::array<VkImageView, 1> attachments = {
-            m_ImageViews[0],
-            // m_DepthImageView
-        };
-        VkFramebufferCreateInfo framebufferInfo{};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = m_RenderPass.GetHandle();
-        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = m_Extent.width;
-        framebufferInfo.height = m_Extent.height;
-        framebufferInfo.layers = 1;
-
-        for (size_t i = 0; i < m_ImageViews.size(); i++) {
-            attachments[0] = m_ImageViews[i];
-
-            VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffers[i]));
+        
+        ImageSpecification imageSpec = {};
+        imageSpec.Format = ImageUtils::VulkanImageFormatToImageFormat(m_ImageFormat);
+        imageSpec.Usage = ImageUsage::Attachment;
+        imageSpec.Width = m_Width;
+        imageSpec.Height = m_Height;
+        imageSpec.Mips = 1;
+        imageSpec.Layers = 1;
+        imageSpec.DebugName = "swapchain image";
+        
+        if(m_TargetImage == nullptr) {
+            m_TargetImage = CreateScope<VulkanTargetImage>(imageSpec, imageInfos);
+        } else {
+            m_TargetImage->SwapchainUpdate(imageSpec, imageInfos);
         }
-
+        
         // Synchronization Objects
         if (m_ImageAvailableSemaphores.empty() || m_RenderFinishedSemaphores.empty() || m_InFlightFences.empty())
         {
@@ -234,12 +210,13 @@ namespace Ethane {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         CreateCommandBuffers();
+        CreateComputeCommandBuffers();
 
         ETH_CORE_INFO("SwapChain created");
     }
 
     // private func
-    VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
+    VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
         for (const auto& availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -250,7 +227,7 @@ namespace Ethane {
         return availableFormats[0];
     }
 
-    VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) 
+    VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
         for (const auto& availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -261,7 +238,7 @@ namespace Ethane {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) 
+    VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
     {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
@@ -284,30 +261,13 @@ namespace Ethane {
         }
     }
 
-    VkFormat VulkanSwapChain::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
-
-        for (VkFormat format : candidates) {
-            VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice->GetVulkanPhysicalDevice(), format, &props);
-
-            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
-                return format;
-            }
-            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
-                return format;
-            }
-        }
-
-        ETH_CORE_ASSERT("failed to find supported format!");
-    }
-
     void VulkanSwapChain::CreateCommandBuffers()
     {
         if (m_GraphicsCommandBuffers.empty()) {
-            m_GraphicsCommandBuffers.resize(m_ImageCount);
+            m_GraphicsCommandBuffers.resize(m_MaxFramesInFlight, VulkanCommandBuffer(m_Device));
         }
 
-        for (uint32_t i = 0; i < m_ImageCount; ++i) {
+        for (uint32_t i = 0; i < m_MaxFramesInFlight; ++i) {
             if (m_GraphicsCommandBuffers[i].GetHandle()) {
                 m_GraphicsCommandBuffers[i].Free(m_Device->GetGraphicsCommandPool());
             }
@@ -317,9 +277,24 @@ namespace Ethane {
         ETH_CORE_INFO("Vulkan command buffers created.");
     }
 
+    void VulkanSwapChain::CreateComputeCommandBuffers()
+    {
+        if (m_ComputeCommandBuffers.empty()) {
+            m_ComputeCommandBuffers.resize(m_MaxFramesInFlight, VulkanCommandBuffer(m_Device));
+        }
+
+        for (uint32_t i = 0; i < m_MaxFramesInFlight; ++i) {
+            if (m_ComputeCommandBuffers[i].GetHandle()) {
+                m_ComputeCommandBuffers[i].Free(m_Device->GetComputeCommandPool());
+            }
+            m_ComputeCommandBuffers[i].Allocate(m_Device->GetComputeCommandPool(), true);
+        }
+
+        ETH_CORE_INFO("Vulkan command buffers created.");
+    }
+
     void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
     {
-        ETH_CORE_WARN("VulkanSwapChain::OnResize");
         // NOTE: width == 0 or height == 0 will not occur
         m_Width = width;
         m_Height = height;
@@ -328,6 +303,8 @@ namespace Ethane {
 
     bool VulkanSwapChain::Resize()
     {
+        ETH_CORE_WARN("VulkanSwapChain::Resize");
+        
         if (m_IsRecreating) {
             ETH_CORE_WARN("Already recreating swapchain");
             return false;
@@ -337,7 +314,7 @@ namespace Ethane {
 
         auto device = m_Device->GetVulkanDevice();
         vkDeviceWaitIdle(device);
-        
+
         Init();
 
         m_NeedResize = false;
@@ -359,11 +336,9 @@ namespace Ethane {
             Resize();
             return false;
         }
-
-        // TODO: check result
-        vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
+    
+        VK_CHECK_RESULT(vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX));
         VK_CHECK_RESULT(vkResetFences(device, 1, &m_InFlightFences[m_CurrentFrame]));
-
 
         if (!AcquireNextImage()) {
             return false;
@@ -373,54 +348,7 @@ namespace Ethane {
         currentCommandBuffer.Reset();
         currentCommandBuffer.Begin(false, false, false);
 
-        SetViewportAndScissor();
-        BeginRenderPass();
-
         return true;
-    }
-
-    void VulkanSwapChain::SetViewportAndScissor()
-    {
-        VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (float)m_Extent.width;
-        viewport.height = (float)m_Extent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(currentCommandBuffer.GetHandle(), 0, 1, &viewport);
-
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = m_Extent;
-        vkCmdSetScissor(currentCommandBuffer.GetHandle(), 0, 1, &scissor);
-    }
-
-    void VulkanSwapChain::BeginRenderPass()
-    {
-        VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
-
-        std::array<VkClearValue, 1> clearValues{};
-        clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-#if depth
-        clearValues[1].depthStencil = { 1.0f, 0 };
-#endif        
-
-        VkRenderPassBeginInfo renderPassInfo{ VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
-        renderPassInfo.renderPass = m_RenderPass.GetHandle();
-        renderPassInfo.framebuffer = m_Framebuffers[m_CurrentImageIndex];
-        renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = m_Extent;
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
-        renderPassInfo.pClearValues = clearValues.data();
-        vkCmdBeginRenderPass(currentCommandBuffer.GetHandle(), &renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-    }
-
-    void VulkanSwapChain::RegisterSecondaryCmdBuffer(VkCommandBuffer secondaryBuffer)
-    {
-        m_SecondaryCommandBuffers.push_back(secondaryBuffer);
     }
 
     void VulkanSwapChain::EndFrame()
@@ -429,34 +357,28 @@ namespace Ethane {
         VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
         VkCommandBuffer currentCmdBufferHandle = currentCommandBuffer.GetHandle();
 
-        if (uint32_t(m_SecondaryCommandBuffers.size()) > 0)
-        {
-            vkCmdExecuteCommands(currentCmdBufferHandle, uint32_t(m_SecondaryCommandBuffers.size()), m_SecondaryCommandBuffers.data());
-            m_SecondaryCommandBuffers.clear();
-        }
-
-        vkCmdEndRenderPass(currentCmdBufferHandle);
         VK_CHECK_RESULT(vkEndCommandBuffer(currentCmdBufferHandle));
 
-
-        VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+        {
+            VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+            
+            VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrame] };
+            submitInfo.waitSemaphoreCount = 1;
+            submitInfo.pWaitSemaphores = waitSemaphores;
+            
+            VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+            submitInfo.pWaitDstStageMask = waitStages;
+            
+            VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrame] };
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = signalSemaphores;
+            
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &currentCmdBufferHandle;
+            
+            VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]));
+        }
         
-        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrame] };
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        submitInfo.pWaitDstStageMask = waitStages;
-        
-        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrame] };
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
-        
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &currentCmdBufferHandle;
-
-        VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]));
-
         Present(m_Device->GetGraphicsQueue(), m_RenderFinishedSemaphores[m_CurrentFrame]);
 
         m_CurrentFrame = (++m_CurrentFrame) % m_MaxFramesInFlight;
@@ -494,7 +416,7 @@ namespace Ethane {
             presentInfo.waitSemaphoreCount = 1;
             presentInfo.pWaitSemaphores = &signalSemaphore;
         }
-        else 
+        else
         {
             ETH_CORE_WARN("Signal semaphores for queue present is not provided!");
         }
@@ -515,16 +437,7 @@ namespace Ethane {
 
         vkDeviceWaitIdle(device);
 
-        for (auto framebuffer : m_Framebuffers)
-        {
-            vkDestroyFramebuffer(device, framebuffer, nullptr);
-        }
-
-        m_RenderPass.Destroy();
-
-        m_DepthAttachment->Destroy();
-
-        for (auto imageView : m_ImageViews) 
+        for (auto imageView : m_ImageViews)
         {
             vkDestroyImageView(device, imageView, nullptr);
         }
@@ -538,9 +451,9 @@ namespace Ethane {
         vkDeviceWaitIdle(device);
 
         ETH_CORE_INFO("Destroying Vulkan command buffers...");
-        for (uint32_t i = 0; i < m_ImageCount; ++i) {
-            if (m_GraphicsCommandBuffers[i].GetHandle()) {
-                m_GraphicsCommandBuffers[i].Free(m_Device->GetGraphicsCommandPool());
+        for (auto& commandBuffer : m_GraphicsCommandBuffers) {
+            if (commandBuffer.GetHandle()) {
+                commandBuffer.Free(m_Device->GetGraphicsCommandPool());
             }
         }
         m_GraphicsCommandBuffers.clear();
@@ -552,8 +465,8 @@ namespace Ethane {
             vkDestroyFence(device, m_InFlightFences[i], nullptr);
         }
 
+        m_TargetImage = nullptr;
         CleanupSwapChain(m_SwapChain);
-
     }
 
 }

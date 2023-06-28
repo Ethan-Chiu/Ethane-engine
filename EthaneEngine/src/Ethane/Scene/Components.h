@@ -7,9 +7,8 @@
 
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
-
+#include "Ethane/Renderer/Mesh.h"
 #include "Ethane/Renderer/Texture.h"
-#include "Ethane/Renderer/SubTexture2D.h"
 #include "Ethane/Renderer/Material.h"
 
 namespace Ethane {
@@ -43,50 +42,6 @@ namespace Ethane {
 		}
 	};
 
-	struct SpriteRendererComponent
-	{
-		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
-
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-		SpriteRendererComponent(const glm::vec4& color)
-			:Color(color) {}
-
-		operator const glm::vec4& () const { return Color; }
-		operator glm::vec4& () { return Color; }
-	};
-
-	struct Texture2DRendererComponent
-	{
-		Ref<Texture2D> Texture = Texture2D::Create("assets/textures/test.png");
-		// Texture2D::Create(1, 1)
-		float TilingFactor = 1.0f;
-		glm::vec4 TintColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-		bool test = false;
-
-		Texture2DRendererComponent() = default;
-		Texture2DRendererComponent(const Texture2DRendererComponent&) = default;
-		Texture2DRendererComponent(const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
-			:Texture(texture), TilingFactor(tilingFactor), TintColor(tintColor) {}
-	};
-
-	struct SubTexture2DRendererComponent
-	{
-		Ref<SubTexture2D> SubTexture;
-		Ref<Texture2D> Texture = Texture2D::Create("assets/textures/test.png");
-		glm::vec2 Coords = { 0, 0 };
-		glm::vec2 CellSize = {128, 128};
-		glm::vec2 SpriteSize = { 1, 1 };
-		float TilingFactor = 1.0f;
-		glm::vec4 TintColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-		bool test = false;
-
-		SubTexture2DRendererComponent() = default;
-		SubTexture2DRendererComponent(const SubTexture2DRendererComponent&) = default;
-		SubTexture2DRendererComponent(const Ref<SubTexture2D>& subTexture, float tilingFactor, const glm::vec4 & tintColor)
-			:SubTexture(subTexture), TilingFactor(tilingFactor), TintColor(tintColor) {}
-	};
-
 	struct CameraComponent
 	{
 		SceneCamera Camera;
@@ -114,49 +69,15 @@ namespace Ethane {
 
 	struct MeshComponent
 	{
-		Ref<Mesh> Mesh;
-		// Ref<Ethane::MaterialTable> MaterialTable = Ref<Hazel::MaterialTable>::Create();
-		Ref<Material> Material;
-		bool IsFractured = false;
+		Ref<Mesh> MeshRef = nullptr;
+        Ref<Material> MatRef = nullptr;
+        // Ref<Ethane::MaterialTable> MaterialTable = Ref<Hazel::MaterialTable>::Create();
 	
-		MeshComponent() = default;
-		MeshComponent(const MeshComponent& other) = default;
-		MeshComponent(const Ref<Ethane::Mesh>& mesh)
-			: Mesh(mesh) {}
+        MeshComponent() = default;
+        MeshComponent(const MeshComponent&) = default;
+		MeshComponent(const Ref<Mesh>& mesh, const Ref<Material> material)
+			: MeshRef(mesh), MatRef(material) {}
 	
-		operator Ref<Ethane::Mesh>() { return Mesh; }
+		operator Ref<Mesh>() { return MeshRef; }
 	};
-
-	// Physics
-
-	struct Rigidbody2DComponent
-	{
-		enum class BodyType { Static = 0, Dynamic, Kinematic };
-		BodyType Type = BodyType::Static;
-		bool FixedRotation = false;
-
-		// Storage for runtime
-		void* RuntimeBody = nullptr;
-
-		Rigidbody2DComponent() = default;
-		Rigidbody2DComponent(const Rigidbody2DComponent&) = default;
-	};
-
-	struct BoxCollider2DComponent
-	{
-		glm::vec2 Offset = { 0.0f, 0.0f };
-		glm::vec2 Size = { 0.5f, 0.5f };
-
-		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
-
-		// Storage for runtime
-		void* RuntimeFixture = nullptr;
-
-		BoxCollider2DComponent() = default;
-		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
-	};
-
 }

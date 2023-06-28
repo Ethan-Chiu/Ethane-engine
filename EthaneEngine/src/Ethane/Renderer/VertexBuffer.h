@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "GraphicsContext.h"
 
 namespace Ethane {
 
@@ -13,7 +14,7 @@ namespace Ethane {
 	{
 		switch (type)
 		{
-		//case ShaderDataType::None:		return 0;
+            case ShaderDataType::None:		break;
 			case ShaderDataType::Float:		return 4;
 			case ShaderDataType::Float2:	return 4 * 2;
 			case ShaderDataType::Float3:	return 4 * 3;
@@ -50,6 +51,7 @@ namespace Ethane {
 		{
 			switch (Type)
 			{
+                case ShaderDataType::None:      break;
 				case ShaderDataType::Float:		return 1;
 				case ShaderDataType::Float2:	return 2;
 				case ShaderDataType::Float3:	return 3;
@@ -110,6 +112,8 @@ namespace Ethane {
 	{
 	public:
 		virtual ~VertexBuffer() {}
+        
+        virtual void Destroy() = 0;
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
 

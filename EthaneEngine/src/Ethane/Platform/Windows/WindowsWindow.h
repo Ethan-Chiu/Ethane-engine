@@ -1,3 +1,5 @@
+#ifdef ETH_PLATFORM_WINDOWS
+
 #pragma once
 
 #include "Ethane/Core/Window.h"
@@ -29,6 +31,7 @@ namespace Ethane {
 		bool IsVSync() const;
 
 		inline virtual void* GetNativeWindow() const { return m_Window; };
+		virtual const GraphicsContext* GetGraphicsContext() const override { return m_Context.get(); }
 	
 	private:
 		virtual void Init(const WindowProps& props);
@@ -50,3 +53,5 @@ namespace Ethane {
 
 	};
 }
+
+#endif

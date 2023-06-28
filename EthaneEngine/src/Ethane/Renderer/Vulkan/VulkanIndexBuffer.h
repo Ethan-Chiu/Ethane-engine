@@ -2,7 +2,7 @@
 
 #include "Ethane/Renderer/IndexBuffer.h"
 
-#include "Vulkan.h"
+#include "VulkanContext.h"
 #include "VulkanBuffer.h"
 
 namespace Ethane {
@@ -14,13 +14,9 @@ namespace Ethane {
 		VulkanIndexBuffer(void* data, uint32_t size = 0);
 		virtual ~VulkanIndexBuffer();
 
-		void Destroy();
+		void Destroy() override;
 
 		void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override;
-
-		// TODO: REMOVE
-		virtual void Bind() const override {};
-		virtual void Unbind() const override {};
 
 		//Getter
 		virtual uint32_t GetCount() const override { return m_Size / sizeof(uint32_t); }

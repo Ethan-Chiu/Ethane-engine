@@ -1,13 +1,13 @@
 #include "ethpch.h"
-#include "VulkanCommandBuffer.h"
 #include "VulkanContext.h"
+#include "VulkanCommandBuffer.h"
+
 
 namespace Ethane {
 
-    VulkanCommandBuffer::VulkanCommandBuffer()
-        :m_State(CommandBufferState::NOT_ALLOCATED)
+    VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice* device)
+        :m_State(CommandBufferState::NOT_ALLOCATED), m_Device(device)
     {
-        m_Device = VulkanContext::GetDevice()->GetVulkanDevice();
     }
 
     void VulkanCommandBuffer::Allocate(VkCommandPool pool, bool isPrimary)
@@ -19,13 +19,13 @@ namespace Ethane {
         cmdBufAllocateInfo.commandBufferCount = 1;
 
         m_State = CommandBufferState::NOT_ALLOCATED;
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &cmdBufAllocateInfo, &m_CommandBuffer));
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device->GetVulkanDevice(), &cmdBufAllocateInfo, &m_CommandBuffer));
         m_State = CommandBufferState::READY;
     }
 
     void VulkanCommandBuffer::Free(VkCommandPool pool)
     {
-        vkFreeCommandBuffers(m_Device, pool, 1, &m_CommandBuffer);
+        vkFreeCommandBuffers(m_Device->GetVulkanDevice(), pool, 1, &m_CommandBuffer);
 
         m_CommandBuffer = VK_NULL_HANDLE;
         m_State = CommandBufferState::NOT_ALLOCATED;
@@ -91,8 +91,8 @@ namespace Ethane {
         VkCommandPool pool;
         switch (type)
         {
-        case QueueFamilyTypes::Graphics: {pool = VulkanContext::GetDevice()->GetGraphicsCommandPool(); break; }
-        case QueueFamilyTypes::Compute: {pool = VulkanContext::GetDevice()->GetComputeCommandPool(); break; }
+        case QueueFamilyTypes::Graphics: {pool = m_Device->GetGraphicsCommandPool(); break; }
+        case QueueFamilyTypes::Compute: {pool = m_Device->GetComputeCommandPool(); break; }
         default:
             ETH_CORE_ASSERT(false, "No command pool");
         }
@@ -107,14 +107,14 @@ namespace Ethane {
         {
         case QueueFamilyTypes::Graphics: 
         {
-            pool = VulkanContext::GetDevice()->GetGraphicsCommandPool(); 
-            queue = VulkanContext::GetDevice()->GetGraphicsQueue();
+            pool = m_Device->GetGraphicsCommandPool();
+            queue = m_Device->GetGraphicsQueue();
             break; 
         }
         case QueueFamilyTypes::Compute: 
         {
-            pool = VulkanContext::GetDevice()->GetComputeCommandPool();
-            queue = VulkanContext::GetDevice()->GetComputeQueue();
+            pool = m_Device->GetComputeCommandPool();
+            queue = m_Device->GetComputeQueue();
             break; 
         }
         default:

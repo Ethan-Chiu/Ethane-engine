@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Renderer.h"
-#include "Material.h"
-
+#include "Image.h"
+#include "Mesh.h"
 #include "Ethane/Scene/Scene.h"
+#include "RenderTarget.h"
 
-// TODO temp move to renderer?
-#include "Ethane/Renderer/RenderCommandBuffer.h"
 
 namespace Ethane {
 
@@ -17,25 +16,33 @@ namespace Ethane {
 		bool ShowGrid = true;
 	};
 
+    struct Line {
+        alignas(8) glm::vec2 Start = glm::vec2();
+        alignas(8) glm::vec2 End = glm::vec2();
+        alignas(16) float Len = 0;
+
+        Line(glm::vec2 s, glm::vec2 e, float len) : Start(s), End(e), Len(len) {}
+        Line() = default;
+    };
+
 	class SceneRenderer
 	{
 	public:
 		SceneRenderer(Ref<Scene> scene);
 
 		void Init();
+        void Shutdown();
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
-		void BeginScene(const Camera& camera, const glm::mat4& viewMatrix); // TODO: originally it is EditorCamera
+		void BeginScene(const Camera& camera, const glm::mat4& viewMatrix);
 		void EndScene();
 
-		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> material = nullptr);
-		void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> Material = nullptr);
-
+		void SubmitMesh(Mesh* mesh, Material* material, const glm::mat4& transform = glm::mat4(1.0f));
+		void SubmitSelectedMesh(Mesh* mesh, const glm::mat4& transform = glm::mat4(1.0f)); //, Ref<Material> Material = nullptr
+        
 		// Getter
 		SceneRendererOptions& GetOptions() { return m_Options; }
-		Ref<Image2D> GetFinalPassImage();
-		Ref<Texture2D> GetFinalPassTexture();
 
 	private:
 		void Flush();
@@ -53,9 +60,7 @@ namespace Ethane {
 		bool m_NeedResize = false;
 
 		Ref<Scene> m_Scene;
-
-		Ref<RenderCommandBuffer> m_CommandBuffer;
-
+    public:
 		struct UBGlobal
 		{
 			glm::mat4 ViewProjection;
@@ -78,63 +83,30 @@ namespace Ethane {
 			glm::mat4 View;
 		} CameraDataUB;
 
-		struct UBScreenData
-		{
-			glm::vec2 InvFullResolution;
-			glm::vec2 FullResolution;
-		} ScreenDataUB;
-
-		struct UBRendererData
-		{
-			glm::vec4 CascadeSplits;
-			uint32_t TilesCountX{ 0 };
-			bool ShowCascades = false;
-			char Padding0[3] = { 0,0,0 }; // Bools are 4-bytes in GLSL
-			bool SoftShadows = true;
-			char Padding1[3] = { 0,0,0 };
-			float LightSize = 0.5f;
-			float MaxShadowDistance = 200.0f;
-			float ShadowFade = 1.0f;
-			bool CascadeFading = true;
-			char Padding2[3] = { 0,0,0 };
-			float CascadeTransitionFade = 1.0f;
-			bool ShowLightComplexity = false;
-			char Padding3[3] = { 0,0,0 };
-		} RendererDataUB;
-
-		Ref<Shader> m_GridShader;
-
-		Ref<Material> m_CompositeMaterial;
-		Ref<Material> m_GridMaterial;
-
-		Ref<Pipeline> m_GridPipeline;
+        struct UBO
+        {
+            alignas(4) float ratio;
+            alignas(4) uint32_t currentSample;
+            alignas(4) uint32_t lineNum;
+            alignas(4) float time;
+            glm::vec3 camPos;
+        } ubo;
+        
+        UBO& GetGlobalUBO() { return ubo; }
+        
+    private:
+        Ref<Image2D> m_GeoDepth = nullptr;
+        Scope<RenderTarget> m_GeoTarget = nullptr;
 		Ref<Pipeline> m_GeometryPipeline;
-		Ref<Pipeline> m_SelectedGeometryPipeline;
-		Ref<Pipeline> m_GeometryWireframePipeline;
-		Ref<Pipeline> m_GeometryWireframeOnTopPipeline;
-		Ref<Pipeline> m_PreDepthPipeline;
-		Ref<Pipeline> m_CompositePipeline;
-		Ref<Pipeline> m_ShadowPassPipelines[4];
-		Ref<Material> m_ShadowPassMaterial;
-		Ref<Material> m_PreDepthMaterial;
-		Ref<Pipeline> m_SkyboxPipeline;
-		Ref<Material> m_SkyboxMaterial;
-
+        
 		struct DrawCommand
 		{
-			Ref<Mesh> Mesh;
+			Mesh* MeshPtr = nullptr;
 			glm::mat4 Transform;
-			Ref<Material> Material;
+			Material* MaterialPtr = nullptr;
 		};
 		std::vector<DrawCommand> m_DrawList;
 		std::vector<DrawCommand> m_SelectedMeshDrawList;
-
-		// TODO: remove
-		Ref<Texture2D> m_Texture2D = nullptr;
-		Ref<Material> m_testMaterial = nullptr;
-		Ref<Texture2D> m_TestDiffuse = nullptr;
-		Ref<Texture2D> m_TestSpecular = nullptr;
-		Ref<Texture2D> m_TestNormal = nullptr;
 	};
 
 }

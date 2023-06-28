@@ -1,10 +1,15 @@
-#include "ethpch.h";
+#include "ethpch.h"
 #include "VulkanBuffer.h"
 
-#include "VulkanContext.h"
+#include "VulkanUtils.h"
 #include "VulkanCommandBuffer.h"
 
 namespace Ethane {
+
+    VulkanBuffer::VulkanBuffer()
+        :m_Device(VulkanContext::GetDevice())
+    {
+    }
 
     bool VulkanBuffer::CreateVulkanBuffer(
         uint32_t size, 
@@ -21,34 +26,34 @@ namespace Ethane {
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         
-        auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto vk_device = m_Device->GetVulkanDevice();
 
-        VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &m_Buffer));
+        VK_CHECK_RESULT(vkCreateBuffer(vk_device, &bufferInfo, nullptr, &m_Buffer));
 
         // get memory requirements
         VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(device, m_Buffer, &memRequirements);
+        vkGetBufferMemoryRequirements(vk_device, m_Buffer, &memRequirements);
 
         // allocate memory
-        m_MemoryIndex = Utils::FindMemoryType(memRequirements.memoryTypeBits, m_MemoryFlag); // TODO: handle can't find
+        m_MemoryIndex = Utils::FindMemoryType(m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice(), memRequirements.memoryTypeBits, m_MemoryFlag); // TODO: handle can't find
         VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = m_MemoryIndex;
 
-        if (vkAllocateMemory(device, &allocInfo, nullptr, &m_Memory) != VK_SUCCESS) {
+        if (vkAllocateMemory(vk_device, &allocInfo, nullptr, &m_Memory) != VK_SUCCESS) {
             ETH_CORE_ERROR("failed to allocate buffer memory!");
             // clean up
             return false;
         }
 
         if (bind_on_create) {
-            VK_CHECK_RESULT(vkBindBufferMemory(device, m_Buffer, m_Memory, 0));
+            VK_CHECK_RESULT(vkBindBufferMemory(vk_device, m_Buffer, m_Memory, 0));
         }
         return true;
     }
 
     void VulkanBuffer::Destroy() {
-        auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto device = m_Device->GetVulkanDevice();
         if (m_Memory) {
             vkFreeMemory(device, m_Memory, nullptr);
             m_Memory = nullptr;
@@ -81,7 +86,7 @@ namespace Ethane {
         bufferInfo.usage = m_Usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto device = m_Device->GetVulkanDevice();
 
         VkBuffer new_buffer;
         VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &new_buffer));
@@ -106,7 +111,7 @@ namespace Ethane {
         VK_CHECK_RESULT(vkBindBufferMemory(device, new_buffer, new_memory, 0));
 
         // Copy over the data
-        CopyTo(pool, 0, queue, m_Buffer, 0, new_buffer, 0, m_Size);
+        CopyTo(m_Device, pool, 0, queue, m_Buffer, 0, new_buffer, 0, m_Size);
 
         // Make sure anything potentially using these is finished.
         vkDeviceWaitIdle(device);
@@ -129,12 +134,12 @@ namespace Ethane {
     }
 
     void VulkanBuffer::Bind(uint32_t offset) {
-        auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto device = m_Device->GetVulkanDevice();
         VK_CHECK_RESULT(vkBindBufferMemory(device, m_Buffer, m_Memory, offset));
     }
 
     void* VulkanBuffer::LockMemory(uint32_t offset, uint32_t size, uint32_t flags) {
-        auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto device = m_Device->GetVulkanDevice();
 
         void* data;
         VK_CHECK_RESULT(vkMapMemory(device, m_Memory, offset, size, flags, &data));
@@ -142,12 +147,12 @@ namespace Ethane {
     }
 
     void VulkanBuffer::UnlockMemory() {
-        auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto device = m_Device->GetVulkanDevice();
         vkUnmapMemory(device, m_Memory);
     }
 
     void VulkanBuffer::SetData(const void* data, uint32_t srcOffset, uint32_t size, uint32_t dstOffset, uint32_t flags) {
-        auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto device = m_Device->GetVulkanDevice();
 
         void* dstData;
         VK_CHECK_RESULT(vkMapMemory(device, m_Memory, dstOffset, size, flags, &dstData));
@@ -156,6 +161,7 @@ namespace Ethane {
     }
 
     void VulkanBuffer::CopyTo(
+        const VulkanDevice* device,
         VkCommandPool pool,
         VkFence fence,
         VkQueue queue,
@@ -166,7 +172,7 @@ namespace Ethane {
         uint32_t size) {
 
         // create command buffer
-        VulkanCommandBuffer tempCommandBuf;
+        VulkanCommandBuffer tempCommandBuf{device};
         tempCommandBuf.AllocateAndBeginSingleUse(pool);
 
         // record command

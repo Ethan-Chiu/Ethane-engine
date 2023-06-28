@@ -17,7 +17,7 @@ namespace Ethane {
             NOT_ALLOCATED
         };
 
-        VulkanCommandBuffer();
+        VulkanCommandBuffer(const VulkanDevice* m_Device);
 
         void Allocate(VkCommandPool pool, bool isPrimary);
         void Free(VkCommandPool pool);
@@ -35,12 +35,12 @@ namespace Ethane {
         void AllocateAndBeginSingleUse(QueueFamilyTypes type);
         void EndSingleUse(QueueFamilyTypes type);
 
-        VkCommandBuffer GetHandle() { return m_CommandBuffer; };
+        VkCommandBuffer GetHandle() const { return m_CommandBuffer; };
 
     private:
+        const VulkanDevice* m_Device = nullptr;
+        
         VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
         CommandBufferState m_State;
-
-        VkDevice m_Device;
     };
 }

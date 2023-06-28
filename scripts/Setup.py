@@ -36,12 +36,14 @@ if (not Cmake.check_cmake_installed()):
 print("----------------------------------------")
 
 print("Running premake...")
-subprocess.call([Utils.filename_in_dir('premake', Config.premake_config.install_dir), Config.premake_config.action])
+for action in Config.premake_config.actions:
+    subprocess.call([Utils.filename_in_dir('premake', Config.premake_config.install_dir), action])
 print("----------------------------------------")
 
 
 print("Post processing...")
 PostProcess.assimp_build()
+print("----------------------------------------")
 PostProcess.yaml_cpp_build()
 print("----------------------------------------")
 

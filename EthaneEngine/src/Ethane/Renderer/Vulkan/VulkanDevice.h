@@ -18,36 +18,37 @@ namespace Ethane {
 	};
 
 	class VulkanPhysicalDevice
-	{
-	public:
-		struct QueueFamilyIndices
-		{
-			std::optional<uint32_t> Graphics;
-			std::optional<uint32_t> Compute;
-			std::optional<uint32_t> Transfer;
-			std::optional<uint32_t> Present;
-
-			bool isComplete()
-			{
-				return Graphics.has_value();
-			}
-		};
-
-	public:
+{
+public:
+    struct QueueFamilyIndices
+    {
+        std::optional<uint32_t> Graphics;
+        std::optional<uint32_t> Compute;
+        std::optional<uint32_t> Transfer;
+        std::optional<uint32_t> Present;
+        
+        bool isComplete()
+        {
+            return Graphics.has_value();
+        }
+    };
+    
+public:
 		VulkanPhysicalDevice(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface);
 		~VulkanPhysicalDevice() {};
+        
 		void Destroy();
 
-		static Ref<VulkanPhysicalDevice> Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface);
+		static Scope<VulkanPhysicalDevice> Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface);
 
-		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device) const;
 
 		// Getter
 		VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
 		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
 
 	private:
-		uint32_t RateDeviceSuitability(VkPhysicalDevice device);
+		int32_t RateDeviceSuitability(VkPhysicalDevice device);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags);
 		void PrintSelectedDeviceInfo();
 
@@ -67,29 +68,29 @@ namespace Ethane {
 	class VulkanDevice
 	{
 	public:
-		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2);
+		VulkanDevice(const VulkanPhysicalDevice* physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2);
 		~VulkanDevice() {};
 		void Destroy();
 
-		static Ref<VulkanDevice> Create(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2);
+		static Scope<VulkanDevice> Create(const VulkanPhysicalDevice* physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2);
 
 		void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
 
 		// Getter
-		VkDevice GetVulkanDevice() { return m_LogicalDevice; }
-		Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; }
+		VkDevice GetVulkanDevice() const { return m_LogicalDevice; }
+		const VulkanPhysicalDevice* GetPhysicalDevice() const { return m_PhysicalDevice; }
 
-		VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
-		VkQueue GetComputeQueue() { return m_ComputeQueue; }
+		VkQueue GetGraphicsQueue() const { return m_GraphicsQueue; }
+		VkQueue GetComputeQueue() const { return m_ComputeQueue; }
 
-		VkCommandPool GetGraphicsCommandPool() { return m_GraphicsCommandPool; }
-		VkCommandPool GetComputeCommandPool() { return m_ComputeCommandPool; }
+		VkCommandPool GetGraphicsCommandPool() const { return m_GraphicsCommandPool; }
+		VkCommandPool GetComputeCommandPool() const { return m_ComputeCommandPool; }
 	private:
 		void QueueCreateInfo();
 
 	private:
 		VkDevice m_LogicalDevice = VK_NULL_HANDLE;
-		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
+        const VulkanPhysicalDevice* m_PhysicalDevice;
 		VkPhysicalDeviceFeatures2 m_EnabledFeatures2;
 
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;

@@ -89,9 +89,6 @@ project "EthaneEngine"
 		"GLFW",
 		"Glad",
 		"ImGui",
-		"yaml-cpp",
-		-- "%{Library.Vulkan}",
-		-- "%{Library.VulkanUtils}",
 	}
 
     filter "action:xcode4"
@@ -112,19 +109,67 @@ project "EthaneEngine"
 			"GLFW_INCLUDE_NONE"
 		}
 
+		filter "configurations:Debug"
+			libdirs {
+				"%{LibraryDir.yamlcpp}/Debug",
+				"%{LibraryDir.assimp}/Debug"
+			}
+
+			links
+			{
+				"%{Library.ShaderC_Debug}",
+				"%{Library.ShaderC_Utils_Debug}",
+				"%{Library.SPIRV_Cross_Debug}",
+				"%{Library.SPIRV_Cross_GLSL_Debug}",
+				"%{Library.SPIRV_Tools_Debug}",
+				"%{Library.AssimpDebug}",
+				"%{Library.YamlCppDebug}"
+			}
+
+		filter "configurations:Release"
+			libdirs {
+				"%{LibraryDir.yamlcpp}/Release",
+				"%{LibraryDir.assimp}/Release"
+			}
+
+			links
+			{
+				"%{Library.ShaderC}",
+				"%{Library.ShaderC_Utils}",
+				"%{Library.SPIRV_Cross}",
+				"%{Library.SPIRV_Cross_GLSL}",
+				"%{Library.SPIRV_Tools}",
+				"%{Library.Assimp}",
+				"%{Library.YamlCpp}"
+			}
+
+		filter "configurations:Dist"
+			libdirs {
+				"%{LibraryDir.yamlcpp}/Release",
+				"%{LibraryDir.assimp}/Release"
+			}
+
+			links
+			{
+				"%{Library.ShaderC}",
+				"%{Library.ShaderC_Utils}",
+				"%{Library.SPIRV_Cross}",
+				"%{Library.SPIRV_Cross_GLSL}",
+				"%{Library.SPIRV_Tools}",
+				"%{Library.Assimp}",
+				"%{Library.YamlCpp}"
+			}
+
+		filter {}
+
+		links {
+			"vulkan-1",
+			-- "%{Library.VulkanUtils}",
+		}
 		-- includedirs
 		-- {
 		-- 	"%{IncludeDir.shaderc_util}",
 		-- 	"%{IncludeDir.shaderc_glslc}"
-		-- }
-
-		-- links
-		-- {
-		-- 	"%{Library.ShaderC_Debug}",
-		-- 	"%{Library.SPIRV_Cross_Debug}",
-		-- 	"%{Library.SPIRV_Cross_GLSL_Debug}",
-		-- 	"%{Library.ShaderC_Utils_Debug}",
-		-- 	"%{Library.SPIRV_Tools_Debug}",
 		-- }
 
 	filter "system:macosx"
@@ -135,8 +180,8 @@ project "EthaneEngine"
 		kind "SharedLib"
 
 		libdirs { 
-			LibraryDir["MacAssimp"],
-			LibraryDir["MacYamlCpp"]
+			"%{LibraryDir.yamlcpp}",
+			"%{LibraryDir.assimp}"
 		}
 
 		links {
@@ -144,14 +189,16 @@ project "EthaneEngine"
 			"Cocoa.framework",
 			"IOKit.framework",
             "vulkan",
-            "shaderc_shared",
-            "shaderc_util",
-            "spirv-cross-core",
-            "spirv-cross-glsl",
-            "SPIRV-Tools",
-			"assimp",
-			"z"
+			"z",
+            "%{Library.ShaderC}",
+			"%{Library.ShaderC_Utils}",
+			"%{Library.SPIRV_Cross}",
+			"%{Library.SPIRV_Cross_GLSL}",
+			"%{Library.SPIRV_Tools}",
+			"%{Library.MacAssimp}",
+			"%{Library.YamlCpp}"
 		}
+	filter {}
 
 	filter "configurations:Debug"
 		defines "ETH_DEBUG"
@@ -162,23 +209,11 @@ project "EthaneEngine"
 		defines "ETH_RELEASE"
 		runtime "Release"
 		optimize "on"
-		-- links
-		-- {
-		-- 	"%{Library.ShaderC_Release}",
-		-- 	"%{Library.SPIRV_Cross_Release}",
-		-- 	"%{Library.SPIRV_Cross_GLSL_Release}"
-		-- }
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
 		runtime "Release"
 		symbols "on"
-		-- links
-		-- {
-		-- 	"%{Library.ShaderC_Release}",
-		-- 	"%{Library.SPIRV_Cross_Release}",
-		-- 	"%{Library.SPIRV_Cross_GLSL_Release}"
-		-- }
 
 -------------------------------------------------------------------------------
 -- Ethane Editor
@@ -212,7 +247,7 @@ project "Ethane-Editor"
         "%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.assimp}",
 		"%{IncludeDir.yaml_cpp}",
-        "%{IncludeDir.imgui}",
+        "%{IncludeDir.imgui}"
     }
 
 	includedirs
@@ -232,38 +267,34 @@ project "Ethane-Editor"
 		defines "ETH_DEBUG"
 		runtime "Debug"
 		symbols "on"
-		-- links
-		-- {
-		-- 	"EthaneEngine/vendor/assimp/bin/Debug/assimp-vc141-mtd.lib"
-		-- }
-		-- postbuildcommands 
-		-- {
-		-- 	'{COPY} "../EthaneEngine/vendor/assimp/bin/Debug/assimp-vc141-mtd.dll" "%{cfg.targetdir}"',
-		-- 	-- '{COPY} "../EthaneEngine/vendor/VulkanSDK/Bin/shaderc_sharedd.dll" "%{cfg.targetdir}"'
-		-- }
+
+		filter "system:windows"
+			postbuildcommands 
+			{
+				'{COPY} "%{LibraryDir.vendor}/assimp/bin/Debug/%{Library.AssimpDebug}.dll" "%{cfg.targetdir}"'
+			}
+			filter{}
 
 	filter "configurations:Release"
 		defines "ETH_RELEASE"
 		runtime "Release"
 		optimize "on"
-		-- links
-		-- {
-		-- 	"EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mt.lib"
-		-- }
-		-- postbuildcommands 
-		-- {
-		-- 	'{COPY} "../EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mt.dll" "%{cfg.targetdir}"',
-		-- }
+
+		filter "system:windows"
+			postbuildcommands 
+			{
+				'{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
+			}
+		filter{}
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
 		runtime "Release"
 		symbols "on"
-		-- links
-		-- {
-		-- 	"EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mt.lib"
-		-- }
-		-- postbuildcommands 
-		-- {
-		-- 	'{COPY} "../EthaneEngine/vendor/assimp/bin/Release/assimp-vc141-mtd.dll" "%{cfg.targetdir}"',
-		-- }
+
+		filter "system:windows"
+			postbuildcommands 
+			{
+				'{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
+			}
+		filter{}

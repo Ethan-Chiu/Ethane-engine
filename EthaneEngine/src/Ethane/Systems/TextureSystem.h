@@ -1,59 +1,36 @@
+//
+//  TextureSystem.hpp
+//  EthaneEngine
+//
+//  Created by 邱奕翔 on 2023/5/23.
+//
 #pragma once
 
 #include "Ethane/Renderer/Image.h"
+#include "Ethane/Renderer/Texture.h"
 
 namespace Ethane {
 
-	struct Texture
-	{
-		uint32_t Id;
+struct TextureImage
+{
+    Ref<Image2D> AssociatedImage;
+    Ref<Texture2D> Texture;
+};
 
-		uint32_t Width;
-
-		uint32_t Height;
-
-		uint8_t ChannelCount = 4;
-
-		Image* InternalImage;
-	};
-
-	struct TextureSystemConfig
-	{
-		uint32_t MaxTextureCount;
-	};
-
-	struct TextureRef
-	{
-		uint64_t RefCount;
-		uint32_t Handle;
-		bool AutoRelease;
-	};
-
-	struct TextureSystemState
-	{
-		TextureSystemConfig Config;
-		Image* DefaultTexture;
-		
-		Texture* RegisteredTextures;
-
-		std::unordered_map<std::string, TextureRef> RegisteredTextureRefs;
-	};
-
-	class TextureSystem
-	{
-	public:
-		bool Init(uint64_t* memory_requirement, void* memory_arena, TextureSystemConfig& config);
-		void Shutdown(void* memory_arena);
-
-		Texture* AcquireTexture(const std::string& name);
-
-	private:
-		uint64_t CalculateMemoryRequirement(TextureSystemConfig& config);
-		bool RegisterTexture(const std::string& name, uint32_t& outTextureId);
-		bool LoadTexture(const std::string& name, Texture& outTexture);
-
-	private:
-		TextureSystemState* m_State;
-	};
-
+class TextureSystem {
+public:
+    static bool Init();
+    
+    static void Shutdown();
+    
+    static Texture2D* GetTexture(const std::string& path, ImageUsage imageUsage);
+    
+    static const Ref<Texture> GetDefaultTexture() { return s_DefaultTexture; };
+    
+private:
+    inline static Ref<Image2D> s_DefaultImage = nullptr;
+    inline static Ref<Texture2D> s_DefaultTexture = nullptr;
+    
+    inline static std::unordered_map<std::string, TextureImage> s_LoadedTexture;
+};
 }

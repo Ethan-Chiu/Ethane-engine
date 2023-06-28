@@ -6,12 +6,14 @@
 #include <vector>
 
 namespace Ethane {
-	
+
 	class LayerStack
 	{
 	public:
 		LayerStack() = default;
 		~LayerStack();
+
+		void Detach();
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);

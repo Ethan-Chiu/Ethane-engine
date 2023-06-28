@@ -3,13 +3,15 @@
 #include "Ethane/Renderer/GraphicsContext.h"
 
 #include <vulkan/vulkan.h>
+
 #include "VulkanDevice.h"
-#include "VulkanSwapChain.h"
-#include "VulkanCommandBuffer.h"
+
 
 struct GLFWwindow;
 
 namespace Ethane {
+    class VulkanSwapChain;
+    class VulkanRenderCommandBuffer;
 
 	struct ContextCreateInfo
 	{
@@ -92,44 +94,47 @@ namespace Ethane {
 
 	public:
 		VulkanContext(GLFWwindow* windowHandle);
-		virtual ~VulkanContext() {};
+		virtual ~VulkanContext();
 
 		virtual void Init() override;
 		virtual void Shutdown() override;
 
-		virtual bool BeginFrame() override; // TODO: test
+		virtual bool BeginFrame() override;
 		virtual void SwapBuffers() override;
 		
 		virtual void OnResize(uint32_t width, uint32_t height) override;
 
-		// getter
+		// Getter
 		static VkInstance GetInstance() { return s_VulkanInstance; }
-		static Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; }
-		static Ref<VulkanDevice> GetDevice() { return m_Device; }
-		static const Ref<VulkanSwapChain> GetSwapChain() { return m_SwapChain; }
+        static const VulkanPhysicalDevice* GetPhysicalDevice() { return m_PhysicalDevice.get(); }
+        static const VulkanDevice* GetDevice() { return m_Device.get(); }
+        static const VulkanSwapChain* GetSwapchain() { return m_SwapChain.get(); }
+        static uint32_t GetFramesInFlight();
+        
+    private:
+        bool InitInstance(const ContextCreateInfo& info);
+        void InitDebugUtils();
+        VkResult CreateSurface();
+        bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
 
-	private:
-		bool InitInstance(const ContextCreateInfo& info);
-		void InitDebugUtils();
-		VkResult CreateSurface();
-		bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
-
-		std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
-		VkResult FillFilteredNameArray(std::vector<std::string>& used,
-			const std::vector<VkLayerProperties>& properties,
-			const ContextCreateInfo::EntryArray& requested);
-		VkResult FillFilteredNameArray(std::vector<std::string>& used,
-			const std::vector<VkExtensionProperties>& properties,
-			const ContextCreateInfo::EntryArray& requested,
-			std::vector<void*>& featureStructs);
-		bool HasMandatoryExtensions(VkPhysicalDevice physicalDevice, const ContextCreateInfo& info, bool bVerbose);
-		bool CheckEntryArray(const std::vector<VkExtensionProperties>& properties, const ContextCreateInfo::EntryArray& requested, bool bVerbose);
-		void InitPhysicalFeatures(PhysicalDeviceInfo& info, VkPhysicalDevice physicalDevice, uint32_t versionMajor, uint32_t versionMinor);
-
+        std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
+        VkResult FillFilteredNameArray(std::vector<std::string>& used,
+            const std::vector<VkLayerProperties>& properties,
+            const ContextCreateInfo::EntryArray& requested);
+        VkResult FillFilteredNameArray(std::vector<std::string>& used,
+            const std::vector<VkExtensionProperties>& properties,
+            const ContextCreateInfo::EntryArray& requested,
+            std::vector<void*>& featureStructs);
+        bool HasMandatoryExtensions(VkPhysicalDevice physicalDevice, const ContextCreateInfo& info, bool bVerbose);
+        bool CheckEntryArray(const std::vector<VkExtensionProperties>& properties, const ContextCreateInfo::EntryArray& requested, bool bVerbose);
+        void InitPhysicalFeatures(PhysicalDeviceInfo& info, VkPhysicalDevice physicalDevice, uint32_t versionMajor, uint32_t versionMinor);
+        void FindSupportFormat();
+        std::vector<VkFormat> FindAllSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        
 	private:
 		GLFWwindow* m_WindowHandle;
 
-		inline static VkInstance s_VulkanInstance;
+		inline static VkInstance s_VulkanInstance = nullptr;
 		VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
 
 		// Instance Extension
@@ -140,67 +145,18 @@ namespace Ethane {
 		std::unordered_set<std::string> m_SupportedDeviceExtensions;
 		std::vector<std::string> m_UsedDeviceExtensions;
 
+        // Image format
+        std::vector<VkFormat> m_SupportedSampleFormat;
+        VkFormat m_DepthFormat;
+        
 		VkSurfaceKHR m_Surface;
 
 		PhysicalDeviceInfo m_PhysicalInfo;
-		
-		// TODO: change to non-static
-		inline static Ref<VulkanPhysicalDevice> m_PhysicalDevice;
-		inline static Ref<VulkanDevice> m_Device;
+        
+        inline static Scope<VulkanPhysicalDevice> m_PhysicalDevice = nullptr;
+        inline static Scope<VulkanDevice> m_Device = nullptr;
 
-		inline static Ref<VulkanSwapChain> m_SwapChain;
+        static Scope<VulkanSwapChain> m_SwapChain;
 	};
-
-
-	///////////////////////////////////////////////////////////////////////////
-	// helper funtions ////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////
-
-	// TODO: move
-	namespace Utils {
-
-		inline uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
-		{
-			auto physicalDevice = VulkanContext::GetPhysicalDevice()->GetVulkanPhysicalDevice();
-
-			VkPhysicalDeviceMemoryProperties memProperties;
-			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-			for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-				if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-					return i;
-				}
-			}
-		}
-
-		inline void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-			auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-		
-			VkBufferCreateInfo bufferInfo{};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = size;
-			bufferInfo.usage = usage;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		
-			if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-				throw std::runtime_error("failed to create buffer!");
-			}
-		
-			VkMemoryRequirements memRequirements;
-			vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-		
-			VkMemoryAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-		
-			if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-				throw std::runtime_error("failed to allocate buffer memory!");
-			}
-		
-			vkBindBufferMemory(device, buffer, bufferMemory, 0);
-		}
-
-	}
 
 }

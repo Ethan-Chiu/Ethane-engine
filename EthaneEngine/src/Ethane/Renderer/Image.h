@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Ethane/Core/Base.h"
+#include "GraphicsContext.h"
 
 namespace Ethane {
 
@@ -14,8 +15,9 @@ namespace Ethane {
 		RGBA32F,
 		RG16F,
 		RG32F,
-
 		SRGB,
+        BGR,
+        BGRA,
 
 		DEPTH32F,
 		DEPTH24STENCIL8,
@@ -40,18 +42,48 @@ namespace Ethane {
 		uint32_t Height = 1;
 		uint32_t Mips = 1;
 		uint32_t Layers = 1;
-		bool Deinterleaved = false;
-
 		std::string DebugName;
 	};
+
+    enum class ImageLayout
+    {
+        Undefined,
+        General,
+        ShaderRead,
+        PresentSRC,
+    };
+
+    enum class AccessMask
+    {
+        None,
+        ShaderRead,
+        ShaderWrite,
+        ColorRead,
+        ColorWrite,
+        TransferRead,
+        TransferWrite,
+        MemoryRead,
+        MemoryWrite,
+    };
+
+    enum class PipelineStage
+    {
+        None,
+        PipeTop,
+        VertexShader,
+        FragmentShader,
+        ComputeShader,
+        Transfer,
+        PipeBottom,
+    };
+
 
 	class Image
 	{
 	public:
 		virtual ~Image() {}
-
-		virtual void Destroy() = 0;
-
+        
+        virtual void Destroy() = 0;
 		// Getter
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
@@ -63,8 +95,14 @@ namespace Ethane {
 	class Image2D : public Image
 	{
 	public:
-		static Ref<Image2D> Create(ImageSpecification specification, void* buffer = nullptr);
+		static Ref<Image2D> Create(ImageSpecification specification, void* buffer = nullptr, uint32_t size = 0);
 	};
+
+    class TargetImage : public Image
+    {
+    public:
+        static Ref<TargetImage> Create(ImageSpecification specification);
+    };
 
 	namespace Utils {
 		inline bool IsDepthFormat(ImageFormat format)

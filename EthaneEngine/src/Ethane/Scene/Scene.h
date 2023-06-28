@@ -4,11 +4,7 @@
 
 #include "Ethane/Core/Timestep.h"
 #include "Ethane/Renderer/EditorCamera.h"
-
-#include "Ethane/Renderer/Mesh.h"
 #include "Ethane/Renderer/Material.h"
-
-class b2World;
 
 namespace Ethane {
 
@@ -49,14 +45,6 @@ namespace Ethane {
 		entt::registry m_Registry;
 
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
-
-		Ref<Renderer2D> m_Renderer2D;
-
-		// TODO: remove
-		Ref<Mesh> m_Mesh;
-		Ref<Material> m_Material;
-
-		b2World* m_PhysicsWorld = nullptr;
 
 		friend class Entity;
 		friend class SceneSerializer;

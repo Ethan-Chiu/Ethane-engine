@@ -4,9 +4,9 @@
 
 namespace Ethane {
 
-	Ref<VulkanPhysicalDevice> VulkanPhysicalDevice::Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface)
+	Scope<VulkanPhysicalDevice> VulkanPhysicalDevice::Init(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface)
 	{
-		return CreateRef<VulkanPhysicalDevice>(compatibleDeviceIndices, surface);
+		return CreateScope<VulkanPhysicalDevice>(compatibleDeviceIndices, surface);
 	}
 
 	VulkanPhysicalDevice::VulkanPhysicalDevice(const std::vector<uint32_t>& compatibleDeviceIndices, VkSurfaceKHR surface)
@@ -27,14 +27,12 @@ namespace Ethane {
 			int score = RateDeviceSuitability(devices[deviceIndex]);
 			candidates.insert(std::make_pair(score, devices[deviceIndex]));
 		}
-		if (candidates.rbegin()->first > 0)
+		if (candidates.rbegin()->first >= 0)
 		{
 			m_PhysicalDevice = candidates.rbegin()->second;
 		}
-		else
-		{
-			ETH_CORE_ASSERT("failed to find a suitable GPU");
-		}
+		
+        ETH_CORE_ASSERT(m_PhysicalDevice != nullptr, "failed to find a suitable GPU");
 
 		// Queue families
 		m_QueueFamilyIndices = FindQueueFamilies(m_PhysicalDevice, m_ConstRequestedQueueTypes);
@@ -51,7 +49,7 @@ namespace Ethane {
 		m_QueueFamilyIndices.Present.reset();
 	}
 
-	uint32_t VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device)
+	int32_t VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device)
 	{
 		int score = 0;
 		VkPhysicalDeviceProperties deviceProperties;
@@ -67,7 +65,7 @@ namespace Ethane {
 		score += deviceProperties.limits.maxImageDimension2D;
 
 		if (!deviceFeatures.geometryShader)
-			return 0;
+			return -1;
 
 		QueueFamilyIndices indices = FindQueueFamilies(device, VK_QUEUE_GRAPHICS_BIT);
 		ETH_CORE_ASSERT(indices.Present.has_value(), "Present not support");
@@ -81,7 +79,7 @@ namespace Ethane {
 		bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 
 		if (!indices.isComplete() || !deviceFeatures.samplerAnisotropy || !swapChainAdequate)
-			return 0;
+			return -1;
 		
 		return score;
 	}
@@ -183,7 +181,7 @@ namespace Ethane {
 		return indices;
 	}
 
-	SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device)
+	SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device) const
 	{
 		SwapChainSupportDetails details;
 
@@ -270,12 +268,12 @@ namespace Ethane {
 	////////////////////////////////////////////////////////////////////////////////////
 	// Logical device 
 	////////////////////////////////////////////////////////////////////////////////////
-	Ref<VulkanDevice> VulkanDevice::Create(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2)
+	Scope<VulkanDevice> VulkanDevice::Create(const VulkanPhysicalDevice* physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2)
 	{
-		return CreateRef<VulkanDevice>(physicalDevice, usedExtensions, enabledFeatures2);
+		return CreateScope<VulkanDevice>(physicalDevice, usedExtensions, enabledFeatures2);
 	}
 	
-	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2)
+	VulkanDevice::VulkanDevice(const VulkanPhysicalDevice* physicalDevice, std::vector<std::string>& usedExtensions, VkPhysicalDeviceFeatures2 enabledFeatures2)
 		: m_PhysicalDevice(physicalDevice), m_EnabledFeatures2(enabledFeatures2)
 	{
 		QueueCreateInfo();

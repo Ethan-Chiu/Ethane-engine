@@ -3,7 +3,7 @@
 
 #include <imgui.h>
 
-#include "Ethane/Renderer/Vulkan/VulkanImGuiLayer.h"
+#include "Ethane/Renderer/Vulkan/ImGui/VulkanImGuiLayer.h"
 
 #include "Ethane/Renderer/RendererAPI.h"
 

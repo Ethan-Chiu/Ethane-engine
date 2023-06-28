@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Ethane/Core/Base.h"
-#include "Pipeline.h"
 
 namespace Ethane {
 
@@ -12,12 +11,11 @@ namespace Ethane {
 
 		virtual void Begin() = 0;
 		virtual void End() = 0;
+        virtual void Wait() = 0;
 		virtual void Submit() = 0;
+        virtual void Destroy() = 0;
 
-		// virtual uint64_t BeginTimestampQuery() = 0;
-		// virtual void EndTimestampQuery(uint64_t queryID) = 0;
-
-		static Ref<RenderCommandBuffer> Create(uint32_t count = 0, const std::string& debugName = "");
+		static Ref<RenderCommandBuffer> Create(bool isInFlight, const std::string& debugName = "");
 	};
 
 }

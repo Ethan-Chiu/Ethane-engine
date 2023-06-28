@@ -1,84 +1,69 @@
-#include "ethpch.h"
+//
+//  TextureSystem.cpp
+//  EthaneEngine
+//
+//  Created by 邱奕翔 on 2023/5/23.
+//
 
+#include "ethpch.h"
+#include "Ethane/Asset/AssetManager.h"
 #include "TextureSystem.h"
+#include "ResourceSystem.h"
+#include "Ethane/Renderer/Renderer.h"
 
 namespace Ethane {
-	
-#define INVALID_ID 4294967295U
 
-	bool TextureSystem::Init(uint64_t* memory_requirement, void* memory_arena, TextureSystemConfig& config)
-	{
-		if (config.MaxTextureCount <= 0)
-		{
-			ETH_CORE_WARN("MaxTextureCount should be greater than 0, the provided value is {0}", config.MaxTextureCount);
-			return false;
-		}
-
-		*memory_requirement = CalculateMemoryRequirement(config);
-
-		if (!memory_arena)
-			return true;
-
-        m_State = static_cast<TextureSystemState*>(memory_arena);
-        m_State->Config = config;
-
-        void* array_block = (void*)((uint32_t*)memory_arena + sizeof(TextureSystemState));
-        m_State->RegisteredTextures = static_cast<Texture*>(array_block);
-
-		uint32_t count = m_State->Config.MaxTextureCount;
-		for (uint32_t i = 0; i < count; ++i) {
-			m_State->RegisteredTextures[i].Id = INVALID_ID;
-		}
-
-        // create_default_textures(state_ptr);
-
+    bool TextureSystem::Init()
+    {
+        ImageResource imageData;
+        ResourceSystem::LoadImage("assets/textures/test.png", imageData);
+        ImageSpecification imageSpec;
+        imageSpec.Format = ImageFormat::RGBA;
+        imageSpec.Width = imageData.Width;
+        imageSpec.Height = imageData.Height;
+        
+        s_DefaultImage = Image2D::Create(imageSpec, imageData.Data, imageData.DataSize);
+        s_DefaultTexture = Texture2D::Create(s_DefaultImage.get());
+        
+        ResourceSystem::UnloadImage(imageData);
+        
         return true;
-	}
+    }
 
-	void TextureSystem::Shutdown(void* memory_arena)
-	{
-		if (m_State) {
-			for (uint32_t i = 0; i < m_State->Config.MaxTextureCount; ++i) {
-				auto t = &m_State->RegisteredTextures[i];
-				//if (t->generation != INVALID_ID) {
-				//	t->Destroy();
-				//}
-			}
+    void TextureSystem::Shutdown()
+    {
+        s_DefaultTexture->Destroy();
+        s_DefaultImage->Destroy();
+        
+        for(auto&& [path, tex_image] : s_LoadedTexture)
+        {
+            tex_image.Texture->Destroy();
+            tex_image.AssociatedImage->Destroy();
+        }
+        s_LoadedTexture.clear();
+    }
 
-			//destroy_default_textures(state_ptr);
+    Texture2D* TextureSystem::GetTexture(const std::string& path, ImageUsage imageUsage)
+    {
+        if (s_LoadedTexture.find(path) != s_LoadedTexture.end())
+        {
+            if (s_LoadedTexture[path].AssociatedImage->GetSpecification().Usage == imageUsage)
+                return s_LoadedTexture[path].Texture.get();
+        }
+            
+        ImageResource imageData;
+        ResourceSystem::LoadImage(path, imageData);
+        ImageSpecification imageSpec;
+        imageSpec.Usage = imageUsage;
+        imageSpec.Format = ImageFormat::RGBA;
+        imageSpec.Width = imageData.Width;
+        imageSpec.Height = imageData.Height;
+        
+        s_LoadedTexture[path].AssociatedImage = Image2D::Create(imageSpec, imageData.Data, imageData.DataSize);
+        s_LoadedTexture[path].Texture = Texture2D::Create(s_LoadedTexture[path].AssociatedImage.get());
+        
+        ResourceSystem::UnloadImage(imageData);
+        return s_LoadedTexture[path].Texture.get();
+    }
 
-			m_State = nullptr;
-		}
-	}
-
-	Texture* TextureSystem::AcquireTexture(const std::string& name)
-	{
-		uint32_t id = INVALID_ID;
-		if (!RegisterTexture(name, id)) {
-			ETH_CORE_ERROR("AcquireTexture failed to acquire texture");
-			return nullptr;
-		}
-
-		return &m_State->RegisteredTextures[id];
-	}
-
-	bool TextureSystem::RegisterTexture(const std::string& name, uint32_t& outTextureId)
-	{
-		
-		return true;
-	}
-
-	bool TextureSystem::LoadTexture(const std::string& name, Texture& outTexture)
-	{
-		return true;
-	}
-
-	uint64_t TextureSystem::CalculateMemoryRequirement(TextureSystemConfig& config)
-	{
-		uint64_t memoryRequirement = sizeof(TextureSystemState);
-
-		memoryRequirement += sizeof(Texture) * config.MaxTextureCount;
-
-		return memoryRequirement;
-	}
 }

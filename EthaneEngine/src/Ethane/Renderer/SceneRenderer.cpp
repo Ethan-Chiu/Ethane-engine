@@ -3,12 +3,9 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-// TODO: temp
-#include "Vulkan/VulkanRendererAPI.h"
-#include "Vulkan/VulkanFramebuffer.h"
-// TODO: remove
-#include "Vulkan/VulkanMaterial.h"
-#include "Vulkan/VulkanContext.h"
+#include "Ethane/Asset/AssetManager.h"
+#include "Ethane/Systems/ShaderSystem.h"
+#include "Ethane/Systems/TextureSystem.h"
 
 namespace Ethane {
 
@@ -21,100 +18,44 @@ namespace Ethane {
 
 	void SceneRenderer::Init()
 	{
-#if 1
-		m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
-
+        RendererConfig rendererConfig = Renderer::GetRendererConfig();
+        
+        ImageSpecification imageSpec = {};
+        imageSpec.Usage = ImageUsage::Attachment;
+        imageSpec.Width = rendererConfig.DefaultWindowWidth;
+        imageSpec.Height = rendererConfig.DefaultWindowHeight;
+        
 		// Geometry
-		{
-			FramebufferSpecification geoFramebufferSpec;
-			geoFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F, ImageFormat::RGBA16F, ImageFormat::Depth };
-			geoFramebufferSpec.Samples = 1;
-			geoFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-			geoFramebufferSpec.DebugName = "Geometry";
-			// TODO width and height
-			geoFramebufferSpec.Width = 1600;
-			geoFramebufferSpec.Height = 900;
-			Ref<Framebuffer> framebuffer = Framebuffer::Create(geoFramebufferSpec);
+//		{
+//            m_GeoColor = Renderer::GetSwapchainTarget();
+//            imageSpec.DebugName = "GeoDepth";
+//            imageSpec.Format = ImageFormat::DEPTH32F;
+//            m_GeoDepth = Image2D::Create(imageSpec);
+//
+//			RenderTargetSpecification geoTargetSpec;
+//            geoTargetSpec.Attachments = { m_GeoColor, m_GeoDepth.get() };
+//            geoTargetSpec.IsTargetImage = true;
+//            geoTargetSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+//            geoTargetSpec.DebugName = "Geometry";
+//            geoTargetSpec.Width = rendererConfig.DefaultWindowWidth;
+//            geoTargetSpec.Height = rendererConfig.DefaultWindowHeight;
+//            geoTargetSpec.SwapChainTarget = true;
+//			m_GeoTarget = RenderTarget::Create(geoTargetSpec);
+//
+//			PipelineSpecification pipelineSpecification;
+//			pipelineSpecification.Layout = {
+//				{ ShaderDataType::Float3, "a_Position" },
+//				{ ShaderDataType::Float3, "a_Normal" },
+//				{ ShaderDataType::Float3, "a_Tangent" },
+//				{ ShaderDataType::Float3, "a_Binormal" },
+//				{ ShaderDataType::Float2, "a_TexCoord" },
+//			};
+//            auto shader = ShaderSystem::Get("test");
+//            pipelineSpecification.Shader = shader;
+//            pipelineSpecification.RenderPass = m_GeoTarget->GetRenderPass();
+//			m_GeometryPipeline = Pipeline::Create(pipelineSpecification);
+//		}
 
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float3, "a_Tangent" },
-				{ ShaderDataType::Float3, "a_Binormal" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-			};
-			pipelineSpecification.Shader = ShaderLibrary::Get("PBR_static");
-
-			RenderPassSpecification renderPassSpec;
-			renderPassSpec.TargetFramebuffer = framebuffer;
-			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-			m_GeometryPipeline = Pipeline::Create(pipelineSpecification);
-
-			m_TestDiffuse = Texture2D::Create("assets/textures/FloorSandStone/cobblestone.png");
-			m_TestSpecular = Texture2D::Create("assets/textures/FloorSandStone/cobblestone_SPEC.png");
-			m_TestNormal = Texture2D::Create("assets/textures/FloorSandStone/cobblestone_NRM.png");
-			// TODO: test remove
-			m_testMaterial = Material::Create(ShaderLibrary::Get("PBR_static"), "tset Geo material");
-			m_testMaterial->Set("u_DiffuseSampler", m_TestDiffuse);
-			m_testMaterial->Set("u_SpecularSampler", m_TestSpecular);
-			m_testMaterial->Set("u_NormalSampler", m_TestNormal);
-		}
-
-		// Grid
-		{
-			m_GridShader = ShaderLibrary::Get("Grid");
-			const float gridScale = 16.025f;
-			const float gridSize = 0.025f;
-			m_GridMaterial = Material::Create(m_GridShader);
-		
-			PipelineSpecification pipelineSpec;
-			pipelineSpec.Shader = m_GridShader;
-			pipelineSpec.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
-			};
-			pipelineSpec.RenderPass = m_GeometryPipeline->GetSpecification().RenderPass;
-			m_GridPipeline = Pipeline::Create(pipelineSpec);
-		}
-
-		// Composite
-		{
-			FramebufferSpecification compFramebufferSpec;
-			compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
-			compFramebufferSpec.DebugName = "SceneComposite";
-			// TODO: width and height
-			compFramebufferSpec.Width = 1600;
-			compFramebufferSpec.Height = 900;
-
-			compFramebufferSpec.Attachments = { ImageFormat::RGBA };
-
-			Ref<Framebuffer> framebuffer = Framebuffer::Create(compFramebufferSpec);
-
-			RenderPassSpecification renderPassSpec;
-			renderPassSpec.TargetFramebuffer = framebuffer;
-			// renderPassSpec.DebugName = "SceneComposite";
-
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
-			};
-			// pipelineSpecification.BackfaceCulling = false;
-			pipelineSpecification.Shader = ShaderLibrary::Get("SceneComposite");
-			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-			m_CompositePipeline = Pipeline::Create(pipelineSpecification);
-			
-			// TODO: test
-			if (m_Texture2D == nullptr)
-				m_Texture2D = Texture2D::Create("assets/textures/test.png");
-			m_CompositeMaterial = Material::Create(ShaderLibrary::Get("SceneComposite"), "Composite material");
-			
-			auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetTexture());
-		}
-
-#endif 
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -137,11 +78,10 @@ namespace Ethane {
 		{
 			m_NeedResize = false;
 		
-			m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
-			m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
-
-			auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-			m_CompositeMaterial->Set("u_Texture", std::dynamic_pointer_cast<VulkanFramebuffer>(geoFramebuffer)->GetTexture());
+//            m_GeoTarget->Resize(m_ViewportWidth, m_ViewportHeight);
+            
+//            m_GeoColor = Renderer::GetSwapchainTarget();
+//            m_ComputeMat->SetImage("colorBuffer", m_GeoColor);
 		}
 
 
@@ -162,26 +102,22 @@ namespace Ethane {
 		globalData.ViewProjection = viewProjection;
 		globalData.AmbientColor = glm::vec4(0.8, 0.8, 0.8, 1);
 		globalData.ViewPosition = cameraPosition;
-		
-		UBLocal localUB;
-		localUB.DiffuseColor = glm::vec4(1, 1, 1, 1);
-		localUB.Shininess = 32;
 
-		VulkanRendererAPI::SetUniformBuffer(0, 0, &globalData, sizeof(globalData), 0);
-		VulkanRendererAPI::SetUniformBuffer(0, 1, &localUB, sizeof(localUB), 0);
+        ubo.camPos = sceneCamera.GetPosition();
+        
+        Renderer::SetGlobalUniformBuffer(0, (void*)&(ubo), sizeof(UBO));
+        Renderer::SetGlobalUniformBuffer(1, (void*)&(cameraData.ViewProjection), sizeof(glm::mat4));
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material)
+	void SceneRenderer::SubmitMesh(Mesh* mesh, Material* material, const glm::mat4& transform)
 	{
 		// TODO: Culling, sorting, etc.
-		m_DrawList.push_back({ mesh, transform, material });
-		// m_ShadowPassDrawList.push_back({ mesh, materialTable, transform, overrideMaterial });
+//		m_DrawList.push_back({ mesh, transform, material});
 	}
 
-	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material)
+	void SceneRenderer::SubmitSelectedMesh(Mesh* mesh, const glm::mat4& transform) //, Ref<Material> material
 	{
-		m_SelectedMeshDrawList.push_back({ mesh, transform, material });
-		// m_ShadowPassDrawList.push_back({ mesh, materialTable, transform, overrideMaterial });
+		m_SelectedMeshDrawList.push_back({ mesh, transform }); // , material
 	}
 
 	void SceneRenderer::EndScene()
@@ -195,58 +131,32 @@ namespace Ethane {
 	{
 		ETH_PROFILE_FUNCTION();
 
-		VulkanRendererAPI::BeginRenderPass(m_GeometryPipeline->GetSpecification().RenderPass);
-
-		// Render entities
+        
+		Renderer::BeginRenderTarget(m_GeoTarget.get());
+//
+//		// Render entities
 		for (auto& dc : m_DrawList)
 		{
-			// VulkanRendererAPI::DrawMesh(m_GeometryPipeline, dc.Mesh, dc.Material, dc.Transform);
-			VulkanRendererAPI::DrawMesh(m_GeometryPipeline, dc.Mesh, m_testMaterial, dc.Transform);
+			Renderer::DrawMesh(m_GeometryPipeline, dc.MeshPtr, dc.MaterialPtr, dc.Transform);
 		}
-		
-		// Grid
-		if (GetOptions().ShowGrid)
-		{
-			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
-			VulkanRendererAPI::DrawQuad(m_GridPipeline, m_GridMaterial, transform);
-		}
+        
 
-		VulkanRendererAPI::EndRenderPass();
-	}
-
-	void SceneRenderer::CompositePass()
-	{
-		ETH_PROFILE_FUNCTION();
-
-		VulkanRendererAPI::BeginRenderPass(m_CompositePipeline->GetSpecification().RenderPass, false);
-
-		auto geoFramebuffer = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-
-		VulkanRendererAPI::DrawFullscreenQuad(m_CompositePipeline, m_CompositeMaterial);
-		VulkanRendererAPI::EndRenderPass();
+        Renderer::EndRenderTarget();
 	}
 
 	void SceneRenderer::Flush()
 	{
-		VulkanRendererAPI::BeginRenderCommandBuffer(m_CommandBuffer);
+//		VulkanRendererAPI::BeginRenderCommandBuffer(m_CommandBuffer);
 
-		GeometryPass();
+//		GeometryPass();
 
-		CompositePass();
-
-		VulkanRendererAPI::EndRenderCommandBuffer();
-		m_CommandBuffer->Submit();
+//		VulkanRendererAPI::EndRenderCommandBuffer();
+//		m_CommandBuffer->Submit();
 
 		m_DrawList.clear();
 	}
 
-	Ref<Image2D> SceneRenderer::GetFinalPassImage()
-	{
-		return std::dynamic_pointer_cast<VulkanFramebuffer>(m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer)->GetImage();
-	}
-
-	Ref<Texture2D> SceneRenderer::GetFinalPassTexture()
-	{
-		return std::dynamic_pointer_cast<VulkanFramebuffer>(m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer)->GetTexture();
-	}
+    void SceneRenderer::Shutdown()
+    {
+    }
 }

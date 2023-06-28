@@ -25,10 +25,10 @@ class PremakeConfig:
         self.install_dir = "vendor/premake/bin"
         if system == SystemName.Windows.value:
             self.installer_url = "https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-windows.zip"
-            self.action = "xcode4"
+            self.actions = ["vs2022", "gmake2"]
         elif system == SystemName.Mac.value:
             self.installer_url = "https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-macosx.tar.gz"
-            self.action = "vs2022"
+            self.actions = ["xcode4", "gmake2"]
         else:
             print(f"{system} is not officially supported yet")
             quit()

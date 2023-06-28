@@ -1,7 +1,6 @@
 #include "ethpch.h"
 #include "GraphicsContext.h"
-
-#include "Renderer.h"
+#include "RendererAPI.h"
 #include "Vulkan/VulkanContext.h"
 
 namespace Ethane {

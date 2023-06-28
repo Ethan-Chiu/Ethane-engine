@@ -1,120 +1,77 @@
 #include "ethpch.h"
 #include "VulkanTexture.h"
 
-#include "VulkanContext.h";
+#include "VulkanContext.h"
 #include "VulkanBuffer.h"
-
-#include "stb_image.h"
+#include "VulkanCommandBuffer.h"
 
 namespace Ethane{
 
-	VulkanTexture2D::VulkanTexture2D(const std::string& path)
-		:m_Path(path)
-	{
-		// TODO: Invalidate
-		ETH_PROFILE_FUNCTION();
+//	VulkanTexture2D::VulkanTexture2D(const std::string& path)
+//		:m_Path(path)
+//	{
+//		// TODO: Invalidate
+//		ETH_PROFILE_FUNCTION();
+//
+//		int width, height, channels;
+//		stbi_uc* data = nullptr;
+//		{
+//			ETH_PROFILE_SCOPE("stbi_load _ OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
+//			data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+//		}
+//		ETH_CORE_ASSERT(data, "Failed to load image!");
+//		m_Width = width;
+//		m_Height = height;
+//		VkDeviceSize imageSize = m_Width * m_Height * 4;
+//		ETH_CORE_TRACE("w: {0}, h: {1}, ch: {2}", m_Width, m_Height, channels);
+//
+//		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+//
+//		// Create Imgae
+//		ImageSpecification imageSpec;
+//		imageSpec.Width = m_Width;
+//		imageSpec.Height = m_Height;
+//		m_Image = CreateRef<VulkanImage2D>(imageSpec);
+//
+//		SetData(data ,imageSize);
+//		stbi_image_free(data);
+//
+//		// create sampler
+//		CreateTextureSampler();
+//
+//		UpdateDescriptorImageInfo();
+//	}
 
-		int width, height, channels;
-		stbi_uc* data = nullptr;
-		{
-			ETH_PROFILE_SCOPE("stbi_load _ OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
-			data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-		}
-		ETH_CORE_ASSERT(data, "Failed to load image!");
-		m_Width = width;
-		m_Height = height;
-		VkDeviceSize imageSize = m_Width * m_Height * 4;
-		ETH_CORE_TRACE("w: {0}, h: {1}, ch: {2}", m_Width, m_Height, channels);
 
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		// Create Imgae
-		ImageSpecification imageSpec;
-		imageSpec.Width = m_Width;
-		imageSpec.Height = m_Height;
-		m_Image = CreateRef<VulkanImage2D>(imageSpec);
-
-		SetData(data ,imageSize);
-		stbi_image_free(data);
-
-		// create sampler
-		CreateTextureSampler();
-
-		UpdateDescriptorImageInfo();
-	}
-
-	VulkanTexture2D::VulkanTexture2D(TextureSpec spec)
-		:m_Width(spec.Width), m_Height(spec.Height), m_ChannelCount(spec.ChannelCount)
-	{
-		// TODO: Invalidate
-		ETH_PROFILE_FUNCTION();
-
-		VkDeviceSize imageSize = m_Width * m_Height * m_ChannelCount;
-		ETH_CORE_TRACE("w: {0}, h: {1}, ch: {2}", m_Width, m_Height, m_ChannelCount);
-
-		// Create Imgae
-		ImageSpecification imageSpec;
-		imageSpec.Width = m_Width;
-		imageSpec.Height = m_Height;
-		m_Image = CreateRef<VulkanImage2D>(imageSpec);
-
-		CreateTextureSampler();
-
-		UpdateDescriptorImageInfo();
-	}
-
-	VulkanTexture2D::VulkanTexture2D(Ref<Image2D> image)
+	VulkanTexture2D::VulkanTexture2D(VulkanImage2D* image)
 		:m_Width(image->GetWidth()), m_Height(image->GetHeight()), m_ChannelCount(4)
 	{
-		m_Image = std::dynamic_pointer_cast<VulkanImage2D>(image);
+        m_Image = image;
 
 		CreateTextureSampler();
 
 		UpdateDescriptorImageInfo();
 	}
+
+    void VulkanTexture2D::Destroy()
+    {
+        auto vk_device = VulkanContext::GetDevice()->GetVulkanDevice();
+
+        vkDeviceWaitIdle(vk_device);
+
+        m_Image->Destroy();
+
+        if (m_TextureSampler)
+            vkDestroySampler(vk_device, m_TextureSampler, nullptr);
+    }
 
 	void VulkanTexture2D::SetData(void* data, uint32_t imageSize)
 	{
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		// create staging buffer
-		VulkanBuffer stagingBuffer;
-		stagingBuffer.CreateVulkanBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-
-		// copy data to staging buffer
-		stagingBuffer.SetData(data, 0, imageSize, 0, 0);
-	
-		// transition
-		VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
-		VkImage textureImage = m_Image->GetImageInfo().Image;
-		
-		VulkanCommandBuffer commandBuffer;
-		commandBuffer.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
-		m_Image->TransitionLayout(commandBuffer.GetHandle(), format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-		m_Image->CopyFromBuffer(commandBuffer.GetHandle(), stagingBuffer.GetHandle());
-
-		m_Image->TransitionLayout(commandBuffer.GetHandle(), format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		commandBuffer.EndSingleUse(QueueFamilyTypes::Graphics);
-
-		// cleanup staging buffer
-		stagingBuffer.Destroy();
-	}
-
-	void VulkanTexture2D::Cleanup()
-	{
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		vkDeviceWaitIdle(device);
-
-		m_Image->Destroy();
-
-		if (m_TextureSampler)
-			vkDestroySampler(device, m_TextureSampler, nullptr);
+        m_Image->LoadData(data, imageSize);
 	}
 
 	void VulkanTexture2D::CreateTextureSampler() {
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+        auto vk_device = VulkanContext::GetDevice()->GetVulkanDevice();
 		
 		VkSamplerCreateInfo samplerInfo{ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -138,7 +95,7 @@ namespace Ethane{
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = 0.0f;
 		
-		VK_CHECK_RESULT(vkCreateSampler(device, &samplerInfo, nullptr, &m_TextureSampler));
+		VK_CHECK_RESULT(vkCreateSampler(vk_device, &samplerInfo, nullptr, &m_TextureSampler));
 	}
 
 	void VulkanTexture2D::UpdateDescriptorImageInfo()
@@ -146,9 +103,9 @@ namespace Ethane{
 		//TODO: fix
 		//if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8 || m_Specification.Format == ImageFormat::DEPTH32F)
 		//	m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-		//else if (m_Specification.Usage == ImageUsage::Storage)
-		//	m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-		//else
+		if (m_Image->GetSpecification().Usage == ImageUsage::Storage)
+			m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		else
 			m_DescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 

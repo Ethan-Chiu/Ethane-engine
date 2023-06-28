@@ -6,6 +6,8 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 
+#include "ShaderIncluder.hpp"
+
 #include "Ethane/Core/timer.h"
 #include "VulkanShaderSystem.h"
 
@@ -30,6 +32,7 @@ namespace Ethane {
 			case VK_SHADER_STAGE_VERTEX_BIT:    return shaderc_vertex_shader;
 			case VK_SHADER_STAGE_FRAGMENT_BIT:  return shaderc_fragment_shader;
 			case VK_SHADER_STAGE_COMPUTE_BIT:   return shaderc_compute_shader;
+            default: break;
 			}
 			ETH_CORE_ASSERT(false);
 			return (shaderc_shader_kind)0;
@@ -42,6 +45,7 @@ namespace Ethane {
 			case VK_SHADER_STAGE_VERTEX_BIT:   return "VERTEX_SHADER";
 			case VK_SHADER_STAGE_FRAGMENT_BIT: return "FRAGMENT_SHADER";
 			case VK_SHADER_STAGE_COMPUTE_BIT:  return "COMPUTE_SHADER";
+            default: break;
 			}
 			ETH_CORE_ASSERT(false);
 			return nullptr;
@@ -54,6 +58,7 @@ namespace Ethane {
 			case VK_SHADER_STAGE_VERTEX_BIT:    return ".cached_vulkan.vert";
 			case VK_SHADER_STAGE_FRAGMENT_BIT:  return ".cached_vulkan.frag";
 			case VK_SHADER_STAGE_COMPUTE_BIT:   return ".cached_vulkan.comp";
+            default: break;
 			}
 			ETH_CORE_ASSERT(false);
 			return "";
@@ -125,11 +130,12 @@ namespace Ethane {
 
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
-		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1); // TODO select the right version
 		options.SetWarningsAsErrors();
 		options.SetGenerateDebugInfo();
-		const bool optimize = false;
-
+        options.SetIncluder(std::make_unique<ShaderIncluder>());
+        
+        const bool optimize = false;
 		if (optimize)
 			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
@@ -154,7 +160,15 @@ namespace Ethane {
 			}
 			else
 			{
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::VkShaderStageToShaderC(stage), params.FilePath.c_str(), options);
+                shaderc::PreprocessedSourceCompilationResult pre_result =
+                        compiler.PreprocessGlsl(source, Utils::VkShaderStageToShaderC(stage), params.FilePath.c_str(), options);
+                if(pre_result.GetCompilationStatus() != shaderc_compilation_status_success)
+                {
+                    ETH_CORE_ERROR(pre_result.GetErrorMessage());
+                }
+                std::string pre_passed_source(pre_result.begin());
+                
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(pre_passed_source, Utils::VkShaderStageToShaderC(stage), params.FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					ETH_CORE_ERROR(module.GetErrorMessage());
@@ -184,16 +198,21 @@ namespace Ethane {
 		}
 	}
 
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderCompiler::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
-
 	void VulkanShaderCompiler::ReflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderBinary,
 		std::vector<ShaderDescriptorSetData>& shaderDescriptorSets,
 		std::vector<VkPushConstantRange>& pushConstantRanges)
 	{
-		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-
 		spirv_cross::Compiler compiler(shaderBinary);
 		spirv_cross::ShaderResources res = compiler.get_shader_resources();
+        
+        if(stage == VK_SHADER_STAGE_COMPUTE_BIT)
+        {
+            for (uint32_t i = 0; i < 3; i++)
+            {
+                uint32_t localsize = compiler.get_execution_mode_argument(spv::ExecutionModeLocalSize, i);
+                ETH_CORE_INFO("local_size_{0}: {1}", i, localsize);
+            }
+        }
 
 		// ETH_CORE_TRACE("VulkanShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_FilePath);
 
@@ -210,31 +229,17 @@ namespace Ethane {
 			if (descriptorSet >= shaderDescriptorSets.size())
 				shaderDescriptorSets.resize(descriptorSet + 1);
 
-			if (s_UniformBuffers[descriptorSet].find(binding) == s_UniformBuffers[descriptorSet].end())
-			{
-				UniformBuffer* uniformBuffer = new UniformBuffer();
-				uniformBuffer->Size = bufferSize;
-				uniformBuffer->Name = name;
-				uniformBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_UniformBuffers[descriptorSet][binding] = uniformBuffer;
-			}
-			else
-			{
-				UniformBuffer* uniformBuffer = s_UniformBuffers[descriptorSet][binding];
-				if (bufferSize > uniformBuffer->Size)
-					uniformBuffer->Size = bufferSize;
-
-			}
-
-			ShaderDescriptorSetData& shaderDescriptorSet = shaderDescriptorSets[descriptorSet];
-			shaderDescriptorSet.UniformBuffers[binding] = s_UniformBuffers[descriptorSet][binding];
-
-			VulkanShaderSystem::ReflectBufferData(descriptorSet, binding, s_UniformBuffers[descriptorSet][binding]);
-
+            ShaderDescriptorSetData& shaderDescriptorSet = shaderDescriptorSets[descriptorSet];
+            auto& uniformBuffer = shaderDescriptorSet.UniformBuffers[binding];
+            
+            uniformBuffer.Size = bufferSize;
+            uniformBuffer.Name = name;
+            uniformBuffer.ShaderStage = VK_SHADER_STAGE_ALL;
+            
 			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 			ETH_CORE_TRACE("  Member Count: {0}", memberCount);
 			ETH_CORE_TRACE("  Size: {0}", bufferSize);
-			ETH_CORE_TRACE("-------------------");
+			ETH_CORE_TRACE("  -------------------");
 		}
 
 
@@ -261,27 +266,81 @@ namespace Ethane {
 			imageSampler.ShaderStage = stage;
 			imageSampler.ArraySize = arraySize;
 
-			VulkanShaderSystem::ReflectSamplerData(descriptorSet, binding, shaderDescriptorSets[descriptorSet].ImageSamplers[binding]);
-
 			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+            ETH_CORE_TRACE("  -------------------");
 		}
+        
+        ETH_CORE_INFO("Storage Buffers:");
+        for (const auto& resource : res.storage_buffers)
+        {
+            const auto& name = resource.name;
+            auto& bufferType = compiler.get_type(resource.base_type_id);
+            uint32_t memberCount = (uint32_t)bufferType.member_types.size();
+            uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
 
+            if (descriptorSet >= shaderDescriptorSets.size())
+                shaderDescriptorSets.resize(descriptorSet + 1);
 
-		ETH_CORE_INFO("Push Constant Buffers:");
-		for (const auto& resource : res.push_constant_buffers)
-		{
-			const auto& bufferName = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
-			uint32_t memberCount = uint32_t(bufferType.member_types.size());
-			uint32_t bufferOffset = 0;
-			if (pushConstantRanges.size())
-				bufferOffset = pushConstantRanges.back().offset + pushConstantRanges.back().size;
+            ShaderDescriptorSetData& shaderDescriptorSet = shaderDescriptorSets[descriptorSet];
+            auto& storageBuffer = shaderDescriptorSet.StorageBuffers[binding];
+            
+            storageBuffer.Size = size;
+            storageBuffer.Name = name;
+            storageBuffer.ShaderStage = VK_SHADER_STAGE_ALL;
 
-			auto& pushConstantRange = pushConstantRanges.emplace_back();
-			pushConstantRange.stageFlags = stage;
-			pushConstantRange.offset = bufferOffset;
-			pushConstantRange.size = bufferSize - bufferOffset;
-		}
+            ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+            ETH_CORE_TRACE("  Member Count: {0}", memberCount);
+            ETH_CORE_TRACE("  Size: {0}", size);
+            ETH_CORE_TRACE("  -------------------");
+        }
+
+        ETH_CORE_INFO("Storage Images:");
+        for (const auto& resource : res.storage_images)
+        {
+            const auto& name = resource.name;
+            auto& baseType = compiler.get_type(resource.base_type_id);
+            auto& type = compiler.get_type(resource.type_id);
+            
+            uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            uint32_t dimension = baseType.image.dim;
+            uint32_t arraySize = type.array[0];
+            if (arraySize == 0)
+                arraySize = 1;
+            if (descriptorSet >= shaderDescriptorSets.size())
+                shaderDescriptorSets.resize(descriptorSet + 1);
+            
+            ShaderDescriptorSetData& shaderDescriptorSet = shaderDescriptorSets[descriptorSet];
+            auto& imageSampler = shaderDescriptorSet.StorageImage[binding];
+            imageSampler.DescriptorSet = descriptorSet;
+            imageSampler.Name = name;
+            imageSampler.ShaderStage = stage;
+            imageSampler.ArraySize = arraySize;
+
+            ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+            ETH_CORE_TRACE("  -------------------");
+        }
+
+        ETH_CORE_INFO("Push Constant Buffers:");
+        for (const auto& resource : res.push_constant_buffers)
+        {
+            const auto& bufferName = resource.name;
+            auto& bufferType = compiler.get_type(resource.base_type_id);
+            uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+            uint32_t memberCount = uint32_t(bufferType.member_types.size());
+            uint32_t bufferOffset = 0;
+            if (pushConstantRanges.size())
+                bufferOffset = pushConstantRanges.back().offset + pushConstantRanges.back().size;
+
+            auto& pushConstantRange = pushConstantRanges.emplace_back();
+            pushConstantRange.stageFlags = stage;
+            pushConstantRange.offset = bufferOffset;
+            pushConstantRange.size = bufferSize - bufferOffset;
+        }
+        
+        ETH_CORE_INFO("===========================");
+        
 	}
 }

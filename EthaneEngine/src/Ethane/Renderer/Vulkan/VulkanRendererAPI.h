@@ -1,17 +1,14 @@
 #pragma once
 
-#include "Ethane/Renderer/Mesh.h"
-// #include "Ethane/Renderer/RendererAPI.h"
+#include "Ethane/Renderer/RendererAPI.h"
+#include "Ethane/Renderer/Renderer.h"
 
-// #include "VulkanMaterial.h"
-#include "VulkanUniformBufferSet.h"
-
-#include "vulkan/vulkan.h"
-
+#include "VulkanVertexBuffer.h"
+#include "VulkanIndexBuffer.h"
 #include "VulkanRenderCommandBuffer.h"
-
+#include "VulkanRenderTarget.h"
 #include "VulkanMaterial.h"
-
+#include "VulkanRenderCommandBuffer.h"
 
 namespace Ethane {
 
@@ -20,71 +17,71 @@ namespace Ethane {
 	public:
 		struct VulkanRendererData
 		{
-			// RendererCapabilities RenderCaps;
-			// Ref<Texture2D> BRDFLut;
+			Ref<VulkanVertexBuffer> QuadVertexBuffer = nullptr;
+			Ref<VulkanIndexBuffer> QuadIndexBuffer = nullptr;
+//			VulkanShader::DescriptorSetsAndPool QuadDescriptorSet;
 
-			Ref<VertexBuffer> QuadVertexBuffer;
-			Ref<IndexBuffer> QuadIndexBuffer;
-			VulkanShader::DescriptorSetsAndPool QuadDescriptorSet;
-
-			// std::unordered_map<SceneRenderer*, std::vector<VulkanShader::DescriptorSetsAndPool>> RendererDescriptorSet;
 			VkDescriptorSet ActiveRendererDescriptorSet = nullptr;
 			std::vector<VkDescriptorPool> DescriptorPools;
 
-			// TODO: stats
-			std::vector<uint32_t> DescriptorPoolAllocationCount;
+            // stats
+            std::vector<uint32_t> DescriptorPoolAllocationCount;
 
 			// Default samplers
 			VkSampler SamplerClamp = nullptr;
 
-			std::set<Ref<VulkanMaterial>> UpdatedMaterial = {};
-			// int32_t SelectedDrawCall = -1;
-			// int32_t DrawCallCount = 0;
+			std::set<VulkanMaterial*> UpdatedMaterial = {};
 		};
+        
 	public:
 		VulkanRendererAPI() = default;
 		~VulkanRendererAPI() = default;
 
-		virtual void Init() override;
+		virtual void Init(const RendererConfig& config, const GraphicsContext* ctx) override;
+        virtual void Shutdown() override;
 
 		void BeginFrame() override;
-		void EndFrame() override {};
+		void EndFrame() override;
+        
+        virtual VulkanTargetImage* GetSwapchainTarget() const override;
 
-		static void BeginRenderCommandBuffer(Ref<RenderCommandBuffer> renderCommandBuffer);
-		static void EndRenderCommandBuffer();
+        void RegisterShader(const Shader* shader) override;
+        void SetGlobalUniformBuffer(uint32_t binding, const void* data, uint32_t size) override;
+        
+        // TODO:
+        void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override {};
+        void SetClearColor(const glm::vec4& color) override {};
+        
+		void BeginRenderCommandBuffer();
+		void EndRenderCommandBuffer();
 
-		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool explicitClear = false); // Ref<RenderCommandBuffer> renderCommandBuffer, 
-		static void EndRenderPass(); // Ref<RenderCommandBuffer> renderCommandBuffer
+		virtual void BeginRenderTarget(const RenderTarget* target, bool explicitClear = false) override;
+        virtual void EndRenderTarget() override;
 	private:
-		static void UpdateMaterialForRendering(Ref<VulkanMaterial> material);
-		static void CmdBindMaterial(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, Ref<VulkanMaterial> material, uint32_t frameIndex);
+		void UpdateMaterialForRendering(VulkanMaterial* material);
+		void CmdBindMaterial(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const VulkanMaterial* material, uint32_t frameIndex, VkPipelineBindPoint bindpoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
 
 	public:
-		// TODO:
-		void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override {};
-		void SetClearColor(const glm::vec4& color) override {};
-		void Clear() override {};
-
-		static VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo);
+//		static VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo);
 
 		// Draw
-		virtual void DrawIndexed(uint32_t indexCount = 0) override {}; // TODO: remove
-		virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override {}; // TODO: remove
-
-		static void DrawQuad(Ref<Pipeline> pipeline, Ref<Material> material, const glm::mat4& transform) ; // Ref<StorageBufferSet> storageBufferSet
-
-		static void DrawFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material); // Ref<RenderCommandBuffer> renderCommandBuffer,
-		// void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) override;
-
-		static void DrawMesh(Ref<Pipeline> pipeline, Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform); // , Ref<MaterialTable> materialTable
-		// virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override;
-
-		static void DrawGeometry(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexbuffer, Ref<IndexBuffer> indexbuffer, Ref<Material> material, const glm::mat4& transform = glm::mat4(1.0f), uint32_t indexCount = 0);
-
-		// Update uniform buffer value
-		static void SetUniformBuffer(uint32_t binding, uint32_t set, const void* data, uint32_t size, uint32_t offset = 0);
+//		virtual void DrawIndexed(uint32_t indexCount = 0) override {}; // TODO: remove
+//		virtual void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f)) override {}; // TODO: remove
+//
+//		static void DrawQuad(Ref<Pipeline> pipeline, Ref<Material> material, const glm::mat4& transform) ; // Ref<StorageBufferSet> storageBufferSet
+//
+        void DrawGeometry(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexbuffer, Ref<IndexBuffer> indexbuffer, Ref<Material> material) override;
+        
+        void DrawFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material) override;
+        
+		void DrawMesh(Ref<Pipeline> pipeline, Mesh* mesh, Material* material, const glm::mat4& transform) override;
+        
+        void TransitionLayout(TargetImage* targetImage, ImageLayout oldLayout, ImageLayout newLayout, AccessMask srcAccessMask, PipelineStage srcStage, AccessMask dstAccessMask, PipelineStage dstStage, Ref<RenderCommandBuffer> renderCmdBuffer) override;
+        void TransitionLayout(Image2D* targetImage, ImageLayout oldLayout, ImageLayout newLayout, AccessMask srcAccessMask, PipelineStage srcStage, AccessMask dstAccessMask, PipelineStage dstStage, Ref<RenderCommandBuffer> renderCmdBuffer) override;
+        void BeginCompute(Ref<ComputePipeline> computePipeline, Ref<Material> material, uint32_t worker_x, uint32_t worker_y, uint32_t worker_z, Ref<RenderCommandBuffer> renderCmdBuffer) override;
+        
 	private:
-		inline static Ref<RenderCommandBuffer> s_RenderCommandBuffer;
+//        Scope<VulkanRenderCommandBuffer> m_RenderCommandBuffer = nullptr;
 
 		static VulkanRendererData* s_Data;
 	};

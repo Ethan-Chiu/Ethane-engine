@@ -1,4 +1,7 @@
 #include "ethpch.h"
+
+#ifdef ETH_PLATFORM_WINDOWS
+
 #include "Ethane/Core/Input.h"
 
 #include <GLFW/glfw3.h>
@@ -38,3 +41,5 @@ namespace Ethane {
 		return GetMousePosition().y;
 	}
 }
+
+#endif

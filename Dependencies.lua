@@ -17,30 +17,40 @@ IncludeDir["yaml_cpp"] = "%{wks.location}/EthaneEngine/vendor/yaml-cpp/include"
 IncludeDir["imgui"] = "%{wks.location}/EthaneEngine/vendor/imgui"
 IncludeDir["ImGuizmo"] = "%{wks.location}/EthaneEngine/vendor/ImGuizmo"
 
+
 LibraryDir = {}
-
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["VulkanSDK_Debug"] = "%{wks.location}/EthaneEngine/vendor/VulkanSDK/Lib"
-LibraryDir["VulkanSDK_DebugDLL"] = "%{wks.location}/EthaneEngine/vendor/VulkanSDK/Bin"
+LibraryDir["vendor"] = "%{wks.location}/EthaneEngine/vendor"
 
-LibraryDir["MacAssimp"] = "%{wks.location}/EthaneEngine/vendor/assimp/macos/lib"
-LibraryDir["MacYamlCpp"] = "%{wks.location}/EthaneEngine/vendor/yaml-cpp/build"
+LibraryDir["assimp"] = "%{LibraryDir.vendor}/assimp/lib"
+LibraryDir["yamlcpp"] = "%{LibraryDir.vendor}/yaml-cpp/build"
 
+-- General
 Library = {}
-Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
-Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"
+Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1"
+Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils"
 
--- Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
--- Library["ShaderC_Utils_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_utild.lib"
--- Library["SPIRV_Cross_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"
--- Library["SPIRV_Cross_GLSL_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsld.lib"
--- Library["SPIRV_Tools_Debug"] = "%{LibraryDir.VulkanSDK}/SPIRV-Toolsd.lib"
+-- Debug 
+Library["ShaderC_Debug"] = "shaderc_sharedd"
+Library["ShaderC_Utils_Debug"] = "shaderc_utild"
+Library["SPIRV_Cross_Debug"] = "spirv-cross-cored"
+Library["SPIRV_Cross_GLSL_Debug"] = "spirv-cross-glsld"
+Library["SPIRV_Tools_Debug"] = "SPIRV-Toolsd"
 
--- Library["ShaderC_Release"] = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
--- Library["SPIRV_Cross_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
--- Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+Library["YamlCppDebug"] = "yaml-cppd"
 
--- Library["SPIRV_Cross_Debug"] = "%{wks.location}/EthaneEngine/vendor/SPIRV-Cross/lib/spirv-cross-cored.lib"
--- Library["SPIRV_Cross_Release"] = "%{wks.location}/EthaneEngine/vendor/SPIRV-Cross/lib/spirv-cross-core.lib"
--- Library["SPIRV_Cross_GLSL_Debug"] = "%{wks.location}/EthaneEngine/vendor/SPIRV-Cross/lib/spirv-cross-glsld.lib"
--- Library["SPIRV_Cross_GLSL_Release"] = "%{wks.location}/EthaneEngine/vendor/SPIRV-Cross/lib/spirv-cross-glsl.lib"
+-- Release 
+Library["ShaderC"] = "shaderc_shared"
+Library["ShaderC_Utils"] = "shaderc_util"
+Library["SPIRV_Cross"] = "spirv-cross-core"
+Library["SPIRV_Cross_GLSL"] = "spirv-cross-glsl"
+Library["SPIRV_Tools"] = "SPIRV-Tools"
+
+Library["YamlCpp"] = "yaml-cpp"
+
+-- Windows 
+Library["AssimpDebug"] = "assimp-vc143-mtd"
+Library["Assimp"] = "assimp-vc143-mt"
+
+-- Mac
+Library["MacAssimp"] = "assimp"

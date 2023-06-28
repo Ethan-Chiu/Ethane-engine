@@ -1,71 +1,64 @@
+//
+//  VulkanStorageBuffer.cpp
+//  EthaneEngine
+//
+//  Created by 邱奕翔 on 2023/5/28.
+//
+
 #include "ethpch.h"
 #include "VulkanStorageBuffer.h"
 
-#include "VulkanContext.h"
 
 namespace Ethane {
+        
+    VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size)
+        :VulkanBuffer()
+    {
+        m_Size = size;
+        CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
+    }
 
-	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding)
-		: m_Size(size), m_Binding(binding)
-	{
-		Invalidate();
-	}
+    VulkanStorageBuffer::VulkanStorageBuffer(void* data, uint32_t size)
+        :VulkanBuffer()
+    {
+        m_Size = size;
+        
+        // create vertex buffer (gpu local memory)
+        CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
 
-	void VulkanStorageBuffer::Cleanup()
-	{
-		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		vkDestroyBuffer(device, m_VulkanBuffer, nullptr);
-		vkFreeMemory(device, m_UniformBufferMemory, nullptr);
-	}
+        SetData(data, size);
+    }
 
-	void VulkanStorageBuffer::Invalidate()
-	{
-		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		CreateBuffer(m_Size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_VulkanBuffer, m_UniformBufferMemory);
-
-		m_DescriptorInfo.buffer = m_VulkanBuffer;
-		m_DescriptorInfo.offset = 0;
-		m_DescriptorInfo.range = m_Size;
-	}
-
-	void VulkanStorageBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
-	{
-		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-
-		void* dstdata;
-		vkMapMemory(device, m_UniformBufferMemory, 0, m_Size, 0, &dstdata);
-		memcpy(dstdata, (const uint8_t*)data + offset, size);
-		vkUnmapMemory(device, m_UniformBufferMemory);
-	}
+    void VulkanStorageBuffer::Destroy()
+    {
+        VulkanBuffer::Destroy();
+    }
 
 
-	void VulkanStorageBuffer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
+    void VulkanStorageBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
+    {
+        // create staging buffer
+        VulkanBuffer stagingBuffer{};
+        stagingBuffer.CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        // copy data to staging buffer
+        stagingBuffer.SetData(data, offset, size, 0, 0);
 
-		if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create buffer!");
-		}
+        // copy from staging buffer
+        VulkanBuffer::CopyTo(m_Device, m_Device->GetGraphicsCommandPool(), 0, m_Device->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, m_Buffer, 0, size);
 
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+        // cleanup staging buffer
+        stagingBuffer.Destroy();
+    }
 
-		VkMemoryAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = Utils::FindMemoryType(memRequirements.memoryTypeBits, properties);
+    VkDescriptorBufferInfo VulkanStorageBuffer::GetBufferInfo() const
+    {
+        VkDescriptorBufferInfo bufferInfo;
+        bufferInfo.buffer = m_Buffer;
+        bufferInfo.offset = 0;
+        bufferInfo.range = m_Size;
+        return bufferInfo;
 
-		if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate buffer memory!");
-		}
-
-		vkBindBufferMemory(device, buffer, bufferMemory, 0);
-	}
+    }
 
 }

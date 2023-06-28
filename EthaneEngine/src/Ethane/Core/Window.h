@@ -3,20 +3,21 @@
 #include "ethpch.h"
 #include "Ethane/Core/Base.h"
 #include "Ethane/Events/Event.h"
+#include "Ethane/Renderer/GraphicsContext.h"
 
 namespace Ethane {
 
-	struct WindowProps 
+	struct WindowProps
 	{
 		std::string Title;
-		uint32_t Width;
-		uint32_t Height;
+		uint32_t ScreenCoordWidth;
+		uint32_t ScreenCoordHeight;
 
-		WindowProps(const std::string& title = "Ethane Engine", 
-					uint32_t width = 1600,
-					uint32_t height = 900)
-			: Title(title), Width(width), Height(height) {}
-			
+		WindowProps(const std::string& title = "Ethane Engine",
+			uint32_t width = 1600,
+			uint32_t height = 900)
+			: Title(title), ScreenCoordWidth(width), ScreenCoordHeight(height) {}
+
 	};
 
 	class Window
@@ -42,6 +43,7 @@ namespace Ethane {
 		virtual bool IsVSync() const = 0;
 
 		virtual void* GetNativeWindow() const = 0;
+		virtual const GraphicsContext* GetGraphicsContext() const = 0;
 
 		static Scope<Window> Create(const WindowProps& props = WindowProps());
 	};

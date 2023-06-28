@@ -22,6 +22,13 @@ namespace Ethane {
 			case ShaderDataType::Int2:		return VK_FORMAT_R32G32_SINT;
 			case ShaderDataType::Int3:		return VK_FORMAT_R32G32B32_SINT;
 			case ShaderDataType::Int4:		return VK_FORMAT_R32G32B32A32_SINT;
+
+            case ShaderDataType::Bool:      return VK_FORMAT_R32_SINT;
+
+            case ShaderDataType::Mat3:
+            case ShaderDataType::Mat4:
+            case ShaderDataType::None:
+                break;
 			}
 			ETH_CORE_ASSERT(false);
 			return VK_FORMAT_UNDEFINED;
@@ -29,7 +36,7 @@ namespace Ethane {
 	}
 
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& spec)
-		:m_Specification(spec)
+		:m_Specification(spec), m_Device(VulkanContext::GetDevice())
 	{
 		Create();
 	}
@@ -40,8 +47,8 @@ namespace Ethane {
 
 	void VulkanPipeline::Destroy()
 	{
-		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
-		std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader)->Destroy(); // TODO test
+		VkDevice device = m_Device->GetVulkanDevice();
+        vkDeviceWaitIdle(device);
 		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 	}
@@ -108,7 +115,7 @@ namespace Ethane {
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // TODO:
 		rasterizer.depthBiasEnable = VK_FALSE;
 		rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 		rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -170,7 +177,7 @@ namespace Ethane {
 		dynamicState.dynamicStateCount = 3;
 		dynamicState.pDynamicStates = dynamicStates;
 
-		VkDevice device = VulkanContext::GetDevice()->GetVulkanDevice();
+		VkDevice device = m_Device->GetVulkanDevice();
 
 		// descriptor set layouts
 		auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
@@ -199,7 +206,7 @@ namespace Ethane {
 		pipelineInfo.pDynamicState = &dynamicState; // Optional
 		pipelineInfo.layout = m_PipelineLayout;
 
-		Ref<VulkanRenderPass> renderPass = std::dynamic_pointer_cast<VulkanRenderPass>(m_Specification.RenderPass);
+		const VulkanRenderPass* renderPass = dynamic_cast<const VulkanRenderPass*>(m_Specification.RenderPass);
 		pipelineInfo.renderPass = renderPass->GetHandle();
 		pipelineInfo.subpass = 0;
 
@@ -211,8 +218,8 @@ namespace Ethane {
 		}
 	}
 
-	void VulkanPipeline::Bind(Ref<VulkanCommandBuffer> cmdBuffer, VkPipelineBindPoint bindPoint)
+	void VulkanPipeline::Bind(VkCommandBuffer cmdBuffer, VkPipelineBindPoint bindPoint)
 	{
-		vkCmdBindPipeline(cmdBuffer->GetHandle(), bindPoint, m_GraphicsPipeline);
+		vkCmdBindPipeline(cmdBuffer, bindPoint, m_GraphicsPipeline);
 	}
 }
