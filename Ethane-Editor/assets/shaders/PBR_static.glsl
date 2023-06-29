@@ -1,23 +1,20 @@
 #type vertex
 #version 450 core
 
-layout(std140, set = 0, binding = 0) uniform UniformBufferObject{
+layout(std140, set = 0, binding = 1) uniform UniformBufferObject{
 	mat4 viewproj;
-	vec4 ambient_color;
-	vec3 view_position;
 } u_UBO;
-
-layout(push_constant) uniform TransformUniform
-{
-	mat4 transform;
-} u_TransformUniform;
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
 layout(location = 2) in vec3 a_Tangent;
 layout(location = 3) in vec3 a_Binormal;
 layout(location = 4) in vec2 a_TexCoord;
-// layout(location = 5) in int a_EntityID;
+
+layout(push_constant) uniform TransformUniform
+{
+	mat4 transform;
+} u_TransformUniform;
 
 struct VertexOutput
 {
@@ -32,7 +29,6 @@ struct VertexOutput
 };
 
 layout(location = 0) out VertexOutput Output;
-// layout(location = 6) out flat int v_EntityID;
 
 void main()
 {
@@ -44,12 +40,9 @@ void main()
 	Output.Binormal = a_Binormal;
 	Output.AmbientColor = u_UBO.ambient_color;
 	Output.ViewPosition = u_UBO.view_position;
-	// v_EntityID = a_EntityID;
 
 	gl_Position = u_UBO.viewproj * u_TransformUniform.transform * vec4(a_Position, 1.0);
 }
-
-
 
 
 #type fragment
@@ -60,9 +53,9 @@ layout(set = 1, binding = 0) uniform LocalUBO {
 	float shininess;
 } u_LocalUBO;
 
-layout(set = 1, binding = 1) uniform sampler2D u_DiffuseSampler;
-layout(set = 1, binding = 2) uniform sampler2D u_SpecularSampler;
-layout(set = 1, binding = 3) uniform sampler2D u_NormalSampler;
+// layout(set = 1, binding = 1) uniform sampler2D u_DiffuseSampler;
+// layout(set = 1, binding = 2) uniform sampler2D u_SpecularSampler;
+// layout(set = 1, binding = 3) uniform sampler2D u_NormalSampler;
 
 struct VertexOutput
 {

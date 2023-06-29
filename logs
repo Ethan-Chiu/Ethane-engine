@@ -63,3 +63,7 @@ dryrunTargets: return code = 1, elapsed time = 0.028
 parseTargets: return code = 0, elapsed time = 0.001
 Configure succeeded.
 Configure elapsed time: 0.843
+Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\EXAMPLES\IMGUI_IMPL_VULKAN_WITH_TEXTURES.CPP was not found. CppTools will set a default configuration.
+Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\IMGUI_INTERNAL.H was not found. CppTools will set a default configuration.
+Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\IMGUI.CPP was not found. CppTools will set a default configuration.
+Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\IMGUI.H was not found. CppTools will set a default configuration.

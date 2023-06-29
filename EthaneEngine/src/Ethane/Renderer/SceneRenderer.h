@@ -95,6 +95,7 @@ namespace Ethane {
         UBO& GetGlobalUBO() { return ubo; }
         
     private:
+		TargetImage* m_GeoColor = nullptr;
         Ref<Image2D> m_GeoDepth = nullptr;
         Scope<RenderTarget> m_GeoTarget = nullptr;
 		Ref<Pipeline> m_GeometryPipeline;

@@ -86,31 +86,14 @@ namespace Ethane {
         if (colorAttachmentFormats.size())
         {
             {
+                // TODO: configure
                 VkSubpassDependency& dependency = subpassDependencies.emplace_back();
-                dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // TODO: i == 0 ? : (i - 1);
-                dependency.dstSubpass = 0; // i
-                dependency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                dependency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;  // VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-                // depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-                // TODO: test
+                dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
                 dependency.dstSubpass = 0;
                 dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
                 dependency.srcAccessMask = 0;
                 dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
                 dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            }
-            {
-                VkSubpassDependency& dependency = subpassDependencies.emplace_back();
-                dependency.srcSubpass = 0;
-                dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-                dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                dependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
             }
         }
 
