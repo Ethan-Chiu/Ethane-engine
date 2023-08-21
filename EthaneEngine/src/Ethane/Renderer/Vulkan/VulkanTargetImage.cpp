@@ -142,7 +142,7 @@ namespace Ethane {
     void VulkanTargetImage::SwapchainUpdate(ImageSpecification specification, const std::vector<ImageUtils::VulkanImageInfo>& infos)
     {
         m_Specification = specification;
-        m_Infos = std::move(infos);
+        m_Infos = infos;
     }
 
     VkDescriptorImageInfo VulkanTargetImage::GetDescriptorImageInfo(uint32_t idx) const

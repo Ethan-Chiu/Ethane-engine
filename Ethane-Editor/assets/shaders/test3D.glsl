@@ -3,6 +3,8 @@
 
 layout(binding = 1) uniform UniformBufferObject{
 	mat4 viewproj;
+	vec4 ambient_color;
+	vec3 view_position;
 } ubo;
 
 layout(location = 0) in vec3 a_Position;
@@ -29,7 +31,6 @@ layout(location = 0) out vec2 v_TexCoord;
 void main() {
 	// gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
 	gl_Position = ubo.viewproj * vec4(a_Position, 1.0);
-	// v_Color = a_Color;
 	v_TexCoord = a_TexCoord;
 }
 
@@ -39,13 +40,12 @@ void main() {
 
 layout(binding = 2) uniform sampler2D u_Texture;
 
-// layout(location = 0) in vec3 v_Color;
 layout(location = 0) in vec2 v_TexCoord;
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
-	// outColor = vec4(1.0, 0.0, 0.0, 1.0);
+	outColor = vec4(1.0, 0.0, 0.0, 1.0);
 	// outColor = vec4(v_TexCoord, 0.0, 1.0);
-	outColor = texture(u_Texture, v_TexCoord);
+	// outColor = texture(u_Texture, v_TexCoord);
 }

@@ -29,6 +29,9 @@ namespace Ethane {
         bool m_NeedResize = false;
         
         EditorCamera m_EditorCamera;
+
+        Ref<Mesh> m_Mesh;
+        Ref<Material> m_Mat;
 	};
 
 }

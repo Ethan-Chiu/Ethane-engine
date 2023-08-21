@@ -28,6 +28,12 @@ namespace Ethane {
         
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
         m_EditorCamera.SetViewportSize(Renderer::GetRendererConfig().DefaultWindowWidth, Renderer::GetRendererConfig().DefaultWindowHeight);
+
+        auto newEntity = m_ActiveScene->CreateEntity("Cube");
+        m_Mesh = AssetManager::GetAssetMesh("resources/meshes/default/Cube.fbx");
+        m_Mesh->Upload();
+        m_Mat = Material::Create(ShaderSystem::Get("test3D").get());
+        newEntity.AddComponent<MeshComponent>(m_Mesh, m_Mat);
 	}
 
 	void EditorLayer::OnDetach()
@@ -42,8 +48,6 @@ namespace Ethane {
         }
         
         m_EditorCamera.OnUpdate(ts);
-        
-        auto& ubo = m_ViewportRenderer->GetGlobalUBO();
         
         m_ActiveScene->OnUpdateEditor(m_ViewportRenderer, ts, m_EditorCamera);
 	}
@@ -68,6 +72,7 @@ namespace Ethane {
 
     bool EditorLayer::OnResize(WindowResizeEvent& e)
     {
+        ETH_CORE_TRACE("editor layer {0} {1}", e.GetWidth(), e.GetHeight());
         m_ViewportRenderer->SetViewportSize(e.GetWidth(), e.GetHeight());
         m_EditorCamera.SetViewportSize(e.GetWidth(), e.GetHeight());
         m_ViewportWidth = e.GetWidth();

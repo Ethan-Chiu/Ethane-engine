@@ -61,12 +61,11 @@ namespace Ethane {
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		ETH_CORE_TRACE("scene renderer {0} {1}", width, height);
 		if (m_ViewportWidth != width || m_ViewportHeight != height)
 		{
 			m_ViewportWidth = width;
 			m_ViewportHeight = height;
-			m_InvViewportWidth = 1.f / (float)width;
-			m_InvViewportHeight = 1.f / (float)height;
 			m_NeedResize = true;
 		}
 	}
@@ -103,16 +102,14 @@ namespace Ethane {
 		globalData.AmbientColor = glm::vec4(0.8, 0.8, 0.8, 1);
 		globalData.ViewPosition = cameraPosition;
 
-        ubo.camPos = sceneCamera.GetPosition();
-        
-        //Renderer::SetGlobalUniformBuffer(0, (void*)&(ubo), sizeof(UBO));
+        Renderer::SetGlobalUniformBuffer(1, (void*)&globalData, sizeof(UBGlobal));
         //Renderer::SetGlobalUniformBuffer(1, (void*)&(cameraData.ViewProjection), sizeof(glm::mat4));
 	}
 
 	void SceneRenderer::SubmitMesh(Mesh* mesh, Material* material, const glm::mat4& transform)
 	{
 		// TODO: Culling, sorting, etc.
-//		m_DrawList.push_back({ mesh, transform, material});
+		m_DrawList.push_back({ mesh, transform, material});
 	}
 
 	void SceneRenderer::SubmitSelectedMesh(Mesh* mesh, const glm::mat4& transform) //, Ref<Material> material

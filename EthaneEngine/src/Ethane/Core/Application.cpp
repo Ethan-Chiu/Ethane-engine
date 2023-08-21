@@ -167,6 +167,8 @@ namespace Ethane
 	{
 		ETH_PROFILE_FUNCTION();
 
+		ETH_CORE_TRACE("{0} {1}", e.GetWidth(), e.GetHeight());
+
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			ETH_CORE_INFO("App minimized");

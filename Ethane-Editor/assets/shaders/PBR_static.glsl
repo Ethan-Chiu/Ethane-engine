@@ -3,6 +3,8 @@
 
 layout(std140, set = 0, binding = 1) uniform UniformBufferObject{
 	mat4 viewproj;
+	vec4 ambient_color;
+	vec3 view_position;
 } u_UBO;
 
 layout(location = 0) in vec3 a_Position;
@@ -70,7 +72,6 @@ struct VertexOutput
 };
 
 layout(location = 0) in VertexOutput Input;
-// layout(location = 6) in flat int v_EntityID;
 
 layout(location = 0) out vec4 OutColor;
 

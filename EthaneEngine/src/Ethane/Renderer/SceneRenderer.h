@@ -56,7 +56,6 @@ namespace Ethane {
 	private:
 		SceneRendererOptions m_Options;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
-		float m_InvViewportWidth = 0.f, m_InvViewportHeight = 0.f;
 		bool m_NeedResize = false;
 
 		Ref<Scene> m_Scene;
@@ -82,17 +81,6 @@ namespace Ethane {
 			glm::mat4 Projection;
 			glm::mat4 View;
 		} CameraDataUB;
-
-        struct UBO
-        {
-            alignas(4) float ratio;
-            alignas(4) uint32_t currentSample;
-            alignas(4) uint32_t lineNum;
-            alignas(4) float time;
-            glm::vec3 camPos;
-        } ubo;
-        
-        UBO& GetGlobalUBO() { return ubo; }
         
     private:
 		TargetImage* m_GeoColor = nullptr;
