@@ -24,6 +24,7 @@ namespace Ethane {
 		aiProcess_GenNormals |              // Make sure we have legit normals
 		aiProcess_GenUVCoords |             // Convert UVs if required 
 		aiProcess_OptimizeMeshes |          // Batch draws where possible
+		aiProcess_FlipWindingOrder |
 		aiProcess_JoinIdenticalVertices |
 		aiProcess_ValidateDataStructure;    // Validation
 

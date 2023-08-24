@@ -57,6 +57,43 @@ namespace Ethane {
 			m_GeometryPipeline = Pipeline::Create(pipelineSpecification);
 		}
 
+		// Defered
+		{
+			m_GeoColor = Renderer::GetSwapchainTarget();
+			imageSpec.DebugName = "Deferred";
+			imageSpec.Format = ImageFormat::DEPTH32F;
+			m_GeoDepth = Image2D::Create(imageSpec);
+
+			RenderTargetSpecification deferTargetSpec;
+			deferTargetSpec.Attachments = { m_GeoColor, m_GeoDepth.get() };
+			deferTargetSpec.IsTargetImage = true;
+			deferTargetSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+			deferTargetSpec.DebugName = "deferred";
+			deferTargetSpec.Width = rendererConfig.DefaultWindowWidth;
+			deferTargetSpec.Height = rendererConfig.DefaultWindowHeight;
+			deferTargetSpec.SwapChainTarget = true;
+			m_DeferredTarget = RenderTarget::Create(deferTargetSpec);
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = {};
+			ShaderSystem::Load("./assets/shaders/deferred.glsl");
+			auto shader = ShaderSystem::Get("deferred");
+			pipelineSpecification.CullMode = CullMode::BACK;
+			pipelineSpecification.Shader = shader;
+			pipelineSpecification.RenderPass = m_DeferredTarget->GetRenderPass();
+			m_DeferredPipeline = Pipeline::Create(pipelineSpecification);
+
+			m_DeferredMat = Material::Create(shader.get(), "deferred");
+			// create one sampler instead of 3
+			m_TexPosition = Texture2D::Create(m_GBuffer.m_ImagePosition.get());
+			m_TexNormal = Texture2D::Create(m_GBuffer.m_ImageNormal.get());
+			m_TexAlbedo = Texture2D::Create(m_GBuffer.m_ImageAlbedo.get());
+
+			m_DeferredMat->SetImage("samplerPosition", m_TexPosition.get());
+			m_DeferredMat->SetImage("samplerNormal", m_TexNormal.get());
+			m_DeferredMat->SetImage("samplerAlbedo", m_TexAlbedo.get());
+		}
+
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -78,7 +115,7 @@ namespace Ethane {
 		{
 			m_NeedResize = false;
 		
-            m_GeoTarget->Resize(m_ViewportWidth, m_ViewportHeight);
+			m_DeferredTarget->Resize(m_ViewportWidth, m_ViewportHeight);
             
             m_GeoColor = Renderer::GetSwapchainTarget();
 		}
@@ -129,26 +166,27 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
         
-		Renderer::BeginRenderTarget(m_GeoTarget.get());
+		Renderer::BeginRenderTarget(m_GBuffer.GetOffscreenTarget());
 //
 //		// Render entities
+		auto pipeline = m_GBuffer.GetOffscreenPipeline();
 		for (auto& dc : m_DrawList)
 		{
-			Renderer::DrawMesh(m_GeometryPipeline, dc.MeshPtr, dc.MaterialPtr, dc.Transform);
+			Renderer::DrawMesh(pipeline, dc.MeshPtr, dc.MaterialPtr, dc.Transform);
 		}
         
-
         Renderer::EndRenderTarget();
 	}
 
 	void SceneRenderer::Flush()
 	{
-//		VulkanRendererAPI::BeginRenderCommandBuffer(m_CommandBuffer);
-
 		GeometryPass();
 
-//		VulkanRendererAPI::EndRenderCommandBuffer();
-//		m_CommandBuffer->Submit();
+		Renderer::BeginRenderTarget(m_DeferredTarget.get());
+
+		Renderer::DrawFullscreenQuadNoBuffer(m_DeferredPipeline, m_DeferredMat);
+
+		Renderer::EndRenderTarget();
 
 		m_DrawList.clear();
 	}

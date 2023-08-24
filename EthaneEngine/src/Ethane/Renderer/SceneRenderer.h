@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "Ethane/Scene/Scene.h"
 #include "RenderTarget.h"
+#include "GBuffer.h"
 
 
 namespace Ethane {
@@ -87,7 +88,16 @@ namespace Ethane {
         Ref<Image2D> m_GeoDepth = nullptr;
         Scope<RenderTarget> m_GeoTarget = nullptr;
 		Ref<Pipeline> m_GeometryPipeline;
-        
+
+		GBuffer m_GBuffer;
+
+		Scope<RenderTarget> m_DeferredTarget = nullptr;
+		Ref<Pipeline> m_DeferredPipeline;
+		Ref<Material> m_DeferredMat = nullptr;
+		Ref<Texture2D> m_TexPosition;
+		Ref<Texture2D> m_TexNormal;
+		Ref<Texture2D> m_TexAlbedo;
+
 		struct DrawCommand
 		{
 			Mesh* MeshPtr = nullptr;

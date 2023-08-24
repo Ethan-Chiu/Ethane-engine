@@ -39,6 +39,7 @@ namespace Ethane {
         
         static void DrawGeometry(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexbuffer, Ref<IndexBuffer> indexbuffer, Ref<Material> material);
         static void DrawFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material);
+        static void DrawFullscreenQuadNoBuffer(Ref<Pipeline> pipeline, Ref<Material> material);
         static void DrawMesh(Ref<Pipeline> pipeline, Mesh* mesh, Material* material, const glm::mat4& transform);
         
         static void TransitionLayout(TargetImage* targetImage, ImageLayout oldLayout, ImageLayout newLayout, AccessMask srcAccessMask, PipelineStage srcStage, AccessMask dstAccessMask, PipelineStage dstStage, Ref<RenderCommandBuffer> renderCmdBuffer = nullptr);

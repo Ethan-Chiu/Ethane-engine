@@ -72,7 +72,8 @@ namespace Ethane {
 //
         void DrawGeometry(Ref<Pipeline> pipeline, Ref<VertexBuffer> vertexbuffer, Ref<IndexBuffer> indexbuffer, Ref<Material> material) override;
         
-        void DrawFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material) override;
+		void DrawFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material) override;
+		void DrawFullscreenQuadNoBuffer(Ref<Pipeline> pipeline, Ref<Material> material) override;
         
 		void DrawMesh(Ref<Pipeline> pipeline, Mesh* mesh, Material* material, const glm::mat4& transform) override;
         

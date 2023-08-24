@@ -20,6 +20,7 @@ namespace Ethane {
         uint32_t attachmentIndex = 0;
         bool hasDepth = (depthAttachmentFormat != ImageFormat::None);
         
+        m_AttachmentCount = colorAttachmentFormats.size();
         for (auto attachmentFormat : colorAttachmentFormats)
         {
             VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();

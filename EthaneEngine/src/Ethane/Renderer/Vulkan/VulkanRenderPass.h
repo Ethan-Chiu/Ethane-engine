@@ -19,9 +19,13 @@ namespace Ethane {
 		void End(VkCommandBuffer cmdBuffer);
 
 		VkRenderPass GetHandle() const { return m_RenderPass; }
+		uint8_t GetAttachmentCount() const { return m_AttachmentCount; }
+	
 	private:
         VkDevice m_Device;
 		VkRenderPass m_RenderPass;
+
+		uint8_t m_AttachmentCount = 0;
 	};
 
 }

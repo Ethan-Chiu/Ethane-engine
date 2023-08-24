@@ -10,11 +10,18 @@
 
 namespace Ethane {
 
+	enum class CullMode {
+		NONE,
+		FRONT,
+		BACK,
+	};
+
 	struct PipelineSpecification
 	{
 		Ref<Shader> Shader;
 		const RenderPass* RenderPass;
 		VertexBufferLayout Layout;
+		CullMode CullMode = CullMode::BACK;
 	};
 
     struct ComputePipelineSpecification

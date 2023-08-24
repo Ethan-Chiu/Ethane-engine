@@ -361,6 +361,23 @@ namespace Ethane {
         DrawGeometry(pipeline, s_Data->QuadVertexBuffer, s_Data->QuadIndexBuffer, material);
     }
 
+    void VulkanRendererAPI::DrawFullscreenQuadNoBuffer(Ref<Pipeline> pipeline, Ref<Material> material)
+    {
+        Ref<VulkanMaterial> vulkanMaterial = std::dynamic_pointer_cast<VulkanMaterial>(material);
+
+        uint32_t frameIndex = VulkanContext::GetSwapchain()->GetCurrentFrameIndex();
+        VkCommandBuffer commandBuffer = VulkanContext::GetSwapchain()->GetCurrentCommandBuffer()->GetHandle();
+
+        Ref<VulkanPipeline> vulkanPipeline = std::dynamic_pointer_cast<VulkanPipeline>(pipeline);
+        VkPipelineLayout layout = vulkanPipeline->GetPipelineLayout();
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+
+        UpdateMaterialForRendering(vulkanMaterial.get());
+        CmdBindMaterial(commandBuffer, layout, vulkanMaterial.get(), frameIndex);
+
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    }
+
     void VulkanRendererAPI::TransitionLayout(TargetImage* targetImage, ImageLayout oldLayout, ImageLayout newLayout, AccessMask srcAccessMask, PipelineStage srcStage, AccessMask dstAccessMask, PipelineStage dstStage, Ref<RenderCommandBuffer> renderCmdBuffer)
     {
         uint32_t imageIndex = VulkanContext::GetSwapchain()->GetCurrentImageIndex();

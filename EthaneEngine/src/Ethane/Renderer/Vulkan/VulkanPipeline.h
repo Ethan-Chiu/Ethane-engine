@@ -26,6 +26,8 @@ namespace Ethane {
 		virtual const PipelineSpecification& GetSpecification() const override { return m_Specification; }
     private:
         void Create();
+		VkCullModeFlags VulkanCullMode(CullMode cullMode);
+
 	private:
 		PipelineSpecification m_Specification;
 

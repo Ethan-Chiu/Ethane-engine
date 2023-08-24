@@ -125,7 +125,7 @@ namespace Ethane {
 	{
 		auto device = VulkanContext::GetDevice()->GetVulkanDevice();
 		uint32_t frameIndex = VulkanContext::GetSwapchain()->GetCurrentFrameIndex();
-        uint32_t iamgeIndex = VulkanContext::GetSwapchain()->GetCurrentImageIndex();
+        uint32_t imageIndex = VulkanContext::GetSwapchain()->GetCurrentImageIndex();
 
 		std::vector<VkDescriptorImageInfo> arrayImageInfos;
 		std::vector<VkWriteDescriptorSet> writeDescriptors{};
@@ -138,7 +138,7 @@ namespace Ethane {
             if (resource.CacheImageInfos.size() > 1)
             {
                 wds.dstArrayElement = 0;
-                wds.pImageInfo = &(resource.CacheImageInfos[iamgeIndex]);
+                wds.pImageInfo = &(resource.CacheImageInfos[imageIndex]);
             }
             else if (resource.CacheBufferInfo.buffer != nullptr)
             {

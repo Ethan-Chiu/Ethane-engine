@@ -58,6 +58,8 @@ namespace Ethane {
 		// Shader Stage
 		Ref<VulkanShader> vulkanShader = std::dynamic_pointer_cast<VulkanShader>(m_Specification.Shader);
 
+		const VulkanRenderPass* renderPass = dynamic_cast<const VulkanRenderPass*>(m_Specification.RenderPass);
+
 		const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
 
 		// Fixed Function 
@@ -114,8 +116,8 @@ namespace Ethane {
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // TODO:
+		rasterizer.cullMode = VulkanCullMode(m_Specification.CullMode);
+		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 		rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 		rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -145,21 +147,27 @@ namespace Ethane {
 		depthStencil.back = {}; // Optional
 
 		// color blending
-		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		colorBlendAttachment.blendEnable = VK_FALSE;
-		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments(renderPass->GetAttachmentCount());
+		for (uint32_t i = 0; i < colorBlendAttachments.size(); i++)
+		{
+			VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			colorBlendAttachment.blendEnable = VK_FALSE;
+			colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+			colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+			colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
+			colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+			colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+			colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+
+			colorBlendAttachments[i] = colorBlendAttachment;
+		}
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
 		colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
-		colorBlending.attachmentCount = 1;
-		colorBlending.pAttachments = &colorBlendAttachment;
+		colorBlending.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size());
+		colorBlending.pAttachments = colorBlendAttachments.data();
 		colorBlending.blendConstants[0] = 0.0f; // Optional
 		colorBlending.blendConstants[1] = 0.0f; // Optional
 		colorBlending.blendConstants[2] = 0.0f; // Optional
@@ -206,7 +214,6 @@ namespace Ethane {
 		pipelineInfo.pDynamicState = &dynamicState; // Optional
 		pipelineInfo.layout = m_PipelineLayout;
 
-		const VulkanRenderPass* renderPass = dynamic_cast<const VulkanRenderPass*>(m_Specification.RenderPass);
 		pipelineInfo.renderPass = renderPass->GetHandle();
 		pipelineInfo.subpass = 0;
 
@@ -221,5 +228,16 @@ namespace Ethane {
 	void VulkanPipeline::Bind(VkCommandBuffer cmdBuffer, VkPipelineBindPoint bindPoint)
 	{
 		vkCmdBindPipeline(cmdBuffer, bindPoint, m_GraphicsPipeline);
+	}
+
+	VkCullModeFlags VulkanPipeline::VulkanCullMode(CullMode cullMode)
+	{
+		switch (cullMode)
+		{
+		case CullMode::NONE: return VK_CULL_MODE_NONE;
+		case CullMode::FRONT: return VK_CULL_MODE_FRONT_BIT;
+		case CullMode::BACK: return VK_CULL_MODE_BACK_BIT;
+		}
+		return VK_CULL_MODE_NONE;
 	}
 }
