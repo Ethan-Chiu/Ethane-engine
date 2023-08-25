@@ -119,6 +119,13 @@ namespace Ethane {
 			}
 		}
 
+		auto lightView = m_Registry.view<DirectionalLightComponent>();
+		for (auto directionalLight : lightView)
+		{
+			auto& dirLight = lightView.get<DirectionalLightComponent>(directionalLight);
+			renderer->SubmitDirLight({dirLight.Color, dirLight.Direction});
+		}
+
 		renderer->EndScene();
 	}
 

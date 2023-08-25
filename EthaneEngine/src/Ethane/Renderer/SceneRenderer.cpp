@@ -78,7 +78,7 @@ namespace Ethane {
 			pipelineSpecification.Layout = {};
 			ShaderSystem::Load("./assets/shaders/deferred.glsl");
 			auto shader = ShaderSystem::Get("deferred");
-			pipelineSpecification.CullMode = CullMode::BACK;
+			pipelineSpecification.CullMode = CullMode::BACK; // https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
 			pipelineSpecification.Shader = shader;
 			pipelineSpecification.RenderPass = m_DeferredTarget->GetRenderPass();
 			m_DeferredPipeline = Pipeline::Create(pipelineSpecification);
@@ -140,13 +140,17 @@ namespace Ethane {
 		globalData.ViewPosition = cameraPosition;
 
         Renderer::SetGlobalUniformBuffer(1, (void*)&globalData, sizeof(UBGlobal));
-        //Renderer::SetGlobalUniformBuffer(1, (void*)&(cameraData.ViewProjection), sizeof(glm::mat4));
 	}
 
 	void SceneRenderer::SubmitMesh(Mesh* mesh, Material* material, const glm::mat4& transform)
 	{
 		// TODO: Culling, sorting, etc.
 		m_DrawList.push_back({ mesh, transform, material});
+	}
+
+	void SceneRenderer::SubmitDirLight(DirLightData dirLight)
+	{
+		m_DirLight = dirLight;
 	}
 
 	void SceneRenderer::SubmitSelectedMesh(Mesh* mesh, const glm::mat4& transform) //, Ref<Material> material

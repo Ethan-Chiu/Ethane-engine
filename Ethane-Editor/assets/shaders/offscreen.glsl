@@ -7,11 +7,11 @@ layout(location = 2) in vec3 a_Tangent;
 layout(location = 3) in vec3 a_Binormal;
 layout(location = 4) in vec2 a_TexCoord;
 
-layout(std140, set = 0, binding = 1) uniform UniformBufferObject{
+layout(std140, set = 0, binding = 1) uniform GlobalUBO{
 	mat4 viewproj;
-	vec4 ambient_color;
-	vec3 view_position;
-} u_UBO;
+	vec4 ambientColor;
+	vec3 viewPosition;
+} u_GlobalUBO;
 
 layout(push_constant) uniform TransformUniform
 {
@@ -26,7 +26,7 @@ layout (location = 4) out vec2 outUV;
 
 void main() 
 {
-	gl_Position = u_UBO.viewproj * vec4(a_Position, 1.0);
+	gl_Position = u_GlobalUBO.viewproj * vec4(a_Position, 1.0);
 	
 	outUV = a_TexCoord;
 

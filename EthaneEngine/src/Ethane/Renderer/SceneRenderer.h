@@ -29,6 +29,33 @@ namespace Ethane {
 	class SceneRenderer
 	{
 	public:
+		struct UBGlobal
+		{
+			glm::mat4 ViewProjection;
+			glm::vec4 AmbientColor;
+			glm::vec3 ViewPosition;
+		} m_GlobalUB;
+
+		struct UBCamera
+		{
+			glm::mat4 ViewProjection;
+			glm::mat4 InverseViewProjection;
+			glm::mat4 Projection;
+			glm::mat4 View;
+		} CameraDataUB;
+
+		struct DirLightData
+		{
+			glm::vec4 Color;
+			glm::vec3 Direction;
+		};
+
+		struct UBLight
+		{
+			DirLightData DirectionalLight;
+		} m_LightUB;
+
+	public:
 		SceneRenderer(Ref<Scene> scene);
 
 		void Init();
@@ -42,6 +69,8 @@ namespace Ethane {
 		void SubmitMesh(Mesh* mesh, Material* material, const glm::mat4& transform = glm::mat4(1.0f));
 		void SubmitSelectedMesh(Mesh* mesh, const glm::mat4& transform = glm::mat4(1.0f)); //, Ref<Material> Material = nullptr
         
+		void SubmitDirLight(DirLightData dirLight);
+
 		// Getter
 		SceneRendererOptions& GetOptions() { return m_Options; }
 
@@ -52,37 +81,13 @@ namespace Ethane {
 		
 		void CompositePass();
 
-		
-
 	private:
 		SceneRendererOptions m_Options;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		bool m_NeedResize = false;
 
 		Ref<Scene> m_Scene;
-    public:
-		struct UBGlobal
-		{
-			glm::mat4 ViewProjection;
-			glm::vec4 AmbientColor;
-			glm::vec3 ViewPosition;
-		} m_GlobalUB;
 
-		//TODO: temporary 
-		struct UBLocal
-		{
-			glm::vec4 DiffuseColor;
-			float Shininess;
-		};
-
-		struct UBCamera
-		{
-			glm::mat4 ViewProjection;
-			glm::mat4 InverseViewProjection;
-			glm::mat4 Projection;
-			glm::mat4 View;
-		} CameraDataUB;
-        
     private:
 		TargetImage* m_GeoColor = nullptr;
         Ref<Image2D> m_GeoDepth = nullptr;
@@ -106,6 +111,8 @@ namespace Ethane {
 		};
 		std::vector<DrawCommand> m_DrawList;
 		std::vector<DrawCommand> m_SelectedMeshDrawList;
+
+		DirLightData m_DirLight;
 	};
 
 }

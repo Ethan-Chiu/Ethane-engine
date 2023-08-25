@@ -16,34 +16,52 @@ void main()
 #type fragment
 #version 450 core
 
-layout (binding = 1) uniform sampler2D samplerPosition;
-layout (binding = 2) uniform sampler2D samplerNormal;
-layout (binding = 3) uniform sampler2D samplerAlbedo;
+struct DirectionalLight {
+    vec4 color;
+    vec3 direction;
+};
+
+layout(std140, set = 0, binding = 1) uniform GlobalUBO{
+	mat4 viewproj;
+	vec4 ambientColor;
+	vec3 viewPosition;
+} u_GlobalUBO;
+
+layout (set = 1, binding = 1) uniform sampler2D samplerPosition;
+layout (set = 1, binding = 2) uniform sampler2D samplerNormal;
+layout (set = 1, binding = 3) uniform sampler2D samplerAlbedo;
+
+// layout(set = 1, binding = 4) uniform LightUBO {
+//    DirectionalLight dirLight;
+    // point_light p_lights[MAX_POINT_LIGHTS];
+    // int num_p_lights;
+// } u_LightUBO;
 
 layout (location = 0) in vec2 inUV;
 
 layout (location = 0) out vec4 outFragcolor;
 
-struct Light {
-	vec4 position;
-	vec3 color;
-	float radius;
+
+
+DirectionalLight test_dir_light = {
+	vec4(0.8, 0.8, 0.8, 1.0),
+	vec3(-0.57735, -0.57735, -0.57735)
 };
+
+vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal, vec4 diffuse, vec3 view_direction);
 
 void main() 
 {
 	// Get G-Buffer values
-	vec3 fragPos = texture(samplerPosition, inUV).rgb;
+	vec3 frag_pos = texture(samplerPosition, inUV).rgb;
 	vec3 normal = texture(samplerNormal, inUV).rgb;
 	vec4 albedo = texture(samplerAlbedo, inUV);
-	
-	// Render-target composition
 
 	#define lightCount 6
 	#define ambient 0.5
 	
 	// Ambient part
-	vec3 fragcolor  = albedo.rgb * ambient;
+	vec4 frag_color = vec4(albedo.rgb * ambient, 1.0);
 	
 	// for(int i = 0; i < lightCount; ++i)
 	// {
@@ -79,5 +97,28 @@ void main()
 	// 	}	
 	// }    	
    
-	outFragcolor = vec4(fragcolor, 1.0);	
+	vec3 view_direction = normalize(u_GlobalUBO.viewPosition - frag_pos);
+	frag_color = calculate_directional_light(test_dir_light, normal, albedo, view_direction);
+
+	outFragcolor = frag_color;	
+}
+
+#define SHININESS 0.3
+#define DIFFUSE_COLOR vec4(0.8, 0.8, 0.8, 1.0)
+
+vec4 calculate_directional_light(DirectionalLight dir_light, vec3 normal, vec4 diffuse, vec3 view_direction)
+{
+	float diffuse_dir_factor = max(dot(normal, -dir_light.direction), 0.0);
+
+	vec3 half_direction = normalize(view_direction - dir_light.direction);
+	float specular_dir_factor = pow(max(dot(half_direction, normal), 0.0), 0.3);
+	
+	vec4 ambient_color = vec4(vec3(u_GlobalUBO.ambientColor * DIFFUSE_COLOR), diffuse.a);
+	vec4 diffuse_color = vec4(vec3(dir_light.color * diffuse_dir_factor), diffuse.a);
+	vec4 specular_color = vec4(vec3(dir_light.color * specular_dir_factor), diffuse.a);
+
+	ambient_color *= diffuse;
+	diffuse_color *= diffuse;
+
+	return (ambient_color + diffuse_color);
 }
