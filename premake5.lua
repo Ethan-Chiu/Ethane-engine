@@ -72,8 +72,8 @@ project "EthaneEngine"
         "%{IncludeDir.stb_image}",
         "%{IncludeDir.entt}",
         "%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.assimp}",
-		"%{IncludeDir.yaml_cpp}",
+        "%{IncludeDir.assimp}",
+        "%{IncludeDir.yaml_cpp}",
         "%{IncludeDir.imgui}",
     }
 

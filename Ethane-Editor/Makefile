@@ -18,67 +18,57 @@ endif
 # Configurations
 # #############################################
 
-RESCOMP = windres
-INCLUDES += -isystem ../EthaneEngine/src -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem C:/VulkanSDK/1.3.250.0/Include -isystem ../EthaneEngine/vendor/assimp/include -isystem ../EthaneEngine/vendor/yaml-cpp/include -isystem ../EthaneEngine/vendor/imgui
+ifeq ($(origin CC), default)
+  CC = clang
+endif
+ifeq ($(origin CXX), default)
+  CXX = clang++
+endif
+ifeq ($(origin AR), default)
+  AR = ar
+endif
+INCLUDES += -isystem ../EthaneEngine/src -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem ../../../../VulkanSDK/1.3.204.1/macOS/Include -isystem ../EthaneEngine/vendor/assimp/include -isystem ../EthaneEngine/vendor/yaml-cpp/include -isystem ../EthaneEngine/vendor/imgui
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
+ALL_LDFLAGS += $(LDFLAGS) -Wl,-rpath,'@loader_path/../EthaneEngine' -m64
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef
 define PRELINKCMDS
 endef
+define POSTBUILDCMDS
+endef
 
 ifeq ($(config),debug)
-TARGETDIR = ../bin/Debug-windows-x86_64/Ethane-Editor
-TARGET = $(TARGETDIR)/Ethane-Editor.exe
-OBJDIR = ../bin-int/Debug-windows-x86_64/Ethane-Editor
+TARGETDIR = ../bin/Debug-macosx-x86_64/Ethane-Editor
+TARGET = $(TARGETDIR)/Ethane-Editor
+OBJDIR = ../bin-int/Debug-macosx-x86_64/Ethane-Editor
 DEFINES += -DETH_DEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20
-LIBS += ../bin/Debug-windows-x86_64/EthaneEngine/EthaneEngine.lib
-LDDEPS += ../bin/Debug-windows-x86_64/EthaneEngine/EthaneEngine.lib
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
-define POSTBUILDCMDS
-	@echo Running postbuild commands
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll" "..\bin\Debug-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll" "..\bin\Debug-windows-x86_64\Ethane-Editor" > nul)
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Debug-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Debug-windows-x86_64\Ethane-Editor" > nul)
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Debug-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Debug-windows-x86_64\Ethane-Editor" > nul)
-endef
+LIBS += ../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
+LDDEPS += ../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 
 else ifeq ($(config),release)
-TARGETDIR = ../bin/Release-windows-x86_64/Ethane-Editor
-TARGET = $(TARGETDIR)/Ethane-Editor.exe
-OBJDIR = ../bin-int/Release-windows-x86_64/Ethane-Editor
+TARGETDIR = ../bin/Release-macosx-x86_64/Ethane-Editor
+TARGET = $(TARGETDIR)/Ethane-Editor
+OBJDIR = ../bin-int/Release-macosx-x86_64/Ethane-Editor
 DEFINES += -DETH_RELEASE
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20
-LIBS += ../bin/Release-windows-x86_64/EthaneEngine/EthaneEngine.lib
-LDDEPS += ../bin/Release-windows-x86_64/EthaneEngine/EthaneEngine.lib
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
-define POSTBUILDCMDS
-	@echo Running postbuild commands
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll" "..\bin\Release-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll" "..\bin\Release-windows-x86_64\Ethane-Editor" > nul)
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Release-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Release-windows-x86_64\Ethane-Editor" > nul)
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Release-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Release-windows-x86_64\Ethane-Editor" > nul)
-endef
+LIBS += ../bin/Release-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
+LDDEPS += ../bin/Release-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 
 else ifeq ($(config),dist)
-TARGETDIR = ../bin/Dist-windows-x86_64/Ethane-Editor
-TARGET = $(TARGETDIR)/Ethane-Editor.exe
-OBJDIR = ../bin-int/Dist-windows-x86_64/Ethane-Editor
+TARGETDIR = ../bin/Dist-macosx-x86_64/Ethane-Editor
+TARGET = $(TARGETDIR)/Ethane-Editor
+OBJDIR = ../bin-int/Dist-macosx-x86_64/Ethane-Editor
 DEFINES += -DETH_DIST
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20
-LIBS += ../bin/Dist-windows-x86_64/EthaneEngine/EthaneEngine.lib
-LDDEPS += ../bin/Dist-windows-x86_64/EthaneEngine/EthaneEngine.lib
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
-define POSTBUILDCMDS
-	@echo Running postbuild commands
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll" "..\bin\Dist-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Debug\assimp-vc143-mtd.dll" "..\bin\Dist-windows-x86_64\Ethane-Editor" > nul)
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Dist-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Dist-windows-x86_64\Ethane-Editor" > nul)
-	IF EXIST "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll"\ (xcopy /Q /E /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Dist-windows-x86_64\Ethane-Editor" > nul) ELSE (xcopy /Q /Y /I "..\EthaneEngine\vendor\assimp\bin\Release\assimp-vc143-mt.dll" "..\bin\Dist-windows-x86_64\Ethane-Editor" > nul)
-endef
+LIBS += ../bin/Dist-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
+LDDEPS += ../bin/Dist-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 
 endif
 

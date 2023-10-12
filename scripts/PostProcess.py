@@ -21,8 +21,9 @@ def yaml_cpp_build():
     root_dir = os.getcwd()
     print("Build yaml cpp")
     os.chdir("EthaneEngine/vendor/yaml-cpp")
-    subprocess.run(["mkdir", "build"], shell=True)
-    os.chdir("build")
+    if not os.path.exists("./build"):
+        os.makedirs("./build")
+    os.chdir("./build")
     subprocess.run(["cmake", "-DCMAKE_BUILD_TYPE=Debug", ".."])
     subprocess.run(["cmake", "--build", ".", "--config", "Debug"])
     Utils.CheckMarkMsg("Build yaml cpp debug")

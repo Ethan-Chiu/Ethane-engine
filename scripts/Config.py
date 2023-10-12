@@ -38,6 +38,7 @@ class VulkanConfig:
     def __init__(self):
         system = platform.system()
         self.vulkan_sdk_version = "1.3.250.0"
+        self.vulkan_sdk_compatible_versions = ["1.3.204.1"]
         self.install_dir = "EthaneEngine/vendor/VulkanSDK"
         if system == SystemName.Windows.value:
             self.installer_url = f'https://sdk.lunarg.com/sdk/download/{self.vulkan_sdk_version}/windows/VulkanSDK-{self.vulkan_sdk_version}-Installer.exe'

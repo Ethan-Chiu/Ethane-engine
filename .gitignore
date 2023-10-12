@@ -6,6 +6,8 @@ bin-int/
 EthaneEngine/vendor/VulkanSDK
 Ethane-Editor/assets/cache
 scripts/__pycache__ 
+EthaneEngine/vendor/assimp
+EthaneEngine/vendor/yaml-cpp
 
 # Files
 *.user

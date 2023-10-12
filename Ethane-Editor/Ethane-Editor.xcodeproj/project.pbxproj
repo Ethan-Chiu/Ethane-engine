@@ -7,12 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		138D2292C6832C4417A588D2 /* ContentBrowserPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81CAE1BA75CA2B2CFAB53FFA /* ContentBrowserPanel.cpp */; };
 		1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */; };
+		6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 56DE898790A9403946048FC7 /* libEthaneEngine.dylib */; };
 		7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */; };
-		8C3F1F6E3F352920905785AE /* SceneHierarchyPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A26D630897048B5748516 /* SceneHierarchyPanel.cpp */; };
-		DAA2B9D7146D7089C9C8C017 /* EthaneEngine.lib in Frameworks */ = {isa = PBXBuildFile; fileRef = 06DB4DFFCB90A4717FFF4C3F /* EthaneEngine.lib */; };
-		F83A7072E931DE6455355EB2 /* MaterialPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C8A8A49A60F58A4C8F3C8ADA /* MaterialPanel.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,45 +17,39 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = B2CBAE1B4CEFA34DFD15845B /* ../EthaneEngine/EthaneEngine.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8A90333FB0B662F117BD597F;
-			remoteInfo = EthaneEngine.lib;
+			remoteGlobalIDString = C4F9A0D3F48B6FC5CF98AF13;
+			remoteInfo = libEthaneEngine.dylib;
 		};
 		CDA2F94D910EBAFFCFB25F8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B2CBAE1B4CEFA34DFD15845B /* ../EthaneEngine/EthaneEngine.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 96D3C67981BFEC6BC9A5B4B9;
-			remoteInfo = EthaneEngine.lib;
+			remoteGlobalIDString = 1E6AE68D403693BF7CEBBCCD;
+			remoteInfo = libEthaneEngine.dylib;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EthaneEditorApp.cpp; path = src/EthaneEditorApp.cpp; sourceTree = "<group>"; };
 		1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorLayer.cpp; path = src/EditorLayer.cpp; sourceTree = "<group>"; };
-		3719F0C27F8AD4F4C429A702 /* Ethane-Editor.exe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor.exe"; path = "Ethane-Editor.exe"; sourceTree = BUILT_PRODUCTS_DIR; };
-		3C8A26D630897048B5748516 /* SceneHierarchyPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SceneHierarchyPanel.cpp; path = src/Panels/SceneHierarchyPanel.cpp; sourceTree = "<group>"; };
-		575C40C469861D769D770704 /* MaterialPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MaterialPanel.h; path = src/AssetPanels/MaterialPanel.h; sourceTree = "<group>"; };
-		5F6C8520222CE5927F61C360 /* SceneHierarchyPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SceneHierarchyPanel.h; path = src/Panels/SceneHierarchyPanel.h; sourceTree = "<group>"; };
-		81CAE1BA75CA2B2CFAB53FFA /* ContentBrowserPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ContentBrowserPanel.cpp; path = src/Panels/ContentBrowserPanel.cpp; sourceTree = "<group>"; };
-		8FBDC284527E22F6AFB300C4 /* ContentBrowserPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ContentBrowserPanel.h; path = src/Panels/ContentBrowserPanel.h; sourceTree = "<group>"; };
+		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor"; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
 		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
-		B2CBAE1B4CEFA34DFD15845B /* EthaneEngine.lib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
-		C8A8A49A60F58A4C8F3C8ADA /* MaterialPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MaterialPanel.cpp; path = src/AssetPanels/MaterialPanel.cpp; sourceTree = "<group>"; };
+		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		24BDD5323BD070642BEC6B72 /* Frameworks */ = {
+		6928EBC26C99BDF4EE066202 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DAA2B9D7146D7089C9C8C017 /* EthaneEngine.lib in Frameworks */,
+				6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		21533A1E477969D0AE80605E /* Embed Libraries */ = {
+		2CDE34AECFCC5B605EF23AEE /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
@@ -71,23 +62,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXGroup section */
-		0D86DCEE33AD0CA09AB4032E /* AssetPanels */ = {
-			isa = PBXGroup;
-			children = (
-				C8A8A49A60F58A4C8F3C8ADA /* MaterialPanel.cpp */,
-				575C40C469861D769D770704 /* MaterialPanel.h */,
-			);
-			name = AssetPanels;
-			sourceTree = "<group>";
-		};
 		78BAB969B1757FDB410CB7A9 /* Ethane-Editor */ = {
 			isa = PBXGroup;
 			children = (
-				0D86DCEE33AD0CA09AB4032E /* AssetPanels */,
 				1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */,
 				989FA13CC0DA59EEA875E77C /* EditorLayer.h */,
 				17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */,
-				F8C6F20E9C127B40B6E3484E /* Panels */,
 				A6C936B49B3FADE6EA134CF4 /* Products */,
 				9D968EAA920D05DCE0E0A4EA /* Projects */,
 			);
@@ -97,7 +77,7 @@
 		7FE210EDDB23645FAE7DAF2D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				06DB4DFFCB90A4717FFF4C3F /* EthaneEngine.lib */,
+				56DE898790A9403946048FC7 /* libEthaneEngine.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,33 +93,22 @@
 		A6C936B49B3FADE6EA134CF4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3719F0C27F8AD4F4C429A702 /* Ethane-Editor.exe */,
+				514DCF5268606A84587C6592 /* Ethane-Editor */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F8C6F20E9C127B40B6E3484E /* Panels */ = {
-			isa = PBXGroup;
-			children = (
-				81CAE1BA75CA2B2CFAB53FFA /* ContentBrowserPanel.cpp */,
-				8FBDC284527E22F6AFB300C4 /* ContentBrowserPanel.h */,
-				3C8A26D630897048B5748516 /* SceneHierarchyPanel.cpp */,
-				5F6C8520222CE5927F61C360 /* SceneHierarchyPanel.h */,
-			);
-			name = Panels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7825B8686311DE5AAAF7A6A8 /* Ethane-Editor */ = {
+		F51004F8F5C301EA69A4D338 /* Ethane-Editor */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 12F91D912A0BB8C31A27B3D1 /* Build configuration list for PBXNativeTarget "Ethane-Editor" */;
+			buildConfigurationList = 576434215AD50653DC41AA61 /* Build configuration list for PBXNativeTarget "Ethane-Editor" */;
 			buildPhases = (
-				94A555D2ABB7F1049BD3EC12 /* Resources */,
-				FE526F2915650A5B05810569 /* Sources */,
-				24BDD5323BD070642BEC6B72 /* Frameworks */,
-				21533A1E477969D0AE80605E /* Embed Libraries */,
+				D9106C62DC813E945DEDE2A2 /* Resources */,
+				42BD85B9462E57EBC79AFBF9 /* Sources */,
+				6928EBC26C99BDF4EE066202 /* Frameworks */,
+				2CDE34AECFCC5B605EF23AEE /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -149,7 +118,7 @@
 			name = "Ethane-Editor";
 			productInstallPath = "$(HOME)/bin";
 			productName = "Ethane-Editor";
-			productReference = 3719F0C27F8AD4F4C429A702 /* Ethane-Editor.exe */;
+			productReference = 514DCF5268606A84587C6592 /* Ethane-Editor */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -170,23 +139,23 @@
 			);
 			projectRoot = "";
 			targets = (
-				7825B8686311DE5AAAF7A6A8 /* Ethane-Editor.exe */,
+				F51004F8F5C301EA69A4D338 /* Ethane-Editor */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		06DB4DFFCB90A4717FFF4C3F /* EthaneEngine.lib */ = {
+		56DE898790A9403946048FC7 /* libEthaneEngine.dylib */ = {
 			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = EthaneEngine.lib;
+			fileType = "compiled.mach-o.dylib";
+			path = libEthaneEngine.dylib;
 			remoteRef = CDA2F94D910EBAFFCFB25F8D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
-		94A555D2ABB7F1049BD3EC12 /* Resources */ = {
+		D9106C62DC813E945DEDE2A2 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -196,15 +165,12 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		FE526F2915650A5B05810569 /* Sources */ = {
+		42BD85B9462E57EBC79AFBF9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F83A7072E931DE6455355EB2 /* MaterialPanel.cpp in Sources */,
 				7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */,
 				1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */,
-				138D2292C6832C4417A588D2 /* ContentBrowserPanel.cpp in Sources */,
-				8C3F1F6E3F352920905785AE /* SceneHierarchyPanel.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,7 +179,7 @@
 /* Begin PBXTargetDependency section */
 		6D9A4DF6C8DBA1689C35EC36 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = EthaneEngine.lib;
+			name = libEthaneEngine.dylib;
 			targetProxy = 1FDD6BE6E3492D9821ECD226 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -236,9 +202,12 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				OBJROOT = "../bin-int/Release-windows-x86_64/Ethane-Editor";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
+				OBJROOT = "../bin-int/Release-macosx-x86_64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = NO;
-				SYMROOT = "../bin/Release-windows-x86_64/Ethane-Editor";
+				SYMROOT = "../bin/Release-macosx-x86_64/Ethane-Editor";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
 					../EthaneEngine/vendor/spdlog/include,
@@ -247,7 +216,7 @@
 					../EthaneEngine/vendor/glm,
 					../EthaneEngine/vendor/stb_image,
 					../EthaneEngine/vendor/entt/include,
-					"C:/VulkanSDK/1.3.250.0/Include",
+					../../../../VulkanSDK/1.3.204.1/macOS/Include,
 					../EthaneEngine/vendor/assimp/include,
 					"../EthaneEngine/vendor/yaml-cpp/include",
 					../EthaneEngine/vendor/imgui,
@@ -256,44 +225,29 @@
 			};
 			name = Release;
 		};
-		512513D79E880A0914A70A17 /* Debug */ = {
+		5E56826780222F99BCD758A7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Debug-windows-x86_64/Ethane-Editor";
+				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-x86_64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
-				MACOSX_DEPLOYMENT_TARGET = latest;
-				PRODUCT_NAME = "Ethane-Editor.exe";
+				PRODUCT_NAME = "Ethane-Editor";
 			};
 			name = Debug;
 		};
-		757C8091A775CB43215506D1 /* Release */ = {
+		94C3D321582F94D396D33961 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Release-windows-x86_64/Ethane-Editor";
+				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-x86_64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
-				MACOSX_DEPLOYMENT_TARGET = latest;
-				PRODUCT_NAME = "Ethane-Editor.exe";
+				PRODUCT_NAME = "Ethane-Editor";
 			};
 			name = Release;
-		};
-		94D15644C5B54E36D8CD8484 /* Dist */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Dist-windows-x86_64/Ethane-Editor";
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_DYNAMIC_NO_PIC = NO;
-				INSTALL_PATH = /usr/local/bin;
-				MACOSX_DEPLOYMENT_TARGET = latest;
-				PRODUCT_NAME = "Ethane-Editor.exe";
-			};
-			name = Dist;
 		};
 		B019A44521A4BCB7D0A5E285 /* Dist */ = {
 			isa = XCBuildConfiguration;
@@ -311,9 +265,12 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				OBJROOT = "../bin-int/Dist-windows-x86_64/Ethane-Editor";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
+				OBJROOT = "../bin-int/Dist-macosx-x86_64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = YES;
-				SYMROOT = "../bin/Dist-windows-x86_64/Ethane-Editor";
+				SYMROOT = "../bin/Dist-macosx-x86_64/Ethane-Editor";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
 					../EthaneEngine/vendor/spdlog/include,
@@ -322,12 +279,24 @@
 					../EthaneEngine/vendor/glm,
 					../EthaneEngine/vendor/stb_image,
 					../EthaneEngine/vendor/entt/include,
-					"C:/VulkanSDK/1.3.250.0/Include",
+					../../../../VulkanSDK/1.3.204.1/macOS/Include,
 					../EthaneEngine/vendor/assimp/include,
 					"../EthaneEngine/vendor/yaml-cpp/include",
 					../EthaneEngine/vendor/imgui,
 					"$(inherited)",
 				);
+			};
+			name = Dist;
+		};
+		D34732D402D901C6DDE64114 /* Dist */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-x86_64/Ethane-Editor";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "Ethane-Editor";
 			};
 			name = Dist;
 		};
@@ -347,9 +316,12 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				OBJROOT = "../bin-int/Debug-windows-x86_64/Ethane-Editor";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
+				OBJROOT = "../bin-int/Debug-macosx-x86_64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = YES;
-				SYMROOT = "../bin/Debug-windows-x86_64/Ethane-Editor";
+				SYMROOT = "../bin/Debug-macosx-x86_64/Ethane-Editor";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
 					../EthaneEngine/vendor/spdlog/include,
@@ -358,7 +330,7 @@
 					../EthaneEngine/vendor/glm,
 					../EthaneEngine/vendor/stb_image,
 					../EthaneEngine/vendor/entt/include,
-					"C:/VulkanSDK/1.3.250.0/Include",
+					../../../../VulkanSDK/1.3.204.1/macOS/Include,
 					../EthaneEngine/vendor/assimp/include,
 					"../EthaneEngine/vendor/yaml-cpp/include",
 					../EthaneEngine/vendor/imgui,
@@ -370,22 +342,22 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		12F91D912A0BB8C31A27B3D1 /* Build configuration list for PBXNativeTarget "Ethane-Editor.exe" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				512513D79E880A0914A70A17 /* Debug */,
-				757C8091A775CB43215506D1 /* Release */,
-				94D15644C5B54E36D8CD8484 /* Dist */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
 		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "Ethane-Editor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EC4DD0188F3BF6CA1E61D658 /* Debug */,
 				2B6A1052427CAB843298A692 /* Release */,
 				B019A44521A4BCB7D0A5E285 /* Dist */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		576434215AD50653DC41AA61 /* Build configuration list for PBXNativeTarget "Ethane-Editor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E56826780222F99BCD758A7 /* Debug */,
+				94C3D321582F94D396D33961 /* Release */,
+				D34732D402D901C6DDE64114 /* Dist */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -27,6 +27,9 @@
 	#elif defined(ETH_PLATFORM_LINUX)
 		#include <signal.h>
 		#define ETH_DEBUGBREAK() raise(SIGTRAP)
+    #elif defined(ETH_PLATFORM_MACOS)
+        #include <signal.h>
+        #define ETH_DEBUGBREAK() raise(SIGTRAP)
 	#else
 		#error "Platform doesn't support debugbreak yet!"
 	#endif

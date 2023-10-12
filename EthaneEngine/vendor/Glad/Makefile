@@ -18,7 +18,15 @@ endif
 # Configurations
 # #############################################
 
-RESCOMP = windres
+ifeq ($(origin CC), default)
+  CC = clang
+endif
+ifeq ($(origin CXX), default)
+  CXX = clang++
+endif
+ifeq ($(origin AR), default)
+  AR = ar
+endif
 DEFINES +=
 INCLUDES += -Iinclude
 FORCE_INCLUDE +=
@@ -26,6 +34,7 @@ ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
 LIBS +=
 LDDEPS +=
+ALL_LDFLAGS += $(LDFLAGS) -m64
 LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
 define PREBUILDCMDS
 endef
@@ -35,28 +44,25 @@ define POSTBUILDCMDS
 endef
 
 ifeq ($(config),debug)
-TARGETDIR = bin/Debug-windows-x86_64/Glad
-TARGET = $(TARGETDIR)/Glad.lib
-OBJDIR = bin-int/Debug-windows-x86_64/Glad
+TARGETDIR = bin/Debug-macosx-x86_64/Glad
+TARGET = $(TARGETDIR)/libGlad.a
+OBJDIR = bin-int/Debug-macosx-x86_64/Glad
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),release)
-TARGETDIR = bin/Release-windows-x86_64/Glad
-TARGET = $(TARGETDIR)/Glad.lib
-OBJDIR = bin-int/Release-windows-x86_64/Glad
+TARGETDIR = bin/Release-macosx-x86_64/Glad
+TARGET = $(TARGETDIR)/libGlad.a
+OBJDIR = bin-int/Release-macosx-x86_64/Glad
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 else ifeq ($(config),dist)
-TARGETDIR = bin/Dist-windows-x86_64/Glad
-TARGET = $(TARGETDIR)/Glad.lib
-OBJDIR = bin-int/Dist-windows-x86_64/Glad
+TARGETDIR = bin/Dist-macosx-x86_64/Glad
+TARGET = $(TARGETDIR)/libGlad.a
+OBJDIR = bin-int/Dist-macosx-x86_64/Glad
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 endif
 

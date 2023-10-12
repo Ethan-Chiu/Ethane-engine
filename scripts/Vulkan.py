@@ -6,7 +6,7 @@ import platform
 import Config
 import Utils
 
-from colorama import init, Fore, Back, Style
+from colorama import Back, Style
 
 VULKAN_SDK = os.environ.get('VULKAN_SDK')
 
@@ -35,8 +35,12 @@ def CheckVulkanSDK():
         return InstallVulkanPrompt()
     elif (cfg.vulkan_sdk_version not in VULKAN_SDK):
         print(f"Located Vulkan SDK at {VULKAN_SDK}")
-        print(f"You don't have the correct Vulkan SDK version! (ETHANE requires {cfg.vulkan_sdk_version})")
-        return InstallVulkanPrompt()
+        print(f"You don't have the lastest supported version {cfg.vulkan_sdk_version}")
+        if any(compatible_version in VULKAN_SDK for compatible_version in cfg.vulkan_sdk_compatible_versions):
+            print("Use compatible version.")
+        else:
+            print(f"You don't have the correct Vulkan SDK version! (ETHANE requires {cfg.vulkan_sdk_version})")
+            return InstallVulkanPrompt()
 
     Utils.CheckMarkMsg(f"Correct Vulkan SDK located at {VULKAN_SDK}")
     return True
