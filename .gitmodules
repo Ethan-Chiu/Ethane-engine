@@ -11,6 +11,7 @@
 [submodule "EthaneEngine/vendor/imgui"]
 	path = EthaneEngine/vendor/imgui
 	url = https://github.com/Ethan-Chiu/imgui_forked.git
+  branch = docking
 [submodule "EthaneEngine/vendor/assimp"]
 	path = EthaneEngine/vendor/assimp
 	url = https://github.com/assimp/assimp.git

@@ -13,6 +13,7 @@ EthaneEngine/vendor/yaml-cpp
 *.user
 .DS_Store
 EthaneProfile-Startup.json
+/logs
 *~
 
 # Ethane files
