@@ -1,8 +1,9 @@
 Logging level: Normal
-Configurations cached at c:\Users\ethan\AppData\Roaming\Code\User\workspaceStorage\a6b193ae24ccb26bb29ad06695f47775\ms-vscode.makefile-tools\configurationCache.log
+Configurations cached at /Users/ethan/Library/Application Support/Code/User/workspaceStorage/e343b3bddfb8b91fe2c4bd0124a13b20/ms-vscode.makefile-tools/configurationCache.log
 No path to the makefile is defined in the settings file.
 No folder path to the makefile is defined in the settings file.
 Always pre-configure: false
+Always post-configure: false
 Dry-run switches: '--always-make', '--keep-going', '--print-directory'
 No current launch configuration is set in the workspace state.
 Default launch configuration: MIMode = undefined,
@@ -18,52 +19,136 @@ Build before launch: true
 Clear output before build: true
 Ignore directory commands: true
 compile_commands.json path: null
-Deduced command 'make.exe ' for configuration "Default"
-Make was not given any path in settings and is also not found on the environment path.
+Deduced command 'make ' for configuration "Default"
 Saving opened files before build.
-Generating configuration cache with command: 'make.exe --dry-run --always-make --keep-going --print-directory'
-Writing the dry-run output: c:\Users\ethan\AppData\Roaming\Code\User\workspaceStorage\a6b193ae24ccb26bb29ad06695f47775\ms-vscode.makefile-tools\dryrun.log
-Generating dry-run elapsed time: 0.038
+Generating configuration cache with command: 'make --dry-run --always-make --keep-going --print-directory'
+Writing the dry-run output: /Users/ethan/Library/Application Support/Code/User/workspaceStorage/e343b3bddfb8b91fe2c4bd0124a13b20/ms-vscode.makefile-tools/dryrun.log
+Generating dry-run elapsed time: 0.336
 The make dry-run command failed.
 IntelliSense may work only partially or not at all.
-'make.exe' is not recognized as an internal or external command,
-operable program or batch file.
+make[1]: *** No rule to make target `vendor/GLFW/bin/Debug-macosx-x86_64/GLFW/libGLFW.a', needed by `../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib'.
+make[1]: *** No rule to make target `vendor/Glad/bin/Debug-macosx-x86_64/Glad/libGlad.a', needed by `../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib'.
+make[1]: *** No rule to make target `vendor/imgui/bin/Debug-macosx-x86_64/ImGui/libImGui.a', needed by `../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib'.
+make: *** [EthaneEngine] Error 2
 
 
-You can see the detailed dry-run output at c:\Users\ethan\AppData\Roaming\Code\User\workspaceStorage\a6b193ae24ccb26bb29ad06695f47775\ms-vscode.makefile-tools\dryrun.log
+You can see the detailed dry-run output at /Users/ethan/Library/Application Support/Code/User/workspaceStorage/e343b3bddfb8b91fe2c4bd0124a13b20/ms-vscode.makefile-tools/dryrun.log
 Make sure that the extension is invoking the same make command as in your development prompt environment.
 You may need to define or tweak a custom makefile configuration in settings via 'makefile.configurations' like described here: [link]
 Also make sure your code base does not have any known issues with the dry-run switches used by this extension (makefile.dryrunSwitches).
 If you are not able to fix the dry-run, open a GitHub issue in Makefile Tools repo: https://github.com/microsoft/vscode-makefile-tools/issues
-Preprocessing: "c:\Users\ethan\AppData\Roaming\Code\User\workspaceStorage\a6b193ae24ccb26bb29ad06695f47775\ms-vscode.makefile-tools\dryrun.log"
+Preprocessing: "/Users/ethan/Library/Application Support/Code/User/workspaceStorage/e343b3bddfb8b91fe2c4bd0124a13b20/ms-vscode.makefile-tools/dryrun.log"
 Preprocess elapsed time: 0
 Parsing for IntelliSense.
 Updating the CppTools IntelliSense Configuration Provider.
 Parsing dry-run output for CppTools Custom Configuration Provider.
-Parsing for IntelliSense elapsed time: 0.033
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/context.c -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/init.c -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/input.c -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/monitor.c -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/vulkan.c -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/window.c -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/glad.c -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/imgui.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/imgui_demo.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/imgui_draw.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/imgui_tables.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/imgui_widgets.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Core/Application.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Asset/AssetManager.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/EditorCamera.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Scene/Entity.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Utils/FileUtils.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/GBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/GraphicsContext.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/ImGui/ImGuiBuild.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/ImGui/ImGuiLayer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Image.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Asset/ImageLoader.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/IndexBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Core/Layer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Core/LayerStack.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Core/Log.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Platform/MacOS/MacosInput.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Platform/MacOS/MacosWindow.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Material.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Math/Math.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Mesh.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Pipeline.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/RenderCommandBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/RenderPass.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/RenderTarget.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Renderer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/RendererAPI.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Systems/ResourceSystem.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Scene/Scene.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Scene/SceneCamera.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/SceneRenderer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Scene/SceneSerializer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Shader.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/ShaderUtils/ShaderIncluder.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Systems/ShaderSystem.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/StorageBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Texture.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Systems/TextureSystem.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Core/UUID.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/VertexBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanCommandBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanComputePipeline.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanContext.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanDevice.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanFramebuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/ImGui/VulkanImGuiLayer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanImage.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanImageUtils.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanIndexBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanMaterial.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanPipeline.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanRenderCommandBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanRenderPass.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanRenderTarget.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanRendererAPI.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanShader.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/ShaderUtils/VulkanShaderCompiler.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/ShaderUtils/VulkanShaderSystem.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanStorageBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanSwapChain.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanTargetImage.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanTexture.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanUniformBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Renderer/Vulkan/VulkanVertexBuffer.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Core/Window.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Platform/Windows/WindowsInput.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Platform/Windows/WindowsPlatformUtils.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/Ethane/Platform/Windows/WindowsWindow.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/src/ethpch.cpp -----------------------------------
+Sending configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/vendor/stb_image/stb_image.cpp -----------------------------------
+Parsing for IntelliSense elapsed time: 3.413
 Parsing for launch targets.
 No launch configurations have been detected.
 Complete list of launch targets: 
-Parsing for launch targets elapsed time: 0.005
+Parsing for launch targets elapsed time: 0.02
 Generating parse content for build targets.
-Generating targets information with command: 'make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --question'
-Writing the dry-run output: c:\Users\ethan\AppData\Roaming\Code\User\workspaceStorage\a6b193ae24ccb26bb29ad06695f47775\ms-vscode.makefile-tools\targets.log
-Generating dry-run elapsed time: 0.028
-Parsing for build targets from: "c:\Users\ethan\AppData\Roaming\Code\User\workspaceStorage\a6b193ae24ccb26bb29ad06695f47775\ms-vscode.makefile-tools\targets.log"
-No build targets have been detected.
-Complete list of build targets: 
-Parsing build targets elapsed time: 0.001
+Generating targets information with command: 'make all --print-data-base --no-builtin-variables --no-builtin-rules --question'
+Writing the dry-run output: /Users/ethan/Library/Application Support/Code/User/workspaceStorage/e343b3bddfb8b91fe2c4bd0124a13b20/ms-vscode.makefile-tools/targets.log
+Generating dry-run elapsed time: 0.032
+Parsing for build targets from: "/Users/ethan/Library/Application Support/Code/User/workspaceStorage/e343b3bddfb8b91fe2c4bd0124a13b20/ms-vscode.makefile-tools/targets.log"
+Found the following 9 build targets defined in the makefile: Dependencies;Ethane-Editor;EthaneEngine;GLFW;Glad;ImGui;all;clean;help
+Complete list of build targets: Dependencies;Ethane-Editor;EthaneEngine;GLFW;Glad;ImGui;all;clean;help
+Parsing build targets elapsed time: 0.002
 Configure finished. The status for all the subphases that ran:
 loadFromCache: return code = -3, elapsed time = 0
-generateParseContent: return code = 1, elapsed time = 0.038
+generateParseContent: return code = 2, elapsed time = 0.336
 preprocessParseContent: return code = 0, elapsed time = 0
-parseIntelliSense: return code = 0, elapsed time = 0.033
-parseLaunch: return code = 0, elapsed time = 0.005
-dryrunTargets: return code = 1, elapsed time = 0.028
-parseTargets: return code = 0, elapsed time = 0.001
+parseIntelliSense: return code = 0, elapsed time = 3.413
+parseLaunch: return code = 0, elapsed time = 0.02
+dryrunTargets: return code = 1, elapsed time = 0.032
+parseTargets: return code = 0, elapsed time = 0.002
 Configure succeeded.
-Configure elapsed time: 0.843
-Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\EXAMPLES\IMGUI_IMPL_VULKAN_WITH_TEXTURES.CPP was not found. CppTools will set a default configuration.
-Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\IMGUI_INTERNAL.H was not found. CppTools will set a default configuration.
-Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\IMGUI.CPP was not found. CppTools will set a default configuration.
-Configuration for file C:\USERS\ETHAN\PROGRAM_DEV\ETHANEENGINEWINDOWS\ETHANEENGINE\VENDOR\IMGUI\IMGUI.H was not found. CppTools will set a default configuration.
+Configure elapsed time: 13.308
+Configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/Ethane-Editor/src/EditorLayer.cpp was not found. CppTools will set a default configuration.
+Configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/EthaneEngine/vendor/GLFW/include/GLFW/glfw3.h was not found. CppTools will set a default configuration.
+Configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/EthaneEngine/vendor/GLFW/src/internal.h was not found. CppTools will set a default configuration.
+Configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/EthaneEngine/vendor/imgui/examples/example_glfw_vulkan/main.cpp was not found. CppTools will set a default configuration.
+Configuration for file /Users/ethan/ethans_folder/Program_dev/EthaneEngineWindows/EthaneEngine/vendor/imgui/examples/libs/glfw/include/GLFW/glfw3.h was not found. CppTools will set a default configuration.
