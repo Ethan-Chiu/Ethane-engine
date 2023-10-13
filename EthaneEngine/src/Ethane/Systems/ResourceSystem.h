@@ -17,7 +17,7 @@ public:
     
     static void Shutdown();
     
-    static void LoadImage(const std::string& filepath, ImageResource& out_resource);
+    static bool LoadImage(const std::string& filepath, ImageResource& out_resource);
     
     static void UnloadImage(ImageResource& resource);
     

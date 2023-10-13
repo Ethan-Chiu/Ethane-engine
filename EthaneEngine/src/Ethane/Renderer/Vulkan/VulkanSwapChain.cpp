@@ -54,6 +54,8 @@ namespace Ethane {
         m_ImageColorSpace = surfaceFormat.colorSpace;
         ETH_CORE_INFO("Swapchain imgae Format: {0} | Image Color Space: {1}", m_ImageFormat, m_ImageColorSpace);
 
+        ListSupportedSurfaceUsages(swapChainSupport.capabilities);
+        
         // profiling
         ETH_CORE_TRACE("choose time: {0}ms", timer.ElapsedMillis());
         timer.Reset();
@@ -106,7 +108,7 @@ namespace Ethane {
         swapchainCreateInfo.imageColorSpace = m_ImageColorSpace;
         swapchainCreateInfo.imageExtent = m_Extent;
         swapchainCreateInfo.imageArrayLayers = 1;
-        swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT; // TODO: make this configurable?
+        swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT; // TODO: make this configurable?
         const auto& indices = m_PhysicalDevice->GetQueueFamilyIndices();
         if (indices.Graphics.value() != indices.Present.value()) {
             uint32_t queueFamilyIndices[] = { indices.Graphics.value(), indices.Present.value() };
@@ -238,10 +240,10 @@ namespace Ethane {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+    VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities)
     {
-        if (capabilities.currentExtent.width != UINT32_MAX) {
-            return capabilities.currentExtent;
+        if (surfaceCapabilities.currentExtent.width != UINT32_MAX) {
+            return surfaceCapabilities.currentExtent;
         }
         else {
             int width, height;
@@ -254,12 +256,35 @@ namespace Ethane {
                 static_cast<uint32_t>(height)
             };
 
-            actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-            actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+            actualExtent.width = std::clamp(actualExtent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
+            actualExtent.height = std::clamp(actualExtent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
 
             return actualExtent;
         }
     }
+
+    void VulkanSwapChain::ListSupportedSurfaceUsages(const VkSurfaceCapabilitiesKHR& surfaceCapabilities)
+    {
+        ETH_CORE_INFO("Supported Surface Usages:");
+
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_TRANSFER_SRC_BIT");
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_TRANSFER_DST_BIT");
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_SAMPLED_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_SAMPLED_BIT");
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_STORAGE_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_STORAGE_BIT");
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT");
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT");
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT");
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT)
+            ETH_CORE_INFO("  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT");
+    }
+
 
     void VulkanSwapChain::CreateCommandBuffers()
     {

@@ -30,7 +30,7 @@ namespace Ethane {
         m_EditorCamera.SetViewportSize(Renderer::GetRendererConfig().DefaultWindowWidth, Renderer::GetRendererConfig().DefaultWindowHeight);
 
         auto newEntity = m_ActiveScene->CreateEntity("Cube");
-        m_Mesh = AssetManager::GetAssetMesh("resources/meshes/default/Cube.fbx");
+        m_Mesh = AssetManager::GetAssetMesh("res/meshes/default/Cube.fbx");
         m_Mesh->Upload();
         m_Mat = Material::Create(ShaderSystem::Get("offscreen").get());
         newEntity.AddComponent<MeshComponent>(m_Mesh, m_Mat);

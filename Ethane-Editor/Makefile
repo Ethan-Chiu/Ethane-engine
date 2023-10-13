@@ -45,8 +45,8 @@ TARGETDIR = ../bin/Debug-macosx-x86_64/Ethane-Editor
 TARGET = $(TARGETDIR)/Ethane-Editor
 OBJDIR = ../bin-int/Debug-macosx-x86_64/Ethane-Editor
 DEFINES += -DETH_DEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -mmacosx-version-min=10.15.0
 LIBS += ../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 LDDEPS += ../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 
@@ -55,8 +55,8 @@ TARGETDIR = ../bin/Release-macosx-x86_64/Ethane-Editor
 TARGET = $(TARGETDIR)/Ethane-Editor
 OBJDIR = ../bin-int/Release-macosx-x86_64/Ethane-Editor
 DEFINES += -DETH_RELEASE
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20 -mmacosx-version-min=10.15.0
 LIBS += ../bin/Release-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 LDDEPS += ../bin/Release-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 
@@ -65,8 +65,8 @@ TARGETDIR = ../bin/Dist-macosx-x86_64/Ethane-Editor
 TARGET = $(TARGETDIR)/Ethane-Editor
 OBJDIR = ../bin-int/Dist-macosx-x86_64/Ethane-Editor
 DEFINES += -DETH_DIST
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -mmacosx-version-min=10.15.0
 LIBS += ../bin/Dist-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 LDDEPS += ../bin/Dist-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
 

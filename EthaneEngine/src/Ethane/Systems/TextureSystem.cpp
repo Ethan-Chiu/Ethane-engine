@@ -16,7 +16,9 @@ namespace Ethane {
     bool TextureSystem::Init()
     {
         ImageResource imageData;
-        ResourceSystem::LoadImage("assets/textures/test.png", imageData);
+        if(!ResourceSystem::LoadImage("assets/textures/test.png", imageData))
+            return false;
+        
         ImageSpecification imageSpec;
         imageSpec.Format = ImageFormat::RGBA;
         imageSpec.Width = imageData.Width;

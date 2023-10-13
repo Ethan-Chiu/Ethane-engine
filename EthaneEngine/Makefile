@@ -34,6 +34,7 @@ INCLUDES += -Isrc -isystem vendor/spdlog/include -isystem vendor/GLFW/include -i
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
+ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.3.204.1/macOS/lib -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef
@@ -47,33 +48,30 @@ TARGETDIR = ../bin/Debug-macosx-x86_64/EthaneEngine
 TARGET = $(TARGETDIR)/libEthaneEngine.dylib
 OBJDIR = ../bin-int/Debug-macosx-x86_64/EthaneEngine
 DEFINES += -DCFG_MACOS -D__APPLE__ -DETH_DEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -std=c++20
-LIBS += vendor/GLFW/bin/Debug-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-macosx-x86_64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lshaderc_sharedd -lshaderc_utild -lspirv-cross-cored -lspirv-cross-glsld -lSPIRV-Toolsd -lassimp-vc143-mtd -lyaml-cppd -lvulkan-1 -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -std=c++20 -mmacosx-version-min=10.15.0
+LIBS += vendor/GLFW/bin/Debug-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-macosx-x86_64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
 LDDEPS += vendor/GLFW/bin/Debug-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-macosx-x86_64/ImGui/libImGui.a
-ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.3.204.1/macOS/Lib -Lvendor/yaml-cpp/build/Debug -Lvendor/assimp/lib/Debug -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
 
 else ifeq ($(config),release)
 TARGETDIR = ../bin/Release-macosx-x86_64/EthaneEngine
 TARGET = $(TARGETDIR)/libEthaneEngine.dylib
 OBJDIR = ../bin-int/Release-macosx-x86_64/EthaneEngine
 DEFINES += -DCFG_MACOS -D__APPLE__ -DETH_RELEASE
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -std=c++20
-LIBS += vendor/GLFW/bin/Release-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-macosx-x86_64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lassimp-vc143-mt -lvulkan-1 -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -std=c++20 -mmacosx-version-min=10.15.0
+LIBS += vendor/GLFW/bin/Release-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-macosx-x86_64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
 LDDEPS += vendor/GLFW/bin/Release-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-macosx-x86_64/ImGui/libImGui.a
-ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.3.204.1/macOS/Lib -Lvendor/yaml-cpp/build/Release -Lvendor/assimp/lib/Release -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
 
 else ifeq ($(config),dist)
 TARGETDIR = ../bin/Dist-macosx-x86_64/EthaneEngine
 TARGET = $(TARGETDIR)/libEthaneEngine.dylib
 OBJDIR = ../bin-int/Dist-macosx-x86_64/EthaneEngine
 DEFINES += -DCFG_MACOS -D__APPLE__ -DETH_DIST
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -std=c++20
-LIBS += vendor/GLFW/bin/Dist-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-macosx-x86_64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lassimp-vc143-mt -lvulkan-1 -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -std=c++20 -mmacosx-version-min=10.15.0
+LIBS += vendor/GLFW/bin/Dist-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-macosx-x86_64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
 LDDEPS += vendor/GLFW/bin/Dist-macosx-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-macosx-x86_64/ImGui/libImGui.a
-ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.3.204.1/macOS/Lib -Lvendor/yaml-cpp/build/Release -Lvendor/assimp/lib/Release -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
 
 endif
 

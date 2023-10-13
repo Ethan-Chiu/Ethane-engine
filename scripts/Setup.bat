@@ -1,3 +1,4 @@
 @echo off
-python Setup.py
+set build=%1
+python Setup.py %build%
 PAUSE

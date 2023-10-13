@@ -86,7 +86,7 @@ namespace Ethane {
 		glm::vec4 Color = glm::vec4(0.5, 0.7, 0.3, 1.0);
 		glm::vec3 Direction = glm::vec3(3, 5, -8);
 
-		struct DirectionalLightComponent() = default;
+        DirectionalLightComponent() = default;
 		DirectionalLightComponent(const DirectionalLightComponent&) = default;
 		DirectionalLightComponent(glm::vec4 color, glm::vec3 direction)
 			: Color(color), Direction(direction) {}

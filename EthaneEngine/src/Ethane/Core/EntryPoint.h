@@ -1,8 +1,6 @@
 #pragma once
 #include "Ethane/Core/Application.h"
 
-#ifdef ETH_PLATFORM_WINDOWS
-
 extern Ethane::Application* Ethane::CreateApplication(ApplicationCommandLineArgs args);
 
 int main(int argc, char** argv) {
@@ -21,6 +19,3 @@ int main(int argc, char** argv) {
     delete app;
     ETH_PROFILE_END_SESSION();
 }
-
-
-#endif 

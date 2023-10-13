@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 import CheckPython
 import Config
@@ -10,7 +11,13 @@ import Vulkan
 import Premake
 import Cmake
 import Utils
-import PostProcess
+from PostProcess import AssimpBuild, YamlCppBuild
+
+argument1 = sys.argv[1] if len(sys.argv) > 1 else None
+build_deps = False
+if argument1 == "build":
+    build_deps = True
+    argument_rest = sys.argv[2:] if len(sys.argv) > 2 else None
 
 # Change from Scripts directory to root
 os.chdir('../')
@@ -41,10 +48,16 @@ for action in Config.premake_config.actions:
 print("----------------------------------------")
 
 
-print("Post processing...")
-PostProcess.assimp_build()
-print("----------------------------------------")
-PostProcess.yaml_cpp_build()
-print("----------------------------------------")
+if build_deps: 
+    print("Post processing...")
+    build_all = argument_rest == None
+    assimp_task = AssimpBuild() 
+    yaml_cpp_task = YamlCppBuild()
+    if build_all or assimp_task.get_key() in argument_rest:
+        assimp_task.process()
+        print("----------------------------------------")
+    if build_all or yaml_cpp_task.get_key() in argument_rest:
+        yaml_cpp_task.process()
+        print("----------------------------------------")
 
 input("Program ended. Press [Enter] to close ... ")

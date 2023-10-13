@@ -25,10 +25,10 @@ group "Dependencies"
 	include "EthaneEngine/vendor/imgui"
 
 group ""
-    project "EthaneEngine"
+  project "EthaneEngine"
 
 group ""
-    project "Ethane-Editor"
+  project "Ethane-Editor"
 
 
 -------------------------------------------------------------------------------
@@ -41,6 +41,12 @@ project "EthaneEngine"
 	language "C++"
 	cppdialect "C++20"
 	staticruntime "off"
+
+  filter "system:windows"
+		systemversion "latest"
+  filter "system:macosx"
+    systemversion "10.15.0:14:0.0"
+	filter {}
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -64,25 +70,25 @@ project "EthaneEngine"
 	}
 
 	externalincludedirs
-    {
-        "%{IncludeDir.spdlog}",
-        "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}",
-        "%{IncludeDir.glm}",
-        "%{IncludeDir.stb_image}",
-        "%{IncludeDir.entt}",
-        "%{IncludeDir.VulkanSDK}",
-        "%{IncludeDir.assimp}",
-        "%{IncludeDir.yaml_cpp}",
-        "%{IncludeDir.imgui}",
-    }
+  {
+    "%{IncludeDir.spdlog}",
+    "%{IncludeDir.GLFW}",
+    "%{IncludeDir.Glad}",
+    "%{IncludeDir.glm}",
+    "%{IncludeDir.stb_image}",
+    "%{IncludeDir.entt}",
+    "%{IncludeDir.VulkanSDK}",
+    "%{IncludeDir.assimp}",
+    "%{IncludeDir.yaml_cpp}",
+    "%{IncludeDir.imgui}",
+  }
 
 	includedirs
 	{
 		"%{wks.location}/EthaneEngine/src",
 	}
 
-	libdirs {"%{LibraryDir.VulkanSDK}"}
+	libdirs { "%{LibraryDir.VulkanSDK}" }
 
 	links
 	{
@@ -91,106 +97,106 @@ project "EthaneEngine"
 		"ImGui",
 	}
 
-    filter "action:xcode4"
-        pchheader "src/ethpch.h"
-    filter "action:not xcode4"
-        pchheader "ethpch.h"
+  filter "action:xcode4"
+    pchheader "src/ethpch.h"
+  filter "action:not xcode4"
+    pchheader "ethpch.h"
 
 	filter "files:EthaneEngine/vendor/ImGuizmo/**.cpp"
-	flags { "NoPCH" }
+    flags { "NoPCH" }
 
 
 	filter "system:windows"
-		systemversion "latest"
-
 		defines
 		{
 			"ETH_BUILD_DLL",
 			"GLFW_INCLUDE_NONE"
 		}
 
-		filter "configurations:Debug"
-			libdirs {
-				"%{LibraryDir.yamlcpp}/Debug",
-				"%{LibraryDir.assimp}/Debug"
-			}
-
-			links
-			{
-				"%{Library.ShaderC_Debug}",
-				"%{Library.ShaderC_Utils_Debug}",
-				"%{Library.SPIRV_Cross_Debug}",
-				"%{Library.SPIRV_Cross_GLSL_Debug}",
-				"%{Library.SPIRV_Tools_Debug}",
-				"%{Library.AssimpDebug}",
-				"%{Library.YamlCppDebug}"
-			}
-
-		filter "configurations:Release"
-			libdirs {
-				"%{LibraryDir.yamlcpp}/Release",
-				"%{LibraryDir.assimp}/Release"
-			}
-
-			links
-			{
-				"%{Library.ShaderC}",
-				"%{Library.ShaderC_Utils}",
-				"%{Library.SPIRV_Cross}",
-				"%{Library.SPIRV_Cross_GLSL}",
-				"%{Library.SPIRV_Tools}",
-				"%{Library.Assimp}",
-				"%{Library.YamlCpp}"
-			}
-
-		filter "configurations:Dist"
-			libdirs {
-				"%{LibraryDir.yamlcpp}/Release",
-				"%{LibraryDir.assimp}/Release"
-			}
-
-			links
-			{
-				"%{Library.ShaderC}",
-				"%{Library.ShaderC_Utils}",
-				"%{Library.SPIRV_Cross}",
-				"%{Library.SPIRV_Cross_GLSL}",
-				"%{Library.SPIRV_Tools}",
-				"%{Library.Assimp}",
-				"%{Library.YamlCpp}"
-			}
-
-		filter {}
-
-		links {
+    links 
+    {
 			"vulkan-1",
 			-- "%{Library.VulkanUtils}",
 		}
-		-- includedirs
-		-- {
-		-- 	"%{IncludeDir.shaderc_util}",
-		-- 	"%{IncludeDir.shaderc_glslc}"
-		-- }
+
+  filter { "system:windows", "configurations:Debug" }
+    libdirs
+    {
+      "%{LibraryDir.yamlcpp}/Debug",
+      "%{LibraryDir.assimp}/Debug"
+    }
+
+    links
+    {
+      "%{Library.ShaderC_Debug}",
+      "%{Library.ShaderC_Utils_Debug}",
+      "%{Library.SPIRV_Cross_Debug}",
+      "%{Library.SPIRV_Cross_GLSL_Debug}",
+      "%{Library.SPIRV_Tools_Debug}",
+      "%{Library.AssimpDebug}",
+      "%{Library.YamlCppDebug}"
+    }
+
+  filter { "system:windows", "configurations:Release" }
+    libdirs
+    {
+      "%{LibraryDir.yamlcpp}/Release",
+      "%{LibraryDir.assimp}/Release"
+    }
+
+    links
+    {
+      "%{Library.ShaderC}",
+      "%{Library.ShaderC_Utils}",
+      "%{Library.SPIRV_Cross}",
+      "%{Library.SPIRV_Cross_GLSL}",
+      "%{Library.SPIRV_Tools}",
+      "%{Library.Assimp}",
+      "%{Library.YamlCpp}"
+    }
+
+  filter { "system:windows", "configurations:Dist" }
+    libdirs {
+      "%{LibraryDir.yamlcpp}/Release",
+      "%{LibraryDir.assimp}/Release"
+    }
+
+    links
+    {
+      "%{Library.ShaderC}",
+      "%{Library.ShaderC_Utils}",
+      "%{Library.SPIRV_Cross}",
+      "%{Library.SPIRV_Cross_GLSL}",
+      "%{Library.SPIRV_Tools}",
+      "%{Library.Assimp}",
+      "%{Library.YamlCpp}"
+    }
+
+  filter {}
+
 
 	filter "system:macosx"
-		defines {
+		defines
+    {
 			"CFG_MACOS",
 			"__APPLE__"
 		}
 		kind "SharedLib"
 
-		libdirs { 
+		libdirs 
+    { 
 			"%{LibraryDir.yamlcpp}",
 			"%{LibraryDir.assimp}"
 		}
 
-		links {
+		links 
+    {
 			"OpenGL.framework",
 			"Cocoa.framework",
 			"IOKit.framework",
-            "vulkan",
+      "vulkan",
 			"z",
-            "%{Library.ShaderC}",
+      "%{Library.ShaderC}",
 			"%{Library.ShaderC_Utils}",
 			"%{Library.SPIRV_Cross}",
 			"%{Library.SPIRV_Cross_GLSL}",
@@ -198,22 +204,23 @@ project "EthaneEngine"
 			"%{Library.MacAssimp}",
 			"%{Library.YamlCpp}"
 		}
-	filter {}
 
-	filter "configurations:Debug"
+	filter { "system:macosx", "configurations:Debug" }
 		defines "ETH_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
-	filter "configurations:Release"
+	filter { "system:macosx", "configurations:Release" }
 		defines "ETH_RELEASE"
 		runtime "Release"
 		optimize "on"
 
-	filter "configurations:Dist"
+	filter { "system:macosx", "configurations:Dist" }
 		defines "ETH_DIST"
 		runtime "Release"
 		symbols "on"
+
+
 
 -------------------------------------------------------------------------------
 -- Ethane Editor
@@ -226,6 +233,12 @@ project "Ethane-Editor"
 	cppdialect "C++20"
 	staticruntime "off"
 
+  filter "system:windows"
+		systemversion "latest"
+  filter "system:macosx"
+    systemversion "10.15.0:14:0.0"
+	filter {}
+
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
@@ -236,65 +249,60 @@ project "Ethane-Editor"
 	}
 
 	externalincludedirs 
-    { 
-		"%{wks.location}/EthaneEngine/src",
-		"%{IncludeDir.spdlog}",
-        "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}",
-        "%{IncludeDir.glm}",
-        "%{IncludeDir.stb_image}",
-        "%{IncludeDir.entt}",
-        "%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.assimp}",
-		"%{IncludeDir.yaml_cpp}",
-        "%{IncludeDir.imgui}"
-    }
+  { 
+    "%{wks.location}/EthaneEngine/src",
+    "%{IncludeDir.spdlog}",
+    "%{IncludeDir.GLFW}",
+    "%{IncludeDir.Glad}",
+    "%{IncludeDir.glm}",
+    "%{IncludeDir.stb_image}",
+    "%{IncludeDir.entt}",
+    "%{IncludeDir.VulkanSDK}",
+    "%{IncludeDir.assimp}",
+    "%{IncludeDir.yaml_cpp}",
+    "%{IncludeDir.imgui}"
+  }
 
-	includedirs
-	{
-	}
+  includedirs
+  {
+  }
 
 	links
 	{
 		"EthaneEngine"
 	}
 
-	filter "system:windows"
-		systemversion "latest"
-	filter {}
-	
+		
 	filter "configurations:Debug"
 		defines "ETH_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
-		filter "system:windows"
-			postbuildcommands 
-			{
-				'{COPY} "%{LibraryDir.vendor}/assimp/bin/Debug/%{Library.AssimpDebug}.dll" "%{cfg.targetdir}"'
-			}
-			filter{}
+  filter { "system:windows", "configurations:Debug"}
+    postbuildcommands 
+    {
+      '{COPY} "%{LibraryDir.vendor}/assimp/bin/Debug/%{Library.AssimpDebug}.dll" "%{cfg.targetdir}"'
+    }
 
 	filter "configurations:Release"
 		defines "ETH_RELEASE"
 		runtime "Release"
 		optimize "on"
 
-		filter "system:windows"
-			postbuildcommands 
-			{
-				'{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
-			}
-		filter{}
+  filter { "system:windows", "configurations:Release"}
+    postbuildcommands 
+    {
+      '{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
+    }
 
 	filter "configurations:Dist"
 		defines "ETH_DIST"
 		runtime "Release"
 		symbols "on"
 
-		filter "system:windows"
-			postbuildcommands 
-			{
-				'{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
-			}
-		filter{}
+  filter { "system:windows", "configurations:Dist"}
+    postbuildcommands 
+    {
+      '{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
+    }
+

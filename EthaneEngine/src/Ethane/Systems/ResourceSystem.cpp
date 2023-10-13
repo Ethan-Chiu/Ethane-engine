@@ -22,9 +22,14 @@ namespace Ethane {
         
     }
     
-    void ResourceSystem::LoadImage(const std::string& filepath, ImageResource& out_resource)
+    bool ResourceSystem::LoadImage(const std::string& filepath, ImageResource& out_resource)
     {
-        s_ImageLoader.LoadImage(filepath, out_resource);
+        if(!s_ImageLoader.LoadImage(filepath, out_resource))
+        {
+            ETH_CORE_WARN("Fail to load image at {0}", filepath);
+            return false;
+        }
+        return true;
     }
 
     void ResourceSystem::UnloadImage(ImageResource& resource)

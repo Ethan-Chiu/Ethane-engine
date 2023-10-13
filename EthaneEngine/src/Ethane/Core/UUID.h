@@ -1,7 +1,11 @@
 #pragma once
 
 #include "Base.h"
-#include <xhash>
+#ifdef ETH_PLATFORM_MACOS
+    #include <functional>
+#else
+    #include <xhash>
+#endif
 
 namespace Ethane {
 

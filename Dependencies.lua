@@ -19,7 +19,7 @@ IncludeDir["ImGuizmo"] = "%{wks.location}/EthaneEngine/vendor/ImGuizmo"
 
 
 LibraryDir = {}
-LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
+LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/lib"
 LibraryDir["vendor"] = "%{wks.location}/EthaneEngine/vendor"
 
 LibraryDir["assimp"] = "%{LibraryDir.vendor}/assimp/lib"

@@ -1,2 +1,3 @@
 #!/bin/sh
-python Setup.py
+build=$1
+python Setup.py $build

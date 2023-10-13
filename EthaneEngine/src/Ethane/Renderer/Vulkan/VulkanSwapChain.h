@@ -46,6 +46,7 @@ namespace Ethane{
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+        void ListSupportedSurfaceUsages(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 		void CreateCommandBuffers();
         void CreateComputeCommandBuffers();
 
