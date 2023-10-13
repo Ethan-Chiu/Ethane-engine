@@ -34,7 +34,7 @@ INCLUDES += -Isrc -isystem vendor/spdlog/include -isystem vendor/GLFW/include -i
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.3.204.1/macOS/lib -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
+ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.3.204.1/macOS/lib -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -Wl,-rpath,'@loader_path/../../../../../../VulkanSDK/1.3.204.1/macOS/lib' -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef

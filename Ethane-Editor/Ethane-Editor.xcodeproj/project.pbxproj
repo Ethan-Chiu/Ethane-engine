@@ -15,19 +15,38 @@
 /* Begin PBXContainerItemProxy section */
 		1FDD6BE6E3492D9821ECD226 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = B2CBAE1B4CEFA34DFD15845B /* EthaneEngine.xcodeproj */;
+			containerPortal = B2CBAE1B4CEFA34DFD15845B /* ../EthaneEngine/EthaneEngine.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = C4F9A0D3F48B6FC5CF98AF13;
 			remoteInfo = libEthaneEngine.dylib;
 		};
 		CDA2F94D910EBAFFCFB25F8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = B2CBAE1B4CEFA34DFD15845B /* EthaneEngine.xcodeproj */;
+			containerPortal = B2CBAE1B4CEFA34DFD15845B /* ../EthaneEngine/EthaneEngine.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 1E6AE68D403693BF7CEBBCCD;
 			remoteInfo = libEthaneEngine.dylib;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EthaneEditorApp.cpp; path = src/EthaneEditorApp.cpp; sourceTree = "<group>"; };
+		1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorLayer.cpp; path = src/EditorLayer.cpp; sourceTree = "<group>"; };
+		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor"; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
+		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
+		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6928EBC26C99BDF4EE066202 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		2CDE34AECFCC5B605EF23AEE /* Embed Libraries */ = {
@@ -41,25 +60,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
-
-/* Begin PBXFileReference section */
-		17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EthaneEditorApp.cpp; path = src/EthaneEditorApp.cpp; sourceTree = "<group>"; };
-		1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorLayer.cpp; path = src/EditorLayer.cpp; sourceTree = "<group>"; };
-		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
-		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
-		B2CBAE1B4CEFA34DFD15845B /* EthaneEngine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = EthaneEngine.xcodeproj; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
-/* End PBXFileReference section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		6928EBC26C99BDF4EE066202 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		78BAB969B1757FDB410CB7A9 /* Ethane-Editor */ = {
@@ -126,22 +126,9 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
-			attributes = {
-				TargetAttributes = {
-					F51004F8F5C301EA69A4D338 = {
-						DevelopmentTeam = V8LCMNV597;
-						ProvisioningStyle = Manual;
-					};
-				};
-			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "Ethane-Editor" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = en;
 			hasScannedForEncodings = 1;
-			knownRegions = (
-				en,
-				Base,
-			);
 			mainGroup = 78BAB969B1757FDB410CB7A9 /* Ethane-Editor */;
 			projectDirPath = "";
 			projectReferences = (
@@ -197,6 +184,9 @@
 		};
 /* End PBXTargetDependency section */
 
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		2B6A1052427CAB843298A692 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -206,15 +196,32 @@
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
 				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
 				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = ETH_RELEASE;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					ETH_RELEASE,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../EthaneEngine";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
 				OBJROOT = "../bin-int/Release-macosx-x86_64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = NO;
 				SYMROOT = "../bin/Release-macosx-x86_64/Ethane-Editor";
-				SYSTEM_HEADER_SEARCH_PATHS = "../EthaneEngine/src ../EthaneEngine/vendor/spdlog/include ../EthaneEngine/vendor/GLFW/include ../EthaneEngine/vendor/Glad/include ../EthaneEngine/vendor/glm ../EthaneEngine/vendor/stb_image ../EthaneEngine/vendor/entt/include ../../../../VulkanSDK/1.3.204.1/macOS/Include ../EthaneEngine/vendor/assimp/include ../EthaneEngine/vendor/yaml-cpp/include ../EthaneEngine/vendor/imgui $(inherited)";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/src,
+					../EthaneEngine/vendor/spdlog/include,
+					../EthaneEngine/vendor/GLFW/include,
+					../EthaneEngine/vendor/Glad/include,
+					../EthaneEngine/vendor/glm,
+					../EthaneEngine/vendor/stb_image,
+					../EthaneEngine/vendor/entt/include,
+					../../../../VulkanSDK/1.3.204.1/macOS/Include,
+					../EthaneEngine/vendor/assimp/include,
+					"../EthaneEngine/vendor/yaml-cpp/include",
+					../EthaneEngine/vendor/imgui,
+					"$(inherited)",
+				);
 			};
 			name = Release;
 		};
@@ -222,17 +229,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Manual;
 				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-x86_64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = V8LCMNV597;
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
 				PRODUCT_NAME = "Ethane-Editor";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -240,17 +242,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Manual;
 				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-x86_64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = V8LCMNV597;
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
 				PRODUCT_NAME = "Ethane-Editor";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
@@ -264,15 +261,32 @@
 				COPY_PHASE_STRIP = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ETH_DIST;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					ETH_DIST,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../EthaneEngine";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
 				OBJROOT = "../bin-int/Dist-macosx-x86_64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = YES;
 				SYMROOT = "../bin/Dist-macosx-x86_64/Ethane-Editor";
-				SYSTEM_HEADER_SEARCH_PATHS = "../EthaneEngine/src ../EthaneEngine/vendor/spdlog/include ../EthaneEngine/vendor/GLFW/include ../EthaneEngine/vendor/Glad/include ../EthaneEngine/vendor/glm ../EthaneEngine/vendor/stb_image ../EthaneEngine/vendor/entt/include ../../../../VulkanSDK/1.3.204.1/macOS/Include ../EthaneEngine/vendor/assimp/include ../EthaneEngine/vendor/yaml-cpp/include ../EthaneEngine/vendor/imgui $(inherited)";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/src,
+					../EthaneEngine/vendor/spdlog/include,
+					../EthaneEngine/vendor/GLFW/include,
+					../EthaneEngine/vendor/Glad/include,
+					../EthaneEngine/vendor/glm,
+					../EthaneEngine/vendor/stb_image,
+					../EthaneEngine/vendor/entt/include,
+					../../../../VulkanSDK/1.3.204.1/macOS/Include,
+					../EthaneEngine/vendor/assimp/include,
+					"../EthaneEngine/vendor/yaml-cpp/include",
+					../EthaneEngine/vendor/imgui,
+					"$(inherited)",
+				);
 			};
 			name = Dist;
 		};
@@ -280,17 +294,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Manual;
 				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-x86_64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = V8LCMNV597;
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
 				PRODUCT_NAME = "Ethane-Editor";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Dist;
 		};
@@ -304,15 +313,32 @@
 				COPY_PHASE_STRIP = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ETH_DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					ETH_DEBUG,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../EthaneEngine";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
 				OBJROOT = "../bin-int/Debug-macosx-x86_64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = YES;
 				SYMROOT = "../bin/Debug-macosx-x86_64/Ethane-Editor";
-				SYSTEM_HEADER_SEARCH_PATHS = "../EthaneEngine/src ../EthaneEngine/vendor/spdlog/include ../EthaneEngine/vendor/GLFW/include ../EthaneEngine/vendor/Glad/include ../EthaneEngine/vendor/glm ../EthaneEngine/vendor/stb_image ../EthaneEngine/vendor/entt/include ../../../../VulkanSDK/1.3.204.1/macOS/Include ../EthaneEngine/vendor/assimp/include ../EthaneEngine/vendor/yaml-cpp/include ../EthaneEngine/vendor/imgui $(inherited)";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/src,
+					../EthaneEngine/vendor/spdlog/include,
+					../EthaneEngine/vendor/GLFW/include,
+					../EthaneEngine/vendor/Glad/include,
+					../EthaneEngine/vendor/glm,
+					../EthaneEngine/vendor/stb_image,
+					../EthaneEngine/vendor/entt/include,
+					../../../../VulkanSDK/1.3.204.1/macOS/Include,
+					../EthaneEngine/vendor/assimp/include,
+					"../EthaneEngine/vendor/yaml-cpp/include",
+					../EthaneEngine/vendor/imgui,
+					"$(inherited)",
+				);
 			};
 			name = Debug;
 		};
@@ -340,6 +366,6 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
-	};
-	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+};
+rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
 }

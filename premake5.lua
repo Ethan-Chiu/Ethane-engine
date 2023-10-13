@@ -205,6 +205,8 @@ project "EthaneEngine"
 			"%{Library.YamlCpp}"
 		}
 
+    runpathdirs { "%{LibraryDir.VulkanSDK}" }
+
 	filter { "system:macosx", "configurations:Debug" }
 		defines "ETH_DEBUG"
 		runtime "Debug"
