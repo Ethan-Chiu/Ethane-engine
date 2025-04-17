@@ -30,11 +30,11 @@ endif
 PCH = src/ethpch.h
 PCH_PLACEHOLDER = $(OBJDIR)/$(notdir $(PCH))
 GCH = $(PCH_PLACEHOLDER).gch
-INCLUDES += -Isrc -isystem vendor/spdlog/include -isystem vendor/GLFW/include -isystem vendor/Glad/include -isystem vendor/glm -isystem vendor/stb_image -isystem vendor/entt/include -isystem ../../../../VulkanSDK/1.3.204.1/macOS/Include -isystem vendor/assimp/include -isystem vendor/yaml-cpp/include -isystem vendor/imgui
+INCLUDES += -Isrc -isystem vendor/spdlog/include -isystem vendor/GLFW/include -isystem vendor/Glad/include -isystem vendor/glm -isystem vendor/stb_image -isystem vendor/entt/include -isystem ../../../../VulkanSDK/1.4.309.0/macOS/Include -isystem vendor/assimp/include -isystem vendor/yaml-cpp/include -isystem vendor/imgui
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.3.204.1/macOS/lib -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -Wl,-rpath,'@loader_path/../../../../../../VulkanSDK/1.3.204.1/macOS/lib' -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
+ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.4.309.0/macOS/lib -Lvendor/yaml-cpp/build -Lvendor/assimp/lib -Wl,-rpath,'@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib' -m64 -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef
@@ -128,6 +128,7 @@ GENERATED += $(OBJDIR)/VulkanBuffer.o
 GENERATED += $(OBJDIR)/VulkanCommandBuffer.o
 GENERATED += $(OBJDIR)/VulkanComputePipeline.o
 GENERATED += $(OBJDIR)/VulkanContext.o
+GENERATED += $(OBJDIR)/VulkanDescriptorSetStorage.o
 GENERATED += $(OBJDIR)/VulkanDevice.o
 GENERATED += $(OBJDIR)/VulkanFramebuffer.o
 GENERATED += $(OBJDIR)/VulkanImGuiLayer.o
@@ -198,6 +199,7 @@ OBJECTS += $(OBJDIR)/VulkanBuffer.o
 OBJECTS += $(OBJDIR)/VulkanCommandBuffer.o
 OBJECTS += $(OBJDIR)/VulkanComputePipeline.o
 OBJECTS += $(OBJDIR)/VulkanContext.o
+OBJECTS += $(OBJDIR)/VulkanDescriptorSetStorage.o
 OBJECTS += $(OBJDIR)/VulkanDevice.o
 OBJECTS += $(OBJDIR)/VulkanFramebuffer.o
 OBJECTS += $(OBJDIR)/VulkanImGuiLayer.o
@@ -412,6 +414,9 @@ $(OBJDIR)/VulkanComputePipeline.o: src/Ethane/Renderer/Vulkan/VulkanComputePipel
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanContext.o: src/Ethane/Renderer/Vulkan/VulkanContext.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanDescriptorSetStorage.o: src/Ethane/Renderer/Vulkan/VulkanDescriptorSetStorage.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanDevice.o: src/Ethane/Renderer/Vulkan/VulkanDevice.cpp

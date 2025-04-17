@@ -65,6 +65,7 @@
 		AE8256D3627E70054430AD13 /* VulkanRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3A8936DBD4E31FCD111B851B /* VulkanRenderPass.cpp */; };
 		B652EDCF50ACD6C18CE53C0F /* GraphicsContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55CA9A17F3AB9AC9CB29E057 /* GraphicsContext.cpp */; };
 		B9CA2C199F61334B62A64259 /* libGlad.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B187CD810B88E473D2CFDBC1 /* libGlad.a */; };
+		BC089BE59F042217B41C9225 /* VulkanDescriptorSetStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58F85BCD6B1B11BF441C4A0D /* VulkanDescriptorSetStorage.cpp */; };
 		BD4C4BC5A2E352F766286205 /* VulkanDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B26673AD0C678A9FD3AE81ED /* VulkanDevice.cpp */; };
 		BF483ED1557150C316D7AD11 /* WindowsWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8001A27932F7AC2B841A08B9 /* WindowsWindow.cpp */; };
 		C647B39700126A49B56DB9D7 /* VulkanCommandBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C0AD05F00C026D1B52ECE9F /* VulkanCommandBuffer.cpp */; };
@@ -310,6 +311,7 @@
 		581F39E70B1543995C37A027 /* RenderCommandBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RenderCommandBuffer.h; path = src/Ethane/Renderer/RenderCommandBuffer.h; sourceTree = "<group>"; };
 		5841713DCC9BB62F4A7F3F7D /* euler_angles.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = euler_angles.hpp; path = vendor/glm/glm/gtx/euler_angles.hpp; sourceTree = "<group>"; };
 		589AF3229CE99894DF10D162 /* round.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = round.inl; path = vendor/glm/glm/gtc/round.inl; sourceTree = "<group>"; };
+		58F85BCD6B1B11BF441C4A0D /* VulkanDescriptorSetStorage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanDescriptorSetStorage.cpp; path = src/Ethane/Renderer/Vulkan/VulkanDescriptorSetStorage.cpp; sourceTree = "<group>"; };
 		599CA6B7F77DA769CEFBECF7 /* type_quat_simd.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_quat_simd.inl; path = vendor/glm/glm/detail/type_quat_simd.inl; sourceTree = "<group>"; };
 		59BAF6AFCADD97A180A444EF /* mat3x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = mat3x3.hpp; path = vendor/glm/glm/mat3x3.hpp; sourceTree = "<group>"; };
 		5A444E2538E6E997EDC8EC65 /* scalar_relational.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_relational.inl; path = vendor/glm/glm/ext/scalar_relational.inl; sourceTree = "<group>"; };
@@ -541,6 +543,7 @@
 		B374A67DA773EFEF2C5F04BD /* VulkanImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanImage.h; path = src/Ethane/Renderer/Vulkan/VulkanImage.h; sourceTree = "<group>"; };
 		B3DD3195A4D49F8710D81FD5 /* matrix_uint3x4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint3x4.hpp; path = vendor/glm/glm/ext/matrix_uint3x4.hpp; sourceTree = "<group>"; };
 		B401DA920164D0C47783D0D2 /* Math.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Math.cpp; path = src/Ethane/Math/Math.cpp; sourceTree = "<group>"; };
+		B458C437277A5129883F9277 /* VulkanDescriptorSetStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanDescriptorSetStorage.h; path = src/Ethane/Renderer/Vulkan/VulkanDescriptorSetStorage.h; sourceTree = "<group>"; };
 		B50B4E5F93ADE9D1488FEC9F /* vector_relational.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_relational.inl; path = vendor/glm/glm/ext/vector_relational.inl; sourceTree = "<group>"; };
 		B5447B9C2866088E892B49DC /* VulkanShaderSystem.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanShaderSystem.cpp; path = src/Ethane/Renderer/Vulkan/ShaderUtils/VulkanShaderSystem.cpp; sourceTree = "<group>"; };
 		B558A964574245564E6957A4 /* reciprocal.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = reciprocal.hpp; path = vendor/glm/glm/gtc/reciprocal.hpp; sourceTree = "<group>"; };
@@ -1567,6 +1570,8 @@
 				36B1055DFB665BCFAFD5039D /* VulkanComputePipeline.h */,
 				2DD787770C7A22E9C15C25B7 /* VulkanContext.cpp */,
 				6E15EC017AA09E73F5856A41 /* VulkanContext.h */,
+				58F85BCD6B1B11BF441C4A0D /* VulkanDescriptorSetStorage.cpp */,
+				B458C437277A5129883F9277 /* VulkanDescriptorSetStorage.h */,
 				B26673AD0C678A9FD3AE81ED /* VulkanDevice.cpp */,
 				A3562B57944D994900511997 /* VulkanDevice.h */,
 				E95976B781D16429ADB854F7 /* VulkanFramebuffer.cpp */,
@@ -1744,6 +1749,7 @@
 				C647B39700126A49B56DB9D7 /* VulkanCommandBuffer.cpp in Sources */,
 				775420CB701EE07DFA93470B /* VulkanComputePipeline.cpp in Sources */,
 				7879CE2F1FEF69E1C8B4746F /* VulkanContext.cpp in Sources */,
+				BC089BE59F042217B41C9225 /* VulkanDescriptorSetStorage.cpp in Sources */,
 				BD4C4BC5A2E352F766286205 /* VulkanDevice.cpp in Sources */,
 				CEC66D6F722D9B21896353AF /* VulkanFramebuffer.cpp in Sources */,
 				7CD2E02B6A3A72DD0734666B /* VulkanImage.cpp in Sources */,
@@ -1832,10 +1838,10 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
-					"@loader_path/../../../../../../VulkanSDK/1.3.204.1/macOS/lib",
+					"@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					../../../../VulkanSDK/1.3.204.1/macOS/lib,
+					../../../../VulkanSDK/1.4.309.0/macOS/lib,
 					"vendor/yaml-cpp/build",
 					vendor/assimp/lib,
 				);
@@ -1860,7 +1866,7 @@
 					vendor/glm,
 					vendor/stb_image,
 					vendor/entt/include,
-					../../../../VulkanSDK/1.3.204.1/macOS/Include,
+					../../../../VulkanSDK/1.4.309.0/macOS/Include,
 					vendor/assimp/include,
 					"vendor/yaml-cpp/include",
 					vendor/imgui,
@@ -1907,10 +1913,10 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
-					"@loader_path/../../../../../../VulkanSDK/1.3.204.1/macOS/lib",
+					"@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					../../../../VulkanSDK/1.3.204.1/macOS/lib,
+					../../../../VulkanSDK/1.4.309.0/macOS/lib,
 					"vendor/yaml-cpp/build",
 					vendor/assimp/lib,
 				);
@@ -1935,7 +1941,7 @@
 					vendor/glm,
 					vendor/stb_image,
 					vendor/entt/include,
-					../../../../VulkanSDK/1.3.204.1/macOS/Include,
+					../../../../VulkanSDK/1.4.309.0/macOS/Include,
 					vendor/assimp/include,
 					"vendor/yaml-cpp/include",
 					vendor/imgui,
@@ -1968,10 +1974,10 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
-					"@loader_path/../../../../../../VulkanSDK/1.3.204.1/macOS/lib",
+					"@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					../../../../VulkanSDK/1.3.204.1/macOS/lib,
+					../../../../VulkanSDK/1.4.309.0/macOS/lib,
 					"vendor/yaml-cpp/build",
 					vendor/assimp/lib,
 				);
@@ -1996,7 +2002,7 @@
 					vendor/glm,
 					vendor/stb_image,
 					vendor/entt/include,
-					../../../../VulkanSDK/1.3.204.1/macOS/Include,
+					../../../../VulkanSDK/1.4.309.0/macOS/Include,
 					vendor/assimp/include,
 					"vendor/yaml-cpp/include",
 					vendor/imgui,
