@@ -378,7 +378,6 @@ namespace Ethane {
 
     void VulkanSwapChain::EndFrame()
     {
-        auto device = m_Device->GetVulkanDevice();
         VulkanCommandBuffer currentCommandBuffer = m_GraphicsCommandBuffers[m_CurrentFrame];
         VkCommandBuffer currentCmdBufferHandle = currentCommandBuffer.GetHandle();
 

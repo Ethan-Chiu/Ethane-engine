@@ -32,7 +32,7 @@ namespace Ethane {
         auto newEntity = m_ActiveScene->CreateEntity("Cube");
         m_Mesh = AssetManager::GetAssetMesh("res/meshes/default/Cube.fbx");
         m_Mesh->Upload();
-        m_Mat = Material::Create(ShaderSystem::Get("offscreen").get());
+        m_Mat = Material::Create(ShaderSystem::Get("test3D").get());
         newEntity.AddComponent<MeshComponent>(m_Mesh, m_Mat);
 	}
 
