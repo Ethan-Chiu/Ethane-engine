@@ -27,12 +27,15 @@ namespace Ethane
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
 		m_Window->SetVSync(false);
 
+        // Create graphic context (Don't create the context (Instance, Device, Queue) in the window creation process)
+        // Create swapchain with the window handle
+        
 		RendererConfig config = {
 			m_Window->GetWidth(),
 			m_Window->GetHeight(),
 			glm::vec2(m_Window->GetWidth() / 400, m_Window->GetHeight() / 300)
 		};
-		Renderer::Init(m_Window->GetGraphicsContext(), config);
+		Renderer::Init(m_Window->GetGraphicsContext(), config); // Should not get the context from window
 
 		ResourceSystem::Init();
 

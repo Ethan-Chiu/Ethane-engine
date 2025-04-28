@@ -8,6 +8,7 @@
 
 #include "Ethane/Scene/Components.h"
 
+#include "Ethane/GfxBackend/Resource.h"
 
 namespace Ethane {
 
@@ -34,6 +35,15 @@ namespace Ethane {
         m_Mesh->Upload();
         m_Mat = Material::Create(ShaderSystem::Get("test3D").get());
         newEntity.AddComponent<MeshComponent>(m_Mesh, m_Mat);
+        
+//        RefCountPtr t1();   // ref count = 1
+//        {
+//            RefCountPtr<Texture> t2 = t1;          // ref count = 2
+//            std::cout << "Inside scope, count = " << t1->use_count() << "\n";
+//        }
+//        // t2 is destroyed, calling release(); count = 1
+//        std::cout << "After scope, count = " << t1->use_count() << "\n";
+//        t1 = nullptr;
 	}
 
 	void EditorLayer::OnDetach()
