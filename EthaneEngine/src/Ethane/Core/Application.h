@@ -5,6 +5,7 @@
 #include "Ethane/Events/ApplicationEvent.h"
 #include "Window.h"
 #include "LayerStack.h"
+#include "Ethane/GfxBackend/GfxBackendAPI.h"
 #include "Ethane/Core/Timestep.h"
 #include "Ethane/ImGui/ImGuiLayer.h"
 
@@ -50,6 +51,7 @@ namespace Ethane
 	private:
 		ApplicationCommandLineArgs m_CommandLineArgs;
 		Scope<Window> m_Window;
+        Scope<GfxBackendAPI> m_RendererBackend;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true;
 		bool m_Minimized = false;

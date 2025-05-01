@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Ethane/Core/Window.h"
-#include "Ethane/Renderer/GraphicsContext.h"
+//#include "Ethane/Renderer/GraphicsContext.h"
 #include <GLFW/glfw3.h>
 
 namespace Ethane {
@@ -13,9 +13,6 @@ namespace Ethane {
 	public:
 		MacosWindow(const WindowProps& props);
 		virtual ~MacosWindow();
-
-		bool BeginFrame() override;
-		void EndFrame() override;
 
 		void PollEvent() override;
 
@@ -31,14 +28,14 @@ namespace Ethane {
 		bool IsVSync() const override;
 
 		inline virtual void* GetNativeWindow() const override { return m_Window; }
-        virtual const GraphicsContext* GetGraphicsContext() const override { return m_Context.get(); }
+//        virtual const GraphicsContext* GetGraphicsContext() const override { return m_Context.get(); }
 	
 	private:
 		virtual void Init(const WindowProps& props);
 
 	private:
 		GLFWwindow* m_Window;
-        Scope<GraphicsContext> m_Context;
+//        Scope<GraphicsContext> m_Context;
 
 		struct WindowData
 		{

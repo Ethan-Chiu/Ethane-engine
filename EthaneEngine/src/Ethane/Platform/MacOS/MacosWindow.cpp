@@ -51,8 +51,8 @@ namespace Ethane {
 
 		m_Window = glfwCreateWindow((int)props.ScreenCoordWidth, (int)props.ScreenCoordHeight, m_Data.Title.c_str(), nullptr, nullptr);
 
-        m_Context = GraphicsContext::Create(m_Window);
-		m_Context->Init();
+//        m_Context = GraphicsContext::Create(m_Window);
+//		m_Context->Init();
         
         int width, height;
         glfwGetFramebufferSize(m_Window, &width, &height);
@@ -158,18 +158,7 @@ namespace Ethane {
 		ETH_PROFILE_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
-        m_Context->Shutdown();
-	}
-
-	bool MacosWindow::BeginFrame()
-	{
-        return m_Context->BeginFrame();
-	}
-
-	void MacosWindow::EndFrame()
-	{
-		ETH_PROFILE_FUNCTION();
-        m_Context->SwapBuffers();
+//        m_Context->Shutdown();
 	}
 
 	void MacosWindow::PollEvent()
@@ -192,7 +181,7 @@ namespace Ethane {
 
 	void MacosWindow::OnResize(uint32_t width, uint32_t height)
 	{
-		 m_Context->OnResize(width, height);
+//		 m_Context->OnResize(width, height);
 	}
 
 	bool MacosWindow::IsVSync() const

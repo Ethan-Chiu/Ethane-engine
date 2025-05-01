@@ -23,15 +23,15 @@ namespace Ethane {
         
     private:
         Ref<Scene> m_ActiveScene;
-        Ref<SceneRenderer> m_ViewportRenderer;
+//        Ref<SceneRenderer> m_ViewportRenderer;
         
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
         bool m_NeedResize = false;
         
-        EditorCamera m_EditorCamera;
+//        EditorCamera m_EditorCamera;
 
-        Ref<Mesh> m_Mesh;
-        Ref<Material> m_Mat;
+//        Ref<Mesh> m_Mesh;
+//        Ref<Material> m_Mat;
 	};
 
 }

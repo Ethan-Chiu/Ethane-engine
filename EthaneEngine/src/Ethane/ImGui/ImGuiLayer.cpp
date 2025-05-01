@@ -3,19 +3,18 @@
 
 #include <imgui.h>
 
-#include "Ethane/Renderer/Vulkan/ImGui/VulkanImGuiLayer.h"
-
-#include "Ethane/Renderer/RendererAPI.h"
+//#include "Ethane/Renderer/Vulkan/ImGui/VulkanImGuiLayer.h"
+//#include "Ethane/Renderer/RendererAPI.h"
 
 namespace Ethane {
 	
 	ImGuiLayer* ImGuiLayer::Create()
 	{
-		switch (RendererAPI::GetAPI())
-		{
-			case RendererAPI::API::None:    return nullptr;
-			case RendererAPI::API::Vulkan:  return new VulkanImGuiLayer();
-		}
+//		switch (RendererAPI::GetAPI())
+//		{
+//			case RendererAPI::API::None:    return nullptr;
+//			case RendererAPI::API::Vulkan:  return new VulkanImGuiLayer();
+//		}
 		ETH_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}

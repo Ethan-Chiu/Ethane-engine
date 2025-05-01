@@ -4,7 +4,7 @@
 
 #include "Ethane/Core/Timestep.h"
 #include "Ethane/Renderer/EditorCamera.h"
-#include "Ethane/Renderer/Material.h"
+//#include "Ethane/Renderer/Material.h"
 
 namespace Ethane {
 

@@ -24,7 +24,7 @@ namespace Ethane {
         virtual void BeginFrame() override;
         virtual void EndFrame() override;
     public:
-        virtual ~VulkanGfxBackendAPI() = default;
+        ~VulkanGfxBackendAPI() = default;
         
     private:
         VulkanContext m_Context;

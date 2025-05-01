@@ -4,8 +4,8 @@
 #include "Components.h"
 
 // Renderer
-#include "Ethane/Renderer/Renderer.h"
-#include "Ethane/Renderer/SceneRenderer.h"
+//#include "Ethane/Renderer/Renderer.h"
+//#include "Ethane/Renderer/SceneRenderer.h"
 
 #include <glm/glm.hpp>
 
@@ -83,50 +83,50 @@ namespace Ethane {
 		}
 
 		// Render
-		if (mainCamera)
-		{
-			mainCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-
-			renderer->BeginScene(*mainCamera, cameraTransform);
-
-			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
-			{
-				auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
-				if (meshComponent.MeshRef)
-				{
-					// glm::mat4 transform = GetTransformRelativeToParent(Entity{ entity, this });
-
-					renderer->SubmitMesh(meshComponent.MeshRef.get(), meshComponent.MatRef.get(), transformComponent.GetTransform());
-				}
-			}
-
-			renderer->EndScene();
-		}
+//		if (mainCamera)
+//		{
+//			mainCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+//
+//			renderer->BeginScene(*mainCamera, cameraTransform);
+//
+//			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+//			for (auto entity : group)
+//			{
+//				auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+//				if (meshComponent.MeshRef)
+//				{
+//					// glm::mat4 transform = GetTransformRelativeToParent(Entity{ entity, this });
+//
+//					renderer->SubmitMesh(meshComponent.MeshRef.get(), meshComponent.MatRef.get(), transformComponent.GetTransform());
+//				}
+//			}
+//
+//			renderer->EndScene();
+//		}
 	}
 
 	void Scene::OnUpdateEditor(Ref<SceneRenderer> renderer, Timestep ts, EditorCamera& camera)
 	{
-		renderer->BeginScene(camera, camera.GetViewMatrix());
-
-		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-		for (auto entity : group)
-		{
-			auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
-			if (meshComponent.MeshRef)
-			{
-				renderer->SubmitMesh(meshComponent.MeshRef.get(), meshComponent.MatRef.get(), transformComponent.GetTransform());
-			}
-		}
-
-		auto lightView = m_Registry.view<DirectionalLightComponent>();
-		for (auto directionalLight : lightView)
-		{
-			auto& dirLight = lightView.get<DirectionalLightComponent>(directionalLight);
-			renderer->SubmitDirLight({dirLight.Color, dirLight.Direction});
-		}
-
-		renderer->EndScene();
+//		renderer->BeginScene(camera, camera.GetViewMatrix());
+//
+//		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+//		for (auto entity : group)
+//		{
+//			auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+//			if (meshComponent.MeshRef)
+//			{
+//				renderer->SubmitMesh(meshComponent.MeshRef.get(), meshComponent.MatRef.get(), transformComponent.GetTransform());
+//			}
+//		}
+//
+//		auto lightView = m_Registry.view<DirectionalLightComponent>();
+//		for (auto directionalLight : lightView)
+//		{
+//			auto& dirLight = lightView.get<DirectionalLightComponent>(directionalLight);
+//			renderer->SubmitDirLight({dirLight.Color, dirLight.Direction});
+//		}
+//
+//		renderer->EndScene();
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
@@ -185,10 +185,10 @@ namespace Ethane {
 	{
 	}
 
-	template<>
-	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
-	{
-	}
+//	template<>
+//	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
+//	{
+//	}
 
     template<typename T>
     void Scene::OnComponentAdded(Entity entity, T& component)

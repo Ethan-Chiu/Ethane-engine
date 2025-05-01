@@ -7,9 +7,9 @@
 
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
-#include "Ethane/Renderer/Mesh.h"
-#include "Ethane/Renderer/Texture.h"
-#include "Ethane/Renderer/Material.h"
+//#include "Ethane/Renderer/Mesh.h"
+//#include "Ethane/Renderer/Texture.h"
+//#include "Ethane/Renderer/Material.h"
 
 namespace Ethane {
 
@@ -67,19 +67,19 @@ namespace Ethane {
 		}
 	};
 
-	struct MeshComponent
-	{
-		Ref<Mesh> MeshRef = nullptr;
-        Ref<Material> MatRef = nullptr;
-        // Ref<Ethane::MaterialTable> MaterialTable = Ref<Hazel::MaterialTable>::Create();
-	
-        MeshComponent() = default;
-        MeshComponent(const MeshComponent&) = default;
-		MeshComponent(const Ref<Mesh>& mesh, const Ref<Material> material)
-			: MeshRef(mesh), MatRef(material) {}
-	
-		operator Ref<Mesh>() { return MeshRef; }
-	};
+//	struct MeshComponent
+//	{
+//		Ref<Mesh> MeshRef = nullptr;
+//        Ref<Material> MatRef = nullptr;
+//        // Ref<Ethane::MaterialTable> MaterialTable = Ref<Hazel::MaterialTable>::Create();
+//	
+//        MeshComponent() = default;
+//        MeshComponent(const MeshComponent&) = default;
+//		MeshComponent(const Ref<Mesh>& mesh, const Ref<Material> material)
+//			: MeshRef(mesh), MatRef(material) {}
+//	
+//		operator Ref<Mesh>() { return MeshRef; }
+//	};
 
 	struct DirectionalLightComponent
 	{

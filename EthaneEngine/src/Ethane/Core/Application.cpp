@@ -3,11 +3,11 @@
 #include "Ethane/Core/Log.h"
 
 #include <GLFW/glfw3.h>
-#include "Ethane/Renderer/Renderer.h"
+//#include "Ethane/Renderer/Renderer.h"
 #include "Ethane/Asset/AssetManager.h"
 #include "Ethane/Systems/ResourceSystem.h"
-#include "Ethane/Systems/TextureSystem.h"
-#include "Ethane/Systems/ShaderSystem.h"
+//#include "Ethane/Systems/TextureSystem.h"
+//#include "Ethane/Systems/ShaderSystem.h"
 
 namespace Ethane
 {
@@ -28,20 +28,23 @@ namespace Ethane
 		m_Window->SetVSync(false);
 
         // Create graphic context (Don't create the context (Instance, Device, Queue) in the window creation process)
+        GfxBackendAPI::SetAPI(GfxBackendAPI::API::Vulkan);
+        m_RendererBackend = GfxBackendAPI::Create();
+        m_RendererBackend->Init();
         // Create swapchain with the window handle
         
-		RendererConfig config = {
-			m_Window->GetWidth(),
-			m_Window->GetHeight(),
-			glm::vec2(m_Window->GetWidth() / 400, m_Window->GetHeight() / 300)
-		};
-		Renderer::Init(m_Window->GetGraphicsContext(), config); // Should not get the context from window
+//		RendererConfig config = {
+//			m_Window->GetWidth(),
+//			m_Window->GetHeight(),
+//			glm::vec2(m_Window->GetWidth() / 400, m_Window->GetHeight() / 300)
+//		};
+//		Renderer::Init(m_Window->GetGraphicsContext(), config); // Should not get the context from window
 
 		ResourceSystem::Init();
 
-		TextureSystem::Init();
+//		TextureSystem::Init();
 
-		ShaderSystem::Init();
+//		ShaderSystem::Init();
 
 		AssetManager::Init();
 
@@ -115,31 +118,27 @@ namespace Ethane
 
 			if (!m_Minimized)
 			{
-				if (m_Window->BeginFrame())
-				{
-					Renderer::BeginFrame();
-					{
-						ETH_PROFILE_SCOPE("LayerStack OnUpdate");
+//				Renderer::BeginFrame();
+                {
+                    ETH_PROFILE_SCOPE("LayerStack OnUpdate");
 
-						for (Layer* layer : m_LayerStack)
-							layer->OnUpdate(timestep);
-					}
+                    for (Layer* layer : m_LayerStack)
+                        layer->OnUpdate(timestep);
+                }
 
-					if (m_ImGuiLayer)
-					{
-						m_ImGuiLayer->Begin();
-						{
-							ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
+                if (m_ImGuiLayer)
+                {
+                    m_ImGuiLayer->Begin();
+                    {
+                        ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
 
-							for (Layer* layer : m_LayerStack)
-								layer->OnImGuiRender();
-						}
-						m_ImGuiLayer->End();
-					}
+                        for (Layer* layer : m_LayerStack)
+                            layer->OnImGuiRender();
+                    }
+                    m_ImGuiLayer->End();
+                }
 
-					Renderer::EndFrame();
-					m_Window->EndFrame();
-				}
+//				Renderer::EndFrame();
 			}
 		}
 	}
@@ -153,13 +152,13 @@ namespace Ethane
 
 		AssetManager::Shutdown();
 
-		ShaderSystem::Shutdown();
+//		ShaderSystem::Shutdown();
 
-		TextureSystem::Shutdown();
+//		TextureSystem::Shutdown();
 
 		ResourceSystem::Shutdown();
 
-		Renderer::Shutdown();
+//		Renderer::Shutdown();
 
 		m_Window->Shutdown();
 

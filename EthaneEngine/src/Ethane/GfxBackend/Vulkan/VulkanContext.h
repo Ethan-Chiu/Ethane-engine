@@ -158,6 +158,7 @@ protected:
 class VulkanDevice
 {
 public:
+    VulkanDevice() = default;
     VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
     ~VulkanDevice() = default;
     void Destroy();
@@ -192,6 +193,7 @@ class VulkanGfxBackendAPI;
 class VulkanContext
 {
 public:
+    VulkanContext() = default;
 
 protected:
     void Init(ContextCreateInfo& info);

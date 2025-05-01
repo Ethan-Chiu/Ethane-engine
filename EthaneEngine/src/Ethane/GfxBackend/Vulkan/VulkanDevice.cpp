@@ -1,6 +1,6 @@
 #include "ethpch.h"
 #include "VulkanContext.h"
-#include "VulkanDevice.h"
+#include "VulkanUtils.h"
 
 namespace Ethane {
 
