@@ -6,8 +6,8 @@
 //
 #pragma once
 
+#include <optional>
 #include <vulkan/vulkan.h>
-#include "VulkanDevice.h"
 
 namespace Ethane {
 
@@ -76,8 +76,19 @@ struct ContextCreateInfo
 };
 
 
-class VulkanGfxBackendAPI;
-class VulkanContext
+enum class QueueFamilyTypes {
+    Graphics = 0,
+    Compute = 1,
+    Transfer = 2
+};
+
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
+class VulkanPhysicalDevice
 {
 public:
     // This struct holds all core feature information for a physical device
@@ -92,25 +103,105 @@ public:
         VkPhysicalDeviceVulkan12Properties properties12{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES };
     };
 
+    struct QueueFamilyIndices
+    {
+        std::optional<uint32_t> Graphics;
+        std::optional<uint32_t> Compute;
+        std::optional<uint32_t> Transfer;
+        std::optional<uint32_t> Present;
+        
+        bool isComplete()
+        {
+            return Graphics.has_value();
+        }
+    };
+    
+public:
+    void Init(VkInstance vkInstance, const ContextCreateInfo& info, VkSurfaceKHR surface);
+    void Destroy();
+    
+    bool IsInitialized() const { return m_PhysicalDevice != VK_NULL_HANDLE; }
+
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const;
+    void PrintSelectedDeviceInfo();
+
+    // Getter
+    VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
+    const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
+
+private:
+    std::vector<uint32_t> GetCompatibleDevices(VkInstance vkInstance, const ContextCreateInfo& info);
+    bool HasMandatoryExtensions(VkPhysicalDevice device, const ContextCreateInfo& info);
+    bool InitPhysicalFeatures(const ContextCreateInfo& info);
+
+    // Utilities
+    int32_t RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface = VK_NULL_HANDLE);
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags, VkSurfaceKHR surface);
+protected:
+    // Device info and handle
+    PhysicalDeviceInfo m_PhysicalInfo;
+    VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+    
+    // Device Extension
+    std::unordered_set<std::string> m_SupportedDeviceExtensions;
+    std::vector<std::string> m_UsedDeviceExtensions;
+    VkPhysicalDeviceFeatures2 m_UsedDeviceFeatures;
+
+    const uint32_t m_ConstRequestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+    QueueFamilyIndices m_QueueFamilyIndices;
+
+    friend class VulkanDevice;
+    friend class VulkanContext;
+};
+
+
+class VulkanDevice
+{
+public:
+    VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
+    ~VulkanDevice() = default;
+    void Destroy();
+
+    void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
+
+    // Getter
+    VkDevice GetVulkanDevice() const { return m_LogicalDevice; }
+    const VulkanPhysicalDevice* GetPhysicalDevice() const { return m_PhysicalDevice; }
+
+    VkQueue GetGraphicsQueue() const { return m_GraphicsQueue; }
+    VkQueue GetComputeQueue() const { return m_ComputeQueue; }
+
+    VkCommandPool GetGraphicsCommandPool() const { return m_GraphicsCommandPool; }
+    VkCommandPool GetComputeCommandPool() const { return m_ComputeCommandPool; }
+private:
+    void QueueCreateInfo();
+
+private:
+    VkDevice m_LogicalDevice = VK_NULL_HANDLE;
+    const VulkanPhysicalDevice* m_PhysicalDevice;
+
+    std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
+
+    VkQueue m_GraphicsQueue, m_ComputeQueue, m_TransferQueue;
+
+    VkCommandPool m_GraphicsCommandPool, m_ComputeCommandPool;
+};
+
+
+class VulkanGfxBackendAPI;
+class VulkanContext
+{
+public:
+
 protected:
     void Init(ContextCreateInfo& info);
+    bool InitDevice(VkSurfaceKHR surface);
     void Destroy();
-private:
-    bool InitInstance(const ContextCreateInfo& info);
-    bool InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices);
     
+private:
+    bool InitInstance();
     void InitDebugUtils();
-    VkResult FillFilteredNameArray(std::vector<std::string>& used,
-        const std::vector<VkLayerProperties>& properties,
-        const ContextCreateInfo::EntryArray& requested);
-    VkResult FillFilteredNameArray(std::vector<std::string>& used,
-        const std::vector<VkExtensionProperties>& properties,
-        const ContextCreateInfo::EntryArray& requested,
-        std::vector<void*>& featureStructs);
-    std::vector<uint32_t> GetCompatibleDevices(const ContextCreateInfo& info);
-    bool HasMandatoryExtensions(VkPhysicalDevice physicalDevice, const ContextCreateInfo& info, bool bVerbose);
-    bool CheckEntryArray(const std::vector<VkExtensionProperties>& properties, const ContextCreateInfo::EntryArray& requested, bool bVerbose);
-    void InitPhysicalFeatures(PhysicalDeviceInfo& info, VkPhysicalDevice physicalDevice, uint32_t versionMajor, uint32_t versionMinor);
+    
     void FindSupportFormat();
     std::vector<VkFormat> FindAllSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     
@@ -118,21 +209,45 @@ private:
 protected:
     VkInstance m_VulkanInstance = nullptr;
     VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
+    ContextCreateInfo m_ContextInfo;
 
     // Instance Extension
     std::vector<std::string> m_UsedInstanceLayers;
     std::vector<std::string> m_UsedInstanceExtensions;
 
-    // Device Extension
-    std::unordered_set<std::string> m_SupportedDeviceExtensions;
-    std::vector<std::string> m_UsedDeviceExtensions;
-
     // Image format
     std::vector<VkFormat> m_SupportedSampleFormat;
     VkFormat m_DepthFormat;
     
-    PhysicalDeviceInfo m_PhysicalInfo;
-    Scope<VulkanPhysicalDevice> m_PhysicalDevice = nullptr;
-    Scope<VulkanDevice> m_Device = nullptr;
+    VulkanPhysicalDevice m_PhysicalDevice;
+    VulkanDevice m_Device;
 };
+
+namespace VulkanContextUtils {
+
+VkResult CheckAndFillLayerProperties(const std::vector<VkLayerProperties>& properties,
+                              const ContextCreateInfo::EntryArray& requested,
+                              std::vector<std::string>& used);
+
+bool CheckExtensionProperties(const std::vector<VkExtensionProperties>& properties,
+                              const ContextCreateInfo::EntryArray& requested,
+                              bool bVerbose);
+
+VkResult CheckAndFillExtensionProperties(const std::vector<VkExtensionProperties>& properties,
+                                         const ContextCreateInfo::EntryArray& requested,
+                                         std::vector<std::string>& used,
+                                         std::vector<void*>& featureStructs);
+
+static const char* VulkanVendorIDToString(uint32_t vendorID)
+{
+    switch (vendorID)
+    {
+    case 0x10DE: return "NVIDIA";
+    case 0x1002: return "AMD";
+    case 0x8086: return "INTEL";
+    case 0x13B5: return "ARM";
+    }
+    return "Unknown";
+}
+}
 }

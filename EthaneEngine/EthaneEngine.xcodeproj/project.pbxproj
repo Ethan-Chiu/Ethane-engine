@@ -543,7 +543,6 @@
 		AACAC4A52DBFB4EB00ABAC74 /* VulkanContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanContext.h; path = src/Ethane/GfxBackend/Vulkan/VulkanContext.h; sourceTree = "<group>"; };
 		AACAC4A62DBFBBC000ABAC74 /* VulkanContext.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanContext.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanContext.cpp; sourceTree = "<group>"; };
 		AACAC4A82DBFC41A00ABAC74 /* VulkanUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanUtils.h; path = src/Ethane/GfxBackend/Vulkan/VulkanUtils.h; sourceTree = "<group>"; };
-		AACAC4AC2DBFC7FB00ABAC74 /* VulkanDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanDevice.h; path = src/Ethane/GfxBackend/Vulkan/VulkanDevice.h; sourceTree = "<group>"; };
 		AACAC4AD2DBFC7FB00ABAC74 /* VulkanDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanDevice.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanDevice.cpp; sourceTree = "<group>"; };
 		AAD135318973D0A33E55D371 /* scalar_relational.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_relational.hpp; path = vendor/glm/glm/gtx/scalar_relational.hpp; sourceTree = "<group>"; };
 		AAE00FBBAA82F2EDE4D7A5FB /* MacosWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MacosWindow.h; path = src/Ethane/Platform/MacOS/MacosWindow.h; sourceTree = "<group>"; };
@@ -1270,7 +1269,6 @@
 		85FF94A1B7F8DF5331D81AE1 /* Vulkan */ = {
 			isa = PBXGroup;
 			children = (
-				AACAC4AC2DBFC7FB00ABAC74 /* VulkanDevice.h */,
 				AACAC4AD2DBFC7FB00ABAC74 /* VulkanDevice.cpp */,
 				AACAC4A82DBFC41A00ABAC74 /* VulkanUtils.h */,
 				808FC77B16B8D96DD81F35BB /* VulkanGfxBackendAPI.h */,

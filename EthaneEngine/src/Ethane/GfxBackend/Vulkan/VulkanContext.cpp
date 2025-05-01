@@ -87,6 +87,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(
 
 void VulkanContext::Init(ContextCreateInfo& info)
 {
+    m_ContextInfo = info;
     ETH_CORE_ASSERT(glfwVulkanSupported(), "GLFW vulkan support error");
     
     //--------------------------------------------------------------------------------------------------
@@ -94,29 +95,28 @@ void VulkanContext::Init(ContextCreateInfo& info)
     uint32_t required_extension_count = 0;
     const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&required_extension_count);
     
-    ContextCreateInfo contextCreateInfo;
     for (uint8_t i = 0; i < required_extension_count; i++)
     {
         ETH_CORE_TRACE("{0} is needed by glfw", glfw_extensions[i]);
-        contextCreateInfo.AddInstanceExtension(glfw_extensions[i]);
+        m_ContextInfo.AddInstanceExtension(glfw_extensions[i]);
     }
-    contextCreateInfo.AddDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    contextCreateInfo.AddDeviceExtension("VK_KHR_portability_subset", true);
-    if (contextCreateInfo.Validation)
+    m_ContextInfo.AddDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    m_ContextInfo.AddDeviceExtension("VK_KHR_portability_subset", true);
+    if (m_ContextInfo.Validation)
     {
-        contextCreateInfo.AddInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, true);
-        contextCreateInfo.AddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        m_ContextInfo.AddInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, true);
+        m_ContextInfo.AddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
         const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
-        contextCreateInfo.AddInstanceLayer(validationLayerName);
+        m_ContextInfo.AddInstanceLayer(validationLayerName);
         const char* fpsLayerName = "VK_LAYER_LUNARG_monitor";
-        contextCreateInfo.AddInstanceLayer(fpsLayerName, true);
+        m_ContextInfo.AddInstanceLayer(fpsLayerName, true);
     }
     // RayTracing: Activate the ray tracing extension
     VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR };
-    contextCreateInfo.AddDeviceExtension(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, true, &accelFeature);  // To build acceleration structures
+    m_ContextInfo.AddDeviceExtension(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, true, &accelFeature);  // To build acceleration structures
     VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeature{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR };
-    contextCreateInfo.AddDeviceExtension(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME, true, &rtPipelineFeature);  // To use vkCmdTraceRaysKHR
-    contextCreateInfo.AddDeviceExtension(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, true);  // Required by ray tracing pipeline
+    m_ContextInfo.AddDeviceExtension(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME, true, &rtPipelineFeature);  // To use vkCmdTraceRaysKHR
+    m_ContextInfo.AddDeviceExtension(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, true);  // Required by ray tracing pipeline
     
     // NOTE: use this to enable validation features
     VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
@@ -127,33 +127,23 @@ void VulkanContext::Init(ContextCreateInfo& info)
 
     //--------------------------------------------------------------------------------------------------
     // Create Instance
-    if (!InitInstance(contextCreateInfo)) {
+    if (!InitInstance()) {
         ETH_CORE_ERROR("Instance creation failed!");
     }
 
     //--------------------------------------------------------------------------------------------------
-    // Get compatible devices
-    auto compatibleDevices = GetCompatibleDevices(contextCreateInfo);
-    if (compatibleDevices.empty()) {
-        ETH_CORE_ERROR("No compatible device found");
-    }
-
-    //--------------------------------------------------------------------------------------------------
     // Physical device & logical device
-    if (!InitDevice(contextCreateInfo, compatibleDevices)) {
-        ETH_CORE_ERROR("Device initialization failed");
-    }
+    // if (!InitDevice(contextCreateInfo)) {
+    //     ETH_CORE_ERROR("Device initialization failed");
+    // }
 }
 
 void VulkanContext::Destroy()
 {
-    vkDeviceWaitIdle(m_Device->GetVulkanDevice());
+    vkDeviceWaitIdle(m_Device.GetVulkanDevice());
 
-    m_Device->Destroy();
-    m_Device = nullptr;
-
-    m_PhysicalDevice->Destroy();
-    m_PhysicalDevice = nullptr;
+    m_Device.Destroy();
+    m_PhysicalDevice.Destroy();
 
     ETH_CORE_INFO("Destroying Vulkan debugger...");
     if (m_DebugMessenger != VK_NULL_HANDLE) {
@@ -166,8 +156,9 @@ void VulkanContext::Destroy()
     m_VulkanInstance = nullptr;
 }
 
-bool VulkanContext::InitInstance(const ContextCreateInfo& info)
+bool VulkanContext::InitInstance()
 {
+    auto& info = m_ContextInfo;
     // Application Info
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -194,7 +185,7 @@ bool VulkanContext::InitInstance(const ContextCreateInfo& info)
         std::vector<VkLayerProperties> instanceLayerProperties(instanceLayerCount);
         VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayerProperties.data()));
 
-        if (FillFilteredNameArray(m_UsedInstanceLayers, instanceLayerProperties, info.InstanceLayers) != VK_SUCCESS)
+        if (VulkanContextUtils::CheckAndFillLayerProperties(instanceLayerProperties, info.InstanceLayers, m_UsedInstanceLayers) != VK_SUCCESS)
         {
             return false;
         }
@@ -212,14 +203,14 @@ bool VulkanContext::InitInstance(const ContextCreateInfo& info)
     }
 
     {
-        // Get all extensions
+        // Get all instance extensions
         uint32_t extensionCount;
         VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr));
         std::vector<VkExtensionProperties> extensionProperties(extensionCount);
         VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensionProperties.data()));
 
         std::vector<void*> featureStructs;
-        if (FillFilteredNameArray(m_UsedInstanceExtensions, extensionProperties, info.InstanceExtensions, featureStructs) != VK_SUCCESS)
+        if (VulkanContextUtils::CheckAndFillExtensionProperties(extensionProperties, info.InstanceExtensions, m_UsedInstanceExtensions, featureStructs) != VK_SUCCESS)
         {
             return false;
         }
@@ -289,93 +280,11 @@ bool VulkanContext::InitInstance(const ContextCreateInfo& info)
 //--------------------------------------------------------------------------------------------------
 // Initialize device
 //
-bool VulkanContext::InitDevice(const ContextCreateInfo& info, std::vector<uint32_t> compatibleDevices)
+bool VulkanContext::InitDevice(VkSurfaceKHR surface)
 {
     ETH_CORE_ASSERT(m_VulkanInstance != nullptr);
-
-    m_PhysicalDevice = VulkanPhysicalDevice::Init(compatibleDevices, m_Surface);
-    VkPhysicalDevice physicalDevice = m_PhysicalDevice->GetVulkanPhysicalDevice();
-
-    // extensions
-    uint32_t extCount = 0;
-    std::vector<VkExtensionProperties> extensionProperties;
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extCount, nullptr);
-    if (extCount > 0)
-    {
-        extensionProperties.resize(extCount);
-        if (vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extCount, &extensionProperties.front()) == VK_SUCCESS)
-        {
-            ETH_CORE_TRACE("Selected physical device has {0} extensions", extCount);
-            for (const auto& ext : extensionProperties)
-            {
-                m_SupportedDeviceExtensions.emplace(ext.extensionName);
-                ETH_CORE_INFO("  {0}", ext.extensionName);
-            }
-        }
-    }
-    // devices features
-    InitPhysicalFeatures(m_PhysicalInfo, physicalDevice, info.ApiMajor, info.ApiMinor);
-
-    VkPhysicalDeviceFeatures2 features2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-    features2.features = m_PhysicalInfo.features10;
-    features2.pNext = &m_PhysicalInfo.features11;
-    m_PhysicalInfo.features11.pNext = &m_PhysicalInfo.features12;
-    m_PhysicalInfo.features12.pNext = nullptr;
-
-    std::vector<void*> featureStructs;
-    if (FillFilteredNameArray(m_UsedDeviceExtensions, extensionProperties, info.DeviceExtensions, featureStructs) != VK_SUCCESS)
-    {
-        // deinit();
-        ETH_CORE_ERROR("Device extensions not satisfied");
-        return false;
-    }
-
-    if (info.VerboseUsed)
-    {
-        ETH_CORE_INFO("________________________");
-        ETH_CORE_INFO("Used Device Extensions: ");
-        for (const auto& it : m_UsedDeviceExtensions)
-        {
-            ETH_CORE_INFO("  {0}", it.c_str());
-        }
-    }
-
-    struct ExtensionHeader  // Helper struct to link extensions together
-    {
-        VkStructureType sType;
-        void* pNext;
-    };
-
-    // use the features2 chain to append extensions
-    if (!featureStructs.empty())
-    {
-        // build up chain of all used extension features
-        for (size_t i = 0; i < featureStructs.size(); i++)
-        {
-            auto* header = reinterpret_cast<ExtensionHeader*>(featureStructs[i]);
-            header->pNext = i < featureStructs.size() - 1 ? featureStructs[i + 1] : nullptr;
-        }
-
-        // append to the end of current feature2 struct
-        ExtensionHeader* lastCoreFeature = (ExtensionHeader*)&features2;
-        while (lastCoreFeature->pNext != nullptr)
-        {
-            lastCoreFeature = (ExtensionHeader*)lastCoreFeature->pNext;
-        }
-        lastCoreFeature->pNext = featureStructs[0];
-
-        // query support
-        vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
-    }
-
-    // disable some features
-    if (info.DisableRobustBufferAccess)
-    {
-        features2.features.robustBufferAccess = VK_FALSE;
-    }
-
-    m_Device = VulkanDevice::Create(m_PhysicalDevice.get(), m_UsedDeviceExtensions, features2);
-
+    m_PhysicalDevice.Init(m_VulkanInstance, m_ContextInfo, surface);
+    m_Device = VulkanDevice(m_PhysicalDevice);
     return true;
 }
 
@@ -400,9 +309,11 @@ void VulkanContext::InitDebugUtils() {
 }
 
 
-VkResult VulkanContext::FillFilteredNameArray(std::vector<std::string>& used,
-    const std::vector<VkLayerProperties>& properties,
-    const ContextCreateInfo::EntryArray& requested)
+namespace VulkanContextUtils{
+
+VkResult CheckAndFillLayerProperties(const std::vector<VkLayerProperties>& properties,
+                                     const ContextCreateInfo::EntryArray& requested,
+                                     std::vector<std::string>& used)
 {
     for (const auto& itr : requested)
     {
@@ -429,11 +340,40 @@ VkResult VulkanContext::FillFilteredNameArray(std::vector<std::string>& used,
 
     return VK_SUCCESS;
 }
+    
+bool CheckExtensionProperties(const std::vector<VkExtensionProperties>& properties,
+                              const ContextCreateInfo::EntryArray& requested,
+                              bool bVerbose)
+{
+    for (const auto& itr : requested)
+    {
+        bool found = false;
+        for (const auto& property : properties)
+        {
+            if (strcmp(itr.name.c_str(), property.extensionName) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
 
-VkResult VulkanContext::FillFilteredNameArray(std::vector<std::string>& used,
-    const std::vector<VkExtensionProperties>& properties,
-    const ContextCreateInfo::EntryArray& requested,
-    std::vector<void*>& featureStructs)
+        if (!found && !itr.optional)
+        {
+            if (bVerbose)
+            {
+                ETH_CORE_INFO("Could NOT locate mandatory extension '{0}'", itr.name.c_str());
+            }
+            return false;
+        }
+    }
+
+    return true;
+}
+
+VkResult CheckAndFillExtensionProperties(const std::vector<VkExtensionProperties>& properties,
+                                         const ContextCreateInfo::EntryArray& requested,
+                                         std::vector<std::string>& used,
+                                         std::vector<void*>& featureStructs)
 {
     for (const auto& itr : requested)
     {
@@ -465,119 +405,5 @@ VkResult VulkanContext::FillFilteredNameArray(std::vector<std::string>& used,
     return VK_SUCCESS;
 }
 
-//--------------------------------------------------------------------------------------------------
-// Returns the list of devices or groups compatible with the mandatory extensions
-//
-std::vector<uint32_t> VulkanContext::GetCompatibleDevices(const ContextCreateInfo& info)
-{
-    ETH_CORE_ASSERT(m_VulkanInstance != nullptr);
-
-    std::vector<uint32_t> compatibleDevices;
-    
-    // TODO: investigate device group
-    // std::vector<VkPhysicalDeviceGroupProperties> groups;
-    // if (info.useDeviceGroups)
-    // {
-    //     groups = getPhysicalDeviceGroups();
-    //     nbElems = static_cast<uint32_t>(groups.size());
-    // }
-    
-    // List devices
-    uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(m_VulkanInstance, &deviceCount, nullptr);
-    ETH_CORE_ASSERT(deviceCount > 0, "failed to find GPUs with Vulkan support!");
-    std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(m_VulkanInstance, &deviceCount, devices.data());
-
-    if (info.VerboseCompatibleDevices)
-    {
-        ETH_CORE_INFO("____________________");
-        ETH_CORE_INFO("Compatible Devices :");
-    }
-
-    uint32_t compatible = 0;
-    for (uint32_t elemId = 0; elemId < deviceCount; elemId++)
-    {
-        VkPhysicalDevice physicalDevice = devices[elemId]; // info.useDeviceGroups ? groups[elemId].devices[0] :
-
-        // Note: all physical devices in a group are identical
-        if (HasMandatoryExtensions(physicalDevice, info, info.VerboseCompatibleDevices))
-        {
-            compatibleDevices.push_back(elemId);
-            if (info.VerboseCompatibleDevices)
-            {
-                VkPhysicalDeviceProperties props;
-                vkGetPhysicalDeviceProperties(physicalDevice, &props);
-                ETH_CORE_INFO("  {0}: {1}", compatible, props.deviceName);
-                compatible++;
-            }
-        }
-        else if (info.VerboseCompatibleDevices)
-        {
-            VkPhysicalDeviceProperties props;
-            vkGetPhysicalDeviceProperties(physicalDevice, &props);
-            ETH_CORE_INFO("Skipping physical device {0}", props.deviceName);
-        }
-    }
-    if (info.VerboseCompatibleDevices)
-    {
-        ETH_CORE_INFO("Physical devices found: {0}", compatible);
-        if (compatible > 0)
-        {
-            ETH_CORE_INFO("{0}", compatible);
-        }
-        else
-        {
-            ETH_CORE_ERROR("No compatible device");
-        }
-    }
-
-    return compatibleDevices;
-}
-
-//--------------------------------------------------------------------------------------------------
-// Return true if all extensions in info, marked as required are available on the physicalDevice
-//
-bool VulkanContext::HasMandatoryExtensions(VkPhysicalDevice physicalDevice, const ContextCreateInfo& info, bool bVerbose)
-{
-    std::vector<VkExtensionProperties> extensionProperties;
-
-    uint32_t count;
-    VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr));
-    extensionProperties.resize(count);
-    VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, extensionProperties.data()));
-    extensionProperties.resize(std::min(extensionProperties.size(), size_t(count)));
-
-    return CheckEntryArray(extensionProperties, info.DeviceExtensions, bVerbose);
-}
-
-
-//--------------------------------------------------------------------------------------------------
-//
-bool VulkanContext::CheckEntryArray(const std::vector<VkExtensionProperties>& properties, const ContextCreateInfo::EntryArray& requested, bool bVerbose)
-{
-    for (const auto& itr : requested)
-    {
-        bool found = false;
-        for (const auto& property : properties)
-        {
-            if (strcmp(itr.name.c_str(), property.extensionName) == 0)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found && !itr.optional)
-        {
-            if (bVerbose)
-            {
-                ETH_CORE_INFO("Could NOT locate mandatory extension '{0}'", itr.name.c_str());
-            }
-            return false;
-        }
-    }
-
-    return true;
-}
-}
+} // namespace VulkanContextUtils
+} // namespace Ethane
