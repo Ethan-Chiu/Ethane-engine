@@ -5,6 +5,7 @@
 //  Created by 邱奕翔 on 2025/4/28.
 //
 #pragma once
+#include "WindowTarget.h"
 
 namespace Ethane {
 
@@ -19,7 +20,9 @@ public:
 public:
     virtual void Init() = 0;
     virtual void Shutdown() = 0;
-    
+
+    virtual RefCountPtr<IWindowTarget> CreateWindowTarget(void* windowHandle) = 0;
+
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;
     

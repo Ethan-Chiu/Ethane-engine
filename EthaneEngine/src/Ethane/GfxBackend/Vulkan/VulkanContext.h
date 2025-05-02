@@ -122,11 +122,11 @@ public:
     
     bool IsInitialized() const { return m_PhysicalDevice != VK_NULL_HANDLE; }
 
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const;
-    void PrintSelectedDeviceInfo();
+    void PrintSelectedDeviceInfo() const;
+    SwapChainSupportDetails GetSwapchainSupport(VkSurfaceKHR surface) const { return QuerySwapChainSupport(m_PhysicalDevice, surface);}
 
     // Getter
-    VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
+    VkPhysicalDevice GetHandle() const { return m_PhysicalDevice; }
     const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
 
 private:
@@ -136,6 +136,7 @@ private:
 
     // Utilities
     int32_t RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface = VK_NULL_HANDLE);
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const;
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags, VkSurfaceKHR surface);
 protected:
     // Device info and handle
@@ -166,8 +167,7 @@ public:
     void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
 
     // Getter
-    VkDevice GetVulkanDevice() const { return m_LogicalDevice; }
-    const VulkanPhysicalDevice* GetPhysicalDevice() const { return m_PhysicalDevice; }
+    VkDevice GetHandle() const { return m_LogicalDevice; }
 
     VkQueue GetGraphicsQueue() const { return m_GraphicsQueue; }
     VkQueue GetComputeQueue() const { return m_ComputeQueue; }
@@ -190,10 +190,16 @@ private:
 
 
 class VulkanGfxBackendAPI;
+class VulkanWindowTarget; // initialize devices when first window target is created, can change the context
 class VulkanContext
 {
 public:
     VulkanContext() = default;
+    
+    // Getter
+    VkInstance GetInstance() const { return m_VulkanInstance; }
+    const VulkanPhysicalDevice& GetPhysicalDevice() const { return m_PhysicalDevice; }
+    const VulkanDevice& GetDevice() const { return m_Device; }
 
 protected:
     void Init(ContextCreateInfo& info);
@@ -208,6 +214,7 @@ private:
     std::vector<VkFormat> FindAllSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     
     friend VulkanGfxBackendAPI;
+    friend VulkanWindowTarget;
 protected:
     VkInstance m_VulkanInstance = nullptr;
     VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;

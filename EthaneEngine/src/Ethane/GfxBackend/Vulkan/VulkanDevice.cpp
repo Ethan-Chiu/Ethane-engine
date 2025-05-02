@@ -271,102 +271,102 @@ int32_t VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device, VkS
     return score;
 }
 
-	VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies(VkPhysicalDevice device, uint32_t flags, VkSurfaceKHR surface)
-	{
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies(VkPhysicalDevice device, uint32_t flags, VkSurfaceKHR surface)
+{
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-		QueueFamilyIndices indices;
-		// Dedicated queue for compute
-		// Try to find a queue family index that supports compute but not graphics
-		if (flags & VK_QUEUE_COMPUTE_BIT)
-		{
-			for (uint32_t i = 0; i < queueFamilyCount; i++)
-			{
-				auto& queueFamily = queueFamilies[i];
-				if ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0))
-				{
-					indices.Compute = i;
-					break;
-				}
-			}
-		}
-		// Dedicated queue for transfer
-		// Try to find a queue family index that supports transfer but not graphics and compute
-		if (flags & VK_QUEUE_TRANSFER_BIT)
-		{
-			for (uint32_t i = 0; i < queueFamilyCount; i++)
-			{
-				auto& queueFamily = queueFamilies[i];
-				if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) && ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) == 0))
-				{
-					indices.Transfer = i;
-					break;
-				}
-			}
-		}
-		// Graphics queue
-		// Try to find graphics queue that also support present (indices.Graphic == indices.Present)
-        ETH_CORE_ASSERT(surface != nullptr);
-		VkBool32 presentSupport = false;
-		if (flags & VK_QUEUE_GRAPHICS_BIT)
-		{
-			for (uint32_t i = 0; i < queueFamilyCount; i++)
-			{
-				if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-				{
-					if (!presentSupport)
-					{
-						VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport));
-						if (presentSupport) {
-							indices.Graphics = i;
-							indices.Present = i;
-						}
-					}
-				}
-			}
-		}
-		// For other queue types or if no separate compute queue is present, return the first one to support the requested flags
-		for (uint32_t i = 0; i < queueFamilyCount; i++)
-		{
-			if ((flags & VK_QUEUE_TRANSFER_BIT) && !indices.Transfer.has_value())
-			{
-				if (queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
-					indices.Transfer = i;
-					ETH_CORE_INFO("fallback transfer queue choice");
-				}
-			}
+    QueueFamilyIndices indices;
+    // Dedicated queue for compute
+    // Try to find a queue family index that supports compute but not graphics
+    if (flags & VK_QUEUE_COMPUTE_BIT)
+    {
+        for (uint32_t i = 0; i < queueFamilyCount; i++)
+        {
+            auto& queueFamily = queueFamilies[i];
+            if ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0))
+            {
+                indices.Compute = i;
+                break;
+            }
+        }
+    }
+    // Dedicated queue for transfer
+    // Try to find a queue family index that supports transfer but not graphics and compute
+    if (flags & VK_QUEUE_TRANSFER_BIT)
+    {
+        for (uint32_t i = 0; i < queueFamilyCount; i++)
+        {
+            auto& queueFamily = queueFamilies[i];
+            if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) && ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) == 0))
+            {
+                indices.Transfer = i;
+                break;
+            }
+        }
+    }
+    // Graphics queue
+    // Try to find graphics queue that also support present (indices.Graphic == indices.Present)
+    ETH_CORE_ASSERT(surface != nullptr);
+    VkBool32 presentSupport = false;
+    if (flags & VK_QUEUE_GRAPHICS_BIT)
+    {
+        for (uint32_t i = 0; i < queueFamilyCount; i++)
+        {
+            if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            {
+                if (!presentSupport)
+                {
+                    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport));
+                    if (presentSupport) {
+                        indices.Graphics = i;
+                        indices.Present = i;
+                    }
+                }
+            }
+        }
+    }
+    // For other queue types or if no separate compute queue is present, return the first one to support the requested flags
+    for (uint32_t i = 0; i < queueFamilyCount; i++)
+    {
+        if ((flags & VK_QUEUE_TRANSFER_BIT) && !indices.Transfer.has_value())
+        {
+            if (queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
+                indices.Transfer = i;
+                ETH_CORE_INFO("fallback transfer queue choice");
+            }
+        }
 
-			if ((flags & VK_QUEUE_COMPUTE_BIT) && !indices.Compute.has_value())
-			{
-				if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
-					indices.Compute = i;
-					ETH_CORE_INFO("fallback compute queue choice");
-				}
-			}
+        if ((flags & VK_QUEUE_COMPUTE_BIT) && !indices.Compute.has_value())
+        {
+            if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
+                indices.Compute = i;
+                ETH_CORE_INFO("fallback compute queue choice");
+            }
+        }
 
-			if ((flags & VK_QUEUE_GRAPHICS_BIT) && !indices.Graphics.has_value())
-			{
-				if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-					indices.Graphics = i;
-					ETH_CORE_INFO("fallback graphic queue choice");
-				}
-			}
-			if (!indices.Present.has_value())
-			{
-				VkBool32 fallbackPresentSupport = VK_FALSE;
-				VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &fallbackPresentSupport));
-				if (fallbackPresentSupport) {
-					indices.Present = i;
-					ETH_CORE_INFO("fallback present queue choice");
-				}
-			}
-		}
+        if ((flags & VK_QUEUE_GRAPHICS_BIT) && !indices.Graphics.has_value())
+        {
+            if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.Graphics = i;
+                ETH_CORE_INFO("fallback graphic queue choice");
+            }
+        }
+        if (!indices.Present.has_value())
+        {
+            VkBool32 fallbackPresentSupport = VK_FALSE;
+            VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &fallbackPresentSupport));
+            if (fallbackPresentSupport) {
+                indices.Present = i;
+                ETH_CORE_INFO("fallback present queue choice");
+            }
+        }
+    }
 
-		return indices;
-	}
+    return indices;
+}
 
 SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const
 {
@@ -396,74 +396,74 @@ SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDe
     return details;
 }
 
-	void VulkanPhysicalDevice::PrintSelectedDeviceInfo() 
-	{
-        if (m_PhysicalDevice == VK_NULL_HANDLE) {
-            ETH_CORE_WARN("Physical device not initialized!");
-            return;
+void VulkanPhysicalDevice::PrintSelectedDeviceInfo() const
+{
+    if (m_PhysicalDevice == VK_NULL_HANDLE) {
+        ETH_CORE_WARN("Physical device not initialized!");
+        return;
+    }
+    // Get memory properties & properties & feature of the selected device
+    VkPhysicalDeviceMemoryProperties memories;
+    VkPhysicalDeviceProperties2 properties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+    vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memories);
+    vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &properties2);
+
+    VkPhysicalDeviceProperties properties = properties2.properties;
+    ETH_CORE_INFO("____________________");
+    ETH_CORE_INFO("SELECTED DEVICE: {0}", properties.deviceName);
+    ETH_CORE_INFO("queue family indices: Graphics-{0} | Present-{1} | Compute-{2} | Transfer-{3}",
+        m_QueueFamilyIndices.Graphics.value(),
+        m_QueueFamilyIndices.Present.value(),
+        m_QueueFamilyIndices.Compute.value(),
+        m_QueueFamilyIndices.Transfer.value());
+
+    switch (properties.deviceType) {
+    default:
+    case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+        ETH_CORE_INFO("GPU type is Unknown.");
+        break;
+    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+        ETH_CORE_INFO("GPU type is Integrated.");
+        break;
+    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+        ETH_CORE_INFO("GPU type is Descrete.");
+        break;
+    case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+        ETH_CORE_INFO("GPU type is Virtual.");
+        break;
+    case VK_PHYSICAL_DEVICE_TYPE_CPU:
+        ETH_CORE_INFO("GPU type is CPU.");
+        break;
+    }
+
+    ETH_CORE_INFO(
+        "GPU Driver version: {0}.{1}.{2}",
+        VK_VERSION_MAJOR(properties.driverVersion),
+        VK_VERSION_MINOR(properties.driverVersion),
+        VK_VERSION_PATCH(properties.driverVersion));
+
+    // Vulkan API version.
+    ETH_CORE_INFO(
+        "Vulkan API version: {0}.{1}.{2}",
+        VK_VERSION_MAJOR(properties.apiVersion),
+        VK_VERSION_MINOR(properties.apiVersion),
+        VK_VERSION_PATCH(properties.apiVersion));
+
+    // Memory information
+    for (uint32_t i = 0; i < memories.memoryHeapCount; ++i) {
+        double memory_size_gib = (((double)memories.memoryHeaps[i].size) / 1024.0f / 1024.0f / 1024.0f);
+        if (memories.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+            ETH_CORE_INFO("Local GPU memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
         }
-		// Get memory properties & properties & feature of the selected device
-		VkPhysicalDeviceMemoryProperties memories;
-		VkPhysicalDeviceProperties2 properties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
-		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memories);
-		vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &properties2);
+        else {
+            ETH_CORE_INFO("Shared System memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
+        }
+    }
+}
 
-		VkPhysicalDeviceProperties properties = properties2.properties;
-		ETH_CORE_INFO("____________________");
-		ETH_CORE_INFO("SELECTED DEVICE: {0}", properties.deviceName);
-		ETH_CORE_INFO("queue family indices: Graphics-{0} | Present-{1} | Compute-{2} | Transfer-{3}", 
-			m_QueueFamilyIndices.Graphics.value(), 
-			m_QueueFamilyIndices.Present.value(),
-			m_QueueFamilyIndices.Compute.value(),
-			m_QueueFamilyIndices.Transfer.value());
-
-		switch (properties.deviceType) {
-		default:
-		case VK_PHYSICAL_DEVICE_TYPE_OTHER:
-			ETH_CORE_INFO("GPU type is Unknown.");
-			break;
-		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-			ETH_CORE_INFO("GPU type is Integrated.");
-			break;
-		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-			ETH_CORE_INFO("GPU type is Descrete.");
-			break;
-		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-			ETH_CORE_INFO("GPU type is Virtual.");
-			break;
-		case VK_PHYSICAL_DEVICE_TYPE_CPU:
-			ETH_CORE_INFO("GPU type is CPU.");
-			break;
-		}
-
-		ETH_CORE_INFO(
-			"GPU Driver version: {0}.{1}.{2}",
-			VK_VERSION_MAJOR(properties.driverVersion),
-			VK_VERSION_MINOR(properties.driverVersion),
-			VK_VERSION_PATCH(properties.driverVersion));
-
-		// Vulkan API version.
-		ETH_CORE_INFO(
-			"Vulkan API version: {0}.{1}.{2}",
-			VK_VERSION_MAJOR(properties.apiVersion),
-			VK_VERSION_MINOR(properties.apiVersion),
-			VK_VERSION_PATCH(properties.apiVersion));
-
-		// Memory information
-		for (uint32_t i = 0; i < memories.memoryHeapCount; ++i) {
-			double memory_size_gib = (((double)memories.memoryHeaps[i].size) / 1024.0f / 1024.0f / 1024.0f);
-			if (memories.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
-				ETH_CORE_INFO("Local GPU memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
-			}
-			else {
-				ETH_CORE_INFO("Shared System memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
-			}
-		}
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////
-	// Logical device 
-	////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+// Logical device
+////////////////////////////////////////////////////////////////////////////////////
 	VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
         :m_PhysicalDevice(&physicalDevice)
 	{
@@ -488,7 +488,7 @@ SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDe
 		deviceCreateInfo.pEnabledFeatures = nullptr;
         deviceCreateInfo.pNext = &m_PhysicalDevice->m_UsedDeviceFeatures;
 
-		VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice->GetVulkanPhysicalDevice(), &deviceCreateInfo, nullptr, &m_LogicalDevice));
+        VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice->GetHandle(), &deviceCreateInfo, nullptr, &m_LogicalDevice));
 
 		// retrieving queue handles
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value(), 0, &m_GraphicsQueue);

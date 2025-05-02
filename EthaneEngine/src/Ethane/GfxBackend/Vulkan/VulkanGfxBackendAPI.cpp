@@ -8,6 +8,7 @@
 #include "ethpch.h"
 #include "VulkanGfxBackendAPI.h"
 #include "VulkanContext.h"
+#include "VulkanWindowTarget.h"
 
 namespace Ethane {
 
@@ -21,9 +22,9 @@ void VulkanGfxBackendAPI::Shutdown() {
     m_Context.Destroy();
 }
 
-void VulkanGfxBackendAPI::CreateWindowTarget(GLFWwindow* window) {
-    
-//    return glfwCreateWindowSurface(m_Context.m_VulkanInstance, window, nullptr, &m_Surface);
+RefCountPtr<IWindowTarget> VulkanGfxBackendAPI::CreateWindowTarget(void* window) {
+    GLFWwindow* glfwWindow = static_cast<GLFWwindow*>(window);
+    return MakeRefCountPtr<VulkanWindowTarget>(&m_Context, glfwWindow);
 }
 
 void VulkanGfxBackendAPI::BeginFrame() {

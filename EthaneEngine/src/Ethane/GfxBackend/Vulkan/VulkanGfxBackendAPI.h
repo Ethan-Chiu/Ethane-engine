@@ -8,6 +8,7 @@
 
 #include "Ethane/GfxBackend/GfxBackendAPI.h"
 #include "VulkanContext.h"
+#include "Ethane/GfxBackend/WindowTarget.h"
 
 struct GLFWwindow;
 
@@ -19,7 +20,7 @@ namespace Ethane {
         virtual void Init() override;
         virtual void Shutdown() override;
         
-        virtual void CreateWindowTarget(GLFWwindow* windowHandle);
+        virtual RefCountPtr<IWindowTarget> CreateWindowTarget(void* windowHandle) override;
         
         virtual void BeginFrame() override;
         virtual void EndFrame() override;

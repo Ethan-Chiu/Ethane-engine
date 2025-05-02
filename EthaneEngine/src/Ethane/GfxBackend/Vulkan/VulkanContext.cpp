@@ -140,7 +140,7 @@ void VulkanContext::Init(ContextCreateInfo& info)
 
 void VulkanContext::Destroy()
 {
-    vkDeviceWaitIdle(m_Device.GetVulkanDevice());
+    vkDeviceWaitIdle(m_Device.GetHandle());
 
     m_Device.Destroy();
     m_PhysicalDevice.Destroy();

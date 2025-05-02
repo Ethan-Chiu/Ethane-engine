@@ -32,6 +32,7 @@ namespace Ethane
         m_RendererBackend = GfxBackendAPI::Create();
         m_RendererBackend->Init();
         // Create swapchain with the window handle
+        m_WindowTarget = m_RendererBackend->CreateWindowTarget(m_Window->GetNativeWindow());
         
 //		RendererConfig config = {
 //			m_Window->GetWidth(),
@@ -48,8 +49,8 @@ namespace Ethane
 
 		AssetManager::Init();
 
-		m_ImGuiLayer = ImGuiLayer::Create();
-		PushOverlay(m_ImGuiLayer);
+//		m_ImGuiLayer = ImGuiLayer::Create();
+//		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -158,8 +159,8 @@ namespace Ethane
 
 		ResourceSystem::Shutdown();
 
-//		Renderer::Shutdown();
-
+        m_WindowTarget->Destroy();
+        m_RendererBackend->Shutdown();
 		m_Window->Shutdown();
 
 		return true;

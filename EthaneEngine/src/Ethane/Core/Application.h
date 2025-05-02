@@ -52,6 +52,7 @@ namespace Ethane
 		ApplicationCommandLineArgs m_CommandLineArgs;
 		Scope<Window> m_Window;
         Scope<GfxBackendAPI> m_RendererBackend;
+        RefCountPtr<IWindowTarget> m_WindowTarget;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true;
 		bool m_Minimized = false;
