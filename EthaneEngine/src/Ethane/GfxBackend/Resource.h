@@ -101,6 +101,8 @@ public:
 template <CResource T>
 class RefCountPtr
 {
+    template <CResource> friend class RefCountPtr;
+    
 private:
     T* ptr;
     
@@ -108,36 +110,80 @@ public:
     RefCountPtr() noexcept : ptr(nullptr) {}
     
     // Explicit when taking ownership
-    explicit RefCountPtr(T* raw) noexcept : ptr(raw) {
-        if (ptr) ptr->AddRef();
+    explicit RefCountPtr(T* p, bool add_ref = true) : ptr(p) {
+        if(ptr && add_ref) ptr->AddRef();
     }
     
+    // Copy
     RefCountPtr(const RefCountPtr& other) noexcept : ptr(other.ptr) {
         if (ptr) ptr->AddRef();
     }
     
+    // Templated copy (Derived->Base)
+    template<typename U>
+    RefCountPtr(const RefCountPtr<U>& other) noexcept
+      requires(std::convertible_to<U*, T*>)
+      : ptr(other.ptr) {
+        if(ptr) ptr->AddRef();
+    }
+
+    // Move
     RefCountPtr(RefCountPtr&& other) noexcept : ptr(other.ptr) {
         other.ptr = nullptr;
     }
     
-    RefCountPtr& operator=(const RefCountPtr& o) noexcept {
-        if (this != &o) {
-            if (o.ptr) o.ptr->AddRef();
+    // Templated move (Derived->Base)
+    template<typename U>
+    RefCountPtr(RefCountPtr<U>&& other) noexcept
+      requires(std::convertible_to<U*, T*>)
+      : ptr(other.ptr) {
+        other.ptr = nullptr;
+    }
+    
+    // Copy assignment
+    RefCountPtr& operator=(const RefCountPtr& other) noexcept {
+        if (this != &other) {
+            if (other.ptr) other.ptr->AddRef();
             if (ptr) ptr->Release();
-            ptr = o.ptr;
+            ptr = other.ptr;
         }
         return *this;
     }
     
-    RefCountPtr& operator=(RefCountPtr&& o) noexcept {
-        if (this != &o) {
+    // Templated assignment (Derived->Base)
+    template<typename U>
+    RefCountPtr& operator=(const RefCountPtr<U>& other) noexcept
+      requires(std::convertible_to<U*, T*>) {
+        if(ptr != other.ptr) {
+            if(other.ptr) other.ptr->AddRef();
+            if(ptr) ptr->Release();
+            ptr = other.ptr;
+        }
+        return *this;
+    }
+
+    // Move assignment
+    RefCountPtr& operator=(RefCountPtr&& other) noexcept {
+        if (this != &other) {
             if (ptr) ptr->Release();
-            ptr = o.ptr;
-            o.ptr = nullptr;
+            ptr = other.ptr;
+            other.ptr = nullptr;
         }
         return *this;
     }
     
+    // Templated move assignment
+    template<typename U>
+    RefCountPtr& operator=(RefCountPtr<U>&& other) noexcept
+      requires(std::convertible_to<U*, T*>) {
+        if(ptr != other.ptr) {
+            if(ptr) ptr->Release();
+            ptr = other.ptr;
+            other.ptr = nullptr;
+        }
+        return *this;
+    }
+
     ~RefCountPtr() noexcept {
         if (ptr) ptr->Release();
     }
@@ -146,7 +192,39 @@ public:
     T& operator*() const noexcept { return *ptr; }
     T* operator->() const noexcept { return ptr; }
     explicit operator bool() const noexcept { return ptr != nullptr; }
+    
+    void reset(T* p = nullptr, bool add_ref = true) noexcept {
+        if(p == ptr) return;
+        if(p && add_ref) p->AddRef();
+        if(ptr) ptr->Release();
+        ptr = p;
+    }
+    
+    void swap(RefCountPtr& other) noexcept {
+        std::swap(ptr, other.ptr);
+    }
 };
+
+
+// Free functions for pointer casts:
+// Static cast
+template<typename T, typename U>
+RefCountPtr<T> static_pointer_cast(const RefCountPtr<U>& r) noexcept {
+    return RefCountPtr<T>(static_cast<T*>(r.get()));
+}
+
+// Const cast (remove constness)
+template<typename T, typename U>
+RefCountPtr<T> const_pointer_cast(const RefCountPtr<U>& r) noexcept {
+    return RefCountPtr<T>(const_cast<T*>(r.get()));
+}
+
+// Dynamic cast (runtime-checked, returns null on failure)
+template<typename T, typename U>
+RefCountPtr<T> dynamic_pointer_cast(const RefCountPtr<U>& r) noexcept {
+    return RefCountPtr<T>(dynamic_cast<T*>(r.get()));
+}
+
 
 template<typename T, typename... Args>
 RefCountPtr<T> MakeRefCountPtr(Args&&... args) {
