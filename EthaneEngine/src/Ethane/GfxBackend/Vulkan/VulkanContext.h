@@ -219,6 +219,7 @@ protected:
     VkInstance m_VulkanInstance = nullptr;
     VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
     ContextCreateInfo m_ContextInfo;
+    VkAllocationCallbacks m_AllocationCallbacks;
 
     // Instance Extension
     std::vector<std::string> m_UsedInstanceLayers;
