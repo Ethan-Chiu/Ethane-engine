@@ -12,7 +12,7 @@ namespace Ethane {
 		EthaneEditor(ApplicationCommandLineArgs args)
 			:Application("Ethane Editor", args)
 		{
-//			PushLayer(new EditorLayer());
+			PushLayer(new EditorLayer());
 		}
 
 		~EthaneEditor()

@@ -26,6 +26,7 @@ namespace Ethane
 		m_Window = Window::Create(WindowProps(name, 400, 300));
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
 		m_Window->SetVSync(false);
+        glfwWaitEvents();
 
         // Create graphic context (Don't create the context (Instance, Device, Queue) in the window creation process)
         GfxBackendAPI::SetAPI(GfxBackendAPI::API::Vulkan);
@@ -162,6 +163,8 @@ namespace Ethane
         m_WindowTarget->Destroy();
         m_RendererBackend->Shutdown();
 		m_Window->Shutdown();
+        
+        glfwTerminate();
 
 		return true;
 	}

@@ -19,6 +19,14 @@ namespace Ethane {
 
 	void EditorLayer::OnAttach()
     {
+        ReportMemResource report_new{"NewDelete", NewDeleteMemResource()};
+        PMRAdapter alloc(report_new);
+        std::pmr::set_default_resource(&alloc);
+        
+        std::pmr::vector<int> testAlloc;
+        for (uint32_t i = 0; i < 50; i++) {
+            testAlloc.push_back(i);
+        }
 //        m_ActiveScene = CreateRef<Scene>();
 //        m_ViewportRenderer = CreateRef<SceneRenderer>(m_ActiveScene);
 //        

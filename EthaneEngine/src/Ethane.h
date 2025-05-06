@@ -15,6 +15,10 @@
 #include "Ethane/Events/ApplicationEvent.h"
 #include "Ethane/Events/KeyEvent.h"
 #include "Ethane/Events/MouseEvent.h"
+//------memory--------
+#include "Ethane/Memory/NewDeleteMemResource.h"
+#include "Ethane/Memory/ReportMemResource.h"
+#include "Ethane/Memory/PMRAdapter.h"
 //-----renderer-------
 //#include "Ethane/Renderer/Renderer.h"
 //#include "Ethane/Renderer/SceneRenderer.h"

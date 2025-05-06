@@ -14,7 +14,7 @@ namespace Ethane {
 VulkanWindowTarget::VulkanWindowTarget(VulkanContext* context, GLFWwindow* window)
     : m_Context(context), m_Window(window)
 {
-    auto result = glfwCreateWindowSurface(m_Context->GetInstance(), window, nullptr, &m_Surface);
+    auto result = glfwCreateWindowSurface(m_Context->GetInstance(), m_Window, nullptr, &m_Surface);
     if (result != VK_SUCCESS) {
         ETH_CORE_ERROR("Surface creation failed");
     }

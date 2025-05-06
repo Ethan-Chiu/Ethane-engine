@@ -6,37 +6,35 @@
 //
 
 #pragma once
+#include "MemoryResource.h"
 #include <memory_resource>
 
-struct NewDeleteMemoryResource {
+struct NewDeleteMemResource {
     // Point to the standard global new_delete_resource
-    std::pmr::memory_resource* upstream = std::pmr::new_delete_resource();
+    std::pmr::memory_resource* m_Upstream = std::pmr::new_delete_resource();
 
     void* Allocate(std::size_t bytes, std::size_t alignment) {
-        return upstream->allocate(bytes, alignment);
+        return m_Upstream->allocate(bytes, alignment);
     }
 
     void Deallocate(void* p, std::size_t bytes, std::size_t alignment) {
-        upstream->deallocate(p, bytes, alignment);
+        m_Upstream->deallocate(p, bytes, alignment);
     }
 
-    // Optional: just forward through to the upstream resource
     void* Reallocate(void* p,
                      std::size_t oldBytes,
                      std::size_t newBytes,
                      std::size_t alignment)
     {
-        // new_delete_resource doesn’t provide reallocate itself,
-        // but std::pmr::memory_resource defines a default do_reallocate
-        // so we can allocate+copy+free:
         void* q = Allocate(newBytes, alignment);
         std::memcpy(q, p, std::min(oldBytes, newBytes));
         Deallocate(p, oldBytes, alignment);
         return q;
     }
-
-    // Optional (noop for new/delete)
-    void Reset() noexcept {}
 };
 
-static_assert(CMemoryResource<NewDeleteMemoryResource>, "NewDeleteResource should implement the CMemoryResource concept.");
+inline NewDeleteMemResource* NewDeleteMemResource()
+{
+    static struct NewDeleteMemResource instance;
+    return &instance;
+}
