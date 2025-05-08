@@ -34,6 +34,7 @@
 		#error "Platform doesn't support debugbreak yet!"
 	#endif
 	#define ETH_ENABLE_ASSERTS
+    #define ETH_ENABLE_DEBUG_ASSERTS
 #else
 	#define ETH_DEBUGBREAK()
 #endif

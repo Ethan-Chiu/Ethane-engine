@@ -33,6 +33,7 @@
 		9EEA87CA0C12963C0DA5860A /* Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B401DA920164D0C47783D0D2 /* Math.cpp */; };
 		9F1963943766494665AD49D4 /* Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB07D3FCFF56796E417DB23C /* Entity.cpp */; };
 		A7DC1E7D98D38C6F04D70CBD /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F978450591C52AB7C00C2B45 /* Application.cpp */; };
+		AACAC4C82DCA3DEE00ABAC74 /* LinearMemResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AACAC4C72DCA3DEE00ABAC74 /* LinearMemResource.cpp */; };
 		B9CA2C199F61334B62A64259 /* libGlad.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B187CD810B88E473D2CFDBC1 /* libGlad.a */; };
 		BF483ED1557150C316D7AD11 /* WindowsWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8001A27932F7AC2B841A08B9 /* WindowsWindow.cpp */; };
 		D551503C6F75456E1F9B267C /* ShaderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 70B34DC4E50D92B662F11C04 /* ShaderSystem.cpp */; };
@@ -451,6 +452,8 @@
 		AA9E9C213D2C6613A6050A61 /* stb_image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = stb_image.h; path = vendor/stb_image/stb_image.h; sourceTree = "<group>"; };
 		AACAC4C02DC91F1900ABAC74 /* ReportMemResource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ReportMemResource.h; path = src/Ethane/Memory/ReportMemResource.h; sourceTree = "<group>"; };
 		AACAC4C12DC9326900ABAC74 /* PMRAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PMRAdapter.h; path = src/Ethane/Memory/PMRAdapter.h; sourceTree = "<group>"; };
+		AACAC4C62DCA146200ABAC74 /* LinearMemResource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LinearMemResource.h; path = src/Ethane/Memory/LinearMemResource.h; sourceTree = "<group>"; };
+		AACAC4C72DCA3DEE00ABAC74 /* LinearMemResource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LinearMemResource.cpp; path = src/Ethane/Memory/LinearMemResource.cpp; sourceTree = "<group>"; };
 		AAD135318973D0A33E55D371 /* scalar_relational.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_relational.hpp; path = vendor/glm/glm/gtx/scalar_relational.hpp; sourceTree = "<group>"; };
 		AAE00FBBAA82F2EDE4D7A5FB /* MacosWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MacosWindow.h; path = src/Ethane/Platform/MacOS/MacosWindow.h; sourceTree = "<group>"; };
 		AB2C7C759C23EA6708276AB5 /* scalar_integer.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_integer.hpp; path = vendor/glm/glm/ext/scalar_integer.hpp; sourceTree = "<group>"; };
@@ -1173,6 +1176,8 @@
 				3321EE0143071A332F7AA441 /* NewDeleteMemResource.h */,
 				AACAC4C02DC91F1900ABAC74 /* ReportMemResource.h */,
 				AACAC4C12DC9326900ABAC74 /* PMRAdapter.h */,
+				AACAC4C62DCA146200ABAC74 /* LinearMemResource.h */,
+				AACAC4C72DCA3DEE00ABAC74 /* LinearMemResource.cpp */,
 			);
 			name = Memory;
 			sourceTree = "<group>";
@@ -1545,6 +1550,7 @@
 				6ADA7EDDDEC2F68F0110A51D /* ImGuiBuild.cpp in Sources */,
 				029E19B77686916998D43FF7 /* ImGuiLayer.cpp in Sources */,
 				9EEA87CA0C12963C0DA5860A /* Math.cpp in Sources */,
+				AACAC4C82DCA3DEE00ABAC74 /* LinearMemResource.cpp in Sources */,
 				6923B6B97ADAF6ABF048E4F9 /* MacosInput.cpp in Sources */,
 				53907229B017769B38BA3069 /* MacosWindow.cpp in Sources */,
 				661CEB61FE94D8D32A7BC9A1 /* WindowsInput.cpp in Sources */,

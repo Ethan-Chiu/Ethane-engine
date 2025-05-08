@@ -10,13 +10,12 @@
 #include <cstddef>
 #include <type_traits>
 
-template<typename T>
-concept CMemoryResource = requires(T& mr,
-                                   std::size_t bytes,
-                                   std::size_t alignment,
-                                   void* p)
+namespace Ethane
 {
-    { mr.Allocate(bytes, alignment) } -> std::same_as<void*>;
+
+template <typename T>
+concept CMemoryResource = requires(T &mr, std::size_t bytes, std::size_t alignment, void *p) {
+    { mr.Allocate(bytes, alignment) } -> std::same_as<void *>;
     { mr.Deallocate(p, bytes, alignment) } -> std::same_as<void>;
     // Optional reallocate (fall-back ok)
     // { mr.Reallocate(p, oldBytes, newBytes, alignment) }
@@ -24,3 +23,5 @@ concept CMemoryResource = requires(T& mr,
     // Optional reset
     // { mr.Reset() } -> std::same_as<void>;
 };
+
+} // namespace Ethane
