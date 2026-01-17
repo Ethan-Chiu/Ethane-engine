@@ -15,6 +15,7 @@ from PostProcess import AssimpBuild, YamlCppBuild
 
 argument1 = sys.argv[1] if len(sys.argv) > 1 else None
 build_deps = False
+argument_rest = None
 if argument1 == "build":
     build_deps = True
     argument_rest = sys.argv[2:] if len(sys.argv) > 2 else None
@@ -39,18 +40,21 @@ print("----------------------------------------")
 
 if (not Cmake.check_cmake_installed()):
     print("Cmake not installed. ")
-    quit()
 print("----------------------------------------")
 
 print("Running premake...")
 for action in Config.premake_config.actions:
-    subprocess.call([Utils.filename_in_dir('premake', Config.premake_config.install_dir), action])
+    premake_path = Utils.filename_in_dir('premake', Config.premake_config.install_dir)
+    if premake_path is None:
+        print("Premake executable not found.")
+        quit()
+    subprocess.call([str(premake_path.absolute()), action])
 print("----------------------------------------")
 
 
 if build_deps: 
     print("Post processing...")
-    build_all = argument_rest == None
+    build_all = argument_rest is None
     assimp_task = AssimpBuild() 
     yaml_cpp_task = YamlCppBuild()
     if build_all or assimp_task.get_key() in argument_rest:

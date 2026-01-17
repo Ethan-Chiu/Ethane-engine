@@ -1,5 +1,6 @@
 import time
 import os
+import sys
 import subprocess
 import urllib.request
 from tqdm import tqdm
@@ -58,7 +59,7 @@ def download_file(url: str, destination: Path):
 
 
 def download_archive(url: str, destination_dir: Path):
-    os.makedirs(destination_dir.parent, exist_ok=True)
+    destination_dir.mkdir(parents=True, exist_ok=True)
 
     buffer = BytesIO()
     write_to_buffer = lambda data: buffer.write(data)
@@ -67,22 +68,48 @@ def download_archive(url: str, destination_dir: Path):
     print("Download completed. Start extracting...")
 
     filename = url.split("/")[-1]
+
+    # Store buffer to file
+    # buffer.seek(0)
+    # file_path = destination_dir / filename
+    # with open(file_path, "wb") as f:
+    #     f.write(buffer.read())
+    
+    buffer.seek(0)
+    
     if "tar" in filename:
         with tarfile.open(fileobj=buffer) as tfile:
             tfile.extractall(destination_dir)
     else:
         with zipfile.ZipFile(buffer) as zfile:
             zfile.extractall(destination_dir)
+            # Restore file permissions from zip archive
+            for info in zfile.infolist():
+                extracted_path = destination_dir / info.filename
+                if extracted_path.exists():
+                    # Extract Unix permissions from external_attr
+                    unix_st_mode = info.external_attr >> 16
+                    if unix_st_mode:
+                        os.chmod(extracted_path, unix_st_mode)
     print("extraction completed")
 
 
 def filename_exists_in_dir(filename: str, dir_path: Path):
+    if not dir_path.exists() or not dir_path.is_dir():
+        return False
     return any(filename == f.stem for f in dir_path.iterdir() if f.is_file())
 
 
 def filename_in_dir(filename: str, dir_path: Path):
     for f in dir_path.iterdir():
         if filename in f.stem and f.is_file():
+            return f
+        
+
+def filetype_in_dir(filetype: str, dir_path: Path):
+    for f in dir_path.iterdir():
+        print(f.suffix)
+        if f.suffix == filetype:
             return f
 
 
@@ -93,11 +120,13 @@ def extract_file(destination):
     print("Extraction completed.")
 
 
-def open_file(filepath: str, opener=None):
+def open_file(filepath: Path, opener=None):
     if opener is not None:
-        subprocess.call([opener, os.path.abspath(filepath)])
+        subprocess.call([opener, str(filepath.absolute())])
+    elif sys.platform == "win32":
+        os.startfile(str(filepath.absolute()))
     else:
-        os.startfile(os.path.abspath(filepath))
+        raise Exception("No opener specified for this OS")
 
 
 def YesOrNo():

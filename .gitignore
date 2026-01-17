@@ -6,6 +6,7 @@ bin-int/
 EthaneEngine/vendor/VulkanSDK
 Ethane-Editor/assets/cache
 scripts/__pycache__ 
+vendor/
 
 # Files
 *.user
@@ -25,3 +26,6 @@ Sandbox/*.json
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
+
+# Editor cache
+.cache/

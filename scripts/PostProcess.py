@@ -9,7 +9,7 @@ class ProcessTask:
     def __init__(self, key):
         self.key = key
 
-    def get_key() -> str:
+    def get_key(self) -> str:
         return self.key
 
     def process(self):
@@ -24,11 +24,11 @@ class AssimpBuild(ProcessTask):
         root_dir = os.getcwd()
         print(f"Processing {self.key}")
         os.chdir("EthaneEngine/vendor/assimp")
-        subprocess.run(["cmake", "-DBUILD_SHARED_LIBS=OFF", "-DCMAKE_BUILD_TYPE=Debug", "CMakeLists.txt"])
+        subprocess.run(["cmake", "-DBUILD_SHARED_LIBS=OFF", "-DCMAKE_BUILD_TYPE=Debug", "-DZLIB_ROOT=/usr", "CMakeLists.txt"])
         subprocess.run(["cmake", "--build", ".", "--config", "Debug"])
         Utils.CheckMarkMsg("Build assimp debug")
         print("----------------------------------------")
-        subprocess.run(["cmake", "-DBUILD_SHARED_LIBS=OFF", "-DCMAKE_BUILD_TYPE=Release", "CMakeLists.txt"])
+        subprocess.run(["cmake", "-DBUILD_SHARED_LIBS=OFF", "-DCMAKE_BUILD_TYPE=Release", "-DZLIB_ROOT=/usr", "CMakeLists.txt"])
         subprocess.run(["cmake", "--build", ".", "--config", "Release"])
         Utils.CheckMarkMsg("Build assimp release")
         os.chdir(root_dir)
@@ -39,7 +39,7 @@ class YamlCppBuild(ProcessTask):
 
     def process(self):
         root_dir = os.getcwd()
-        print("Build yaml cpp")
+        print(f"Build {self.key}")
         os.chdir("EthaneEngine/vendor/yaml-cpp")
         if not os.path.exists("./build"):
             os.makedirs("./build")

@@ -18,14 +18,15 @@ class CmakeConfig:
     def __init__(self):
         system = platform.system()
         self.install_dir: Path = Path("vendor/cmake")
+        self.version = "4.2.1"
         if system == SystemName.Windows.value:
             self.installer_url: str = (
-                "https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-windows-x86_64.msi"
+                f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}-windows-x86_64.msi"
             )
             self.opener = None
         elif system == SystemName.Mac.value:
             self.installer_url: str = (
-                "https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-macos-universal.dmg"
+                f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}-macos-universal.dmg"
             )
             self.opener = "open"
         else:
@@ -36,11 +37,12 @@ class PremakeConfig:
     def __init__(self):
         system = platform.system()
         self.install_dir = Path("vendor/premake/bin")
+        self.latest_version: str = "5.0.0-beta7"
         if system == SystemName.Windows.value:
-            self.installer_url = "https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-windows.zip"
+            self.installer_url = f"https://github.com/premake/premake-core/releases/download/v{self.latest_version}/premake-{self.latest_version}-windows.zip"
             self.actions = ["vs2022", "gmake2"]
         elif system == SystemName.Mac.value:
-            self.installer_url = "https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-macosx.tar.gz"
+            self.installer_url = f"https://github.com/premake/premake-core/releases/download/v{self.latest_version}/premake-{self.latest_version}-macosx.tar.gz"
             self.actions = ["xcode4", "gmake2"]
         else:
             systemNotSupported()
