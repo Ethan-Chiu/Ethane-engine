@@ -102,6 +102,8 @@ void VulkanContext::Init(ContextCreateInfo& info)
     }
     m_ContextInfo.AddDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     m_ContextInfo.AddDeviceExtension("VK_KHR_portability_subset", true);
+    // Add this for MacOS
+    m_ContextInfo.AddInstanceExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, true);
     if (m_ContextInfo.Validation)
     {
         m_ContextInfo.AddInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, true);
@@ -256,6 +258,7 @@ bool VulkanContext::InitInstance()
 
     VkInstanceCreateInfo instanceCreateInfo{ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     instanceCreateInfo.pApplicationInfo = &appInfo;
+    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(usedInstanceExtensions.size());
     instanceCreateInfo.ppEnabledExtensionNames = usedInstanceExtensions.data();
     instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(usedInstanceLayers.size());
