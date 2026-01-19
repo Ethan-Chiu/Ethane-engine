@@ -19,8 +19,10 @@ namespace Ethane {
 
 	void EditorLayer::OnAttach()
     {
-        ReportMemResource report_new{"NewDelete", NewDeleteMemResource()};
-        PMRAdapter alloc(report_new);
+        // ReportMemResource report_new{"NewDelete", NewDeleteMemResource()};
+		ReportMemResource report_new{"NewDelete", NewDeleteMemResource()};
+		LinearMemResource linear_new{&report_new};
+        PMRAdapter alloc(linear_new);
         std::pmr::set_default_resource(&alloc);
         
         std::pmr::vector<int> testAlloc;

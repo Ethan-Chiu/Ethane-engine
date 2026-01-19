@@ -17,6 +17,7 @@
 #include "Ethane/Events/MouseEvent.h"
 //------memory--------
 #include "Ethane/Memory/NewDeleteMemResource.h"
+#include "Ethane/Memory/LinearMemResource.h"
 #include "Ethane/Memory/ReportMemResource.h"
 #include "Ethane/Memory/PMRAdapter.h"
 //-----renderer-------

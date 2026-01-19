@@ -14,3 +14,5 @@ if [ -d "$HOME/VulkanSDK" ]; then
 else
     echo "Warning: VulkanSDK not found in home directory"
 fi
+
+# bear -- make

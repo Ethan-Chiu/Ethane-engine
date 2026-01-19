@@ -8,7 +8,7 @@
 #pragma once
 
 #include <cstddef>
-#include <type_traits>
+#include <concepts>
 
 namespace Ethane
 {
@@ -24,4 +24,8 @@ concept CMemoryResource = requires(T &mr, std::size_t bytes, std::size_t alignme
     // { mr.Reset() } -> std::same_as<void>;
 };
 
+static constexpr std::size_t AlignUp(std::size_t value, std::size_t alignment)
+{
+    return (value + alignment - 1) & ~(alignment - 1);
+}
 } // namespace Ethane
