@@ -166,7 +166,7 @@ public:
     void Destroy();
 
     void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
-
+    
     // Getter
     VkDevice GetHandle() const { return m_LogicalDevice; }
 
@@ -177,6 +177,9 @@ public:
     VkCommandPool GetComputeCommandPool() const { return m_ComputeCommandPool; }
 private:
     void QueueCreateInfo();
+
+public:
+    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
 private:
     VkDevice m_LogicalDevice = VK_NULL_HANDLE;

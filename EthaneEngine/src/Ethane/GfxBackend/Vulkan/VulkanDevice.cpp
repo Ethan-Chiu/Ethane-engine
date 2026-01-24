@@ -582,4 +582,19 @@ void VulkanPhysicalDevice::PrintSelectedDeviceInfo() const
 			ETH_CORE_ASSERT(false, "No command pool");
 		}
 	}
+
+    uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
+    {
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice->GetHandle(), &memProperties);
+        
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+        
+        ETH_CORE_ASSERT("Memory type not found");
+        return 0;
+    }
 }
