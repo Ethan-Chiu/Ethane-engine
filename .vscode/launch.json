@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Ethane-Editor",
+            "type": "lldb-dap",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug-macosx-x86_64/Ethane-Editor/Ethane-Editor",
+            "args": [],
+            "cwd": "${workspaceFolder}/Ethane-Editor",
+            "preLaunchTask": "build",
+            "env": {
+                "VK_ICD_FILENAMES": "${env:HOME}/VulkanSDK/1.4.309.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json",
+                "VK_LAYER_PATH": "${env:HOME}/VulkanSDK/1.4.309.0/macOS/share/vulkan/explicit_layer.d",
+                "DYLD_LIBRARY_PATH": "${env:HOME}/VulkanSDK/1.4.309.0/macOS/lib",
+            }
+        }
+    ]
+}

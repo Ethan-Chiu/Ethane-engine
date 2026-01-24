@@ -20,8 +20,8 @@ namespace Ethane
 	{
 		ETH_PROFILE_FUNCTION();
 
-		ETH_CORE_ASSERT(!s_Instance, "Application already exists!")
-			s_Instance = this;
+		ETH_CORE_ASSERT(!s_Instance, "Application already exists!");
+		s_Instance = this;
 
 		m_Window = Window::Create(WindowProps(name, 400, 300));
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
