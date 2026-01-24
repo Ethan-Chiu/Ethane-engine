@@ -4,7 +4,7 @@
 //
 //  Created by 邱奕翔 on 2025/4/28.
 //
-#include "ethpch.h"
+
 #include "GfxBackendAPI.h"
 #include "Vulkan/VulkanGfxBackendAPI.h"
 

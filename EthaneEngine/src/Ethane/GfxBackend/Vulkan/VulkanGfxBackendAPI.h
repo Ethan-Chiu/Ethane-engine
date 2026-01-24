@@ -21,6 +21,9 @@ namespace Ethane {
         virtual void Shutdown() override;
         
         virtual RefCountPtr<IWindowTarget> CreateWindowTarget(void* windowHandle) override;
+
+        virtual RefCountPtr<IVertexBuffer> CreateVertexBuffer(uint32_t size) override;
+        virtual RefCountPtr<IIndexBuffer> CreateIndexBuffer(uint32_t size) override;
         
         virtual void BeginFrame() override;
         virtual void EndFrame() override;

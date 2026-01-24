@@ -25,7 +25,6 @@ os.chdir('../')
 
 if (not Vulkan.CheckVulkanSDK()):
     print("Vulkan SDK not installed.")
-    quit()
 print("----------------------------------------")
 
 # if (not Vulkan.CheckVulkanSDKDebugLibs()):
@@ -48,6 +47,7 @@ for action in Config.premake_config.actions:
     if premake_path is None:
         print("Premake executable not found.")
         quit()
+    print(f"Running: {premake_path.absolute()} {action}")
     subprocess.call([str(premake_path.absolute()), action])
 print("----------------------------------------")
 

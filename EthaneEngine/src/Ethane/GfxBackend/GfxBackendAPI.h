@@ -6,6 +6,7 @@
 //
 #pragma once
 #include "Ethane/Core/Base.h"
+#include "Ethane/GfxBackend/Buffer.h"
 #include "WindowTarget.h"
 
 namespace Ethane {
@@ -23,6 +24,9 @@ public:
     virtual void Shutdown() = 0;
 
     virtual RefCountPtr<IWindowTarget> CreateWindowTarget(void* windowHandle) = 0;
+
+    virtual RefCountPtr<IVertexBuffer> CreateVertexBuffer(uint32_t size) = 0;
+    virtual RefCountPtr<IIndexBuffer> CreateIndexBuffer(uint32_t size) = 0;
 
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;
