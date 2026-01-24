@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Ethane/GfxBackend/WindowTarget.h"
+#include "Ethane/GfxBackend/GfxObject.h"
 #include "VulkanContext.h"
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>

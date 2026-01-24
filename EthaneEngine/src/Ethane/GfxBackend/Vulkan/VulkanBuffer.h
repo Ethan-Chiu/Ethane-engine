@@ -6,7 +6,7 @@
 //
 
 #include <vulkan/vulkan.h>
-#include "Ethane/GfxBackend/Buffer.h"
+#include "Ethane/GfxBackend/GfxObject.h"
 #include "VulkanContext.h"
 
 namespace Ethane {

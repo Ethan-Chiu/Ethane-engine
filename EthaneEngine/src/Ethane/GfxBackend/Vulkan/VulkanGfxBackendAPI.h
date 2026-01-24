@@ -7,8 +7,8 @@
 #pragma once
 
 #include "Ethane/GfxBackend/GfxBackendAPI.h"
+#include "Ethane/GfxBackend/GfxObject.h"
 #include "VulkanContext.h"
-#include "Ethane/GfxBackend/WindowTarget.h"
 
 struct GLFWwindow;
 

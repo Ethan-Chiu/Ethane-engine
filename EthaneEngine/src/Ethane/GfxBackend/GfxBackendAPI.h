@@ -6,8 +6,7 @@
 //
 #pragma once
 #include "Ethane/Core/Base.h"
-#include "Ethane/GfxBackend/Buffer.h"
-#include "WindowTarget.h"
+#include "GfxObject.h"
 
 namespace Ethane {
 
