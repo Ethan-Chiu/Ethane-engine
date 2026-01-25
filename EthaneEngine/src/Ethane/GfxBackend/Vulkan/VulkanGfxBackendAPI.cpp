@@ -11,6 +11,8 @@
 #include "VulkanContext.h"
 #include "VulkanWindowTarget.h"
 #include "VulkanBuffer.h"
+#include "VulkanShader.h"
+
 
 namespace Ethane {
 
@@ -37,6 +39,9 @@ RefCountPtr<IIndexBuffer> VulkanGfxBackendAPI::CreateIndexBuffer(uint32_t size) 
     return MakeRefCountPtr<VulkanIndexBuffer>(&m_Context.GetDevice(), size);
 }
 
+RefCountPtr<IShader> VulkanGfxBackendAPI::CreateShader(const std::string& filepath) {
+    return MakeRefCountPtr<VulkanShader>(&m_Context.GetDevice(), filepath);
+}
 
 void VulkanGfxBackendAPI::BeginFrame() {
     

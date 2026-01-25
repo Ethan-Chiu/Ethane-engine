@@ -24,6 +24,8 @@ namespace Ethane {
 
         virtual RefCountPtr<IVertexBuffer> CreateVertexBuffer(uint32_t size) override;
         virtual RefCountPtr<IIndexBuffer> CreateIndexBuffer(uint32_t size) override;
+
+        virtual RefCountPtr<IShader> CreateShader(const std::string& filepath) override;
         
         virtual void BeginFrame() override;
         virtual void EndFrame() override;

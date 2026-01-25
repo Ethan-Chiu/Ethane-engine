@@ -27,6 +27,8 @@ public:
     virtual RefCountPtr<IVertexBuffer> CreateVertexBuffer(uint32_t size) = 0;
     virtual RefCountPtr<IIndexBuffer> CreateIndexBuffer(uint32_t size) = 0;
 
+    virtual RefCountPtr<IShader> CreateShader(const std::string& filepath) = 0;
+
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;
     
