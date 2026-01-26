@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Resource.h"
+#include "ShaderConfig.h"
 
 namespace Ethane {
 
@@ -35,5 +36,110 @@ class IShader : public RefCounted<IShader>
 public:
     virtual ~IShader() = default;
     virtual const std::string& GetName() const = 0;
+};
+
+enum class ImageFormat
+{
+    None = 0,
+    RED32F,
+    RGB,
+    RGBA,
+    RGBA16F,
+    RGBA32F,
+    RG16F,
+    RG32F,
+    SRGB,
+    BGR,
+    BGRA,
+
+    DEPTH32F,
+    DEPTH24STENCIL8,
+    // Defaults
+    Depth = DEPTH24STENCIL8,
+};
+
+enum class ImageUsage
+{
+    None = 0,
+    Texture,
+    Attachment,
+    Storage
+};
+
+enum class ImageLayout
+{
+    Undefined,
+    General,
+    ShaderRead,
+    PresentSRC,
+};
+
+enum class AccessMask
+{
+    None,
+    ShaderRead,
+    ShaderWrite,
+    ColorRead,
+    ColorWrite,
+    TransferRead,
+    TransferWrite,
+    MemoryRead,
+    MemoryWrite,
+};
+
+enum class PipelineStage
+{
+    None,
+    PipeTop,
+    VertexShader,
+    FragmentShader,
+    ComputeShader,
+    Transfer,
+    PipeBottom,
+};
+
+class IRenderPass : public RefCounted<IRenderPass>
+{
+public:
+    virtual ~IRenderPass() = default;
+};
+
+enum class CullMode {
+    NONE,
+    FRONT,
+    BACK,
+};
+
+struct PipelineSpecification
+{
+    RefCountPtr<IShader> Shader;
+    RefCountPtr<IRenderPass> RenderPass;
+    VertexBufferLayout Layout;
+    CullMode CullMode = CullMode::BACK;
+};
+
+struct ComputePipelineSpecification
+{
+    const IShader* Shader;
+};
+
+class IPipeline : public RefCounted<IPipeline>
+{
+public:
+    virtual ~IPipeline() = default;
+
+    virtual PipelineSpecification& GetSpecification() = 0;
+    virtual const PipelineSpecification& GetSpecification() const = 0;
+};
+
+class IComputePipeline : public RefCounted<IComputePipeline>
+{
+public:
+    virtual ~IComputePipeline() = default;
+
+    virtual ComputePipelineSpecification& GetSpecification() = 0;
+    virtual const ComputePipelineSpecification& GetSpecification() const = 0;
+
+    virtual void Destroy() = 0;
 };
 }

@@ -160,6 +160,7 @@ protected:
 class VulkanDevice
 {
 public:
+    // TODO: should not be default constructable
     VulkanDevice() = default;
     VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
     ~VulkanDevice() = default;
@@ -198,8 +199,6 @@ class VulkanWindowTarget; // initialize devices when first window target is crea
 class VulkanContext
 {
 public:
-    VulkanContext() = default;
-    
     // Getter
     VkInstance GetInstance() const { return m_VulkanInstance; }
     const VulkanPhysicalDevice& GetPhysicalDevice() const { return m_PhysicalDevice; }
