@@ -4,33 +4,33 @@
 
 namespace Ethane {
 
-void VulkanPhysicalDevice::Init(VkInstance vkInstance, const ContextCreateInfo& info, VkSurfaceKHR surface)
+void VulkanPhysicalDevice::Init(const vk::raii::Instance& instance, const ContextCreateInfo& info, vk::SurfaceKHR surface)
 {
-    // Get compatible devices
-    auto compatibleDeviceIndices = GetCompatibleDevices(vkInstance, info);
-    if (compatibleDeviceIndices.empty()) {
-        ETH_CORE_ERROR("No compatible device found");
-    }
-    
-    // Get devices
-    uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
-    std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(vkInstance, &deviceCount, devices.data());
+    ETH_CORE_ASSERT(info.ApiMajor > 1 || info.ApiMinor >= 2, "Ethane requires Vulkan 1.2+ (core 1.1/1.2 feature chains)");
 
-    // Select device
-    std::multimap<uint32_t, VkPhysicalDevice> candidates;
-    for (const auto& deviceIndex : compatibleDeviceIndices)
-    {
-        int score = RateDeviceSuitability(devices[deviceIndex]);
-        candidates.insert(std::make_pair(score, devices[deviceIndex]));
+    // Get compatible devices
+    std::vector<vk::raii::PhysicalDevice> compatibleDevices = GetCompatibleDevices(instance, info);
+    if (compatibleDevices.empty()) {
+        ETH_CORE_ERROR("No compatible device found");
+        return;
     }
-    if (candidates.rbegin()->first >= 0)
+
+    // Select device: highest non-negative score wins
+    int32_t bestScore = -1;
+    for (const auto& device : compatibleDevices)
     {
-        m_PhysicalDevice = candidates.rbegin()->second;
+        int32_t score = RateDeviceSuitability(device, surface);
+        if (score > bestScore)
+        {
+            bestScore = score;
+            m_PhysicalDevice = device;
+        }
     }
     
-    ETH_CORE_ASSERT(m_PhysicalDevice != nullptr, "failed to find a suitable GPU");
+    ETH_CORE_ASSERT(IsInitialized(), "failed to find a suitable GPU");
+    if (!IsInitialized()) {
+        return;
+    }
     
     InitPhysicalFeatures(info);
 
@@ -43,31 +43,22 @@ void VulkanPhysicalDevice::Init(VkInstance vkInstance, const ContextCreateInfo& 
 void VulkanPhysicalDevice::Destroy()
 {
     ETH_CORE_INFO("Destroying physical device...");
-    m_QueueFamilyIndices.Graphics.reset();
-    m_QueueFamilyIndices.Compute.reset();
-    m_QueueFamilyIndices.Transfer.reset();
-    m_QueueFamilyIndices.Present.reset();
+    m_QueueFamilyIndices = {};
+    m_SupportedDeviceExtensions.clear();
+    m_UsedDeviceExtensions.clear();
+    m_PhysicalDevice = nullptr; // not an owned object, just forget the handle
 }
 
-// Returns the list of devices or groups compatible with the mandatory extensions
-std::vector<uint32_t> VulkanPhysicalDevice::GetCompatibleDevices(VkInstance vkInstance, const ContextCreateInfo& info)
+// Returns the list of devices compatible with the mandatory extensions
+std::vector<vk::raii::PhysicalDevice> VulkanPhysicalDevice::GetCompatibleDevices(const vk::raii::Instance& instance, const ContextCreateInfo& info)
 {
-    std::vector<uint32_t> compatibleDevices;
+    std::vector<vk::raii::PhysicalDevice> compatibleDevices;
     
-    // TODO: investigate device group
-    // std::vector<VkPhysicalDeviceGroupProperties> groups;
-    // if (info.useDeviceGroups)
-    // {
-    //     groups = getPhysicalDeviceGroups();
-    //     nbElems = static_cast<uint32_t>(groups.size());
-    // }
+    // TODO: investigate device group (instance.enumeratePhysicalDeviceGroups())
     
     // List devices
-    uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
-    ETH_CORE_ASSERT(deviceCount > 0, "failed to find GPUs with Vulkan support!");
-    std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(vkInstance, &deviceCount, devices.data());
+    vk::raii::PhysicalDevices devices(instance);
+    ETH_CORE_ASSERT(!devices.empty(), "failed to find GPUs with Vulkan support!");
 
     if (info.VerboseCompatibleDevices)
     {
@@ -75,38 +66,27 @@ std::vector<uint32_t> VulkanPhysicalDevice::GetCompatibleDevices(VkInstance vkIn
         ETH_CORE_INFO("Compatible Devices :");
     }
 
-    uint32_t compatible = 0;
-    for (uint32_t elemId = 0; elemId < deviceCount; elemId++)
+    for (const auto& physicalDevice : devices)
     {
-        VkPhysicalDevice physicalDevice = devices[elemId]; // info.useDeviceGroups ? groups[elemId].devices[0] :
-
-        // Note: all physical devices in a group are identical
+        const vk::PhysicalDeviceProperties props = physicalDevice.getProperties();
         if (HasMandatoryExtensions(physicalDevice, info))
         {
-            compatibleDevices.push_back(elemId);
             if (info.VerboseCompatibleDevices)
             {
-                VkPhysicalDeviceProperties props;
-                vkGetPhysicalDeviceProperties(physicalDevice, &props);
-                ETH_CORE_INFO("  {0}: {1}", compatible, props.deviceName);
-                compatible++;
+                ETH_CORE_INFO("  {0}: {1}", compatibleDevices.size(), props.deviceName.data());
             }
+            compatibleDevices.push_back(physicalDevice);
         }
         else if (info.VerboseCompatibleDevices)
         {
-            VkPhysicalDeviceProperties props;
-            vkGetPhysicalDeviceProperties(physicalDevice, &props);
-            ETH_CORE_INFO("Skipping physical device {0}", props.deviceName);
+            ETH_CORE_INFO("Skipping physical device {0}", props.deviceName.data());
         }
     }
+
     if (info.VerboseCompatibleDevices)
     {
-        ETH_CORE_INFO("Physical devices found: {0}", compatible);
-        if (compatible > 0)
-        {
-            ETH_CORE_INFO("{0}", compatible);
-        }
-        else
+        ETH_CORE_INFO("Physical devices found: {0}", compatibleDevices.size());
+        if (compatibleDevices.empty())
         {
             ETH_CORE_ERROR("No compatible device");
         }
@@ -116,16 +96,9 @@ std::vector<uint32_t> VulkanPhysicalDevice::GetCompatibleDevices(VkInstance vkIn
 }
 
 // Return true if all extensions in info, marked as required are available on the physicalDevice
-bool VulkanPhysicalDevice::HasMandatoryExtensions(VkPhysicalDevice device, const ContextCreateInfo& info)
+bool VulkanPhysicalDevice::HasMandatoryExtensions(const vk::raii::PhysicalDevice& device, const ContextCreateInfo& info)
 {
-    std::vector<VkExtensionProperties> extensionProperties;
-
-    uint32_t count;
-    VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, nullptr));
-    extensionProperties.resize(count);
-    VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(device, nullptr, &count, extensionProperties.data()));
-    extensionProperties.resize(std::min(extensionProperties.size(), size_t(count)));
-
+    const std::vector<vk::ExtensionProperties> extensionProperties = device.enumerateDeviceExtensionProperties();
     return VulkanContextUtils::CheckExtensionProperties(extensionProperties, info.DeviceExtensions, info.VerboseCompatibleDevices);
 }
 
@@ -133,25 +106,15 @@ bool VulkanPhysicalDevice::HasMandatoryExtensions(VkPhysicalDevice device, const
 bool VulkanPhysicalDevice::InitPhysicalFeatures(const ContextCreateInfo& info)
 {
     // extensions
-    uint32_t extCount = 0;
-    std::vector<VkExtensionProperties> extensionProperties;
-    vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, nullptr);
-    if (extCount > 0)
+    const std::vector<vk::ExtensionProperties> extensionProperties = m_PhysicalDevice.enumerateDeviceExtensionProperties();
+    ETH_CORE_TRACE("Selected physical device has {0} extensions", extensionProperties.size());
+    for (const auto& ext : extensionProperties)
     {
-        extensionProperties.resize(extCount);
-        if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, &extensionProperties.front()) == VK_SUCCESS)
-        {
-            ETH_CORE_TRACE("Selected physical device has {0} extensions", extCount);
-            for (const auto& ext : extensionProperties)
-            {
-                m_SupportedDeviceExtensions.emplace(ext.extensionName);
-                ETH_CORE_INFO("  {0}", ext.extensionName);
-            }
-        }
+        m_SupportedDeviceExtensions.emplace(ext.extensionName.data());
+        ETH_CORE_INFO("  {0}", ext.extensionName.data());
     }
     
-    std::vector<void*> featureStructs;
-    if (VulkanContextUtils::CheckAndFillExtensionProperties(extensionProperties, info.DeviceExtensions, m_UsedDeviceExtensions, featureStructs) != VK_SUCCESS)
+    if (VulkanContextUtils::CheckAndFillExtensionProperties(extensionProperties, info.DeviceExtensions, m_UsedDeviceExtensions) != VK_SUCCESS)
     {
         ETH_CORE_ERROR("Device extensions not satisfied");
         return false;
@@ -166,96 +129,69 @@ bool VulkanPhysicalDevice::InitPhysicalFeatures(const ContextCreateInfo& info)
             ETH_CORE_INFO("  {0}", it.c_str());
         }
     }
-    
-    // features
-    VkPhysicalDeviceFeatures2   features2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-    VkPhysicalDeviceProperties2 properties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
 
-    if (info.ApiMajor == 1 && info.ApiMinor >= 2)
-    {
-        features2.pNext = &m_PhysicalInfo.features11;
-        m_PhysicalInfo.features11.pNext = &m_PhysicalInfo.features12;
-        m_PhysicalInfo.features12.pNext = nullptr;
+    // Build the feature chain: drop the structs of extensions we aren't enabling.
+    // (Querying a struct of an extension the device doesn't support is invalid, so unlink *before* querying.)
+    FeatureChain features;
+    if (!IsExtensionEnabled(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME))
+        features.unlink<vk::PhysicalDeviceAccelerationStructureFeaturesKHR>();
+    if (!IsExtensionEnabled(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME))
+        features.unlink<vk::PhysicalDeviceRayTracingPipelineFeaturesKHR>();
 
-        m_PhysicalInfo.properties12.driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-        m_PhysicalInfo.properties12.supportedDepthResolveModes = VK_RESOLVE_MODE_MAX_BIT;
-        m_PhysicalInfo.properties12.supportedStencilResolveModes = VK_RESOLVE_MODE_MAX_BIT;
+    // Query support for exactly the structs still linked. The templated raii getFeatures2<...>() can't be used:
+    // it always queries every struct in the chain. So use the plain-handle overload that fills a chain we
+    // built, dispatched through the raii-loaded function table like every other raii call.
+    const vk::PhysicalDevice handle = *m_PhysicalDevice;
+    const auto& dispatcher = *m_PhysicalDevice.getDispatcher();
+    handle.getFeatures2(&features.get<vk::PhysicalDeviceFeatures2>(), dispatcher);
+    m_PhysicalInfo.Features = features; // copy keeps the same linked/unlinked layout
+    m_PhysicalInfo.Properties = m_PhysicalDevice.getProperties2<vk::PhysicalDeviceProperties2,
+                                                                vk::PhysicalDeviceVulkan11Properties,
+                                                                vk::PhysicalDeviceVulkan12Properties>();
 
-        properties2.pNext = &m_PhysicalInfo.properties11;
-        m_PhysicalInfo.properties11.pNext = &m_PhysicalInfo.properties12;
-        m_PhysicalInfo.properties12.pNext = nullptr;
-    }
-
-    
-    // helper struct to link extensions together
-    struct ExtensionHeader
-    {
-        VkStructureType sType;
-        void* pNext;
-    };
-
-    // use the features2 chain to append extensions' features
-    if (!featureStructs.empty())
-    {
-        // build up chain of all used extension features
-        for (size_t i = 0; i < featureStructs.size(); i++)
-        {
-            auto* header = reinterpret_cast<ExtensionHeader*>(featureStructs[i]);
-            header->pNext = i < featureStructs.size() - 1 ? featureStructs[i + 1] : nullptr;
-        }
-        
-        // append to the end of current feature2 struct
-        ExtensionHeader* lastCoreFeature = (ExtensionHeader*)&features2;
-        while (lastCoreFeature->pNext != nullptr)
-        {
-            lastCoreFeature = (ExtensionHeader*)lastCoreFeature->pNext;
-        }
-        lastCoreFeature->pNext = featureStructs[0];
-    }
-
-    // query feature support
-    vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &features2);
-    vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &properties2);
-
-    m_UsedDeviceFeatures = features2;
-    m_PhysicalInfo.features10 = features2.features;
-    m_PhysicalInfo.properties10 = properties2.properties;
-    
-    // disable some features
+    // enable everything that is supported, minus what we explicitly turn off
+    m_EnabledFeatures = m_PhysicalInfo.Features;
     if (info.DisableRobustBufferAccess)
     {
-        m_UsedDeviceFeatures.features.robustBufferAccess = VK_FALSE;
+        m_EnabledFeatures.get<vk::PhysicalDeviceFeatures2>().features.robustBufferAccess = vk::False;
     }
     
     return true;
 }
 
-
-
-int32_t VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)
+bool VulkanPhysicalDevice::IsExtensionEnabled(const char* name) const
 {
-    int score = 0;
-    VkPhysicalDeviceProperties deviceProperties;
-    VkPhysicalDeviceFeatures deviceFeatures;
-    vkGetPhysicalDeviceProperties(device, &deviceProperties);
-    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+    return std::find(m_UsedDeviceExtensions.begin(), m_UsedDeviceExtensions.end(), name) != m_UsedDeviceExtensions.end();
+}
 
-    if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-    {
-        score += 1000;
-    }
 
-    score += deviceProperties.limits.maxImageDimension2D;
+int32_t VulkanPhysicalDevice::RateDeviceSuitability(const vk::raii::PhysicalDevice& device, vk::SurfaceKHR surface)
+{
+    const vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
+    const vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
 
-    if (!deviceFeatures.geometryShader)
+    // hard requirements
+    if (deviceProperties.apiVersion < VK_API_VERSION_1_2)
+        return -1;
+    if (!deviceFeatures.samplerAnisotropy)
         return -1;
 
-    if (surface != VK_NULL_HANDLE) {
+    int32_t score = 0;
+    if (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+        score += 1000;
+    score += static_cast<int32_t>(deviceProperties.limits.maxImageDimension2D);
+    // geometry shaders are not required (MoltenVK doesn't support them), just preferred
+    if (deviceFeatures.geometryShader)
+        score += 100;
+
+    // without a surface we can't judge presentation, rate on properties only
+    if (!surface) {
         return score;
     }
     
-    QueueFamilyIndices indices = FindQueueFamilies(device, VK_QUEUE_GRAPHICS_BIT, surface);
-    ETH_CORE_ASSERT(indices.Present.has_value(), "Present not support");
+    QueueFamilyIndices indices = FindQueueFamilies(device, vk::QueueFlagBits::eGraphics, surface);
+    if (!indices.isComplete())
+        return -1;
     // prefer indices.Graphic == indices.Present
     if (indices.Present.value() == indices.Graphics.value()) {
         score += 10;
@@ -264,29 +200,27 @@ int32_t VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device, VkS
     // Check swap chain adequate
     SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);
     bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-
-    if (!indices.isComplete() || !deviceFeatures.samplerAnisotropy || !swapChainAdequate)
+    if (!swapChainAdequate)
         return -1;
     
     return score;
 }
 
-VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies(VkPhysicalDevice device, uint32_t flags, VkSurfaceKHR surface)
+VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies(const vk::raii::PhysicalDevice& device, vk::QueueFlags flags, vk::SurfaceKHR surface)
 {
-    uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+    using QF = vk::QueueFlagBits;
+    const std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
+    const uint32_t queueFamilyCount = static_cast<uint32_t>(queueFamilies.size());
 
     QueueFamilyIndices indices;
     // Dedicated queue for compute
     // Try to find a queue family index that supports compute but not graphics
-    if (flags & VK_QUEUE_COMPUTE_BIT)
+    if (flags & QF::eCompute)
     {
         for (uint32_t i = 0; i < queueFamilyCount; i++)
         {
-            auto& queueFamily = queueFamilies[i];
-            if ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0))
+            const auto queueFlags = queueFamilies[i].queueFlags;
+            if ((queueFlags & QF::eCompute) && !(queueFlags & QF::eGraphics))
             {
                 indices.Compute = i;
                 break;
@@ -295,12 +229,12 @@ VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies
     }
     // Dedicated queue for transfer
     // Try to find a queue family index that supports transfer but not graphics and compute
-    if (flags & VK_QUEUE_TRANSFER_BIT)
+    if (flags & QF::eTransfer)
     {
         for (uint32_t i = 0; i < queueFamilyCount; i++)
         {
-            auto& queueFamily = queueFamilies[i];
-            if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) && ((queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) == 0))
+            const auto queueFlags = queueFamilies[i].queueFlags;
+            if ((queueFlags & QF::eTransfer) && !(queueFlags & QF::eGraphics) && !(queueFlags & QF::eCompute))
             {
                 indices.Transfer = i;
                 break;
@@ -309,108 +243,85 @@ VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies
     }
     // Graphics queue
     // Try to find graphics queue that also support present (indices.Graphic == indices.Present)
-    ETH_CORE_ASSERT(surface != nullptr);
-    VkBool32 presentSupport = false;
-    if (flags & VK_QUEUE_GRAPHICS_BIT)
+    ETH_CORE_ASSERT(surface, "FindQueueFamilies needs a surface to determine present support");
+    if (flags & QF::eGraphics)
     {
         for (uint32_t i = 0; i < queueFamilyCount; i++)
         {
-            if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            if ((queueFamilies[i].queueFlags & QF::eGraphics) && device.getSurfaceSupportKHR(i, surface))
             {
-                if (!presentSupport)
-                {
-                    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport));
-                    if (presentSupport) {
-                        indices.Graphics = i;
-                        indices.Present = i;
-                    }
-                }
+                indices.Graphics = i;
+                indices.Present = i;
+                break;
             }
         }
     }
     // For other queue types or if no separate compute queue is present, return the first one to support the requested flags
     for (uint32_t i = 0; i < queueFamilyCount; i++)
     {
-        if ((flags & VK_QUEUE_TRANSFER_BIT) && !indices.Transfer.has_value())
+        const auto queueFlags = queueFamilies[i].queueFlags;
+        if ((flags & QF::eTransfer) && !indices.Transfer.has_value() && (queueFlags & QF::eTransfer))
         {
-            if (queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
-                indices.Transfer = i;
-                ETH_CORE_INFO("fallback transfer queue choice");
-            }
+            indices.Transfer = i;
+            ETH_CORE_INFO("fallback transfer queue choice");
         }
 
-        if ((flags & VK_QUEUE_COMPUTE_BIT) && !indices.Compute.has_value())
+        if ((flags & QF::eCompute) && !indices.Compute.has_value() && (queueFlags & QF::eCompute))
         {
-            if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
-                indices.Compute = i;
-                ETH_CORE_INFO("fallback compute queue choice");
-            }
+            indices.Compute = i;
+            ETH_CORE_INFO("fallback compute queue choice");
         }
 
-        if ((flags & VK_QUEUE_GRAPHICS_BIT) && !indices.Graphics.has_value())
+        if ((flags & QF::eGraphics) && !indices.Graphics.has_value() && (queueFlags & QF::eGraphics))
         {
-            if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                indices.Graphics = i;
-                ETH_CORE_INFO("fallback graphic queue choice");
-            }
+            indices.Graphics = i;
+            ETH_CORE_INFO("fallback graphic queue choice");
         }
-        if (!indices.Present.has_value())
+
+        if (!indices.Present.has_value() && device.getSurfaceSupportKHR(i, surface))
         {
-            VkBool32 fallbackPresentSupport = VK_FALSE;
-            VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &fallbackPresentSupport));
-            if (fallbackPresentSupport) {
-                indices.Present = i;
-                ETH_CORE_INFO("fallback present queue choice");
-            }
+            indices.Present = i;
+            ETH_CORE_INFO("fallback present queue choice");
         }
     }
 
     return indices;
 }
 
-SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const
+SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(const vk::raii::PhysicalDevice& device, vk::SurfaceKHR surface) const
 {
     SwapChainSupportDetails details;
     
-    if (surface == VK_NULL_HANDLE) {
+    if (!surface) {
         ETH_CORE_ERROR("Query swapchain support got surface := VK_NULL_HANDLE");
         return details;
     }
     
-    // query capabilities
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+    // TODO(raii): switch SwapChainSupportDetails to vk:: types when VulkanWindowTarget is migrated
+    details.capabilities = device.getSurfaceCapabilitiesKHR(surface);
 
-    // query formats
-    uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-    ETH_CORE_ASSERT(formatCount > 0, "");
-    details.formats.resize(formatCount);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+    for (const vk::SurfaceFormatKHR& format : device.getSurfaceFormatsKHR(surface))
+        details.formats.push_back(format);
+    ETH_CORE_ASSERT(!details.formats.empty(), "");
 
-    // query present mode
-    uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
-    details.presentModes.resize(presentModeCount);
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+    for (const vk::PresentModeKHR mode : device.getSurfacePresentModesKHR(surface))
+        details.presentModes.push_back(static_cast<VkPresentModeKHR>(mode));
 
     return details;
 }
 
 void VulkanPhysicalDevice::PrintSelectedDeviceInfo() const
 {
-    if (m_PhysicalDevice == VK_NULL_HANDLE) {
+    if (!IsInitialized()) {
         ETH_CORE_WARN("Physical device not initialized!");
         return;
     }
-    // Get memory properties & properties & feature of the selected device
-    VkPhysicalDeviceMemoryProperties memories;
-    VkPhysicalDeviceProperties2 properties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
-    vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memories);
-    vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &properties2);
+    // Get memory properties & properties of the selected device
+    const vk::PhysicalDeviceMemoryProperties memories = m_PhysicalDevice.getMemoryProperties();
+    const vk::PhysicalDeviceProperties& properties = m_PhysicalInfo.Properties.get<vk::PhysicalDeviceProperties2>().properties;
 
-    VkPhysicalDeviceProperties properties = properties2.properties;
     ETH_CORE_INFO("____________________");
-    ETH_CORE_INFO("SELECTED DEVICE: {0}", properties.deviceName);
+    ETH_CORE_INFO("SELECTED DEVICE: {0}", properties.deviceName.data());
     ETH_CORE_INFO("queue family indices: Graphics-{0} | Present-{1} | Compute-{2} | Transfer-{3}",
         m_QueueFamilyIndices.Graphics.value(),
         m_QueueFamilyIndices.Present.value(),
@@ -419,19 +330,19 @@ void VulkanPhysicalDevice::PrintSelectedDeviceInfo() const
 
     switch (properties.deviceType) {
     default:
-    case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+    case vk::PhysicalDeviceType::eOther:
         ETH_CORE_INFO("GPU type is Unknown.");
         break;
-    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+    case vk::PhysicalDeviceType::eIntegratedGpu:
         ETH_CORE_INFO("GPU type is Integrated.");
         break;
-    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+    case vk::PhysicalDeviceType::eDiscreteGpu:
         ETH_CORE_INFO("GPU type is Descrete.");
         break;
-    case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+    case vk::PhysicalDeviceType::eVirtualGpu:
         ETH_CORE_INFO("GPU type is Virtual.");
         break;
-    case VK_PHYSICAL_DEVICE_TYPE_CPU:
+    case vk::PhysicalDeviceType::eCpu:
         ETH_CORE_INFO("GPU type is CPU.");
         break;
     }
@@ -452,7 +363,7 @@ void VulkanPhysicalDevice::PrintSelectedDeviceInfo() const
     // Memory information
     for (uint32_t i = 0; i < memories.memoryHeapCount; ++i) {
         double memory_size_gib = (((double)memories.memoryHeaps[i].size) / 1024.0f / 1024.0f / 1024.0f);
-        if (memories.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+        if (memories.memoryHeaps[i].flags & vk::MemoryHeapFlagBits::eDeviceLocal) {
             ETH_CORE_INFO("Local GPU memory: {0} GiB", std::round(memory_size_gib * 100.0) / 100.0);
         }
         else {
@@ -486,7 +397,8 @@ void VulkanPhysicalDevice::PrintSelectedDeviceInfo() const
 		}
 
 		deviceCreateInfo.pEnabledFeatures = nullptr;
-        deviceCreateInfo.pNext = &m_PhysicalDevice->m_UsedDeviceFeatures;
+        // TODO(raii): move to vk::raii::Device in the logical-device step
+        deviceCreateInfo.pNext = &m_PhysicalDevice->GetEnabledFeatures().get<vk::PhysicalDeviceFeatures2>();
 
         VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice->GetHandle(), &deviceCreateInfo, nullptr, &m_LogicalDevice));
 

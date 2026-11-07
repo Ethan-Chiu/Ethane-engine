@@ -531,6 +531,7 @@
 		CE5F78CDC25EC23F4749D70D /* perpendicular.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = perpendicular.hpp; path = vendor/glm/glm/gtx/perpendicular.hpp; sourceTree = "<group>"; };
 		CE70D87BDEBDBC6DDCAA86BB /* matrix_double2x2_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double2x2_precision.hpp; path = vendor/glm/glm/ext/matrix_double2x2_precision.hpp; sourceTree = "<group>"; };
 		CEB237A7C2B18119479C95E7 /* matrix_int3x2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_int3x2.hpp; path = vendor/glm/glm/ext/matrix_int3x2.hpp; sourceTree = "<group>"; };
+		CED90667E090465955FE34A7 /* vulkan.cppm */ = {isa = PBXFileReference; explicitFileType = text; name = vulkan.cppm; path = ../../../../VulkanSDK/1.4.309.0/macOS/Include/vulkan/vulkan.cppm; sourceTree = "<group>"; };
 		CEEDB70769479FF9A5800547 /* quaternion_transform.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_transform.inl; path = vendor/glm/glm/ext/quaternion_transform.inl; sourceTree = "<group>"; };
 		CF24CCE3ADC7685562A96B23 /* VulkanDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanDevice.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanDevice.cpp; sourceTree = "<group>"; };
 		D04434F197A8EFE32260C331 /* VulkanGfxBackendAPI.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanGfxBackendAPI.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanGfxBackendAPI.cpp; sourceTree = "<group>"; };
@@ -741,6 +742,14 @@
 				66D3A41BBD610E8D95DA225B /* stb_image */,
 			);
 			name = vendor;
+			sourceTree = "<group>";
+		};
+		1F9A28004165D5327E1AFE40 /* 1.4.309.0 */ = {
+			isa = PBXGroup;
+			children = (
+				84B5D3FA482195AC86C53A3A /* macOS */,
+			);
+			name = 1.4.309.0;
 			sourceTree = "<group>";
 		};
 		242D3C111D933D83112E9A51 /* Debug */ = {
@@ -1124,9 +1133,18 @@
 			name = Renderer;
 			sourceTree = "<group>";
 		};
+		7B887A9E5FCF82D0E3BCB0DE /* Include */ = {
+			isa = PBXGroup;
+			children = (
+				F3DAD2AB8C27B85DBA6EB8EB /* vulkan */,
+			);
+			name = Include;
+			sourceTree = "<group>";
+		};
 		846EDC2B30D19C5DEF5A126B /* EthaneEngine */ = {
 			isa = PBXGroup;
 			children = (
+				C157BD8E6445E440F36BC3CE /* VulkanSDK */,
 				5775D4184366DFCA959E7A58 /* src */,
 				1DF602E4C1418C16DC125924 /* vendor */,
 				BBF76781A7E87333FA200DC1 /* Frameworks */,
@@ -1134,6 +1152,14 @@
 				9D968EAA920D05DCE0E0A4EA /* Projects */,
 			);
 			name = EthaneEngine;
+			sourceTree = "<group>";
+		};
+		84B5D3FA482195AC86C53A3A /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				7B887A9E5FCF82D0E3BCB0DE /* Include */,
+			);
+			name = macOS;
 			sourceTree = "<group>";
 		};
 		85FF94A1B7F8DF5331D81AE1 /* Vulkan */ = {
@@ -1464,6 +1490,14 @@
 			name = Platform;
 			sourceTree = "<group>";
 		};
+		C157BD8E6445E440F36BC3CE /* VulkanSDK */ = {
+			isa = PBXGroup;
+			children = (
+				1F9A28004165D5327E1AFE40 /* 1.4.309.0 */,
+			);
+			name = VulkanSDK;
+			sourceTree = "<group>";
+		};
 		C7488D7AC0AE8EECB449EBBA /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1478,6 +1512,14 @@
 				57DFAA17801A62C967B5F057 /* include */,
 			);
 			name = entt;
+			sourceTree = "<group>";
+		};
+		F3DAD2AB8C27B85DBA6EB8EB /* vulkan */ = {
+			isa = PBXGroup;
+			children = (
+				CED90667E090465955FE34A7 /* vulkan.cppm */,
+			);
+			name = vulkan;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

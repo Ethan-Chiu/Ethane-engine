@@ -40,7 +40,9 @@ project "EthaneEngine"
     kind "StaticLib"
     language "C++"
     cppdialect "C++20"
+    enablemodules "on"
     staticruntime "off"
+    buildstlmodules "on"
 
     filter "system:windows"
         systemversion "latest"
@@ -63,11 +65,17 @@ project "EthaneEngine"
         "%{prj.name}/vendor/glm/glm/**.inl",
         "%{prj.name}/vendor/entt/include/**.hpp",
 
+        "%{IncludeDir.VulkanSDK}/vulkan/**.cppm"
+
         -- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
         -- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
         -- "%{prj.name}/vendor/VulkanMemoryAllocator/**.h",
         -- "%{prj.name}/vendor/VulkanMemoryAllocator/**.cpp"
     }
+
+    filter "files:**.cppm"
+        compileas "Module"
+    filter {}
 
     externalincludedirs
     {
@@ -233,6 +241,7 @@ project "Ethane-Editor"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
+    enablemodules "on"
     staticruntime "off"
 
     filter "system:windows"

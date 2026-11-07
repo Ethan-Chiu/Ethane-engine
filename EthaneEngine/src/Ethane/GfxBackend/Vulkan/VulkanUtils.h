@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Ethane/Core/Log.h"
-#include <vulkan/vulkan.h>
+#include "Vulkan.h"
 
 namespace Ethane::Utils {
 

@@ -8,7 +8,8 @@
 
 #include "ethpch.h"
 #include <optional>
-#include <vulkan/vulkan.h>
+
+#include "Vulkan.h"
 
 namespace Ethane {
 
@@ -36,17 +37,15 @@ struct ContextCreateInfo
 
     struct Entry
     {
-        Entry(const char* entryName, bool isOptional = false, void* pointerFeatureStruct = nullptr, uint32_t checkVersion = 0)
+        Entry(const char* entryName, bool isOptional = false, uint32_t checkVersion = 0)
             : name(entryName)
             , optional(isOptional)
-            , pFeatureStruct(pointerFeatureStruct)
             , version(checkVersion)
         {
         }
 
         std::string name;
         bool        optional{ false };
-        void* pFeatureStruct{ nullptr };
         uint32_t    version{ 0 };
     };
 
@@ -59,7 +58,8 @@ struct ContextCreateInfo
     // Add/Remove Instance extension/layer & device extension
     void AddInstanceExtension(const char* name, bool optional = false);
     void AddInstanceLayer(const char* name, bool optional = false);
-    void AddDeviceExtension(const char* name, bool optional = false, void* pFeatureStruct = nullptr, uint32_t version = 0);
+    // Feature structs for device extensions live in VulkanPhysicalDevice::FeatureChain
+    void AddDeviceExtension(const char* name, bool optional = false, uint32_t version = 0);
     void RemoveInstanceExtension(const char* name);
     void RemoveInstanceLayer(const char* name);
     void RemoveDeviceExtension(const char* name);
@@ -92,16 +92,24 @@ struct SwapChainSupportDetails {
 class VulkanPhysicalDevice
 {
 public:
+    // Every feature struct the engine knows about. Core 1.0/1.1/1.2 (requires a Vulkan 1.2+ device),
+    // followed by device-extension structs, which are unlink()ed when their extension isn't enabled.
+    // To support a new extension's features: add its struct here and map it to the extension name
+    // in VulkanPhysicalDevice::InitPhysicalFeatures.
+    using FeatureChain  = vk::StructureChain<vk::PhysicalDeviceFeatures2,
+                                             vk::PhysicalDeviceVulkan11Features,
+                                             vk::PhysicalDeviceVulkan12Features,
+                                             vk::PhysicalDeviceAccelerationStructureFeaturesKHR,  // VK_KHR_acceleration_structure
+                                             vk::PhysicalDeviceRayTracingPipelineFeaturesKHR>;    // VK_KHR_ray_tracing_pipeline
+    using PropertyChain = vk::StructureChain<vk::PhysicalDeviceProperties2,
+                                             vk::PhysicalDeviceVulkan11Properties,
+                                             vk::PhysicalDeviceVulkan12Properties>;
+
     // This struct holds all core feature information for a physical device
     struct PhysicalDeviceInfo
     {
-        VkPhysicalDeviceFeatures         features10{};
-        VkPhysicalDeviceVulkan11Features features11{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES };
-        VkPhysicalDeviceVulkan12Features features12{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES };
-
-        VkPhysicalDeviceProperties         properties10{};
-        VkPhysicalDeviceVulkan11Properties properties11{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES };
-        VkPhysicalDeviceVulkan12Properties properties12{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES };
+        FeatureChain  Features;   // supported (extension structs unlinked if the extension isn't enabled)
+        PropertyChain Properties;
     };
 
     struct QueueFamilyIndices
@@ -113,49 +121,55 @@ public:
         
         bool isComplete()
         {
-            return Graphics.has_value();
+            return Graphics.has_value() && Present.has_value();
         }
     };
     
 public:
-    void Init(VkInstance vkInstance, const ContextCreateInfo& info, VkSurfaceKHR surface);
+    void Init(const vk::raii::Instance& instance, const ContextCreateInfo& info, vk::SurfaceKHR surface);
     void Destroy();
     
-    bool IsInitialized() const { return m_PhysicalDevice != VK_NULL_HANDLE; }
+    bool IsInitialized() const { return static_cast<bool>(*m_PhysicalDevice); }
 
     void PrintSelectedDeviceInfo() const;
     SwapChainSupportDetails GetSwapchainSupport(VkSurfaceKHR surface) const { return QuerySwapChainSupport(m_PhysicalDevice, surface);}
 
     // Getter
-    VkPhysicalDevice GetHandle() const { return m_PhysicalDevice; }
+    const vk::raii::PhysicalDevice& Get() const { return m_PhysicalDevice; }
+    VkPhysicalDevice GetHandle() const { return *m_PhysicalDevice; } // TODO(raii): remove once all callers use Get()
+    const PhysicalDeviceInfo& GetInfo() const { return m_PhysicalInfo; }
     const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
+    // Features to enable at device creation; pass &GetEnabledFeatures().get<vk::PhysicalDeviceFeatures2>() as pNext
+    const FeatureChain& GetEnabledFeatures() const { return m_EnabledFeatures; }
+    bool IsExtensionEnabled(const char* name) const;
 
 private:
-    std::vector<uint32_t> GetCompatibleDevices(VkInstance vkInstance, const ContextCreateInfo& info);
-    bool HasMandatoryExtensions(VkPhysicalDevice device, const ContextCreateInfo& info);
+    std::vector<vk::raii::PhysicalDevice> GetCompatibleDevices(const vk::raii::Instance& instance, const ContextCreateInfo& info);
+    bool HasMandatoryExtensions(const vk::raii::PhysicalDevice& device, const ContextCreateInfo& info);
     bool InitPhysicalFeatures(const ContextCreateInfo& info);
 
     // Utilities
-    int32_t RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface = VK_NULL_HANDLE);
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const;
-    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, uint32_t queueFamilyFlags, VkSurfaceKHR surface);
+    int32_t RateDeviceSuitability(const vk::raii::PhysicalDevice& device, vk::SurfaceKHR surface);
+    SwapChainSupportDetails QuerySwapChainSupport(const vk::raii::PhysicalDevice& device, vk::SurfaceKHR surface) const;
+    QueueFamilyIndices FindQueueFamilies(const vk::raii::PhysicalDevice& device, vk::QueueFlags queueFamilyFlags, vk::SurfaceKHR surface);
 protected:
     // Device info and handle
     PhysicalDeviceInfo m_PhysicalInfo;
-    VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+    vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
     
     // Device Extension
     std::unordered_set<std::string> m_SupportedDeviceExtensions;
     std::vector<std::string> m_UsedDeviceExtensions;
-    VkPhysicalDeviceFeatures2 m_UsedDeviceFeatures;
 
-    const uint32_t m_ConstRequestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+    // Features to enable at device creation (supported features minus explicit opt-outs)
+    FeatureChain m_EnabledFeatures;
+
+    const vk::QueueFlags m_ConstRequestedQueueTypes = vk::QueueFlagBits::eGraphics | vk::QueueFlagBits::eCompute | vk::QueueFlagBits::eTransfer;
     QueueFamilyIndices m_QueueFamilyIndices;
 
     friend class VulkanDevice;
     friend class VulkanContext;
 };
-
 
 class VulkanDevice
 {
@@ -200,7 +214,7 @@ class VulkanContext
 {
 public:
     // Getter
-    VkInstance GetInstance() const { return m_VulkanInstance; }
+    const vk::raii::Instance& GetInstance() const { return m_VulkanInstance; }
     const VulkanPhysicalDevice& GetPhysicalDevice() const { return m_PhysicalDevice; }
     const VulkanDevice& GetDevice() const { return m_Device; }
 
@@ -219,8 +233,11 @@ private:
     friend VulkanGfxBackendAPI;
     friend VulkanWindowTarget;
 protected:
-    VkInstance m_VulkanInstance = nullptr;
-    VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
+    // NOTE: declaration order matters for RAII destruction (reverse order): messenger -> instance -> context
+    vk::raii::Context                m_Context;
+    vk::raii::Instance               m_VulkanInstance = nullptr;
+    vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
+
     ContextCreateInfo m_ContextInfo;
     VkAllocationCallbacks m_AllocationCallbacks;
 
@@ -238,18 +255,17 @@ protected:
 
 namespace VulkanContextUtils {
 
-VkResult CheckAndFillLayerProperties(const std::vector<VkLayerProperties>& properties,
+VkResult CheckAndFillLayerProperties(const std::vector<vk::LayerProperties>& properties,
                               const ContextCreateInfo::EntryArray& requested,
                               std::vector<std::string>& used);
 
-bool CheckExtensionProperties(const std::vector<VkExtensionProperties>& properties,
+bool CheckExtensionProperties(const std::vector<vk::ExtensionProperties>& properties,
                               const ContextCreateInfo::EntryArray& requested,
                               bool bVerbose);
 
-VkResult CheckAndFillExtensionProperties(const std::vector<VkExtensionProperties>& properties,
+VkResult CheckAndFillExtensionProperties(const std::vector<vk::ExtensionProperties>& properties,
                                          const ContextCreateInfo::EntryArray& requested,
-                                         std::vector<std::string>& used,
-                                         std::vector<void*>& featureStructs);
+                                         std::vector<std::string>& used);
 
 static const char* VulkanVendorIDToString(uint32_t vendorID)
 {
