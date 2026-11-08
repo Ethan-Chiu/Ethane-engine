@@ -8,7 +8,7 @@
 #pragma once
 
 #include "ethpch.h"
-#include <vulkan/vulkan.h>
+#include "Vulkan.h"
 #include "Ethane/GfxBackend/GfxObject.h"
 
 namespace Ethane {

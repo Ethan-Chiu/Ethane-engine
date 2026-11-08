@@ -2,14 +2,14 @@
 #include "VulkanUtils.h"
 #include "VulkanShader.h"
 
-#include "Ethane/Core/timer.h"
+#include "Ethane/Core/Timer.h"
 #include "Ethane/Utils/FileUtils.hpp"
 
 
 namespace Ethane {
 
 	VulkanShader::VulkanShader(const VulkanDevice* device, const std::string& filepath)
-		:m_Device(device), m_FilePath(filepath)
+		: m_Device(device), m_FilePath(filepath)
 	{
 		ETH_PROFILE_FUNCTION();
 		ETH_CORE_INFO("Create Shader: {0}", filepath);
@@ -49,46 +49,40 @@ namespace Ethane {
 
 	void VulkanShader::Destroy()
 	{
-        VkDevice device = m_Device->GetHandle();
-        vkDeviceWaitIdle(device);
-        
-		for (auto descriptorSetLayout : m_DescriptorSetLayouts)
-		{
-			vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-		}
+        if (m_DescriptorSetLayouts.empty() && m_ShaderModules.empty()) {
+            return;
+        }
+        m_Device->Get().waitIdle();
 
-		for (auto& [flag, shadermodule] : m_ShaderModule)
-		{
-			vkDestroyShaderModule(device, shadermodule, nullptr);
-		}
+		m_PipelineShaderStageCreateInfos.clear();
+		m_DescriptorSetLayouts.clear();
+		m_ShaderModules.clear();
 	}
 
 	void VulkanShader::CreatePipelineShaderStage(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
-		VkDevice device = m_Device->GetHandle();
+		const vk::raii::Device& device = m_Device->Get();
 		m_PipelineShaderStageCreateInfos.clear();
-		for (auto [stage, data] : shaderData)
+		m_ShaderModules.clear();
+		m_ShaderModules.reserve(shaderData.size());
+		for (const auto& [stage, data] : shaderData)
 		{
 			ETH_CORE_ASSERT(data.size());
-			VkShaderModuleCreateInfo moduleCreateInfo{};
+			const vk::raii::ShaderModule& module = m_ShaderModules.emplace_back(device, vk::ShaderModuleCreateInfo{
+				.codeSize = data.size() * sizeof(uint32_t),
+				.pCode    = data.data()});
 
-			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-			moduleCreateInfo.codeSize = data.size() * sizeof(uint32_t);
-			moduleCreateInfo.pCode = data.data();
-
-			VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, nullptr, &m_ShaderModule[stage]));
-
-			VkPipelineShaderStageCreateInfo& shaderStage = m_PipelineShaderStageCreateInfos.emplace_back();
-			shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-			shaderStage.stage = stage;
-			shaderStage.module = m_ShaderModule[stage];
-			shaderStage.pName = "main";
+			m_PipelineShaderStageCreateInfos.push_back(vk::PipelineShaderStageCreateInfo{
+				.stage  = static_cast<vk::ShaderStageFlagBits>(stage),
+				.module = *module,
+				.pName  = "main"});
 		}
 	}
 
 	void VulkanShader::CreateDescriptorLayouts()
 	{
-		VkDevice device = m_Device->GetHandle();
+		const vk::raii::Device& device = m_Device->Get();
+		m_DescriptorSetLayouts.clear();
 
 		uint32_t setCount = (uint32_t)m_ShaderDescriptorSetsReflect.size();
 		m_WriteDescriptorSetsBase.resize(setCount);
@@ -97,19 +91,19 @@ namespace Ethane {
 			auto& shaderDescriptorSet = m_ShaderDescriptorSetsReflect[set];
 
 			// Uniform Buffers
-			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+			// NOTE: the write-descriptor templates stay C structs: plain data for VulkanShaderSystem, no Vulkan objects
+			std::vector<vk::DescriptorSetLayoutBinding> layoutBindings;
 			for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
 			{
-				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-				layoutBinding.binding = binding;
-				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				layoutBinding.descriptorCount = 1;
-				layoutBinding.stageFlags = uniformBuffer.ShaderStage;
-				layoutBinding.pImmutableSamplers = nullptr;
+				vk::DescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{
+					.binding         = binding,
+					.descriptorType  = vk::DescriptorType::eUniformBuffer,
+					.descriptorCount = 1,
+					.stageFlags      = static_cast<vk::ShaderStageFlagBits>(uniformBuffer.ShaderStage)});
 
 				VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][uniformBuffer.Name].WriteDescriptor;
 				wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-				wds.descriptorType = layoutBinding.descriptorType;
+				wds.descriptorType = static_cast<VkDescriptorType>(layoutBinding.descriptorType);
 				wds.dstBinding = layoutBinding.binding;
 				wds.descriptorCount = 1;
 			}
@@ -117,18 +111,17 @@ namespace Ethane {
 			// Image Sampler
 			for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
 			{
-				auto& layoutBinding = layoutBindings.emplace_back();
-				layoutBinding.binding = binding;
-				layoutBinding.descriptorCount = imageSampler.ArraySize;
-				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				layoutBinding.pImmutableSamplers = nullptr;
-				layoutBinding.stageFlags = imageSampler.ShaderStage;
+				vk::DescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{
+					.binding         = binding,
+					.descriptorType  = vk::DescriptorType::eCombinedImageSampler,
+					.descriptorCount = imageSampler.ArraySize,
+					.stageFlags      = static_cast<vk::ShaderStageFlagBits>(imageSampler.ShaderStage)});
 
 //				ETH_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present!");
 
 				VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][imageSampler.Name].WriteDescriptor;
 				wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-				wds.descriptorType = layoutBinding.descriptorType;
+				wds.descriptorType = static_cast<VkDescriptorType>(layoutBinding.descriptorType);
 				wds.dstBinding = layoutBinding.binding;
 				wds.descriptorCount = imageSampler.ArraySize;
 			}
@@ -136,16 +129,15 @@ namespace Ethane {
             // Storage Buffers
             for (auto& [binding, storageBuffer] : shaderDescriptorSet.StorageBuffers)
             {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.binding = binding;
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                layoutBinding.descriptorCount = 1;
-                layoutBinding.stageFlags = storageBuffer.ShaderStage;
-                layoutBinding.pImmutableSamplers = nullptr;
+                vk::DescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{
+                    .binding         = binding,
+                    .descriptorType  = vk::DescriptorType::eStorageBuffer,
+                    .descriptorCount = 1,
+                    .stageFlags      = static_cast<vk::ShaderStageFlagBits>(storageBuffer.ShaderStage)});
 
                 VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][storageBuffer.Name].WriteDescriptor;
                 wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-                wds.descriptorType = layoutBinding.descriptorType;
+                wds.descriptorType = static_cast<VkDescriptorType>(layoutBinding.descriptorType);
                 wds.dstBinding = layoutBinding.binding;
                 wds.descriptorCount = 1;
             }
@@ -153,42 +145,52 @@ namespace Ethane {
             // Storage Image
             for (auto& [binding, imageSampler] : shaderDescriptorSet.StorageImage)
             {
-                auto& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.binding = binding;
-                layoutBinding.descriptorCount = imageSampler.ArraySize;
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.stageFlags = imageSampler.ShaderStage;
+                vk::DescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{
+                    .binding         = binding,
+                    .descriptorType  = vk::DescriptorType::eStorageImage,
+                    .descriptorCount = imageSampler.ArraySize,
+                    .stageFlags      = static_cast<vk::ShaderStageFlagBits>(imageSampler.ShaderStage)});
 
                 VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][imageSampler.Name].WriteDescriptor;
                 wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-                wds.descriptorType = layoutBinding.descriptorType;
+                wds.descriptorType = static_cast<VkDescriptorType>(layoutBinding.descriptorType);
                 wds.dstBinding = layoutBinding.binding;
                 wds.descriptorCount = imageSampler.ArraySize;
             }
 
-			VkDescriptorSetLayoutCreateInfo descriptorLayout = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
-			descriptorLayout.pNext = nullptr;
-			descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-			descriptorLayout.pBindings = layoutBindings.data();
 
 			ETH_CORE_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
 				shaderDescriptorSet.UniformBuffers.size(), shaderDescriptorSet.StorageBuffers.size(), shaderDescriptorSet.ImageSamplers.size(), shaderDescriptorSet.StorageImage.size());
 
-			if (set >= m_DescriptorSetLayouts.size())
-				m_DescriptorSetLayouts.resize((size_t)(set + 1));
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayouts[set]));
+			// sets are visited in order 0..setCount-1, so the layout for `set` lands at index `set`
+			m_DescriptorSetLayouts.emplace_back(device, vk::DescriptorSetLayoutCreateInfo{
+				.bindingCount = static_cast<uint32_t>(layoutBindings.size()),
+				.pBindings    = layoutBindings.data()});
 		}
 	}
 
 	// For pipeline creation
-	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts()
+	std::vector<vk::DescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts() const
 	{
-		std::vector<VkDescriptorSetLayout> result;
+		std::vector<vk::DescriptorSetLayout> result;
 		result.reserve(m_DescriptorSetLayouts.size());
-		for (auto& layout : m_DescriptorSetLayouts)
-			result.emplace_back(layout);
+		for (const auto& layout : m_DescriptorSetLayouts)
+			result.push_back(*layout);
 
+		return result;
+	}
+
+	std::vector<vk::PushConstantRange> VulkanShader::GetPushConstantRanges() const
+	{
+		std::vector<vk::PushConstantRange> result;
+		result.reserve(m_PushConstantRanges.size());
+		for (const VkPushConstantRange& range : m_PushConstantRanges)
+		{
+			result.push_back(vk::PushConstantRange{
+				.stageFlags = vk::ShaderStageFlags(range.stageFlags),
+				.offset     = range.offset,
+				.size       = range.size});
+		}
 		return result;
 	}
 
@@ -203,10 +205,9 @@ namespace Ethane {
 		return &m_WriteDescriptorSetsBase[set].at(name);
 	}
 
-	VkDescriptorPool VulkanShader::CreateDescriptorPool(uint32_t numberOfSets) const
+	vk::raii::DescriptorPool VulkanShader::CreateDescriptorPool(uint32_t numberOfSets) const
 	{
-		VkDescriptorPool out_pool;
-		std::vector<VkDescriptorPoolSize> poolSizes;
+		std::vector<vk::DescriptorPoolSize> poolSizes;
 		uint64_t setCount = m_ShaderDescriptorSetsReflect.size();
 		for (uint32_t set = 0; set < setCount; set++)
 		{
@@ -216,63 +217,58 @@ namespace Ethane {
 
 			if (shaderDescriptorSet.UniformBuffers.size())
 			{
-				VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				vk::DescriptorPoolSize& typeCount = poolSizes.emplace_back();
+				typeCount.type = vk::DescriptorType::eUniformBuffer;
 				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
 			}
 
 			if (shaderDescriptorSet.ImageSamplers.size())
 			{
-				VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
+				vk::DescriptorPoolSize& typeCount = poolSizes.emplace_back();
 				uint32_t descriptorSetCount = 0;
 				for (auto&& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
 					descriptorSetCount += imageSampler.ArraySize;
 
-				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				typeCount.type = vk::DescriptorType::eCombinedImageSampler;
 				typeCount.descriptorCount = descriptorSetCount * numberOfSets;
 			}
             
             if (shaderDescriptorSet.StorageBuffers.size())
             {
-                VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
-                typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                vk::DescriptorPoolSize& typeCount = poolSizes.emplace_back();
+                typeCount.type = vk::DescriptorType::eStorageBuffer;
                 typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageBuffers.size() * numberOfSets;
             }
 
             if (shaderDescriptorSet.StorageImage.size())
             {
-                VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
+                vk::DescriptorPoolSize& typeCount = poolSizes.emplace_back();
                 uint32_t descriptorSetCount = 0;
                 for (auto&& [binding, imageSampler] : shaderDescriptorSet.StorageImage)
                     descriptorSetCount += imageSampler.ArraySize;
 
-                typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                typeCount.type = vk::DescriptorType::eStorageImage;
                 typeCount.descriptorCount = descriptorSetCount * numberOfSets;
             }
 		}
 
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
-		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = (uint32_t)poolSizes.size();
-		descriptorPoolInfo.pPoolSizes = poolSizes.data();
-		descriptorPoolInfo.maxSets = (uint32_t)(numberOfSets * setCount);
-
-		VkDevice device = m_Device->GetHandle();
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &out_pool));
-
-		return out_pool;
+		// eFreeDescriptorSet: required for vk::raii::DescriptorSet, which frees itself on destruction
+		return vk::raii::DescriptorPool(m_Device->Get(), vk::DescriptorPoolCreateInfo{
+			.flags         = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+			.maxSets       = static_cast<uint32_t>(numberOfSets * setCount),
+			.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+			.pPoolSizes    = poolSizes.data()});
 	}
 
-	VkDescriptorSet VulkanShader::CreateDescriptorSet(uint32_t set, VkDescriptorPool pool) const
+	vk::raii::DescriptorSet VulkanShader::CreateDescriptorSet(uint32_t set, const vk::raii::DescriptorPool& pool) const
 	{
-		VkDescriptorSet out_descriptorSet;
-		VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
-		allocInfo.descriptorPool = pool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
+		ETH_CORE_ASSERT(set < m_DescriptorSetLayouts.size());
+		const vk::DescriptorSetLayout layout = *m_DescriptorSetLayouts[set];
 
-		VkDevice device = m_Device->GetHandle();
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &out_descriptorSet));
-		return out_descriptorSet;
+		vk::raii::DescriptorSets sets(m_Device->Get(), vk::DescriptorSetAllocateInfo{
+			.descriptorPool     = *pool,
+			.descriptorSetCount = 1,
+			.pSetLayouts        = &layout});
+		return std::move(sets.front());
 	}
 }

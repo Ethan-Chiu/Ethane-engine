@@ -12,8 +12,9 @@ namespace Ethane {
 	public:
 		struct DescriptorSetsAndPool
 		{
-			VkDescriptorPool Pool = nullptr;
-			std::vector<VkDescriptorSet> DescriptorSets;
+			// NOTE: declaration order matters, sets are freed before their pool is destroyed
+			vk::raii::DescriptorPool Pool = nullptr;
+			std::vector<vk::raii::DescriptorSet> DescriptorSets;
 		};
 
 	public:
@@ -30,14 +31,16 @@ namespace Ethane {
     friend class VulkanComputePipeline;
     friend class VulkanShaderSystem;
     protected:
-		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
-		const std::vector<VkPushConstantRange> GetPushConstantRanges() const { return m_PushConstantRanges; }
-		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
+		const std::vector<vk::PipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+		std::vector<vk::PushConstantRange> GetPushConstantRanges() const;
+		std::vector<vk::DescriptorSetLayout> GetAllDescriptorSetLayouts() const;
 		const std::vector<VulkanShaderCompiler::ShaderDescriptorSetData>& GetShaderDescriptorSetData() const { return m_ShaderDescriptorSetsReflect; }
         
     public:
-        VkDescriptorPool CreateDescriptorPool(uint32_t numberOfSets = 1) const;
-        VkDescriptorSet CreateDescriptorSet(uint32_t set, VkDescriptorPool pool) const;
+        // Pool sized for `numberOfSets` copies of every set of this shader. Created with eFreeDescriptorSet,
+        // so the raii descriptor sets allocated from it can free themselves.
+        vk::raii::DescriptorPool CreateDescriptorPool(uint32_t numberOfSets = 1) const;
+        vk::raii::DescriptorSet CreateDescriptorSet(uint32_t set, const vk::raii::DescriptorPool& pool) const;
         
 
 	private:
@@ -45,23 +48,24 @@ namespace Ethane {
 		void CreateDescriptorLayouts();
 	
 	private:
+        const VulkanDevice* m_Device;
+        VulkanLiveResource m_LiveResource;
 		std::string m_FilePath;
 		std::string m_Name;
-        const VulkanDevice* m_Device;
         
 		// Data from Reflect
 		std::vector<VulkanShaderCompiler::ShaderDescriptorSetData> m_ShaderDescriptorSetsReflect;
-		std::vector<VkPushConstantRange> m_PushConstantRanges;
+		std::vector<VkPushConstantRange> m_PushConstantRanges; // filled by VulkanShaderCompiler (C types)
 
-		// Discripter Set Layouts
-		std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
+		// Descriptor Set Layouts, indexed by set
+		std::vector<vk::raii::DescriptorSetLayout> m_DescriptorSetLayouts;
 
 		// Descriptor pool size info
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_DescriptorCounts;
 
 		// For pipeine creation
-		std::unordered_map<VkShaderStageFlagBits, VkShaderModule>  m_ShaderModule;
-		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
+		std::vector<vk::raii::ShaderModule> m_ShaderModules;
+		std::vector<vk::PipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos; // reference m_ShaderModules
 
 	public:
 		struct WriteDescriptorSetBase {

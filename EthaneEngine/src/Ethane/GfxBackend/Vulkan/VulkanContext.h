@@ -137,7 +137,6 @@ public:
 
     // Getter
     const vk::raii::PhysicalDevice& Get() const { return m_PhysicalDevice; }
-    VkPhysicalDevice GetHandle() const { return *m_PhysicalDevice; } // TODO(raii): remove once all callers use Get()
     const PhysicalDeviceInfo& GetInfo() const { return m_PhysicalInfo; }
     const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
     // Features to enable at device creation; pass &GetEnabledFeatures().get<vk::PhysicalDeviceFeatures2>() as pNext
@@ -221,9 +220,6 @@ public:
     // Queue / command pool for a queue type (Graphics or Compute; there is no Transfer pool)
     const vk::raii::Queue& GetQueue(QueueFamilyTypes type) const;
     const vk::raii::CommandPool& GetCommandPool(QueueFamilyTypes type) const;
-
-    // TODO(raii): raw-handle bridge for not-yet-migrated code (shader, render pass, pipeline); remove when they use Get()
-    VkDevice GetHandle() const { return *m_LogicalDevice; }
 
 private:
     const VulkanPhysicalDevice* m_PhysicalDevice = nullptr;

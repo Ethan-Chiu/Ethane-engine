@@ -10,17 +10,18 @@ namespace Ethane {
 	public:
         VulkanRenderPass() = delete;
 		VulkanRenderPass(const VulkanDevice* device, const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false);
-		virtual ~VulkanRenderPass();
-        
-		void Begin(VkCommandBuffer cmdBuffer, uint32_t width, uint32_t height, VkFramebuffer frameBuffer);
-		void End(VkCommandBuffer cmdBuffer);
+		virtual ~VulkanRenderPass() = default;
 
-		VkRenderPass GetHandle() const { return m_RenderPass; }
+		void Begin(const vk::raii::CommandBuffer& cmdBuffer, uint32_t width, uint32_t height, vk::Framebuffer frameBuffer) const;
+		void End(const vk::raii::CommandBuffer& cmdBuffer) const;
+
+		vk::RenderPass GetHandle() const { return *m_RenderPass; }
 		uint8_t GetAttachmentCount() const { return m_AttachmentCount; }
-	
+
 	private:
         const VulkanDevice* m_Device;
-		VkRenderPass m_RenderPass;
+        VulkanLiveResource m_LiveResource;
+		vk::raii::RenderPass m_RenderPass = nullptr;
 
 		uint8_t m_AttachmentCount = 0;
 	};

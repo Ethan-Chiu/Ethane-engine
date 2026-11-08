@@ -14,24 +14,28 @@ namespace Ethane {
 		VulkanPipeline(const VulkanDevice* device, const PipelineSpecification& spec);
 		virtual ~VulkanPipeline() override;
 
-		void Bind(VkCommandBuffer cmdBuffer, VkPipelineBindPoint bindPoint);
+		void Bind(const vk::raii::CommandBuffer& cmdBuffer, vk::PipelineBindPoint bindPoint = vk::PipelineBindPoint::eGraphics) const;
 
 		// Getter
-		VkPipeline GetVulkanPipeline() { return m_GraphicsPipeline; }
-		VkPipelineLayout GetPipelineLayout() { return m_PipelineLayout; }
+		vk::Pipeline GetVulkanPipeline() const { return *m_GraphicsPipeline; }
+		vk::PipelineLayout GetPipelineLayout() const { return *m_PipelineLayout; }
 		virtual PipelineSpecification& GetSpecification() override { return m_Specification; }
 		virtual const PipelineSpecification& GetSpecification() const override { return m_Specification; }
     private:
         void Create();
         void Destroy();
-		VkCullModeFlags VulkanCullMode(CullMode cullMode);
+		static vk::CullModeFlags VulkanCullMode(CullMode cullMode);
 
 	private:
+		// Holds references to the shader and render pass, so they outlive this pipeline
 		PipelineSpecification m_Specification;
 
         const VulkanDevice* m_Device = nullptr;
-		VkPipeline m_GraphicsPipeline;
-		VkPipelineLayout m_PipelineLayout; 
+        VulkanLiveResource m_LiveResource;
+
+        // NOTE: declaration order matters, members are destroyed in reverse: pipeline -> layout
+		vk::raii::PipelineLayout m_PipelineLayout = nullptr;
+		vk::raii::Pipeline m_GraphicsPipeline = nullptr;
 	};
 
 }
