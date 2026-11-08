@@ -19,178 +19,140 @@ namespace Ethane {
     }
 
     bool VulkanBuffer::CreateVulkanBuffer(
-        uint32_t size, 
-        VkBufferUsageFlags usage,
-        uint32_t memory_property_flags,
-        bool bind_on_create) {
+        uint32_t size,
+        vk::BufferUsageFlags usage,
+        vk::MemoryPropertyFlags memoryProperties,
+        bool bindOnCreate) {
+
+        const vk::raii::Device& device = m_Device->Get();
 
         m_Size = size;
         m_Usage = usage;
-        m_MemoryFlag = memory_property_flags;
+        m_MemoryProperties = memoryProperties;
 
-        VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        
-        auto vk_device = m_Device->GetHandle();
-
-        VK_CHECK_RESULT(vkCreateBuffer(vk_device, &bufferInfo, nullptr, &m_Buffer));
-
-        // get memory requirements
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(vk_device, m_Buffer, &memRequirements);
+        vk::raii::Buffer buffer(device, vk::BufferCreateInfo{
+            .size        = size,
+            .usage       = usage,
+            .sharingMode = vk::SharingMode::eExclusive});
 
         // allocate memory
-        m_MemoryIndex = m_Device->FindMemoryType(memRequirements.memoryTypeBits, m_MemoryFlag); // TODO: handle can't find
-        VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = m_MemoryIndex;
+        const vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
+        m_MemoryIndex = m_Device->FindMemoryType(memRequirements.memoryTypeBits, static_cast<VkMemoryPropertyFlags>(memoryProperties)); // TODO: handle can't find
 
-        if (vkAllocateMemory(vk_device, &allocInfo, nullptr, &m_Memory) != VK_SUCCESS) {
-            ETH_CORE_ERROR("failed to allocate buffer memory!");
-            // clean up
-            return false;
+        try {
+            m_Memory = vk::raii::DeviceMemory(device, vk::MemoryAllocateInfo{
+                .allocationSize  = memRequirements.size,
+                .memoryTypeIndex = m_MemoryIndex});
+        } catch (const vk::SystemError& err) {
+            ETH_CORE_ERROR("failed to allocate buffer memory! {0}", err.what());
+            return false; // `buffer` is destroyed on return
         }
+        m_Buffer = std::move(buffer);
 
-        if (bind_on_create) {
-            VK_CHECK_RESULT(vkBindBufferMemory(vk_device, m_Buffer, m_Memory, 0));
+        if (bindOnCreate) {
+            m_Buffer.bindMemory(*m_Memory, 0);
         }
         return true;
     }
 
     void VulkanBuffer::Destroy() {
-        auto device = m_Device->GetHandle();
-        if (m_Memory) {
-            vkFreeMemory(device, m_Memory, nullptr);
-            m_Memory = nullptr;
-        }
-        if (m_Buffer) {
-            vkDestroyBuffer(device, m_Buffer, nullptr);
-            m_Buffer = nullptr;
-        }
-        
+        m_Buffer = nullptr;
+        m_Memory = nullptr;
         m_Size = 0;
         // buffer->is_locked = false;
     }
 
-    bool VulkanBuffer::Resize(
-        uint32_t new_size,
-        VkQueue queue,
-        VkCommandPool pool) {
+    bool VulkanBuffer::Resize(uint32_t newSize) {
 
         // Sanity check.
-        if (new_size < m_Size) {
+        if (newSize < m_Size) {
             ETH_CORE_ERROR("vulkan_buffer_resize requires that new size be larger than the old. Not doing this could lead to data loss.");
             return false;
         }
+        ETH_CORE_ASSERT((m_Usage & vk::BufferUsageFlagBits::eTransferSrc) && (m_Usage & vk::BufferUsageFlagBits::eTransferDst),
+                        "Resize copies the old contents: the buffer needs TransferSrc and TransferDst usage");
 
-        m_Size = new_size;
+        const vk::raii::Device& device = m_Device->Get();
+        const uint32_t oldSize = m_Size;
 
-        // Create new buffer.
-        VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-        bufferInfo.size = m_Size;
-        bufferInfo.usage = m_Usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        // Create new buffer + memory
+        vk::raii::Buffer newBuffer(device, vk::BufferCreateInfo{
+            .size        = newSize,
+            .usage       = m_Usage,
+            .sharingMode = vk::SharingMode::eExclusive});
 
-        auto device = m_Device->GetHandle();
-
-        VkBuffer new_buffer;
-        VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &new_buffer));
-
-        // Get memory requirements
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(device, new_buffer, &memRequirements);
-
-        // Allocate memory
-        VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = m_MemoryIndex;
-
-        VkDeviceMemory new_memory;
-        if (vkAllocateMemory(device, &allocInfo, nullptr, &new_memory) != VK_SUCCESS) {
-            ETH_CORE_ERROR("failed to allocate buffer memory during resize!");
-            // clean up
+        const vk::MemoryRequirements memRequirements = newBuffer.getMemoryRequirements();
+        vk::raii::DeviceMemory newMemory = nullptr;
+        try {
+            newMemory = vk::raii::DeviceMemory(device, vk::MemoryAllocateInfo{
+                .allocationSize  = memRequirements.size,
+                .memoryTypeIndex = m_MemoryIndex});
+        } catch (const vk::SystemError& err) {
+            ETH_CORE_ERROR("failed to allocate buffer memory during resize! {0}", err.what());
             return false;
         }
+        newBuffer.bindMemory(*newMemory, 0);
 
-        // Bind the new buffer's memory
-        VK_CHECK_RESULT(vkBindBufferMemory(device, new_buffer, new_memory, 0));
+        // Copy over the old contents (only the old size exists in the old buffer)
+        CopyTo(m_Device, m_Device->GetGraphicsCommandPool(), m_Device->GetGraphicsQueue(), *m_Buffer, 0, *newBuffer, 0, oldSize);
 
-        // Copy over the data
-        CopyTo(m_Device, pool, 0, queue, m_Buffer, 0, new_buffer, 0, m_Size);
+        // Make sure anything potentially using the old buffer is finished.
+        device.waitIdle();
 
-        // Make sure anything potentially using these is finished.
-        vkDeviceWaitIdle(device);
-
-        // Destroy the old
-        if (m_Memory) {
-            vkFreeMemory(device, m_Memory, nullptr);
-            m_Memory = nullptr;
-        }
-        if (m_Buffer) {
-            vkDestroyBuffer(device, m_Buffer, nullptr);
-            m_Buffer = nullptr;
-        }
-
-        // Set new properties
-        m_Buffer = new_buffer;
-        m_Memory = new_memory;
+        // Replace (old buffer destroyed before its memory, see member order)
+        m_Buffer = nullptr;
+        m_Memory = std::move(newMemory);
+        m_Buffer = std::move(newBuffer);
+        m_Size = newSize;
 
         return true;
     }
 
     void VulkanBuffer::Bind(uint32_t offset) {
-        auto device = m_Device->GetHandle();
-        VK_CHECK_RESULT(vkBindBufferMemory(device, m_Buffer, m_Memory, offset));
+        m_Buffer.bindMemory(*m_Memory, offset);
     }
 
-    void* VulkanBuffer::LockMemory(uint32_t offset, uint32_t size, uint32_t flags) {
-        auto device = m_Device->GetHandle();
-
-        void* data;
-        VK_CHECK_RESULT(vkMapMemory(device, m_Memory, offset, size, flags, &data));
-        return data;
+    void* VulkanBuffer::LockMemory(uint32_t offset, uint32_t size, vk::MemoryMapFlags flags) {
+        return m_Memory.mapMemory(offset, size, flags);
     }
 
     void VulkanBuffer::UnlockMemory() {
-        auto device = m_Device->GetHandle();
-        vkUnmapMemory(device, m_Memory);
+        m_Memory.unmapMemory();
     }
 
-    void VulkanBuffer::SetData(const void* data, uint32_t srcOffset, uint32_t size, uint32_t dstOffset, uint32_t flags) {
-        auto device = m_Device->GetHandle();
+    void VulkanBuffer::SetData(const void* data, uint32_t srcOffset, uint32_t size, uint32_t dstOffset) {
+        ETH_CORE_ASSERT(m_MemoryProperties & vk::MemoryPropertyFlagBits::eHostVisible, "SetData needs host-visible memory, use TransferData");
+        ETH_CORE_ASSERT(dstOffset + size <= m_Size, "SetData writes past the end of the buffer");
 
-        void* dstData;
-        VK_CHECK_RESULT(vkMapMemory(device, m_Memory, dstOffset, size, flags, &dstData));
-        memcpy(dstData, (uint8_t*)data + srcOffset, size); // add offset or not
-        vkUnmapMemory(device, m_Memory);
+        void* dstData = m_Memory.mapMemory(dstOffset, size);
+        memcpy(dstData, static_cast<const uint8_t*>(data) + srcOffset, size);
+        m_Memory.unmapMemory();
     }
 
-    void VulkanBuffer::TransferData(const void* data, uint32_t size, uint32_t offset) {
-        // create staging buffer
+    void VulkanBuffer::TransferData(const void* data, uint32_t size, uint32_t dstOffset) {
+        ETH_CORE_ASSERT(m_Usage & vk::BufferUsageFlagBits::eTransferDst, "TransferData needs TransferDst usage");
+        ETH_CORE_ASSERT(dstOffset + size <= m_Size, "TransferData writes past the end of the buffer");
+
+        // create staging buffer (destroyed at the end of this scope)
         VulkanBuffer stagingBuffer{m_Device};
-		stagingBuffer.CreateVulkanBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+        stagingBuffer.CreateVulkanBuffer(size, vk::BufferUsageFlagBits::eTransferSrc,
+                                         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
 
-		// copy data to staging buffer
-		stagingBuffer.SetData(data, offset, size, 0, 0);
+        // copy data to staging buffer
+        stagingBuffer.SetData(data, 0, size, 0);
 
-		// copy from staging buffer
-		VulkanBuffer::CopyTo(m_Device, m_Device->GetGraphicsCommandPool(), 0, m_Device->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, m_Buffer, 0, size);
-
-		// cleanup staging buffer
-		stagingBuffer.Destroy();
+        // copy from staging buffer to `dstOffset` in this buffer
+        VulkanBuffer::CopyTo(m_Device, m_Device->GetGraphicsCommandPool(), m_Device->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, *m_Buffer, dstOffset, size);
     }
 
     void VulkanBuffer::CopyTo(
         const VulkanDevice* device,
-        VkCommandPool pool,
-        VkFence fence,
-        VkQueue queue,
-        VkBuffer source,
-        uint32_t source_offset,
-        VkBuffer dest,
-        uint32_t dest_offset,
+        const vk::raii::CommandPool& pool,
+        const vk::raii::Queue& queue,
+        vk::Buffer source,
+        uint32_t sourceOffset,
+        vk::Buffer dest,
+        uint32_t destOffset,
         uint32_t size) {
 
         // create command buffer
@@ -198,27 +160,24 @@ namespace Ethane {
         tempCommandBuf.AllocateAndBeginSingleUse(pool);
 
         // record command
-        VkBufferCopy copyRegion;
-        copyRegion.srcOffset = source_offset;
-        copyRegion.dstOffset = dest_offset;
-        copyRegion.size = size;
-        vkCmdCopyBuffer(tempCommandBuf.GetHandle(), source, dest, 1, &copyRegion);
+        tempCommandBuf.Get().copyBuffer(source, dest, vk::BufferCopy{
+            .srcOffset = sourceOffset,
+            .dstOffset = destOffset,
+            .size      = size});
 
         // submit command buffer and wait for complete
-        tempCommandBuf.EndSingleUse(pool, queue);
+        tempCommandBuf.EndSingleUse(queue);
     }
 
+
+    // Vertex/index buffers are device-local and filled through staging copies.
+    // TransferSrc is included too so Resize() can copy the old contents out.
+    static constexpr vk::BufferUsageFlags kTransferUsage = vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst;
 
     VulkanVertexBuffer::VulkanVertexBuffer(const VulkanDevice* device, uint32_t size)
         :VulkanBuffer(device)
 	{
-		m_Size = size;
-		CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
-	}
-
-	VulkanVertexBuffer::~VulkanVertexBuffer()
-	{
-		VulkanBuffer::Destroy();
+		CreateVulkanBuffer(size, kTransferUsage | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, true);
 	}
 
 	void VulkanVertexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
@@ -230,13 +189,7 @@ namespace Ethane {
     VulkanIndexBuffer::VulkanIndexBuffer(const VulkanDevice* device, uint32_t size)
         :VulkanBuffer(device)
 	{
-		m_Size = size;
-		CreateVulkanBuffer(m_Size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
-	}
-
-	VulkanIndexBuffer::~VulkanIndexBuffer()
-	{
-        VulkanBuffer::Destroy();
+		CreateVulkanBuffer(size, kTransferUsage | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, true);
 	}
 
 	void VulkanIndexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)

@@ -434,6 +434,11 @@ void VulkanDevice::Destroy()
         return;
     }
 
+    if (const int live = VulkanLiveResource::Count(); live != 0) {
+        ETH_CORE_ERROR("{0} Vulkan resource(s) still alive at device destruction! Release every buffer/shader/pipeline/window target before GfxBackendAPI::Shutdown().", live);
+        ETH_CORE_ASSERT(false, "Vulkan resources outlive the logical device");
+    }
+
     // make sure nothing is still in flight before releasing anything
     m_LogicalDevice.waitIdle();
 
@@ -447,6 +452,30 @@ void VulkanDevice::Destroy()
 
     ETH_CORE_INFO("Destroying logical device...");
     m_LogicalDevice = nullptr;
+}
+
+const vk::raii::Queue& VulkanDevice::GetQueue(QueueFamilyTypes type) const
+{
+    switch (type)
+    {
+    case QueueFamilyTypes::Graphics: return m_GraphicsQueue;
+    case QueueFamilyTypes::Compute:  return m_ComputeQueue;
+    default: break;
+    }
+    ETH_CORE_ASSERT(false, "No queue for this queue type, falling back to graphics");
+    return m_GraphicsQueue;
+}
+
+const vk::raii::CommandPool& VulkanDevice::GetCommandPool(QueueFamilyTypes type) const
+{
+    switch (type)
+    {
+    case QueueFamilyTypes::Graphics: return m_GraphicsCommandPool;
+    case QueueFamilyTypes::Compute:  return m_ComputeCommandPool;
+    default: break;
+    }
+    ETH_CORE_ASSERT(false, "No command pool for this queue type, falling back to graphics");
+    return m_GraphicsCommandPool;
 }
 
 uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const

@@ -8,6 +8,7 @@
 
 #include "ethpch.h"
 #include <optional>
+#include <atomic>
 
 #include "Vulkan.h"
 
@@ -171,6 +172,23 @@ protected:
     friend class VulkanContext;
 };
 
+// Counts live engine resources that own objects created from the logical device (buffers, shaders,
+// pipelines, swapchains, ...). Each such class holds one as a member. VulkanDevice::Destroy() reports
+// any still alive: their raii destructors would otherwise run vkDestroy* on an already destroyed device.
+class VulkanLiveResource
+{
+public:
+    VulkanLiveResource() { ++s_Count; }
+    VulkanLiveResource(const VulkanLiveResource&) { ++s_Count; }
+    VulkanLiveResource& operator=(const VulkanLiveResource&) { return *this; }
+    ~VulkanLiveResource() { --s_Count; }
+
+    static int Count() { return s_Count.load(); }
+
+private:
+    inline static std::atomic<int> s_Count{ 0 };
+};
+
 class VulkanDevice
 {
 public:
@@ -186,6 +204,7 @@ public:
     VulkanDevice& operator=(const VulkanDevice&) = delete;
 
     // Waits for the GPU, then releases pools -> queues -> device. Safe to call on a null device.
+    // All resources created from this device must be released first (see VulkanLiveResource).
     void Destroy();
     bool IsInitialized() const { return static_cast<bool>(*m_LogicalDevice); }
 
@@ -194,12 +213,17 @@ public:
     // Getter
     const vk::raii::Device& Get() const { return m_LogicalDevice; }
 
-    // TODO(raii): raw-handle bridges for not-yet-migrated code; remove when buffers/command buffers/etc. use Get()
+    const vk::raii::Queue& GetGraphicsQueue() const { return m_GraphicsQueue; }
+    const vk::raii::Queue& GetComputeQueue() const { return m_ComputeQueue; }
+    const vk::raii::CommandPool& GetGraphicsCommandPool() const { return m_GraphicsCommandPool; }
+    const vk::raii::CommandPool& GetComputeCommandPool() const { return m_ComputeCommandPool; }
+
+    // Queue / command pool for a queue type (Graphics or Compute; there is no Transfer pool)
+    const vk::raii::Queue& GetQueue(QueueFamilyTypes type) const;
+    const vk::raii::CommandPool& GetCommandPool(QueueFamilyTypes type) const;
+
+    // TODO(raii): raw-handle bridge for not-yet-migrated code (shader, render pass, pipeline); remove when they use Get()
     VkDevice GetHandle() const { return *m_LogicalDevice; }
-    VkQueue GetGraphicsQueue() const { return *m_GraphicsQueue; }
-    VkQueue GetComputeQueue() const { return *m_ComputeQueue; }
-    VkCommandPool GetGraphicsCommandPool() const { return *m_GraphicsCommandPool; }
-    VkCommandPool GetComputeCommandPool() const { return *m_ComputeCommandPool; }
 
 private:
     const VulkanPhysicalDevice* m_PhysicalDevice = nullptr;

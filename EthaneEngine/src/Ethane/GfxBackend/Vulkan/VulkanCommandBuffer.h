@@ -1,10 +1,7 @@
 #pragma once
-#include <vulkan/vulkan.h>
 #include "VulkanContext.h"
 
 namespace Ethane {
-
-    enum class QueueFamilyTypes;
 
     class VulkanCommandBuffer
     {
@@ -18,10 +15,11 @@ namespace Ethane {
             NOT_ALLOCATED
         };
 
-        VulkanCommandBuffer(const VulkanDevice* m_Device);
+        explicit VulkanCommandBuffer(const VulkanDevice* device);
 
-        void Allocate(VkCommandPool pool, bool isPrimary);
-        void Free(VkCommandPool pool);
+        // Allocates from `pool`; the buffer is freed back to it by Free() or on destruction
+        void Allocate(const vk::raii::CommandPool& pool, bool isPrimary);
+        void Free();
 
         void Begin(bool isOneTimeUse, bool isRenderpassContinue, bool isSimultaneousUse);
         void End();
@@ -30,18 +28,21 @@ namespace Ethane {
 
         void Reset();
 
-        void AllocateAndBeginSingleUse(VkCommandPool pool);
-        void EndSingleUse(VkCommandPool pool, VkQueue queue);
+        void AllocateAndBeginSingleUse(const vk::raii::CommandPool& pool);
+        // Ends, submits to `queue`, waits for the queue to be idle, then frees the buffer
+        void EndSingleUse(const vk::raii::Queue& queue);
 
         void AllocateAndBeginSingleUse(QueueFamilyTypes type);
         void EndSingleUse(QueueFamilyTypes type);
 
-        VkCommandBuffer GetHandle() const { return m_CommandBuffer; };
+        const vk::raii::CommandBuffer& Get() const { return m_CommandBuffer; }
+        vk::CommandBuffer GetHandle() const { return *m_CommandBuffer; }
 
     private:
         const VulkanDevice* m_Device = nullptr;
-        
-        VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
-        CommandBufferState m_State;
+        VulkanLiveResource m_LiveResource;
+
+        vk::raii::CommandBuffer m_CommandBuffer = nullptr;
+        CommandBufferState m_State = CommandBufferState::NOT_ALLOCATED;
     };
 }

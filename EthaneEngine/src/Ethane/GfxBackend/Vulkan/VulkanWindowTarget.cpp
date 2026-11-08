@@ -172,6 +172,7 @@ void VulkanWindowTarget::Destroy() {
         ETH_CORE_INFO("Destroying Vulkan surface...");
         m_Surface = nullptr;
     }
+    m_LiveResource.reset();
 }
 
 VulkanWindowTarget::~VulkanWindowTarget() {

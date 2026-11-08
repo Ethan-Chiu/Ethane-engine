@@ -6,55 +6,53 @@
 namespace Ethane {
 
     VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice* device)
-        :m_State(CommandBufferState::NOT_ALLOCATED), m_Device(device)
+        : m_Device(device)
     {
     }
 
-    void VulkanCommandBuffer::Allocate(VkCommandPool pool, bool isPrimary)
+    void VulkanCommandBuffer::Allocate(const vk::raii::CommandPool& pool, bool isPrimary)
     {
-        VkCommandBufferAllocateInfo cmdBufAllocateInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
-        cmdBufAllocateInfo.pNext = nullptr;
-        cmdBufAllocateInfo.commandPool = pool;
-        cmdBufAllocateInfo.level = isPrimary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-        cmdBufAllocateInfo.commandBufferCount = 1;
-
         m_State = CommandBufferState::NOT_ALLOCATED;
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device->GetHandle(), &cmdBufAllocateInfo, &m_CommandBuffer));
+
+        vk::raii::CommandBuffers buffers(m_Device->Get(), vk::CommandBufferAllocateInfo{
+            .commandPool        = *pool,
+            .level              = isPrimary ? vk::CommandBufferLevel::ePrimary : vk::CommandBufferLevel::eSecondary,
+            .commandBufferCount = 1});
+        m_CommandBuffer = std::move(buffers.front());
+
         m_State = CommandBufferState::READY;
     }
 
-    void VulkanCommandBuffer::Free(VkCommandPool pool)
+    void VulkanCommandBuffer::Free()
     {
-        vkFreeCommandBuffers(m_Device->GetHandle(), pool, 1, &m_CommandBuffer);
-
-        m_CommandBuffer = VK_NULL_HANDLE;
+        m_CommandBuffer = nullptr; // freed back to the pool it was allocated from
         m_State = CommandBufferState::NOT_ALLOCATED;
     }
 
-    void VulkanCommandBuffer::Begin(bool isOneTimeUse, bool isRenderpassContinue, bool isSimultaneousUse) 
+    void VulkanCommandBuffer::Begin(bool isOneTimeUse, bool isRenderpassContinue, bool isSimultaneousUse)
     {
-        VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-        beginInfo.flags = 0;
+        using Usage = vk::CommandBufferUsageFlagBits;
+        vk::CommandBufferUsageFlags flags;
         if (isOneTimeUse) {
-            beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            flags |= Usage::eOneTimeSubmit;
         }
         if (isRenderpassContinue) {
-            beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            flags |= Usage::eRenderPassContinue;
         }
         if (isSimultaneousUse) {
-            beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            flags |= Usage::eSimultaneousUse;
         }
-        beginInfo.pInheritanceInfo = nullptr;
-        VK_CHECK_RESULT(vkBeginCommandBuffer(m_CommandBuffer, &beginInfo));
+
+        m_CommandBuffer.begin(vk::CommandBufferBeginInfo{ .flags = flags });
         m_State = CommandBufferState::RECORDING;
     }
 
     void VulkanCommandBuffer::End() {
-        VK_CHECK_RESULT(vkEndCommandBuffer(m_CommandBuffer));
+        m_CommandBuffer.end();
         m_State = CommandBufferState::RECORDING_ENDED;
     }
 
-    void VulkanCommandBuffer::UpdateSubmitted() 
+    void VulkanCommandBuffer::UpdateSubmitted()
     {
         m_State = CommandBufferState::SUBMITTED;
     }
@@ -63,77 +61,35 @@ namespace Ethane {
         m_State = CommandBufferState::READY;
     }
 
-    void VulkanCommandBuffer::AllocateAndBeginSingleUse(VkCommandPool pool)
+    void VulkanCommandBuffer::AllocateAndBeginSingleUse(const vk::raii::CommandPool& pool)
     {
         Allocate(pool, true);
         Begin(true, false, false);
     }
 
-    void VulkanCommandBuffer::EndSingleUse(VkCommandPool pool, VkQueue queue) 
+    void VulkanCommandBuffer::EndSingleUse(const vk::raii::Queue& queue)
     {
         End();
 
         // Submit the queue
-        VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &m_CommandBuffer;
-        VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submit_info, 0));
+        const vk::CommandBuffer handle = *m_CommandBuffer;
+        queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle });
 
         // Wait for it to finish
-        VK_CHECK_RESULT(vkQueueWaitIdle(queue));
+        queue.waitIdle();
 
         // Free the command buffer.
-        Free(pool);
+        Free();
     }
 
     void VulkanCommandBuffer::AllocateAndBeginSingleUse(QueueFamilyTypes type)
     {
-        VkCommandPool pool;
-        switch (type)
-        {
-        case QueueFamilyTypes::Graphics: {pool = m_Device->GetGraphicsCommandPool(); break; }
-        case QueueFamilyTypes::Compute: {pool = m_Device->GetComputeCommandPool(); break; }
-        default:
-            ETH_CORE_ASSERT(false, "No command pool");
-        }
-        AllocateAndBeginSingleUse(pool);
+        AllocateAndBeginSingleUse(m_Device->GetCommandPool(type));
     }
 
     void VulkanCommandBuffer::EndSingleUse(QueueFamilyTypes type)
     {
-        VkCommandPool pool;
-        VkQueue queue;
-        switch (type)
-        {
-        case QueueFamilyTypes::Graphics: 
-        {
-            pool = m_Device->GetGraphicsCommandPool();
-            queue = m_Device->GetGraphicsQueue();
-            break; 
-        }
-        case QueueFamilyTypes::Compute: 
-        {
-            pool = m_Device->GetComputeCommandPool();
-            queue = m_Device->GetComputeQueue();
-            break; 
-        }
-        default:
-            ETH_CORE_ASSERT(false, "No command pool");
-        }
-
-        End();
-
-        // Submit the queue
-        VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &m_CommandBuffer;
-        VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submit_info, 0));
-
-        // Wait for it to finish
-        VK_CHECK_RESULT(vkQueueWaitIdle(queue));
-
-        // Free the command buffer.
-        Free(pool);
+        EndSingleUse(m_Device->GetQueue(type));
     }
 
 }

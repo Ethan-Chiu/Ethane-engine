@@ -33,6 +33,8 @@ private:
 private:
     VulkanContext* m_Context;
     GLFWwindow* m_Window;
+    // Released in Destroy(): the object may outlive its Vulkan objects (Application destroys it explicitly)
+    std::optional<VulkanLiveResource> m_LiveResource{ std::in_place };
 
     // NOTE: declaration order matters, members are destroyed in reverse: image views -> swapchain -> surface
     vk::raii::SurfaceKHR m_Surface = nullptr;
