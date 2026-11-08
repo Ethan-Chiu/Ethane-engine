@@ -375,138 +375,97 @@ void VulkanPhysicalDevice::PrintSelectedDeviceInfo() const
 ////////////////////////////////////////////////////////////////////////////////////
 // Logical device
 ////////////////////////////////////////////////////////////////////////////////////
-	VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
-        :m_PhysicalDevice(&physicalDevice)
-	{
-		QueueCreateInfo();
+VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
+    : m_PhysicalDevice(&physicalDevice)
+{
+    const auto& indices = m_PhysicalDevice->GetQueueFamilyIndices();
 
-		VkDeviceCreateInfo deviceCreateInfo = {};
-		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_QueueCreateInfos.size());
-		deviceCreateInfo.pQueueCreateInfos = m_QueueCreateInfos.data();
-
-		std::vector<const char*> deviceExtensions;
-        for (const auto& it : m_PhysicalDevice->m_UsedDeviceExtensions)
-		{
-			deviceExtensions.push_back(it.c_str());
-		}
-		if (deviceExtensions.size() > 0)
-		{
-			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-			deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
-		}
-
-		deviceCreateInfo.pEnabledFeatures = nullptr;
-        // TODO(raii): move to vk::raii::Device in the logical-device step
-        deviceCreateInfo.pNext = &m_PhysicalDevice->GetEnabledFeatures().get<vk::PhysicalDeviceFeatures2>();
-
-        VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice->GetHandle(), &deviceCreateInfo, nullptr, &m_LogicalDevice));
-
-		// retrieving queue handles
-		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value(), 0, &m_GraphicsQueue);
-		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Compute.value(), 0, &m_ComputeQueue);
-		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Transfer.value(), 0, &m_TransferQueue);
-
-		// create command pool
-		VkCommandPoolCreateInfo cmdPoolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
-		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->m_QueueFamilyIndices.Graphics.value();
-		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_CHECK_RESULT(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_GraphicsCommandPool));
-
-		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->m_QueueFamilyIndices.Compute.value();
-		VK_CHECK_RESULT(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_ComputeCommandPool));
-	}
-
-	void VulkanDevice::Destroy()
-	{
-		// destroy command pools
-		vkDestroyCommandPool(m_LogicalDevice, m_GraphicsCommandPool, nullptr);
-		vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool, nullptr);
-
-		// reset queue
-		m_GraphicsQueue = nullptr;
-		m_ComputeQueue = nullptr;
-		m_TransferQueue = nullptr;
-
-		ETH_CORE_INFO("Destroying logical device...");
-		vkDeviceWaitIdle(m_LogicalDevice);
-		vkDestroyDevice(m_LogicalDevice, nullptr);
-	}
-
-	void VulkanDevice::QueueCreateInfo()
-	{
-		VulkanPhysicalDevice::QueueFamilyIndices queueFamilyIndices = m_PhysicalDevice->GetQueueFamilyIndices();
-		std::set<uint32_t> uniqueQueueFamilies = {
-			queueFamilyIndices.Present.value(),
-			queueFamilyIndices.Graphics.value(),
-			queueFamilyIndices.Compute.value(),
-			queueFamilyIndices.Transfer.value()
-		};
-
-		float queuePriority(1.0f);
-		for (uint32_t queueFamily : uniqueQueueFamilies) {
-			VkDeviceQueueCreateInfo queueCreateInfo{};
-			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueCreateInfo.queueFamilyIndex = queueFamily;
-			queueCreateInfo.queueCount = 1;
-			queueCreateInfo.pQueuePriorities = &queuePriority;
-			m_QueueCreateInfos.push_back(queueCreateInfo);
-		}
-
-	}
-
-	void VulkanDevice::SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type)
-	{
-		ETH_CORE_ASSERT(commandBuffer != VK_NULL_HANDLE);
-
-		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		// Create fence to ensure that the command buffer has finished executing
-		VkFenceCreateInfo fenceCreateInfo = {};
-		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceCreateInfo.flags = 0;
-		VkFence fence;
-		VK_CHECK_RESULT(vkCreateFence(m_LogicalDevice, &fenceCreateInfo, nullptr, &fence));
-
-		// Submit to the queue
-		switch (type)
-		{
-		case QueueFamilyTypes::Graphics: {VK_CHECK_RESULT(vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, fence)); break; }
-		case QueueFamilyTypes::Compute: {VK_CHECK_RESULT(vkQueueSubmit(m_ComputeQueue, 1, &submitInfo, fence)); break; }
-		default:
-			ETH_CORE_ASSERT(false, "No command pool");
-		}
-
-		// Wait for the fence to signal that command buffer has finished executing
-		VK_CHECK_RESULT(vkWaitForFences(m_LogicalDevice, 1, &fence, VK_TRUE, UINT64_MAX));
-		vkDestroyFence(m_LogicalDevice, fence, nullptr);
-
-		switch (type)
-		{
-		case QueueFamilyTypes::Graphics: {vkFreeCommandBuffers(m_LogicalDevice, m_GraphicsCommandPool, 1, &commandBuffer); break; }
-		case QueueFamilyTypes::Compute: {vkFreeCommandBuffers(m_LogicalDevice, m_ComputeCommandPool, 1, &commandBuffer); break; }
-		default:
-			ETH_CORE_ASSERT(false, "No command pool");
-		}
-	}
-
-    uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
+    // One queue per unique family. The priority must stay alive until the device is created.
+    static constexpr float queuePriority = 1.0f;
+    const std::set<uint32_t> uniqueQueueFamilies = {
+        indices.Present.value(),
+        indices.Graphics.value(),
+        indices.Compute.value(),
+        indices.Transfer.value()
+    };
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+    for (uint32_t queueFamily : uniqueQueueFamilies)
     {
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice->GetHandle(), &memProperties);
-        
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                return i;
-            }
-        }
-        
-        ETH_CORE_ASSERT("Memory type not found");
-        return 0;
+        queueCreateInfos.push_back(vk::DeviceQueueCreateInfo{
+            .queueFamilyIndex = queueFamily,
+            .queueCount       = 1,
+            .pQueuePriorities = &queuePriority});
     }
+
+    std::vector<const char*> deviceExtensions;
+    for (const auto& it : m_PhysicalDevice->m_UsedDeviceExtensions)
+    {
+        deviceExtensions.push_back(it.c_str());
+    }
+
+    // Features are enabled through the pNext chain (Features2 + 1.1/1.2 + extension structs), so pEnabledFeatures stays null
+    vk::DeviceCreateInfo deviceCreateInfo{
+        .pNext                   = &m_PhysicalDevice->GetEnabledFeatures().get<vk::PhysicalDeviceFeatures2>(),
+        .queueCreateInfoCount    = static_cast<uint32_t>(queueCreateInfos.size()),
+        .pQueueCreateInfos       = queueCreateInfos.data(),
+        .enabledExtensionCount   = static_cast<uint32_t>(deviceExtensions.size()),
+        .ppEnabledExtensionNames = deviceExtensions.data(),
+        .pEnabledFeatures        = nullptr};
+
+    try {
+        m_LogicalDevice = vk::raii::Device(m_PhysicalDevice->Get(), deviceCreateInfo);
+    } catch (const vk::SystemError& err) {
+        ETH_CORE_ERROR("Failed to create logical device: {0}", err.what());
+        throw;
+    }
+
+    // retrieving queue handles
+    m_GraphicsQueue = m_LogicalDevice.getQueue(indices.Graphics.value(), 0);
+    m_ComputeQueue  = m_LogicalDevice.getQueue(indices.Compute.value(), 0);
+    m_TransferQueue = m_LogicalDevice.getQueue(indices.Transfer.value(), 0);
+
+    // create command pools
+    m_GraphicsCommandPool = m_LogicalDevice.createCommandPool(vk::CommandPoolCreateInfo{
+        .flags            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+        .queueFamilyIndex = indices.Graphics.value()});
+    m_ComputeCommandPool = m_LogicalDevice.createCommandPool(vk::CommandPoolCreateInfo{
+        .flags            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+        .queueFamilyIndex = indices.Compute.value()});
+}
+
+void VulkanDevice::Destroy()
+{
+    if (!IsInitialized()) {
+        return;
+    }
+
+    // make sure nothing is still in flight before releasing anything
+    m_LogicalDevice.waitIdle();
+
+    m_GraphicsCommandPool = nullptr;
+    m_ComputeCommandPool  = nullptr;
+
+    // queues aren't owned objects, just drop the handles
+    m_GraphicsQueue = nullptr;
+    m_ComputeQueue  = nullptr;
+    m_TransferQueue = nullptr;
+
+    ETH_CORE_INFO("Destroying logical device...");
+    m_LogicalDevice = nullptr;
+}
+
+uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
+{
+    const vk::PhysicalDeviceMemoryProperties memProperties = m_PhysicalDevice->Get().getMemoryProperties();
+    const vk::MemoryPropertyFlags wanted(properties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1u << i)) && (memProperties.memoryTypes[i].propertyFlags & wanted) == wanted) {
+            return i;
+        }
+    }
+
+    ETH_CORE_ASSERT(false, "Memory type not found");
+    return UINT32_MAX; // invalid index: allocation fails loudly instead of silently using memory type 0
+}
 }

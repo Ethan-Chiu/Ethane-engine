@@ -141,9 +141,7 @@ void VulkanContext::Init(ContextCreateInfo& info)
 
 void VulkanContext::Destroy()
 {
-    vkDeviceWaitIdle(m_Device.GetHandle());
-
-    m_Device.Destroy();
+    m_Device.Destroy(); // waits for the device to be idle first
     m_PhysicalDevice.Destroy();
 
     // RAII handles: assigning nullptr destroys the underlying object. Order matters.
@@ -279,6 +277,7 @@ bool VulkanContext::InitDevice(VkSurfaceKHR surface)
 {
     ETH_CORE_ASSERT(m_VulkanInstance != nullptr);
     m_PhysicalDevice.Init(m_VulkanInstance, m_ContextInfo, surface);
+    m_Device.Destroy(); // release any previous device in the right order (pools before device) before replacing it
     m_Device = VulkanDevice(m_PhysicalDevice);
     return true;
 }

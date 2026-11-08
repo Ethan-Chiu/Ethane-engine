@@ -174,37 +174,45 @@ protected:
 class VulkanDevice
 {
 public:
-    // TODO: should not be default constructable
+    // Empty (null) device; a real one is move-assigned in VulkanContext::InitDevice
     VulkanDevice() = default;
-    VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
+    explicit VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
     ~VulkanDevice() = default;
+
+    // Move-only: owns raii handles
+    VulkanDevice(VulkanDevice&&) noexcept = default;
+    VulkanDevice& operator=(VulkanDevice&&) noexcept = default;
+    VulkanDevice(const VulkanDevice&) = delete;
+    VulkanDevice& operator=(const VulkanDevice&) = delete;
+
+    // Waits for the GPU, then releases pools -> queues -> device. Safe to call on a null device.
     void Destroy();
+    bool IsInitialized() const { return static_cast<bool>(*m_LogicalDevice); }
 
-    void SubmitCommandBuffer(VkCommandBuffer commandBuffer, QueueFamilyTypes type = QueueFamilyTypes::Graphics);
-    
-    // Getter
-    VkDevice GetHandle() const { return m_LogicalDevice; }
-
-    VkQueue GetGraphicsQueue() const { return m_GraphicsQueue; }
-    VkQueue GetComputeQueue() const { return m_ComputeQueue; }
-
-    VkCommandPool GetGraphicsCommandPool() const { return m_GraphicsCommandPool; }
-    VkCommandPool GetComputeCommandPool() const { return m_ComputeCommandPool; }
-private:
-    void QueueCreateInfo();
-
-public:
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
+    // Getter
+    const vk::raii::Device& Get() const { return m_LogicalDevice; }
+
+    // TODO(raii): raw-handle bridges for not-yet-migrated code; remove when buffers/command buffers/etc. use Get()
+    VkDevice GetHandle() const { return *m_LogicalDevice; }
+    VkQueue GetGraphicsQueue() const { return *m_GraphicsQueue; }
+    VkQueue GetComputeQueue() const { return *m_ComputeQueue; }
+    VkCommandPool GetGraphicsCommandPool() const { return *m_GraphicsCommandPool; }
+    VkCommandPool GetComputeCommandPool() const { return *m_ComputeCommandPool; }
+
 private:
-    VkDevice m_LogicalDevice = VK_NULL_HANDLE;
-    const VulkanPhysicalDevice* m_PhysicalDevice;
+    const VulkanPhysicalDevice* m_PhysicalDevice = nullptr;
 
-    std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
+    // NOTE: declaration order matters, members are destroyed in reverse: pools -> queues -> device
+    vk::raii::Device m_LogicalDevice = nullptr;
 
-    VkQueue m_GraphicsQueue, m_ComputeQueue, m_TransferQueue;
+    vk::raii::Queue m_GraphicsQueue = nullptr;
+    vk::raii::Queue m_ComputeQueue  = nullptr;
+    vk::raii::Queue m_TransferQueue = nullptr;
 
-    VkCommandPool m_GraphicsCommandPool, m_ComputeCommandPool;
+    vk::raii::CommandPool m_GraphicsCommandPool = nullptr;
+    vk::raii::CommandPool m_ComputeCommandPool  = nullptr;
 };
 
 
