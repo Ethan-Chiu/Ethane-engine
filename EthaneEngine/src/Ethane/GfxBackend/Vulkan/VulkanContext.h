@@ -84,9 +84,9 @@ enum class QueueFamilyTypes {
 };
 
 struct SwapChainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
+    vk::SurfaceCapabilitiesKHR capabilities;
+    std::vector<vk::SurfaceFormatKHR> formats;
+    std::vector<vk::PresentModeKHR> presentModes;
 };
 
 class VulkanPhysicalDevice
@@ -132,7 +132,7 @@ public:
     bool IsInitialized() const { return static_cast<bool>(*m_PhysicalDevice); }
 
     void PrintSelectedDeviceInfo() const;
-    SwapChainSupportDetails GetSwapchainSupport(VkSurfaceKHR surface) const { return QuerySwapChainSupport(m_PhysicalDevice, surface);}
+    SwapChainSupportDetails GetSwapchainSupport(vk::SurfaceKHR surface) const { return QuerySwapChainSupport(m_PhysicalDevice, surface);}
 
     // Getter
     const vk::raii::PhysicalDevice& Get() const { return m_PhysicalDevice; }
@@ -228,7 +228,7 @@ public:
 
 protected:
     void Init(ContextCreateInfo& info);
-    bool InitDevice(VkSurfaceKHR surface);
+    bool InitDevice(vk::SurfaceKHR surface);
     void Destroy();
     
 private:

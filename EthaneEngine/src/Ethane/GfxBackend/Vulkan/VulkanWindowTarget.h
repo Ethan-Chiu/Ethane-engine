@@ -9,7 +9,6 @@
 
 #include "Ethane/GfxBackend/GfxObject.h"
 #include "VulkanContext.h"
-#include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 namespace Ethane {
@@ -17,60 +16,37 @@ namespace Ethane {
 class VulkanWindowTarget : public IWindowTarget
 {
 public:
+    // NOTE: `context` must outlive this window target (the swapchain belongs to its device)
     VulkanWindowTarget(VulkanContext* context, GLFWwindow* window);
     ~VulkanWindowTarget();
     
-    // Maybe don't need this
+    // Releases image views -> swapchain -> surface. Safe to call more than once.
     virtual void Destroy() override;
     
 private:
+    // Creates the swapchain, or recreates it from the current one (e.g. after a resize)
     void CreateSwapchain();
-    void DestroySwapchain(VkSwapchainKHR swapchain);
-    VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D ChooseExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    vk::SurfaceFormatKHR ChooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const;
+    vk::PresentModeKHR ChoosePresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes) const;
+    vk::Extent2D ChooseExtent(const vk::SurfaceCapabilitiesKHR& capabilities) const;
     
 private:
     VulkanContext* m_Context;
-    
     GLFWwindow* m_Window;
-    VkSurfaceKHR m_Surface;
-    VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
+
+    // NOTE: declaration order matters, members are destroyed in reverse: image views -> swapchain -> surface
+    vk::raii::SurfaceKHR m_Surface = nullptr;
+    vk::raii::SwapchainKHR m_Swapchain = nullptr;
+    std::vector<vk::Image> m_Images;               // owned by the swapchain, not destroyed by us
+    std::vector<vk::raii::ImageView> m_ImageViews;
     
     uint32_t m_Width = 0, m_Height = 0;
-    VkExtent2D m_Extent;
-    VkFormat m_ImageFormat;
-    VkColorSpaceKHR m_ImageColorSpace;
+    vk::Extent2D m_Extent;
+    vk::Format m_ImageFormat = vk::Format::eUndefined;
+    vk::ColorSpaceKHR m_ImageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
     
     uint32_t m_MaxFramesInFlight = 2;
     uint32_t m_ImageCount = 0;
-    std::vector<VkImage> m_Images;
-    std::vector<VkImageView> m_ImageViews;
 };
 
-namespace VulkanSwapchainUtils{
-
-inline void PrintSupportedSurfaceUsages(const VkSurfaceCapabilitiesKHR& surfaceCapabilities)
-{
-    ETH_CORE_INFO("Supported Surface Usages:");
-
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_TRANSFER_SRC_BIT");
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_TRANSFER_DST_BIT");
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_SAMPLED_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_SAMPLED_BIT");
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_STORAGE_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_STORAGE_BIT");
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT");
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT");
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT");
-    if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT)
-        ETH_CORE_INFO("  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT");
-}
-
-}
 }

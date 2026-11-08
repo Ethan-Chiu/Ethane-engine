@@ -297,15 +297,10 @@ SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(const vk::ra
         return details;
     }
     
-    // TODO(raii): switch SwapChainSupportDetails to vk:: types when VulkanWindowTarget is migrated
     details.capabilities = device.getSurfaceCapabilitiesKHR(surface);
-
-    for (const vk::SurfaceFormatKHR& format : device.getSurfaceFormatsKHR(surface))
-        details.formats.push_back(format);
+    details.formats      = device.getSurfaceFormatsKHR(surface);
+    details.presentModes = device.getSurfacePresentModesKHR(surface);
     ETH_CORE_ASSERT(!details.formats.empty(), "");
-
-    for (const vk::PresentModeKHR mode : device.getSurfacePresentModesKHR(surface))
-        details.presentModes.push_back(static_cast<VkPresentModeKHR>(mode));
 
     return details;
 }

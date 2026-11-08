@@ -273,7 +273,7 @@ bool VulkanContext::InitInstance()
 //--------------------------------------------------------------------------------------------------
 // Initialize device
 //
-bool VulkanContext::InitDevice(VkSurfaceKHR surface)
+bool VulkanContext::InitDevice(vk::SurfaceKHR surface)
 {
     ETH_CORE_ASSERT(m_VulkanInstance != nullptr);
     m_PhysicalDevice.Init(m_VulkanInstance, m_ContextInfo, surface);
