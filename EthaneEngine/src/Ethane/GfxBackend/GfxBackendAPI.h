@@ -6,6 +6,7 @@
 //
 #pragma once
 #include "Ethane/Core/Base.h"
+#include "Ethane/GfxBackend/Resource.h"
 #include "GfxObject.h"
 
 namespace Ethane {
@@ -28,6 +29,8 @@ public:
     virtual RefCountPtr<IIndexBuffer> CreateIndexBuffer(uint32_t size) = 0;
 
     virtual RefCountPtr<IShader> CreateShader(const std::string& filepath) = 0;
+    virtual RefCountPtr<IRenderPass> CreateRenderPass(const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false) = 0;
+    virtual RefCountPtr<IPipeline> CreatePipeline(const PipelineSpecification& spec) = 0;
 
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;

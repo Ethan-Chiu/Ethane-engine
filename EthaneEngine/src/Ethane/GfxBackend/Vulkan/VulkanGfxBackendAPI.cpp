@@ -5,6 +5,9 @@
 //  Created by 邱奕翔 on 2025/4/28.
 //
 
+#include "Ethane/GfxBackend/GfxObject.h"
+#include "Ethane/GfxBackend/Vulkan/VulkanPipeline.h"
+#include "Ethane/GfxBackend/Vulkan/VulkanRenderPass.h"
 #include "ethpch.h"
 #include "Ethane/GfxBackend/Resource.h"
 #include "VulkanGfxBackendAPI.h"
@@ -41,6 +44,14 @@ RefCountPtr<IIndexBuffer> VulkanGfxBackendAPI::CreateIndexBuffer(uint32_t size) 
 
 RefCountPtr<IShader> VulkanGfxBackendAPI::CreateShader(const std::string& filepath) {
     return MakeRefCountPtr<VulkanShader>(&m_Context.GetDevice(), filepath);
+}
+
+RefCountPtr<IRenderPass> VulkanGfxBackendAPI::CreateRenderPass(const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent) {
+    return MakeRefCountPtr<VulkanRenderPass>(&m_Context.GetDevice(), colorAttachmentFormats, depthAttachmentFormat, clearOnLoad, finalPresent);
+}
+
+RefCountPtr<IPipeline> VulkanGfxBackendAPI::CreatePipeline(const PipelineSpecification& spec) {
+    return MakeRefCountPtr<VulkanPipeline>(&m_Context.GetDevice(), spec);
 }
 
 void VulkanGfxBackendAPI::BeginFrame() {

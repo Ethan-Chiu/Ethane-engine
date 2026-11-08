@@ -8,6 +8,7 @@
 
 #include "Ethane/GfxBackend/GfxBackendAPI.h"
 #include "Ethane/GfxBackend/GfxObject.h"
+#include "Ethane/GfxBackend/Resource.h"
 #include "VulkanContext.h"
 
 struct GLFWwindow;
@@ -26,7 +27,9 @@ namespace Ethane {
         virtual RefCountPtr<IIndexBuffer> CreateIndexBuffer(uint32_t size) override;
 
         virtual RefCountPtr<IShader> CreateShader(const std::string& filepath) override;
-        
+        virtual RefCountPtr<IRenderPass> CreateRenderPass(const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false) override;
+        virtual RefCountPtr<IPipeline> CreatePipeline(const PipelineSpecification& spec) override;
+
         virtual void BeginFrame() override;
         virtual void EndFrame() override;
     public:

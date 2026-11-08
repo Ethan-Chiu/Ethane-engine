@@ -8,6 +8,7 @@ namespace Ethane {
 	class VulkanRenderPass : public IRenderPass
 	{
 	public:
+        VulkanRenderPass() = delete;
 		VulkanRenderPass(const VulkanDevice* device, const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false);
 		virtual ~VulkanRenderPass();
         
