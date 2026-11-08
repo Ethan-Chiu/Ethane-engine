@@ -28,6 +28,7 @@ public:
 class IVertexBuffer : public IBuffer {};
 
 class IIndexBuffer : public IBuffer {
+public:
     virtual uint32_t GetCount() const = 0;
 };
 

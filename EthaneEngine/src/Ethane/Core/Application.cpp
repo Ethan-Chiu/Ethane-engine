@@ -6,6 +6,7 @@
 //#include "Ethane/Renderer/Renderer.h"
 #include "Ethane/Asset/AssetManager.h"
 #include "Ethane/Systems/ResourceSystem.h"
+#include "Ethane/GfxBackend/GfxSmokeTest.h"
 //#include "Ethane/Systems/TextureSystem.h"
 //#include "Ethane/Systems/ShaderSystem.h"
 
@@ -34,6 +35,10 @@ namespace Ethane
         m_RendererBackend->Init();
         // Create swapchain with the window handle
         m_WindowTarget = m_RendererBackend->CreateWindowTarget(m_Window->GetNativeWindow());
+        if (GfxSmokeTest::IsEnabled()) {
+            GfxSmokeTest::Run(*m_RendererBackend); // ETH_GFX_SMOKE_TEST=1|exit, Debug only
+            m_CloseAfterStartup = GfxSmokeTest::ExitAfterRun();
+        }
         
 //		RendererConfig config = {
 //			m_Window->GetWidth(),
@@ -116,6 +121,12 @@ namespace Ethane
 			//            ETH_CORE_INFO("fps: {0}", 1/(frameTime/frameCount));
 
 			m_Window->PollEvent();
+			if (m_CloseAfterStartup) {
+				// same path as the user closing the window (the close callback fires inside PollEvent)
+				m_CloseAfterStartup = false;
+				WindowCloseEvent closeEvent;
+				OnEvent(closeEvent);
+			}
 			if (!m_Running) break;
 
 			if (!m_Minimized)

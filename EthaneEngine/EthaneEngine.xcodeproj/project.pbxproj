@@ -36,6 +36,7 @@
 		840EA602F136B474F2C9A442 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 19352E0A6698243CDCB7244A /* OpenGL.framework */; };
 		86CF0A4ACF6E487CF29A008A /* SceneSerializer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E7AF8B52D8A6F94444AA7992 /* SceneSerializer.cpp */; };
 		96B880A7F33F85197BE23EE7 /* GfxBackendAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D38B9CF7D1DE6016991700F /* GfxBackendAPI.cpp */; };
+		9753B2E1A90AF2D31E78E121 /* GfxSmokeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BCBE6976A5361B98F2E4A9 /* GfxSmokeTest.cpp */; };
 		9EEA87CA0C12963C0DA5860A /* Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B401DA920164D0C47783D0D2 /* Math.cpp */; };
 		9F1963943766494665AD49D4 /* Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB07D3FCFF56796E417DB23C /* Entity.cpp */; };
 		A7DC1E7D98D38C6F04D70CBD /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F978450591C52AB7C00C2B45 /* Application.cpp */; };
@@ -101,6 +102,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		02BCBE6976A5361B98F2E4A9 /* GfxSmokeTest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = GfxSmokeTest.cpp; path = src/Ethane/GfxBackend/GfxSmokeTest.cpp; sourceTree = "<group>"; };
 		03DA2EB7E27CCA29975ECCF7 /* VulkanBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanBuffer.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanBuffer.cpp; sourceTree = "<group>"; };
 		0561F2897684937B2C4B40C9 /* norm.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = norm.hpp; path = vendor/glm/glm/gtx/norm.hpp; sourceTree = "<group>"; };
 		0569EB1DCBF7E28F39FA095D /* exponential.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = exponential.hpp; path = vendor/glm/glm/exponential.hpp; sourceTree = "<group>"; };
@@ -236,6 +238,7 @@
 		49D1C9653AC93757A6CCB7A5 /* vector_integer.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_integer.inl; path = vendor/glm/glm/ext/vector_integer.inl; sourceTree = "<group>"; };
 		49F084A728932019DD7522E7 /* scalar_relational.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_relational.inl; path = vendor/glm/glm/gtx/scalar_relational.inl; sourceTree = "<group>"; };
 		4A3BCAFB0CFC2B6D6A31093B /* color_space.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = color_space.inl; path = vendor/glm/glm/gtx/color_space.inl; sourceTree = "<group>"; };
+		4AE69B3365B309E56983A173 /* GfxSmokeTest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GfxSmokeTest.h; path = src/Ethane/GfxBackend/GfxSmokeTest.h; sourceTree = "<group>"; };
 		4B069BE3E8E79C95C065E223 /* WindowsWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WindowsWindow.h; path = src/Ethane/Platform/Windows/WindowsWindow.h; sourceTree = "<group>"; };
 		4CCB29233DC29715A9C61763 /* vector_packing.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_packing.inl; path = vendor/glm/glm/ext/vector_packing.inl; sourceTree = "<group>"; };
 		4D177F97E771688923A9CDD7 /* quaternion_geometric.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_geometric.hpp; path = vendor/glm/glm/ext/quaternion_geometric.hpp; sourceTree = "<group>"; };
@@ -537,6 +540,7 @@
 		D04434F197A8EFE32260C331 /* VulkanGfxBackendAPI.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanGfxBackendAPI.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanGfxBackendAPI.cpp; sourceTree = "<group>"; };
 		D0481C0FA79B47412108B24F /* func_vector_relational_simd.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = func_vector_relational_simd.inl; path = vendor/glm/glm/detail/func_vector_relational_simd.inl; sourceTree = "<group>"; };
 		D1572F5E4279D050F8407D9E /* Scene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Scene.cpp; path = src/Ethane/Scene/Scene.cpp; sourceTree = "<group>"; };
+		D17533ED98032B5F0605522D /* Vulkan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vulkan.h; path = src/Ethane/GfxBackend/Vulkan/Vulkan.h; sourceTree = "<group>"; };
 		D1D3AF3FE2209331E00D5D7F /* matrix_double3x3_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double3x3_precision.hpp; path = vendor/glm/glm/ext/matrix_double3x3_precision.hpp; sourceTree = "<group>"; };
 		D1ED15AB163BBB1D5862F3EB /* integer.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = integer.hpp; path = vendor/glm/glm/integer.hpp; sourceTree = "<group>"; };
 		D2999A5D6527644FCE00089D /* spline.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = spline.inl; path = vendor/glm/glm/gtx/spline.inl; sourceTree = "<group>"; };
@@ -1166,6 +1170,7 @@
 			isa = PBXGroup;
 			children = (
 				51AB9E2FC605E32143E96C6F /* ShaderUtils */,
+				D17533ED98032B5F0605522D /* Vulkan.h */,
 				03DA2EB7E27CCA29975ECCF7 /* VulkanBuffer.cpp */,
 				679936A17423E913EF08B4E1 /* VulkanBuffer.h */,
 				1811CF15DF768A076A2E5D55 /* VulkanCommandBuffer.cpp */,
@@ -1464,6 +1469,8 @@
 				6D38B9CF7D1DE6016991700F /* GfxBackendAPI.cpp */,
 				111864F910BB482B4B0FFB39 /* GfxBackendAPI.h */,
 				2CE33FC370F710F564C89603 /* GfxObject.h */,
+				02BCBE6976A5361B98F2E4A9 /* GfxSmokeTest.cpp */,
+				4AE69B3365B309E56983A173 /* GfxSmokeTest.h */,
 				B85A7E7BCA845B2DFE7544BB /* Resource.h */,
 				354DE1C5501A507753EAE805 /* ShaderConfig.h */,
 				85FF94A1B7F8DF5331D81AE1 /* Vulkan */,
@@ -1625,6 +1632,7 @@
 				E34098635068A6D551FB96A3 /* UUID.cpp in Sources */,
 				11AE8E05D83C8577463EAC45 /* Window.cpp in Sources */,
 				96B880A7F33F85197BE23EE7 /* GfxBackendAPI.cpp in Sources */,
+				9753B2E1A90AF2D31E78E121 /* GfxSmokeTest.cpp in Sources */,
 				CB629BEAC42D5B9C4EA1C22A /* ShaderIncluder.cpp in Sources */,
 				32724596C26820487F5CCBD6 /* VulkanShaderCompiler.cpp in Sources */,
 				7106A6EA6AA6F89C5B280D2A /* VulkanShaderSystem.cpp in Sources */,
