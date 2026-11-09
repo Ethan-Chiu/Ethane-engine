@@ -5,6 +5,7 @@
 #include "EditorLayer.h"
 #include "TriangleLayer.h"
 #include "TexturedQuadLayer.h"
+#include "CubeLayer.h"
 
 namespace Ethane {
 
@@ -15,8 +16,10 @@ namespace Ethane {
 			:Application("Ethane Editor", args)
 		{
 			PushLayer(new EditorLayer());
-			PushLayer(new TriangleLayer());
-			PushLayer(new TexturedQuadLayer());
+			// 2D demos: they draw at fixed depths, so they'd cover the 3D scene. Push them instead of CubeLayer to see them.
+			// PushLayer(new TriangleLayer());
+			// PushLayer(new TexturedQuadLayer());
+			PushLayer(new CubeLayer());
 		}
 
 		~EthaneEditor()

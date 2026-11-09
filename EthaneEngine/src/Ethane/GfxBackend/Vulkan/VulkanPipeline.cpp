@@ -166,12 +166,12 @@ namespace Ethane {
 
 		// descriptor set layouts
 		const std::vector<vk::DescriptorSetLayout> descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
-		const std::vector<vk::PushConstantRange> pushConstantRanges = vulkanShader->GetPushConstantRanges();
+		m_PushConstantRanges = vulkanShader->GetPushConstantRanges();
 		m_PipelineLayout = vk::raii::PipelineLayout(device, vk::PipelineLayoutCreateInfo{
 			.setLayoutCount         = static_cast<uint32_t>(descriptorSetLayouts.size()),
 			.pSetLayouts            = descriptorSetLayouts.data(),
-			.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size()),
-			.pPushConstantRanges    = pushConstantRanges.data()});
+			.pushConstantRangeCount = static_cast<uint32_t>(m_PushConstantRanges.size()),
+			.pPushConstantRanges    = m_PushConstantRanges.data()});
 
 		// Create pipeline (throws vk::SystemError on failure)
 		m_GraphicsPipeline = vk::raii::Pipeline(device, nullptr, vk::GraphicsPipelineCreateInfo{

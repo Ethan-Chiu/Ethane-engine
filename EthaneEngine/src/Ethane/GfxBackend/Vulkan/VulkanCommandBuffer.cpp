@@ -48,6 +48,7 @@ namespace Ethane {
 
         m_CommandBuffer.begin(vk::CommandBufferBeginInfo{ .flags = flags });
         m_State = CommandBufferState::RECORDING;
+        m_BoundPipeline = nullptr;
         m_BoundPipelineLayout = nullptr;
     }
 
@@ -102,7 +103,42 @@ namespace Ethane {
         ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
         const auto& vulkanPipeline = static_cast<const VulkanPipeline&>(pipeline);
         vulkanPipeline.Bind(m_CommandBuffer);
+        m_BoundPipeline = &vulkanPipeline;
         m_BoundPipelineLayout = vulkanPipeline.GetPipelineLayout();
+    }
+
+    void VulkanCommandBuffer::PushConstants(const void* data, uint32_t size, uint32_t offset)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        ETH_CORE_ASSERT(m_BoundPipeline, "Bind a pipeline before pushing constants");
+        ETH_CORE_ASSERT(data && size > 0 && size % 4 == 0 && offset % 4 == 0, "Push constants: size and offset must be non-zero multiples of 4");
+
+        // Every stage whose range overlaps the written bytes must be named (and only stages that declare them)
+        const auto& ranges = m_BoundPipeline->GetPushConstantRanges();
+        vk::ShaderStageFlags stages;
+        for (const vk::PushConstantRange& range : ranges) {
+            if (range.offset < offset + size && offset < range.offset + range.size) {
+                stages |= range.stageFlags;
+            }
+        }
+        // The written bytes must all be declared: grow the covered span through ranges that touch it
+        uint32_t coveredEnd = offset;
+        for (bool grew = true; grew;) {
+            grew = false;
+            for (const vk::PushConstantRange& range : ranges) {
+                if (range.offset <= coveredEnd && range.offset + range.size > coveredEnd) {
+                    coveredEnd = range.offset + range.size;
+                    grew = true;
+                }
+            }
+        }
+        if (!stages || coveredEnd < offset + size) {
+            ETH_CORE_ERROR("Push constants [{0}, {1}) aren't declared by the bound pipeline's shader", offset, offset + size);
+            ETH_CORE_ASSERT(false, "Push constants outside the shader's push-constant block");
+            return;
+        }
+        m_CommandBuffer.pushConstants<uint8_t>(m_BoundPipelineLayout, stages, offset,
+            vk::ArrayProxy<const uint8_t>(size, static_cast<const uint8_t*>(data)));
     }
 
     void VulkanCommandBuffer::BindBindingSet(IBindingSet& bindingSet)

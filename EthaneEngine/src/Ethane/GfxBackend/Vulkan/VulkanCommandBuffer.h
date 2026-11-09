@@ -2,6 +2,8 @@
 #include "Ethane/GfxBackend/GfxObject.h"
 #include "VulkanContext.h"
 
+namespace Ethane { class VulkanPipeline; }
+
 namespace Ethane {
 
     class VulkanCommandBuffer : public ICommandList
@@ -41,6 +43,7 @@ namespace Ethane {
         virtual void BindVertexBuffer(const IVertexBuffer& buffer) override;
         virtual void BindIndexBuffer(const IIndexBuffer& buffer) override;
         virtual void BindBindingSet(IBindingSet& bindingSet) override;
+        virtual void PushConstants(const void* data, uint32_t size, uint32_t offset) override;
         virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
         virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override;
 
@@ -54,7 +57,8 @@ namespace Ethane {
         vk::raii::CommandBuffer m_CommandBuffer = nullptr;
         CommandBufferState m_State = CommandBufferState::NOT_ALLOCATED;
 
-        // Last pipeline bound while recording: descriptor sets are bound against its layout
+        // Last pipeline bound while recording: descriptor sets and push constants use its layout
+        const VulkanPipeline* m_BoundPipeline = nullptr;
         vk::PipelineLayout m_BoundPipelineLayout = nullptr;
     };
 }

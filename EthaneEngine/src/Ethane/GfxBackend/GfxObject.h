@@ -166,9 +166,6 @@ public:
     virtual void Destroy() = 0;
 };
 
-// Records GPU commands into the frame being built. Handed to Layer::OnRender(), valid only during
-// that call; recording happens inside the window target's render pass, with the viewport and scissor
-// already covering the whole window (y up, like OpenGL).
 // The resources of one descriptor set of a shader: `layout(set = N, binding = B)`. Every binding the
 // shader declares in that set must be filled before the set is bound. Bindings can be changed at any
 // time; the backend applies them to a frame's copy only once the GPU is done with that frame.
@@ -180,6 +177,10 @@ public:
     virtual void SetTexture(uint32_t binding, const RefCountPtr<ITexture2D>& texture) = 0;
 };
 
+// Records GPU commands into the frame being built. Handed to Layer::OnRender(), valid only during
+// that call; recording happens inside the window target's render pass, with the viewport and scissor
+// already covering the whole window (y up, like OpenGL). The pass has a depth buffer, cleared to 1.0
+// each frame (pipelines test with LESS); clip-space depth is 0..1 (GLM_FORCE_DEPTH_ZERO_TO_ONE).
 class ICommandList
 {
 public:
@@ -190,6 +191,9 @@ public:
     virtual void BindIndexBuffer(const IIndexBuffer& buffer) = 0; // 32-bit indices
     // Binds to the set index the binding set was created for; needs a pipeline bound first (its layout is used)
     virtual void BindBindingSet(IBindingSet& bindingSet) = 0;
+    // Writes `size` bytes at `offset` of the bound pipeline's push-constant block (`layout(push_constant)`),
+    // e.g. a per-draw model matrix. Recorded into the command buffer, so every draw keeps its own values.
+    virtual void PushConstants(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 
     virtual void Draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) = 0;
     virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0) = 0;

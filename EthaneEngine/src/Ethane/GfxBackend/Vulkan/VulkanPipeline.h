@@ -19,6 +19,7 @@ namespace Ethane {
 		// Getter
 		vk::Pipeline GetVulkanPipeline() const { return *m_GraphicsPipeline; }
 		vk::PipelineLayout GetPipelineLayout() const { return *m_PipelineLayout; }
+		const std::vector<vk::PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
 		virtual PipelineSpecification& GetSpecification() override { return m_Specification; }
 		virtual const PipelineSpecification& GetSpecification() const override { return m_Specification; }
     private:
@@ -32,6 +33,7 @@ namespace Ethane {
 
         const VulkanDevice* m_Device = nullptr;
         VulkanLiveResource m_LiveResource;
+		std::vector<vk::PushConstantRange> m_PushConstantRanges; // from the shader's reflection, as in the layout
 
         // NOTE: declaration order matters, members are destroyed in reverse: pipeline -> layout
 		vk::raii::PipelineLayout m_PipelineLayout = nullptr;

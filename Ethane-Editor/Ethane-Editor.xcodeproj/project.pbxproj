@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */; };
 		6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 56DE898790A9403946048FC7 /* libEthaneEngine.dylib */; };
+		74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */; };
 		7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */; };
 		79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */; };
 		DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */; };
@@ -40,7 +41,9 @@
 		9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TexturedQuadLayer.cpp; path = src/TexturedQuadLayer.cpp; sourceTree = "<group>"; };
 		91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TriangleLayer.cpp; path = src/TriangleLayer.cpp; sourceTree = "<group>"; };
 		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
+		AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = CubeLayer.cpp; path = src/CubeLayer.cpp; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
+		F352F86C1979281E80801EAC /* CubeLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CubeLayer.h; path = src/CubeLayer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +74,8 @@
 		78BAB969B1757FDB410CB7A9 /* Ethane-Editor */ = {
 			isa = PBXGroup;
 			children = (
+				AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */,
+				F352F86C1979281E80801EAC /* CubeLayer.h */,
 				1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */,
 				989FA13CC0DA59EEA875E77C /* EditorLayer.h */,
 				17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */,
@@ -179,6 +184,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */,
 				7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */,
 				1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */,
 				79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */,
@@ -209,6 +215,7 @@
 				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					GLM_FORCE_DEPTH_ZERO_TO_ONE,
 					ETH_RELEASE,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -285,6 +292,7 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					GLM_FORCE_DEPTH_ZERO_TO_ONE,
 					ETH_DIST,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -345,6 +353,7 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					GLM_FORCE_DEPTH_ZERO_TO_ONE,
 					ETH_DEBUG,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
