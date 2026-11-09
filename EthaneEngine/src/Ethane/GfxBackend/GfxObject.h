@@ -111,9 +111,12 @@ struct TextureSpecification
     ImageFormat Format = ImageFormat::RGBA; // 8-bit UNORM RGBA, what ImageLoader produces
     TextureFilter Filter = TextureFilter::Linear;
     TextureWrap Wrap = TextureWrap::Repeat;
+    // Full mip chain, generated on the GPU from the uploaded image. Skipped (one level) if the device
+    // can't linearly filter / blit the format.
+    bool GenerateMips = true;
 };
 
-// Sampled 2D texture (one mip level). Row 0 of the pixel data is the image's top row, at v = 0.
+// Sampled 2D texture. Row 0 of the pixel data is the image's top row, at v = 0.
 class ITexture2D : public RefCounted<ITexture2D>
 {
 public:

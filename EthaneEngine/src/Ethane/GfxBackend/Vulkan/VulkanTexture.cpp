@@ -61,15 +61,26 @@ namespace Ethane {
             ETH_CORE_ASSERT(false, "Unsupported texture format");
         }
 
+        if (spec.GenerateMips) {
+            // mips are made by linear blits from the level above
+            using Feature = vk::FormatFeatureFlagBits;
+            if (physicalDevice.SupportsFormat(m_Format, Feature::eBlitSrc | Feature::eBlitDst | Feature::eSampledImageFilterLinear)) {
+                m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(spec.Width, spec.Height)))) + 1;
+            } else {
+                ETH_CORE_WARN("Texture: {0} can't be blitted with linear filtering, no mipmaps", vk::to_string(m_Format));
+            }
+        }
+
         m_Image = vk::raii::Image(vkDevice, vk::ImageCreateInfo{
             .imageType     = vk::ImageType::e2D,
             .format        = m_Format,
             .extent        = { spec.Width, spec.Height, 1 },
-            .mipLevels     = 1,
+            .mipLevels     = m_MipLevels,
             .arrayLayers   = 1,
             .samples       = vk::SampleCountFlagBits::e1,
             .tiling        = vk::ImageTiling::eOptimal,
-            .usage         = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+            // transfer src: each mip level is blitted from the previous one
+            .usage         = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
             .sharingMode   = vk::SharingMode::eExclusive,
             .initialLayout = vk::ImageLayout::eUndefined});
 
@@ -86,7 +97,7 @@ namespace Ethane {
             .viewType         = vk::ImageViewType::e2D,
             .format           = m_Format,
             .components       = {},
-            .subresourceRange = { .aspectMask = vk::ImageAspectFlagBits::eColor, .baseMipLevel = 0, .levelCount = 1, .baseArrayLayer = 0, .layerCount = 1 }});
+            .subresourceRange = { .aspectMask = vk::ImageAspectFlagBits::eColor, .baseMipLevel = 0, .levelCount = m_MipLevels, .baseArrayLayer = 0, .layerCount = 1 }});
 
         // samplerAnisotropy is required by device selection and enabled with the supported features
         const bool anisotropy = physicalDevice.GetEnabledFeatures().get<vk::PhysicalDeviceFeatures2>().features.samplerAnisotropy;
@@ -96,7 +107,7 @@ namespace Ethane {
         m_Sampler = vk::raii::Sampler(vkDevice, vk::SamplerCreateInfo{
             .magFilter        = filter,
             .minFilter        = filter,
-            .mipmapMode       = vk::SamplerMipmapMode::eLinear,
+            .mipmapMode       = spec.Filter == TextureFilter::Nearest ? vk::SamplerMipmapMode::eNearest : vk::SamplerMipmapMode::eLinear,
             .addressModeU     = wrap,
             .addressModeV     = wrap,
             .addressModeW     = wrap,
@@ -105,7 +116,7 @@ namespace Ethane {
             .maxAnisotropy    = anisotropy ? std::min(16.0f, maxAnisotropy) : 1.0f,
             .compareEnable    = vk::False,
             .minLod           = 0.0f,
-            .maxLod           = 0.0f, // single mip level
+            .maxLod           = static_cast<float>(m_MipLevels),
             .borderColor      = vk::BorderColor::eIntOpaqueBlack});
     }
 
@@ -116,25 +127,33 @@ namespace Ethane {
                                    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
         staging.SetData(pixels, 0, size, 0);
 
-        const vk::ImageSubresourceRange range{ .aspectMask = vk::ImageAspectFlagBits::eColor, .baseMipLevel = 0, .levelCount = 1, .baseArrayLayer = 0, .layerCount = 1 };
+        using Stage = vk::PipelineStageFlagBits;
+        using Access = vk::AccessFlagBits;
+        using Layout = vk::ImageLayout;
+        auto barrier = [&](const vk::raii::CommandBuffer& cb, uint32_t baseMip, uint32_t mipCount,
+                           Layout oldLayout, Layout newLayout, vk::AccessFlags srcAccess, vk::AccessFlags dstAccess,
+                           vk::PipelineStageFlags srcStage, vk::PipelineStageFlags dstStage) {
+            cb.pipelineBarrier(srcStage, dstStage, {}, {}, {}, vk::ImageMemoryBarrier{
+                .srcAccessMask       = srcAccess,
+                .dstAccessMask       = dstAccess,
+                .oldLayout           = oldLayout,
+                .newLayout           = newLayout,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image               = *m_Image,
+                .subresourceRange    = { .aspectMask = vk::ImageAspectFlagBits::eColor, .baseMipLevel = baseMip, .levelCount = mipCount, .baseArrayLayer = 0, .layerCount = 1 }});
+        };
+        // any shader stage that samples the texture waits for its last write
+        const vk::PipelineStageFlags shaderStages = Stage::eVertexShader | Stage::eFragmentShader | Stage::eComputeShader;
 
         VulkanCommandBuffer cmd{ m_Device };
         cmd.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
         const vk::raii::CommandBuffer& cb = cmd.Get();
 
-        // undefined -> transfer dst: nothing to wait for, the copy waits for the transition
-        cb.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}, {}, {},
-            vk::ImageMemoryBarrier{
-                .srcAccessMask       = {},
-                .dstAccessMask       = vk::AccessFlagBits::eTransferWrite,
-                .oldLayout           = vk::ImageLayout::eUndefined,
-                .newLayout           = vk::ImageLayout::eTransferDstOptimal,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image               = *m_Image,
-                .subresourceRange    = range});
+        // every level: undefined -> transfer dst (nothing to wait for)
+        barrier(cb, 0, m_MipLevels, Layout::eUndefined, Layout::eTransferDstOptimal, {}, Access::eTransferWrite, Stage::eTopOfPipe, Stage::eTransfer);
 
-        cb.copyBufferToImage(staging.GetHandle(), *m_Image, vk::ImageLayout::eTransferDstOptimal, vk::BufferImageCopy{
+        cb.copyBufferToImage(staging.GetHandle(), *m_Image, Layout::eTransferDstOptimal, vk::BufferImageCopy{
             .bufferOffset      = 0,
             .bufferRowLength   = 0, // tightly packed
             .bufferImageHeight = 0,
@@ -142,19 +161,32 @@ namespace Ethane {
             .imageOffset       = { 0, 0, 0 },
             .imageExtent       = { m_Specification.Width, m_Specification.Height, 1 }});
 
-        // transfer dst -> shader read: any shader stage that samples it waits for the copy
-        cb.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,
-                           vk::PipelineStageFlagBits::eVertexShader | vk::PipelineStageFlagBits::eFragmentShader | vk::PipelineStageFlagBits::eComputeShader,
-                           {}, {}, {},
-            vk::ImageMemoryBarrier{
-                .srcAccessMask       = vk::AccessFlagBits::eTransferWrite,
-                .dstAccessMask       = vk::AccessFlagBits::eShaderRead,
-                .oldLayout           = vk::ImageLayout::eTransferDstOptimal,
-                .newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image               = *m_Image,
-                .subresourceRange    = range});
+        // Level i is made from level i - 1, which is then done and goes to shader-read
+        int32_t width = static_cast<int32_t>(m_Specification.Width);
+        int32_t height = static_cast<int32_t>(m_Specification.Height);
+        for (uint32_t level = 1; level < m_MipLevels; level++)
+        {
+            barrier(cb, level - 1, 1, Layout::eTransferDstOptimal, Layout::eTransferSrcOptimal,
+                    Access::eTransferWrite, Access::eTransferRead, Stage::eTransfer, Stage::eTransfer);
+
+            const int32_t nextWidth = std::max(width / 2, 1);
+            const int32_t nextHeight = std::max(height / 2, 1);
+            cb.blitImage(*m_Image, Layout::eTransferSrcOptimal, *m_Image, Layout::eTransferDstOptimal, vk::ImageBlit{
+                .srcSubresource = { .aspectMask = vk::ImageAspectFlagBits::eColor, .mipLevel = level - 1, .baseArrayLayer = 0, .layerCount = 1 },
+                .srcOffsets     = std::array<vk::Offset3D, 2>{ vk::Offset3D{ 0, 0, 0 }, vk::Offset3D{ width, height, 1 } },
+                .dstSubresource = { .aspectMask = vk::ImageAspectFlagBits::eColor, .mipLevel = level, .baseArrayLayer = 0, .layerCount = 1 },
+                .dstOffsets     = std::array<vk::Offset3D, 2>{ vk::Offset3D{ 0, 0, 0 }, vk::Offset3D{ nextWidth, nextHeight, 1 } }},
+                vk::Filter::eLinear);
+
+            barrier(cb, level - 1, 1, Layout::eTransferSrcOptimal, Layout::eShaderReadOnlyOptimal,
+                    Access::eTransferRead, Access::eShaderRead, Stage::eTransfer, shaderStages);
+            width = nextWidth;
+            height = nextHeight;
+        }
+
+        // the last level was only written
+        barrier(cb, m_MipLevels - 1, 1, Layout::eTransferDstOptimal, Layout::eShaderReadOnlyOptimal,
+                Access::eTransferWrite, Access::eShaderRead, Stage::eTransfer, shaderStages);
 
         cmd.EndSingleUse(QueueFamilyTypes::Graphics); // waits, so the staging buffer can go at the end of this scope
     }

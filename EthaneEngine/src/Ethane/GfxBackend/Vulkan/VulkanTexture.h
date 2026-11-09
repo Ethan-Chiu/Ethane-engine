@@ -18,10 +18,12 @@ namespace Ethane {
         virtual ~VulkanTexture2D() = default;
 
         virtual const TextureSpecification& GetSpecification() const override { return m_Specification; }
+        uint32_t GetMipLevels() const { return m_MipLevels; }
 
         vk::DescriptorImageInfo GetDescriptorInfo() const;
 
     private:
+        // Copies the pixels to mip 0, blits the rest of the chain, leaves every level in eShaderReadOnlyOptimal
         void Upload(const void* pixels, uint32_t size);
 
     private:
@@ -29,6 +31,7 @@ namespace Ethane {
         VulkanLiveResource m_LiveResource;
         TextureSpecification m_Specification;
         vk::Format m_Format = vk::Format::eUndefined;
+        uint32_t m_MipLevels = 1;
 
         // NOTE: declaration order matters, members are destroyed in reverse: sampler -> view -> image -> memory
         vk::raii::DeviceMemory m_Memory = nullptr;
