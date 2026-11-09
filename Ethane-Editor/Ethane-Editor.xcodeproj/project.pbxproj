@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */; };
-		6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 56DE898790A9403946048FC7 /* libEthaneEngine.dylib */; };
 		74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */; };
 		7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */; };
 		79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */; };
+		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
 		DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */; };
 /* End PBXBuildFile section */
 
@@ -51,7 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */,
+				C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,7 +92,7 @@
 		7FE210EDDB23645FAE7DAF2D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				56DE898790A9403946048FC7 /* libEthaneEngine.dylib */,
+				EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -160,7 +160,7 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		56DE898790A9403946048FC7 /* libEthaneEngine.dylib */ = {
+		EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
 			path = libEthaneEngine.dylib;
@@ -224,9 +224,9 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@loader_path/../EthaneEngine",
 				);
-				OBJROOT = "../bin-int/Release-macosx-x86_64/Ethane-Editor";
+				OBJROOT = "../bin-int/Release-macosx-ARM64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = NO;
-				SYMROOT = "../bin/Release-macosx-x86_64/Ethane-Editor";
+				SYMROOT = "../bin/Release-macosx-ARM64/Ethane-Editor";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/vendor/spdlog/include,
 					../EthaneEngine/vendor/GLFW/include,
@@ -253,7 +253,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-x86_64/Ethane-Editor";
+				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-ARM64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
@@ -269,7 +269,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-x86_64/Ethane-Editor";
+				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-ARM64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
@@ -301,9 +301,9 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@loader_path/../EthaneEngine",
 				);
-				OBJROOT = "../bin-int/Dist-macosx-x86_64/Ethane-Editor";
+				OBJROOT = "../bin-int/Dist-macosx-ARM64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = YES;
-				SYMROOT = "../bin/Dist-macosx-x86_64/Ethane-Editor";
+				SYMROOT = "../bin/Dist-macosx-ARM64/Ethane-Editor";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/vendor/spdlog/include,
 					../EthaneEngine/vendor/GLFW/include,
@@ -330,7 +330,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-x86_64/Ethane-Editor";
+				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-ARM64/Ethane-Editor";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/bin;
@@ -362,9 +362,9 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@loader_path/../EthaneEngine",
 				);
-				OBJROOT = "../bin-int/Debug-macosx-x86_64/Ethane-Editor";
+				OBJROOT = "../bin-int/Debug-macosx-ARM64/Ethane-Editor";
 				ONLY_ACTIVE_ARCH = YES;
-				SYMROOT = "../bin/Debug-macosx-x86_64/Ethane-Editor";
+				SYMROOT = "../bin/Debug-macosx-ARM64/Ethane-Editor";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/vendor/spdlog/include,
 					../EthaneEngine/vendor/GLFW/include,

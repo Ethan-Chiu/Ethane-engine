@@ -2,6 +2,10 @@ include "Dependencies.lua"
 
 workspace "EthaneEngine"
     architecture "x86_64"
+    -- Apple Silicon: native arm64 (the vendored assimp / yaml-cpp static libs are arm64 only)
+    filter "system:macosx"
+        architecture "ARM64"
+    filter {}
     startproject "Ethane-Editor"
 
     configurations

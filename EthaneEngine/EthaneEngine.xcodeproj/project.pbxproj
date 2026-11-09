@@ -24,10 +24,11 @@
 		33F19BC9DB67377B842C4209 /* VulkanShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54C709D13369A543E84BA811 /* VulkanShader.cpp */; };
 		35BEAE69D925DC1BF05B94A9 /* VulkanBindingSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11806671A9F853E3D5DF44B1 /* VulkanBindingSet.cpp */; };
 		35CF1DD12F90DA43698FDC11 /* ethpch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F8CC9A59413D7E8B85DC5099 /* ethpch.cpp */; };
+		494D8CF4E3A775E61FDFDB34 /* libGLFW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ED61E5CECB71F0EC435649C /* libGLFW.a */; };
 		53907229B017769B38BA3069 /* MacosWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75A0C8D18585F50371F97F11 /* MacosWindow.cpp */; };
 		5D75FCD99740B38B4C9C0319 /* VulkanWindowTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42B817E1076D6E53BBDC1621 /* VulkanWindowTarget.cpp */; };
-		6090C9794627D0AB096CDFB9 /* libGLFW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 172B87E1712C9ED338739621 /* libGLFW.a */; };
 		614E9EC904B5CC7B1BEB8509 /* VulkanRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A8DA0D1A3058E43CEEC7F11 /* VulkanRenderPass.cpp */; };
+		65DF459400392E863C7193D4 /* libGlad.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D23A59FC701B5AAE4799A03C /* libGlad.a */; };
 		661CEB61FE94D8D32A7BC9A1 /* WindowsInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 992ECF093352C43BE378A549 /* WindowsInput.cpp */; };
 		6923B6B97ADAF6ABF048E4F9 /* MacosInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33FECD61A7E74513CA34F3A1 /* MacosInput.cpp */; };
 		6ADA7EDDDEC2F68F0110A51D /* ImGuiBuild.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A0BCE785674ADEF7D54D05C5 /* ImGuiBuild.cpp */; };
@@ -43,7 +44,7 @@
 		9F1963943766494665AD49D4 /* Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB07D3FCFF56796E417DB23C /* Entity.cpp */; };
 		A7DC1E7D98D38C6F04D70CBD /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F978450591C52AB7C00C2B45 /* Application.cpp */; };
 		ACB1B4470811D8F94A557A87 /* VulkanPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A7B416FE70245E16FA4FFAF /* VulkanPipeline.cpp */; };
-		B9CA2C199F61334B62A64259 /* libGlad.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B187CD810B88E473D2CFDBC1 /* libGlad.a */; };
+		B12C6C2047557E1208BBDA60 /* libImGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 147A2428C7702DDA18928A68 /* libImGui.a */; };
 		BF483ED1557150C316D7AD11 /* WindowsWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8001A27932F7AC2B841A08B9 /* WindowsWindow.cpp */; };
 		CB629BEAC42D5B9C4EA1C22A /* ShaderIncluder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F6FF25272EF31C48AE91092 /* ShaderIncluder.cpp */; };
 		D551503C6F75456E1F9B267C /* ShaderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 70B34DC4E50D92B662F11C04 /* ShaderSystem.cpp */; };
@@ -51,7 +52,6 @@
 		E34098635068A6D551FB96A3 /* UUID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1356348B60B92ABDD6D82ACB /* UUID.cpp */; };
 		E5D97D654124CD972F56B3A5 /* VulkanContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 698AA8AD7B41E89FF0AFD6ED /* VulkanContext.cpp */; };
 		E6F7C808F6DCF43AE3507E48 /* SceneCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BEFB583060E4F422580C0670 /* SceneCamera.cpp */; };
-		EA0614A5455164D733834AE5 /* libImGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B70ACDADC8C20D9F3E2FFBED /* libImGui.a */; };
 		EBD8E94289B9E9F461382F82 /* AssetManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CFB71EAEFBBD25C4CF0B02A /* AssetManager.cpp */; };
 		EE15C9CF457B3CC1F789580F /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8160B437B359FEE92D393A77 /* Layer.cpp */; };
 		F155C73FF0F8AA712B4D5D7F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7127FC27C88D6F197A9B8A67 /* FileUtils.cpp */; };
@@ -652,9 +652,9 @@
 				840EA602F136B474F2C9A442 /* OpenGL.framework in Frameworks */,
 				F8E8DBA28B76A594F44F49E2 /* Cocoa.framework in Frameworks */,
 				713678D803C442CA6C9CE718 /* IOKit.framework in Frameworks */,
-				6090C9794627D0AB096CDFB9 /* libGLFW.a in Frameworks */,
-				B9CA2C199F61334B62A64259 /* libGlad.a in Frameworks */,
-				EA0614A5455164D733834AE5 /* libImGui.a in Frameworks */,
+				494D8CF4E3A775E61FDFDB34 /* libGLFW.a in Frameworks */,
+				65DF459400392E863C7193D4 /* libGlad.a in Frameworks */,
+				B12C6C2047557E1208BBDA60 /* libImGui.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -677,7 +677,7 @@
 		014014D2FAA61644EE417312 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				172B87E1712C9ED338739621 /* libGLFW.a */,
+				4ED61E5CECB71F0EC435649C /* libGLFW.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -925,7 +925,7 @@
 		3684523D5CAA81EFC3B1787D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B70ACDADC8C20D9F3E2FFBED /* libImGui.a */,
+				147A2428C7702DDA18928A68 /* libImGui.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1518,7 +1518,7 @@
 		C7488D7AC0AE8EECB449EBBA /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B187CD810B88E473D2CFDBC1 /* libGlad.a */,
+				D23A59FC701B5AAE4799A03C /* libGlad.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1595,25 +1595,25 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		172B87E1712C9ED338739621 /* libGLFW.a */ = {
+		147A2428C7702DDA18928A68 /* libImGui.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libImGui.a;
+			remoteRef = 588D649D43798A8F8B5F52DD /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4ED61E5CECB71F0EC435649C /* libGLFW.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libGLFW.a;
 			remoteRef = 7AC179D2A0E7A98407EEA012 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		B187CD810B88E473D2CFDBC1 /* libGlad.a */ = {
+		D23A59FC701B5AAE4799A03C /* libGlad.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libGlad.a;
 			remoteRef = 01D9077A27FF372C8F062DBA /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		B70ACDADC8C20D9F3E2FFBED /* libImGui.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libImGui.a;
-			remoteRef = 588D649D43798A8F8B5F52DD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -1707,7 +1707,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-x86_64/EthaneEngine";
+				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-ARM64/EthaneEngine";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = lib;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -1744,7 +1744,7 @@
 					"vendor/yaml-cpp/build",
 					vendor/assimp/lib,
 				);
-				OBJROOT = "../bin-int/Release-macosx-x86_64/EthaneEngine";
+				OBJROOT = "../bin-int/Release-macosx-ARM64/EthaneEngine";
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-lvulkan",
@@ -1757,7 +1757,7 @@
 					"-lassimp",
 					"-lyaml-cpp",
 				);
-				SYMROOT = "../bin/Release-macosx-x86_64/EthaneEngine";
+				SYMROOT = "../bin/Release-macosx-ARM64/EthaneEngine";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					vendor/spdlog/include,
 					vendor/GLFW/include,
@@ -1781,7 +1781,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-x86_64/EthaneEngine";
+				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-ARM64/EthaneEngine";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = lib;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -1820,7 +1820,7 @@
 					"vendor/yaml-cpp/build",
 					vendor/assimp/lib,
 				);
-				OBJROOT = "../bin-int/Debug-macosx-x86_64/EthaneEngine";
+				OBJROOT = "../bin-int/Debug-macosx-ARM64/EthaneEngine";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lvulkan",
@@ -1833,7 +1833,7 @@
 					"-lassimp",
 					"-lyaml-cpp",
 				);
-				SYMROOT = "../bin/Debug-macosx-x86_64/EthaneEngine";
+				SYMROOT = "../bin/Debug-macosx-ARM64/EthaneEngine";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					vendor/spdlog/include,
 					vendor/GLFW/include,
@@ -1882,7 +1882,7 @@
 					"vendor/yaml-cpp/build",
 					vendor/assimp/lib,
 				);
-				OBJROOT = "../bin-int/Dist-macosx-x86_64/EthaneEngine";
+				OBJROOT = "../bin-int/Dist-macosx-ARM64/EthaneEngine";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lvulkan",
@@ -1895,7 +1895,7 @@
 					"-lassimp",
 					"-lyaml-cpp",
 				);
-				SYMROOT = "../bin/Dist-macosx-x86_64/EthaneEngine";
+				SYMROOT = "../bin/Dist-macosx-ARM64/EthaneEngine";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					vendor/spdlog/include,
 					vendor/GLFW/include,
@@ -1919,7 +1919,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-x86_64/EthaneEngine";
+				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-ARM64/EthaneEngine";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				EXECUTABLE_PREFIX = lib;
 				GCC_DYNAMIC_NO_PIC = NO;
