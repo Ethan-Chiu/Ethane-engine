@@ -67,7 +67,7 @@ void Run(GfxBackendAPI& backend)
         ETH_CORE_INFO("[GfxSmokeTest] shader: {0}", shader->GetName());
 
         // Render pass: one color attachment + depth (formats supported on Apple GPUs)
-        RefCountPtr<IRenderPass> renderPass = backend.CreateRenderPass({ ImageFormat::BGRA }, ImageFormat::DEPTH32F, true);
+        RefCountPtr<IRenderPass> renderPass = backend.CreateRenderPass({ ImageFormat::BGRA }, ImageFormat::Depth, true); // device default depth format
         ETH_CORE_INFO("[GfxSmokeTest] render pass created");
 
         // Pipeline: layout from shader reflection + fixed-function state

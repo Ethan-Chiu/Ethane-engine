@@ -9,6 +9,7 @@
 
 #include "ethpch.h"
 #include "Vulkan.h"
+#include "VulkanContext.h"
 #include "Ethane/GfxBackend/GfxObject.h"
 
 namespace Ethane {
@@ -29,7 +30,11 @@ namespace ImageUtils {
         case ImageFormat::RGBA32F:         return VK_FORMAT_R32G32B32A32_SFLOAT;
         case ImageFormat::BGRA:            return VK_FORMAT_B8G8R8A8_UNORM;
         case ImageFormat::DEPTH32F:        return VK_FORMAT_D32_SFLOAT;
-        case ImageFormat::DEPTH24STENCIL8: return VK_FORMAT_D24_UNORM_S8_UINT;// VulkanContext::GetDevice()->GetPhysicalDevice()->GetDepthFormat();
+        case ImageFormat::DEPTH24STENCIL8:  return VK_FORMAT_D24_UNORM_S8_UINT;
+        case ImageFormat::DEPTH32FSTENCIL8: return VK_FORMAT_D32_SFLOAT_S8_UINT;
+        case ImageFormat::Depth:
+            ETH_CORE_ASSERT(false, "ImageFormat::Depth depends on the device: use the VulkanPhysicalDevice overload");
+            return VK_FORMAT_UNDEFINED;
         default: break;
         }
         ETH_CORE_ASSERT(false);
@@ -53,11 +58,37 @@ namespace ImageUtils {
             case VK_FORMAT_B8G8R8A8_UNORM:          return ImageFormat::BGRA;
             case VK_FORMAT_D32_SFLOAT:              return ImageFormat::DEPTH32F;
             case VK_FORMAT_D24_UNORM_S8_UINT:       return ImageFormat::DEPTH24STENCIL8;
+            case VK_FORMAT_D32_SFLOAT_S8_UINT:      return ImageFormat::DEPTH32FSTENCIL8;
             default: break;
         }
         ETH_CORE_ASSERT(false);
         ETH_CORE_WARN("Image format is {0}", format);
         return ImageFormat::None;
+    }
+
+    // Same as VulkanImageFormat(), but also resolves the device-dependent defaults (ImageFormat::Depth)
+    inline vk::Format VulkanImageFormat(ImageFormat format, const VulkanPhysicalDevice& physicalDevice)
+    {
+        if (format == ImageFormat::Depth) {
+            return physicalDevice.GetDepthFormat();
+        }
+        return static_cast<vk::Format>(VulkanImageFormat(format));
+    }
+
+    inline bool IsDepthFormat(vk::Format format)
+    {
+        switch (format)
+        {
+        case vk::Format::eD16Unorm:
+        case vk::Format::eX8D24UnormPack32:
+        case vk::Format::eD32Sfloat:
+        case vk::Format::eD16UnormS8Uint:
+        case vk::Format::eD24UnormS8Uint:
+        case vk::Format::eD32SfloatS8Uint:
+            return true;
+        default:
+            return false;
+        }
     }
 
     inline VkImageLayout VulkanImageLayout(ImageLayout layout)

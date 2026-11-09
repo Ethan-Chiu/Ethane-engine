@@ -33,6 +33,9 @@ void VulkanPhysicalDevice::Init(const vk::raii::Instance& instance, const Contex
     }
     
     InitPhysicalFeatures(info);
+    m_DepthFormat = FindDepthFormat();
+    ETH_CORE_ASSERT(m_DepthFormat != vk::Format::eUndefined, "Device supports no depth-stencil attachment format");
+    ETH_CORE_INFO("Default depth format: {0}", vk::to_string(m_DepthFormat));
 
     // Queue families
     m_QueueFamilyIndices = FindQueueFamilies(m_PhysicalDevice, m_ConstRequestedQueueTypes, surface);
@@ -44,6 +47,7 @@ void VulkanPhysicalDevice::Destroy()
 {
     ETH_CORE_INFO("Destroying physical device...");
     m_QueueFamilyIndices = {};
+    m_DepthFormat = vk::Format::eUndefined;
     m_SupportedDeviceExtensions.clear();
     m_UsedDeviceExtensions.clear();
     m_PhysicalDevice = nullptr; // not an owned object, just forget the handle
@@ -102,6 +106,30 @@ bool VulkanPhysicalDevice::HasMandatoryExtensions(const vk::raii::PhysicalDevice
     return VulkanContextUtils::CheckExtensionProperties(extensionProperties, info.DeviceExtensions, info.VerboseCompatibleDevices);
 }
 
+
+bool VulkanPhysicalDevice::SupportsFormat(vk::Format format, vk::FormatFeatureFlags features, vk::ImageTiling tiling) const
+{
+    const vk::FormatProperties properties = m_PhysicalDevice.getFormatProperties(format);
+    const vk::FormatFeatureFlags supported = (tiling == vk::ImageTiling::eLinear) ? properties.linearTilingFeatures : properties.optimalTilingFeatures;
+    return (supported & features) == features;
+}
+
+vk::Format VulkanPhysicalDevice::FindDepthFormat() const
+{
+    // Depth-stencil first (ImageFormat::Depth promises a stencil when possible), smallest first.
+    // D24S8 is missing on Apple GPUs, D32S8 is missing on some older desktop GPUs; D32 is the last resort.
+    constexpr std::array candidates = {
+        vk::Format::eD24UnormS8Uint,
+        vk::Format::eD32SfloatS8Uint,
+        vk::Format::eD32Sfloat,
+    };
+    for (const vk::Format format : candidates) {
+        if (SupportsFormat(format, vk::FormatFeatureFlagBits::eDepthStencilAttachment)) {
+            return format;
+        }
+    }
+    return vk::Format::eUndefined;
+}
 
 bool VulkanPhysicalDevice::InitPhysicalFeatures(const ContextCreateInfo& info)
 {

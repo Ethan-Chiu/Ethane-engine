@@ -15,14 +15,22 @@ namespace Ethane {
         std::vector<vk::AttachmentReference> colorAttachmentReferences;
         vk::AttachmentReference depthAttachmentReference;
 
+        using FormatFeature = vk::FormatFeatureFlagBits;
+        const VulkanPhysicalDevice& physicalDevice = m_Device->GetPhysicalDevice();
+
         uint32_t attachmentIndex = 0;
         bool hasDepth = (depthAttachmentFormat != ImageFormat::None);
 
         m_AttachmentCount = colorAttachmentFormats.size();
         for (auto attachmentFormat : colorAttachmentFormats)
         {
+            const vk::Format format = ImageUtils::VulkanImageFormat(attachmentFormat, physicalDevice);
+            if (!physicalDevice.SupportsFormat(format, FormatFeature::eColorAttachment)) {
+                ETH_CORE_ERROR("Render pass: {0} can't be used as a color attachment on this device", vk::to_string(format));
+                ETH_CORE_ASSERT(false, "Unsupported color attachment format");
+            }
             attachmentDescriptions.push_back(vk::AttachmentDescription{
-                .format         = static_cast<vk::Format>(ImageUtils::VulkanImageFormat(attachmentFormat)),
+                .format         = format,
                 .samples        = vk::SampleCountFlagBits::e1,
                 .loadOp         = clearOnLoad ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eLoad,
                 .storeOp        = vk::AttachmentStoreOp::eStore, // TODO: if sampling, needs to be store (otherwise DONT_CARE is fine)
@@ -38,26 +46,26 @@ namespace Ethane {
 
         if (hasDepth)
         {
+            // ImageFormat::Depth resolves to the device's preferred format, explicit formats are checked
+            const vk::Format format = ImageUtils::VulkanImageFormat(depthAttachmentFormat, physicalDevice);
+            ETH_CORE_ASSERT(ImageUtils::IsDepthFormat(format), "Depth attachment needs a depth format");
+            if (!physicalDevice.SupportsFormat(format, FormatFeature::eDepthStencilAttachment)) {
+                ETH_CORE_ERROR("Render pass: {0} can't be used as a depth attachment on this device (use ImageFormat::Depth for the device default: {1})",
+                               vk::to_string(format), vk::to_string(physicalDevice.GetDepthFormat()));
+                ETH_CORE_ASSERT(false, "Unsupported depth attachment format");
+            }
             vk::AttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back(vk::AttachmentDescription{
-                .format         = static_cast<vk::Format>(ImageUtils::VulkanImageFormat(depthAttachmentFormat)),
+                .format         = format,
                 .samples        = vk::SampleCountFlagBits::e1,
                 .loadOp         = clearOnLoad ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eLoad,
                 .storeOp        = vk::AttachmentStoreOp::eStore, // TODO: if sampling, needs to be store (otherwise DONT_CARE is fine)
                 .stencilLoadOp  = vk::AttachmentLoadOp::eDontCare,
                 .stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
                 .initialLayout  = clearOnLoad ? Layout::eUndefined : Layout::eDepthStencilReadOnlyOptimal});
-            if (depthAttachmentFormat == ImageFormat::DEPTH24STENCIL8 || true) // Separate layouts requires a "separate layouts" flag to be enabled
-            {
-                attachmentDescription.finalLayout = Layout::eDepthStencilAttachmentOptimal; // TODO: if not sampling
-                attachmentDescription.finalLayout = Layout::eDepthStencilReadOnlyOptimal; // TODO: if sampling
-                depthAttachmentReference = vk::AttachmentReference{ .attachment = attachmentIndex, .layout = Layout::eDepthStencilAttachmentOptimal };
-            }
-            else
-            {
-                attachmentDescription.finalLayout = Layout::eDepthAttachmentOptimal; // TODO: if not sampling
-                attachmentDescription.finalLayout = Layout::eDepthReadOnlyOptimal; // TODO: if sampling
-                depthAttachmentReference = vk::AttachmentReference{ .attachment = attachmentIndex, .layout = Layout::eDepthAttachmentOptimal };
-            }
+            // The combined depth-stencil layouts are valid for depth-only formats too. Separate depth / stencil
+            // layouts (eDepthAttachmentOptimal, ...) would need the separateDepthStencilLayouts feature.
+            attachmentDescription.finalLayout = Layout::eDepthStencilReadOnlyOptimal; // TODO: eDepthStencilAttachmentOptimal if not sampling
+            depthAttachmentReference = vk::AttachmentReference{ .attachment = attachmentIndex, .layout = Layout::eDepthStencilAttachmentOptimal };
             attachmentIndex++;
         }
 

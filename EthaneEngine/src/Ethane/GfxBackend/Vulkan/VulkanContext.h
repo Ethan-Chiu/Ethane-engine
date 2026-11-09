@@ -143,10 +143,16 @@ public:
     const FeatureChain& GetEnabledFeatures() const { return m_EnabledFeatures; }
     bool IsExtensionEnabled(const char* name) const;
 
+    // True when images of `format` with `tiling` support all of `features` (e.g. eDepthStencilAttachment)
+    bool SupportsFormat(vk::Format format, vk::FormatFeatureFlags features, vk::ImageTiling tiling = vk::ImageTiling::eOptimal) const;
+    // Best supported depth-stencil attachment format, chosen at Init(); what ImageFormat::Depth resolves to
+    vk::Format GetDepthFormat() const { return m_DepthFormat; }
+
 private:
     std::vector<vk::raii::PhysicalDevice> GetCompatibleDevices(const vk::raii::Instance& instance, const ContextCreateInfo& info);
     bool HasMandatoryExtensions(const vk::raii::PhysicalDevice& device, const ContextCreateInfo& info);
     bool InitPhysicalFeatures(const ContextCreateInfo& info);
+    vk::Format FindDepthFormat() const;
 
     // Utilities
     int32_t RateDeviceSuitability(const vk::raii::PhysicalDevice& device, vk::SurfaceKHR surface);
@@ -166,6 +172,7 @@ protected:
 
     const vk::QueueFlags m_ConstRequestedQueueTypes = vk::QueueFlagBits::eGraphics | vk::QueueFlagBits::eCompute | vk::QueueFlagBits::eTransfer;
     QueueFamilyIndices m_QueueFamilyIndices;
+    vk::Format m_DepthFormat = vk::Format::eUndefined;
 
     friend class VulkanDevice;
     friend class VulkanContext;
@@ -211,6 +218,7 @@ public:
 
     // Getter
     const vk::raii::Device& Get() const { return m_LogicalDevice; }
+    const VulkanPhysicalDevice& GetPhysicalDevice() const { return *m_PhysicalDevice; }
 
     const vk::raii::Queue& GetGraphicsQueue() const { return m_GraphicsQueue; }
     const vk::raii::Queue& GetPresentQueue() const { return m_PresentQueue; }  // may be the same queue as graphics

@@ -64,9 +64,10 @@ enum class ImageFormat
     BGRA,
 
     DEPTH32F,
-    DEPTH24STENCIL8,
+    DEPTH24STENCIL8,   // not supported on Apple GPUs
+    DEPTH32FSTENCIL8,
     // Defaults
-    Depth = DEPTH24STENCIL8,
+    Depth,             // the device's preferred depth-stencil attachment format, resolved by the backend
 };
 
 enum class ImageUsage
