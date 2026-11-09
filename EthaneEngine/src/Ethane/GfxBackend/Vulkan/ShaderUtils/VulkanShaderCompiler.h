@@ -13,7 +13,7 @@ namespace Ethane {
 		{
 			std::string Name;
 			uint32_t Size = 0;
-			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+			VkShaderStageFlags ShaderStage = 0; // every stage that uses the binding (OR-ed across stages)
 		};
 
 		struct ImageSampler
@@ -21,14 +21,14 @@ namespace Ethane {
 			std::string Name;
 			uint32_t DescriptorSet = 0;
 			uint32_t ArraySize = 0;
-			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+			VkShaderStageFlags ShaderStage = 0; // every stage that uses the binding (OR-ed across stages)
 		};
 
         struct StorageBuffer
         {
             std::string Name;
             uint32_t Size = 0;
-            VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+            VkShaderStageFlags ShaderStage = 0; // every stage that uses the binding (OR-ed across stages)
         };
         
         struct StorageImage
@@ -36,7 +36,7 @@ namespace Ethane {
             std::string Name;
             uint32_t DescriptorSet = 0;
             uint32_t ArraySize = 0;
-            VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+            VkShaderStageFlags ShaderStage = 0; // every stage that uses the binding (OR-ed across stages)
         };
         
 		struct ShaderDescriptorSetData

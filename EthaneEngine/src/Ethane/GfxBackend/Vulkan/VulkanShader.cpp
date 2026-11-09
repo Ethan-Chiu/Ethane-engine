@@ -99,7 +99,7 @@ namespace Ethane {
 					.binding         = binding,
 					.descriptorType  = vk::DescriptorType::eUniformBuffer,
 					.descriptorCount = 1,
-					.stageFlags      = static_cast<vk::ShaderStageFlagBits>(uniformBuffer.ShaderStage)});
+					.stageFlags      = vk::ShaderStageFlags(uniformBuffer.ShaderStage)});
 
 				VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][uniformBuffer.Name].WriteDescriptor;
 				wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
@@ -115,7 +115,7 @@ namespace Ethane {
 					.binding         = binding,
 					.descriptorType  = vk::DescriptorType::eCombinedImageSampler,
 					.descriptorCount = imageSampler.ArraySize,
-					.stageFlags      = static_cast<vk::ShaderStageFlagBits>(imageSampler.ShaderStage)});
+					.stageFlags      = vk::ShaderStageFlags(imageSampler.ShaderStage)});
 
 //				ETH_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present!");
 
@@ -133,7 +133,7 @@ namespace Ethane {
                     .binding         = binding,
                     .descriptorType  = vk::DescriptorType::eStorageBuffer,
                     .descriptorCount = 1,
-                    .stageFlags      = static_cast<vk::ShaderStageFlagBits>(storageBuffer.ShaderStage)});
+                    .stageFlags      = vk::ShaderStageFlags(storageBuffer.ShaderStage)});
 
                 VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][storageBuffer.Name].WriteDescriptor;
                 wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
@@ -149,7 +149,7 @@ namespace Ethane {
                     .binding         = binding,
                     .descriptorType  = vk::DescriptorType::eStorageImage,
                     .descriptorCount = imageSampler.ArraySize,
-                    .stageFlags      = static_cast<vk::ShaderStageFlagBits>(imageSampler.ShaderStage)});
+                    .stageFlags      = vk::ShaderStageFlags(imageSampler.ShaderStage)});
 
                 VkWriteDescriptorSet& wds = m_WriteDescriptorSetsBase[set][imageSampler.Name].WriteDescriptor;
                 wds = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };

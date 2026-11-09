@@ -248,7 +248,8 @@ namespace Ethane {
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t dimension = baseType.image.dim;
-			uint32_t arraySize = type.array[0];
+			// type.array is empty for a non-array binding; a 0 entry is a runtime-sized array
+			uint32_t arraySize = type.array.empty() ? 1 : type.array[0];
 			if (arraySize == 0)
 				arraySize = 1;
 			if (descriptorSet >= shaderDescriptorSets.size())
@@ -258,7 +259,7 @@ namespace Ethane {
 			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
 			imageSampler.DescriptorSet = descriptorSet;
 			imageSampler.Name = name;
-			imageSampler.ShaderStage = stage;
+			imageSampler.ShaderStage |= stage; // the same binding may be reflected from several stages
 			imageSampler.ArraySize = arraySize;
 
 			ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
@@ -301,7 +302,8 @@ namespace Ethane {
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
             uint32_t dimension = baseType.image.dim;
-            uint32_t arraySize = type.array[0];
+            // type.array is empty for a non-array binding; a 0 entry is a runtime-sized array
+            uint32_t arraySize = type.array.empty() ? 1 : type.array[0];
             if (arraySize == 0)
                 arraySize = 1;
             if (descriptorSet >= shaderDescriptorSets.size())
@@ -311,7 +313,7 @@ namespace Ethane {
             auto& imageSampler = shaderDescriptorSet.StorageImage[binding];
             imageSampler.DescriptorSet = descriptorSet;
             imageSampler.Name = name;
-            imageSampler.ShaderStage = stage;
+            imageSampler.ShaderStage |= stage; // the same binding may be reflected from several stages
             imageSampler.ArraySize = arraySize;
 
             ETH_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
@@ -319,20 +321,33 @@ namespace Ethane {
         }
 
         ETH_CORE_INFO("Push Constant Buffers:");
+        // A stage has at most one push constant block. Stages often declare only the part they use, either the
+        // whole block or its tail via layout(offset = N), so the range starts at the block's first member.
+        // Vulkan allows one range per stage (ranges of different stages may overlap); stages that declare the
+        // exact same range share one entry so a single vkCmdPushConstants covers them all.
         for (const auto& resource : res.push_constant_buffers)
         {
-            const auto& bufferName = resource.name;
-            auto& bufferType = compiler.get_type(resource.base_type_id);
-            uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
-            uint32_t memberCount = uint32_t(bufferType.member_types.size());
-            uint32_t bufferOffset = 0;
-            if (pushConstantRanges.size())
-                bufferOffset = pushConstantRanges.back().offset + pushConstantRanges.back().size;
+            const auto& bufferType = compiler.get_type(resource.base_type_id);
+            const uint32_t bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+            uint32_t bufferOffset = bufferSize;
+            for (uint32_t i = 0; i < (uint32_t)bufferType.member_types.size(); i++)
+                bufferOffset = std::min(bufferOffset, compiler.type_struct_member_offset(bufferType, i));
+            if (bufferOffset == bufferSize)
+                bufferOffset = 0; // empty block
 
-            auto& pushConstantRange = pushConstantRanges.emplace_back();
-            pushConstantRange.stageFlags = stage;
-            pushConstantRange.offset = bufferOffset;
-            pushConstantRange.size = bufferSize - bufferOffset;
+            const uint32_t rangeSize = bufferSize - bufferOffset;
+            auto existing = std::find_if(pushConstantRanges.begin(), pushConstantRanges.end(), [&](const VkPushConstantRange& range) {
+                return range.offset == bufferOffset && range.size == rangeSize;
+            });
+            if (existing != pushConstantRanges.end())
+            {
+                existing->stageFlags |= stage;
+            }
+            else
+            {
+                pushConstantRanges.push_back(VkPushConstantRange{ .stageFlags = (VkShaderStageFlags)stage, .offset = bufferOffset, .size = rangeSize });
+            }
+            ETH_CORE_TRACE("  {0}: offset {1}, size {2}", resource.name, bufferOffset, rangeSize);
         }
         
         ETH_CORE_INFO("===========================");
