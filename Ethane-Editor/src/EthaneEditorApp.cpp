@@ -6,6 +6,7 @@
 #include "TriangleLayer.h"
 #include "TexturedQuadLayer.h"
 #include "CubeLayer.h"
+#include "MeshLayer.h"
 
 namespace Ethane {
 
@@ -19,7 +20,8 @@ namespace Ethane {
 			// 2D demos: they draw at fixed depths, so they'd cover the 3D scene. Push them instead of CubeLayer to see them.
 			// PushLayer(new TriangleLayer());
 			// PushLayer(new TexturedQuadLayer());
-			PushLayer(new CubeLayer());
+			// PushLayer(new CubeLayer());
+			PushLayer(new MeshLayer());
 		}
 
 		~EthaneEditor()
