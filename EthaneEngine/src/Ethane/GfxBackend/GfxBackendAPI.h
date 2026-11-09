@@ -33,6 +33,12 @@ public:
     virtual RefCountPtr<ITexture2D> CreateTexture2D(const TextureSpecification& spec, const void* pixels) = 0;
     // Loads an image file as RGBA8 (null if the file can't be read)
     RefCountPtr<ITexture2D> LoadTexture2D(const std::string& filepath, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
+    // Same, from an encoded image (png, jpg, ...) in memory
+    RefCountPtr<ITexture2D> LoadTexture2DFromMemory(const void* encoded, size_t size, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
+
+    // Shared 1x1 textures for maps a material doesn't have
+    enum class DefaultTexture { White, FlatNormal };
+    const RefCountPtr<ITexture2D>& GetDefaultTexture(DefaultTexture which);
 
     // Resources for descriptor set `set` of `shader`
     virtual RefCountPtr<IBindingSet> CreateBindingSet(const RefCountPtr<IShader>& shader, uint32_t set) = 0;
@@ -53,8 +59,13 @@ public:
     
     inline static API GetAPI() { return s_API; }
     inline static void SetAPI(API _API) { s_API = _API; }
+
+protected:
+    // Backends call this at the start of Shutdown(), while the device still exists
+    void ReleaseDefaultResources();
 private:
     static API s_API;
+    RefCountPtr<ITexture2D> m_DefaultTextures[2]; // by DefaultTexture, created on first use
 };
 
 }

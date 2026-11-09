@@ -19,7 +19,10 @@ struct ImageResource {
 class ImageLoader
 {
 public:
+    // Decodes to RGBA8 (4 channels whatever the file has), top row first
     bool LoadImage(const std::string& filepath, ImageResource& out_resource);
+    // Same, from an encoded image (png, jpg, ...) in memory, e.g. a texture embedded in a model file
+    bool LoadImageFromMemory(const void* encoded, size_t size, ImageResource& out_resource);
     
     void UnloadImage(ImageResource& resource);
 };

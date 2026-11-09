@@ -3,6 +3,9 @@
 #include "Ethane/Core/Base.h"
 #include "Ethane/GfxBackend/GfxObject.h"
 #include "Ethane/Math/AABB.h"
+#include "Material.h"
+
+#include <span>
 
 #include <glm/glm.hpp>
 
@@ -40,7 +43,8 @@ namespace Ethane {
         std::string Name;
     };
 
-    // A model file (anything assimp reads: fbx, obj, gltf, ...) uploaded to GPU buffers.
+    // A model file (anything assimp reads: fbx, obj, gltf, ...) uploaded to GPU buffers, with the file's
+    // materials (factors + textures, loaded relative to the file or from embedded data).
     // The CPU copy of the vertices is dropped after the upload.
     class Mesh
     {
@@ -54,12 +58,15 @@ namespace Ethane {
 
         // Binds the buffers and draws every node. Per node it pushes `model * node.Transform` as a mat4 at
         // push-constant offset 0, so the shader needs `layout(push_constant) uniform { mat4 model; ... }`.
-        // The pipeline and binding sets must already be bound.
-        void Draw(ICommandList& commandList, const glm::mat4& model = glm::mat4(1.0f)) const;
+        // Each submesh binds materials[MaterialIndex] (e.g. from Material::CreateAll(GetMaterials()));
+        // an index past the end uses materials[0], so a single material covers the whole mesh. With no
+        // materials nothing is bound. The pipeline and the other binding sets must already be bound.
+        void Draw(ICommandList& commandList, const glm::mat4& model = glm::mat4(1.0f), std::span<const Ref<Material>> materials = {}) const;
 
         const std::string& GetPath() const { return m_Path; }
         const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
         const std::vector<MeshNode>& GetNodes() const { return m_Nodes; }
+        const std::vector<MaterialData>& GetMaterials() const { return m_Materials; } // by Submesh::MaterialIndex
         const AABB& GetBoundingBox() const { return m_BoundingBox; } // all nodes, in mesh space
         uint32_t GetVertexCount() const { return m_VertexCount; }
         uint32_t GetIndexCount() const { return m_IndexCount; }
@@ -70,6 +77,7 @@ namespace Ethane {
         std::string m_Path;
         std::vector<Submesh> m_Submeshes;
         std::vector<MeshNode> m_Nodes;
+        std::vector<MaterialData> m_Materials;
         AABB m_BoundingBox;
         uint32_t m_VertexCount = 0;
         uint32_t m_IndexCount = 0;

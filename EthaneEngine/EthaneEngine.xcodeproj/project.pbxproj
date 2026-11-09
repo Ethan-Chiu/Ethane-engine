@@ -57,6 +57,7 @@
 		EE15C9CF457B3CC1F789580F /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8160B437B359FEE92D393A77 /* Layer.cpp */; };
 		F155C73FF0F8AA712B4D5D7F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7127FC27C88D6F197A9B8A67 /* FileUtils.cpp */; };
 		F8E8DBA28B76A594F44F49E2 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D6BC6AA50D7885C8F7B2CEA /* Cocoa.framework */; };
+		F992D3E1ED921D53727D3221 /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7920A109BD34723BB105F749 /* Material.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -346,6 +347,7 @@
 		77231889D1242F7B986B26C9 /* matrix_double4x2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double4x2.hpp; path = vendor/glm/glm/ext/matrix_double4x2.hpp; sourceTree = "<group>"; };
 		77A9464B56C6607D32CFBC8B /* type_vec3.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_vec3.inl; path = vendor/glm/glm/detail/type_vec3.inl; sourceTree = "<group>"; };
 		787A0755781CEA87B2719D95 /* type_mat4x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat4x3.hpp; path = vendor/glm/glm/detail/type_mat4x3.hpp; sourceTree = "<group>"; };
+		7920A109BD34723BB105F749 /* Material.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Material.cpp; path = src/Ethane/Renderer/Material.cpp; sourceTree = "<group>"; };
 		795A0B3D85E4BDAF00C9897D /* matrix_float3x2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_float3x2.hpp; path = vendor/glm/glm/ext/matrix_float3x2.hpp; sourceTree = "<group>"; };
 		79BE96C3E6E6A535E8799503 /* integer.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = integer.inl; path = vendor/glm/glm/gtx/integer.inl; sourceTree = "<group>"; };
 		7A11EE1FEB348F11A0FB3C5F /* norm.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = norm.inl; path = vendor/glm/glm/gtx/norm.inl; sourceTree = "<group>"; };
@@ -364,6 +366,7 @@
 		8001A27932F7AC2B841A08B9 /* WindowsWindow.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WindowsWindow.cpp; path = src/Ethane/Platform/Windows/WindowsWindow.cpp; sourceTree = "<group>"; };
 		808FC77B16B8D96DD81F35BB /* VulkanGfxBackendAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanGfxBackendAPI.h; path = src/Ethane/GfxBackend/Vulkan/VulkanGfxBackendAPI.h; sourceTree = "<group>"; };
 		814C010F7B0DBD81B50CBF4F /* pca.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = pca.inl; path = vendor/glm/glm/gtx/pca.inl; sourceTree = "<group>"; };
+		8159E75365A0EF85E98E1D93 /* Material.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Material.h; path = src/Ethane/Renderer/Material.h; sourceTree = "<group>"; };
 		815AFDA9EE830C1BF015FBE9 /* ImGuiLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ImGuiLayer.h; path = src/Ethane/ImGui/ImGuiLayer.h; sourceTree = "<group>"; };
 		8160B437B359FEE92D393A77 /* Layer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Layer.cpp; path = src/Ethane/Core/Layer.cpp; sourceTree = "<group>"; };
 		82748E4B356A97FD868CF48B /* func_exponential.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = func_exponential.inl; path = vendor/glm/glm/detail/func_exponential.inl; sourceTree = "<group>"; };
@@ -1142,6 +1145,8 @@
 				233AB207B8B17139274DC847 /* Camera.h */,
 				478665CB472948FD817DFC0B /* EditorCamera.cpp */,
 				646071D5437D8C071F86E815 /* EditorCamera.h */,
+				7920A109BD34723BB105F749 /* Material.cpp */,
+				8159E75365A0EF85E98E1D93 /* Material.h */,
 				BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */,
 				4B498B0F98AC81410ECB814F /* Mesh.h */,
 			);
@@ -1671,6 +1676,7 @@
 				0150C26DC30953DF6A2420AD /* WindowsPlatformUtils.cpp in Sources */,
 				BF483ED1557150C316D7AD11 /* WindowsWindow.cpp in Sources */,
 				2C2349C30AC5E535BFA7E803 /* EditorCamera.cpp in Sources */,
+				F992D3E1ED921D53727D3221 /* Material.cpp in Sources */,
 				2903465DEF913DCF5D93649D /* Mesh.cpp in Sources */,
 				9F1963943766494665AD49D4 /* Entity.cpp in Sources */,
 				28753B166C890C48605A9156 /* Scene.cpp in Sources */,

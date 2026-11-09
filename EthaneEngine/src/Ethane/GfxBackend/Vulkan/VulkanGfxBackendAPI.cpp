@@ -28,6 +28,7 @@ void VulkanGfxBackendAPI::Init() {
 }
 
 void VulkanGfxBackendAPI::Shutdown() {
+    ReleaseDefaultResources(); // before the device goes
     m_Context.Destroy();
 }
 

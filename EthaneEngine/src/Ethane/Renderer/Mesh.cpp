@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
 
 namespace Ethane {
 
@@ -45,6 +46,97 @@ namespace Ethane {
             aiProcess_JoinIdenticalVertices |    // indexed output
             aiProcess_ImproveCacheLocality |
             aiProcess_ValidateDataStructure;
+
+        // Textures of one model file: loaded once even if several materials use them
+        class TextureCache
+        {
+        public:
+            TextureCache(GfxBackendAPI& backend, const aiScene* scene, const std::filesystem::path& modelPath)
+                : m_Backend(backend), m_Scene(scene), m_Directory(modelPath.parent_path()) {}
+
+            RefCountPtr<ITexture2D> Get(const aiMaterial* material, std::initializer_list<aiTextureType> types)
+            {
+                for (aiTextureType type : types) {
+                    aiString path;
+                    if (material->GetTextureCount(type) > 0 && material->GetTexture(type, 0, &path) == aiReturn_SUCCESS) {
+                        return Load(path.C_Str());
+                    }
+                }
+                return {};
+            }
+
+        private:
+            RefCountPtr<ITexture2D> Load(const std::string& reference)
+            {
+                if (const auto it = m_Textures.find(reference); it != m_Textures.end()) {
+                    return it->second;
+                }
+
+                RefCountPtr<ITexture2D> texture;
+                // "*N" or, in fbx, the original file name of a texture stored inside the model
+                if (const aiTexture* embedded = m_Scene->GetEmbeddedTexture(reference.c_str())) {
+                    if (embedded->mHeight == 0) {
+                        // compressed (png, jpg, ...): mWidth is the byte size
+                        texture = m_Backend.LoadTexture2DFromMemory(embedded->pcData, embedded->mWidth);
+                    } else {
+                        // raw BGRA texels
+                        std::vector<uint8_t> rgba(size_t(embedded->mWidth) * embedded->mHeight * 4);
+                        for (size_t i = 0; i < size_t(embedded->mWidth) * embedded->mHeight; i++) {
+                            const aiTexel& texel = embedded->pcData[i];
+                            rgba[i * 4 + 0] = texel.r; rgba[i * 4 + 1] = texel.g; rgba[i * 4 + 2] = texel.b; rgba[i * 4 + 3] = texel.a;
+                        }
+                        texture = m_Backend.CreateTexture2D(TextureSpecification{ .Width = embedded->mWidth, .Height = embedded->mHeight }, rgba.data());
+                    }
+                } else {
+                    std::string file = reference;
+                    std::replace(file.begin(), file.end(), '\\', '/'); // paths written on Windows
+                    const std::filesystem::path path = (m_Directory / file).lexically_normal();
+                    texture = m_Backend.LoadTexture2D(path.string());
+                }
+                if (!texture) {
+                    ETH_CORE_WARN("Mesh texture '{0}' couldn't be loaded, using the default", reference);
+                }
+                m_Textures.emplace(reference, texture);
+                return texture;
+            }
+
+            GfxBackendAPI& m_Backend;
+            const aiScene* m_Scene;
+            std::filesystem::path m_Directory;
+            std::unordered_map<std::string, RefCountPtr<ITexture2D>> m_Textures;
+        };
+
+        MaterialData ImportMaterial(const aiMaterial* source, TextureCache& textures)
+        {
+            MaterialData material;
+            material.Name = source->GetName().C_Str();
+
+            // PBR formats (gltf, ...) give a base color; older ones a diffuse color and an opacity
+            aiColor4D color;
+            if (source->Get(AI_MATKEY_BASE_COLOR, color) == aiReturn_SUCCESS) {
+                material.BaseColor = { color.r, color.g, color.b, color.a };
+            } else if (source->Get(AI_MATKEY_COLOR_DIFFUSE, color) == aiReturn_SUCCESS) {
+                float opacity = 1.0f;
+                source->Get(AI_MATKEY_OPACITY, opacity);
+                material.BaseColor = { color.r, color.g, color.b, opacity };
+            }
+
+            float value = 0.0f;
+            if (source->Get(AI_MATKEY_METALLIC_FACTOR, value) == aiReturn_SUCCESS) {
+                material.Metallic = value;
+            }
+            if (source->Get(AI_MATKEY_ROUGHNESS_FACTOR, value) == aiReturn_SUCCESS) {
+                material.Roughness = value;
+            } else if (source->Get(AI_MATKEY_SHININESS, value) == aiReturn_SUCCESS && value > 0.0f) {
+                // Blinn-Phong exponent -> roughness (inverse of exponent = 2 / roughness^4 - 2), in [0.05, 1]
+                material.Roughness = glm::clamp(std::pow(2.0f / (value + 2.0f), 0.25f), 0.05f, 1.0f);
+            }
+
+            material.BaseColorTexture = textures.Get(source, { aiTextureType_BASE_COLOR, aiTextureType_DIFFUSE });
+            material.NormalTexture = textures.Get(source, { aiTextureType_NORMALS, aiTextureType_NORMAL_CAMERA });
+            material.MetallicRoughnessTexture = textures.Get(source, { aiTextureType_GLTF_METALLIC_ROUGHNESS });
+            return material;
+        }
 
         void CollectNodes(const aiNode* node, const glm::mat4& parentTransform, const std::vector<int32_t>& submeshOfMesh, std::vector<MeshNode>& nodes)
         {
@@ -141,6 +233,15 @@ namespace Ethane {
 
         CollectNodes(scene->mRootNode, glm::mat4(1.0f), submeshOfMesh, mesh->m_Nodes);
 
+        TextureCache textures(backend, scene, std::filesystem::path(path));
+        mesh->m_Materials.reserve(scene->mNumMaterials);
+        for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+            mesh->m_Materials.push_back(ImportMaterial(scene->mMaterials[i], textures));
+        }
+        if (mesh->m_Materials.empty()) {
+            mesh->m_Materials.emplace_back(); // MaterialIndex 0 must exist
+        }
+
         // Bounds of every placed submesh: transform the 8 corners of its box
         mesh->m_BoundingBox = EmptyBox();
         for (const MeshNode& node : mesh->m_Nodes) {
@@ -162,19 +263,27 @@ namespace Ethane {
         mesh->m_IndexBuffer->SetData(indices.data(), indexBytes);
 
         const AABB& bounds = mesh->m_BoundingBox;
-        ETH_CORE_INFO("Mesh {0}: {1} submeshes, {2} nodes, {3} vertices, {4} triangles, bounds ({5}, {6}, {7}) - ({8}, {9}, {10})",
-                      path, mesh->m_Submeshes.size(), mesh->m_Nodes.size(), mesh->m_VertexCount, mesh->m_IndexCount / 3,
+        ETH_CORE_INFO("Mesh {0}: {1} submeshes, {2} nodes, {3} materials, {4} vertices, {5} triangles, bounds ({6}, {7}, {8}) - ({9}, {10}, {11})",
+                      path, mesh->m_Submeshes.size(), mesh->m_Nodes.size(), mesh->m_Materials.size(), mesh->m_VertexCount, mesh->m_IndexCount / 3,
                       bounds.Min.x, bounds.Min.y, bounds.Min.z, bounds.Max.x, bounds.Max.y, bounds.Max.z);
         return mesh;
     }
 
-    void Mesh::Draw(ICommandList& commandList, const glm::mat4& model) const
+    void Mesh::Draw(ICommandList& commandList, const glm::mat4& model, std::span<const Ref<Material>> materials) const
     {
         commandList.BindVertexBuffer(*m_VertexBuffer);
         commandList.BindIndexBuffer(*m_IndexBuffer);
+        const Material* bound = nullptr;
         for (const MeshNode& node : m_Nodes)
         {
             const Submesh& submesh = m_Submeshes[node.SubmeshIndex];
+            if (!materials.empty()) {
+                const Material* material = (submesh.MaterialIndex < materials.size() ? materials[submesh.MaterialIndex] : materials[0]).get();
+                if (material != bound) {
+                    material->Bind(commandList);
+                    bound = material;
+                }
+            }
             const glm::mat4 transform = model * node.Transform;
             commandList.PushConstants(&transform, sizeof(transform));
             commandList.DrawIndexed(submesh.IndexCount, 1, submesh.BaseIndex, static_cast<int32_t>(submesh.BaseVertex));
