@@ -131,14 +131,24 @@ namespace Ethane
 
 			if (!m_Minimized)
 			{
-				// false: nothing to present this iteration (e.g. 0-sized window), layers still update
-				const bool frameStarted = m_WindowTarget->BeginFrame();
                 {
                     ETH_PROFILE_SCOPE("LayerStack OnUpdate");
 
                     for (Layer* layer : m_LayerStack)
                         layer->OnUpdate(timestep);
                 }
+
+				// false: nothing to present this iteration (e.g. 0-sized window), skip recording
+				if (m_WindowTarget->BeginFrame())
+				{
+					ETH_PROFILE_SCOPE("LayerStack OnRender");
+
+					ICommandList& commandList = m_WindowTarget->GetCommandList();
+					for (Layer* layer : m_LayerStack)
+						layer->OnRender(commandList);
+
+					m_WindowTarget->EndFrame();
+				}
 
                 if (m_ImGuiLayer)
                 {
@@ -152,8 +162,6 @@ namespace Ethane
                     m_ImGuiLayer->End();
                 }
 
-				if (frameStarted)
-					m_WindowTarget->EndFrame();
 			}
 		}
 	}

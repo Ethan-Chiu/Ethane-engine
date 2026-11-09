@@ -3,6 +3,7 @@
 #include "Ethane/Core/EntryPoint.h"
 
 #include "EditorLayer.h"
+#include "TriangleLayer.h"
 
 namespace Ethane {
 
@@ -13,6 +14,7 @@ namespace Ethane {
 			:Application("Ethane Editor", args)
 		{
 			PushLayer(new EditorLayer());
+			PushLayer(new TriangleLayer());
 		}
 
 		~EthaneEditor()

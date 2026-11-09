@@ -72,6 +72,8 @@ namespace Ethane {
 
         // `offset` is the destination offset in this buffer
         virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+
+        using VulkanBuffer::GetHandle; // for binding
     };
 
 
@@ -86,5 +88,7 @@ namespace Ethane {
 		virtual uint32_t GetCount() const override { return m_Size / sizeof(uint32_t); }
 
 		virtual uint32_t GetSize() const { return m_Size; }
+
+        using VulkanBuffer::GetHandle; // for binding
     };
 }

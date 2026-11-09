@@ -250,10 +250,25 @@ bool VulkanWindowTarget::BeginFrame() {
 
     // Begin implicitly resets the buffer (the pool was created with eResetCommandBuffer)
     frame.CommandBuffer.Begin(true, false, false);
-    m_RenderPass->Begin(frame.CommandBuffer.Get(), m_Extent.width, m_Extent.height, *m_Framebuffers[m_ImageIndex]);
+    const vk::raii::CommandBuffer& cmd = frame.CommandBuffer.Get();
+    m_RenderPass->Begin(cmd, m_Extent.width, m_Extent.height, *m_Framebuffers[m_ImageIndex]);
+
+    // Dynamic state of every pipeline (see VulkanPipeline). Set once here, it stays valid for all pipelines
+    // bound later in this command buffer. The negative height flips Y so +Y is up in clip space (like OpenGL),
+    // which keeps counter-clockwise front faces and GL-style projection matrices working.
+    const float width = static_cast<float>(m_Extent.width);
+    const float height = static_cast<float>(m_Extent.height);
+    cmd.setViewport(0, vk::Viewport{ .x = 0.0f, .y = height, .width = width, .height = -height, .minDepth = 0.0f, .maxDepth = 1.0f });
+    cmd.setScissor(0, vk::Rect2D{ .offset = { 0, 0 }, .extent = m_Extent });
+    cmd.setLineWidth(1.0f);
 
     m_FrameStarted = true;
     return true;
+}
+
+ICommandList& VulkanWindowTarget::GetCommandList() {
+    ETH_CORE_ASSERT(m_FrameStarted, "GetCommandList() is only valid between BeginFrame() and EndFrame()");
+    return m_Frames[m_CurrentFrame].CommandBuffer;
 }
 
 void VulkanWindowTarget::EndFrame() {

@@ -39,6 +39,8 @@ namespace Ethane
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
+		inline GfxBackendAPI& GetGfxBackend() { return *m_RendererBackend; }
+		inline IWindowTarget& GetWindowTarget() { return *m_WindowTarget; }
 
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 

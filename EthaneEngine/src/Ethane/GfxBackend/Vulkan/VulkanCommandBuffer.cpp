@@ -1,6 +1,8 @@
 #include "ethpch.h"
 #include "VulkanUtils.h"
 #include "VulkanCommandBuffer.h"
+#include "VulkanPipeline.h"
+#include "VulkanBuffer.h"
 
 
 namespace Ethane {
@@ -92,4 +94,34 @@ namespace Ethane {
         EndSingleUse(m_Device->GetQueue(type));
     }
 
+
+    void VulkanCommandBuffer::BindPipeline(const IPipeline& pipeline)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        static_cast<const VulkanPipeline&>(pipeline).Bind(m_CommandBuffer);
+    }
+
+    void VulkanCommandBuffer::BindVertexBuffer(const IVertexBuffer& buffer)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        m_CommandBuffer.bindVertexBuffers(0, static_cast<const VulkanVertexBuffer&>(buffer).GetHandle(), vk::DeviceSize{ 0 });
+    }
+
+    void VulkanCommandBuffer::BindIndexBuffer(const IIndexBuffer& buffer)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        m_CommandBuffer.bindIndexBuffer(static_cast<const VulkanIndexBuffer&>(buffer).GetHandle(), 0, vk::IndexType::eUint32);
+    }
+
+    void VulkanCommandBuffer::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        m_CommandBuffer.draw(vertexCount, instanceCount, firstVertex, firstInstance);
+    }
+
+    void VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        m_CommandBuffer.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+    }
 }

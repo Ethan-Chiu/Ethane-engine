@@ -1,9 +1,10 @@
 #pragma once
+#include "Ethane/GfxBackend/GfxObject.h"
 #include "VulkanContext.h"
 
 namespace Ethane {
 
-    class VulkanCommandBuffer
+    class VulkanCommandBuffer : public ICommandList
     {
     public:
         enum class CommandBufferState {
@@ -34,6 +35,13 @@ namespace Ethane {
 
         void AllocateAndBeginSingleUse(QueueFamilyTypes type);
         void EndSingleUse(QueueFamilyTypes type);
+
+        // ICommandList: recording (the buffer must be in the RECORDING state)
+        virtual void BindPipeline(const IPipeline& pipeline) override;
+        virtual void BindVertexBuffer(const IVertexBuffer& buffer) override;
+        virtual void BindIndexBuffer(const IIndexBuffer& buffer) override;
+        virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
+        virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override;
 
         const vk::raii::CommandBuffer& Get() const { return m_CommandBuffer; }
         vk::CommandBuffer GetHandle() const { return *m_CommandBuffer; }

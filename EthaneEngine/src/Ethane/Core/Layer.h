@@ -6,6 +6,8 @@
 
 namespace Ethane {
 
+	class ICommandList;
+
 	class Layer
 	{
 	public:
@@ -15,6 +17,8 @@ namespace Ethane {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate(Timestep ts) {}
+		// Called after OnUpdate, only when a frame is being rendered: record draw commands here
+		virtual void OnRender(ICommandList& commandList) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

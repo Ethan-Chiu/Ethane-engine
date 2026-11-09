@@ -11,23 +11,6 @@
 
 namespace Ethane {
 
-class IWindowTarget : public RefCounted<IWindowTarget>
-{
-public:
-    virtual ~IWindowTarget() = default;
-    virtual void Destroy() = 0;
-
-    // The window's framebuffer changed size: the swapchain is rebuilt before the next frame
-    virtual void Resize(uint32_t width, uint32_t height) = 0;
-
-    // Waits for a free frame slot, acquires the next image and starts recording into it.
-    // Returns false when there is nothing to render to this frame (e.g. a 0-sized window);
-    // call EndFrame() only when BeginFrame() returned true.
-    virtual bool BeginFrame() = 0;
-    // Submits the frame's commands and presents the image
-    virtual void EndFrame() = 0;
-};
-
 class IBuffer : public RefCounted<IBuffer>
 {
 public:
@@ -154,4 +137,43 @@ public:
 
     virtual void Destroy() = 0;
 };
+
+// Records GPU commands into the frame being built. Handed to Layer::OnRender(), valid only during
+// that call; recording happens inside the window target's render pass, with the viewport and scissor
+// already covering the whole window (y up, like OpenGL).
+class ICommandList
+{
+public:
+    virtual ~ICommandList() = default;
+
+    virtual void BindPipeline(const IPipeline& pipeline) = 0;
+    virtual void BindVertexBuffer(const IVertexBuffer& buffer) = 0;
+    virtual void BindIndexBuffer(const IIndexBuffer& buffer) = 0; // 32-bit indices
+
+    virtual void Draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) = 0;
+    virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0) = 0;
+};
+
+class IWindowTarget : public RefCounted<IWindowTarget>
+{
+public:
+    virtual ~IWindowTarget() = default;
+    virtual void Destroy() = 0;
+
+    // The window's framebuffer changed size: the swapchain is rebuilt before the next frame
+    virtual void Resize(uint32_t width, uint32_t height) = 0;
+
+    // Waits for a free frame slot, acquires the next image and starts recording into it.
+    // Returns false when there is nothing to render to this frame (e.g. a 0-sized window);
+    // call EndFrame() only when BeginFrame() returned true.
+    virtual bool BeginFrame() = 0;
+    // Submits the frame's commands and presents the image
+    virtual void EndFrame() = 0;
+
+    // Valid between BeginFrame() and EndFrame()
+    virtual ICommandList& GetCommandList() = 0;
+    // The render pass frames are recorded in: pipelines drawing to the window must be created with it
+    virtual RefCountPtr<IRenderPass> GetRenderPass() const = 0;
+};
+
 }

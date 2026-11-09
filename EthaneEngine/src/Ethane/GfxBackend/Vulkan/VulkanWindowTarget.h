@@ -35,8 +35,9 @@ public:
 
     // Valid between BeginFrame() and EndFrame(): the command buffer recording the frame,
     // already inside the window's render pass (which clears the image)
-    const VulkanCommandBuffer& GetCurrentCommandBuffer() const { return m_Frames[m_CurrentFrame].CommandBuffer; }
-    const VulkanRenderPass& GetRenderPass() const { return *m_RenderPass; }
+    virtual ICommandList& GetCommandList() override;
+    // NOTE: recreated if the swapchain format ever changes, which would make existing pipelines incompatible
+    virtual RefCountPtr<IRenderPass> GetRenderPass() const override { return RefCountPtr<IRenderPass>(m_RenderPass); }
     vk::Extent2D GetExtent() const { return m_Extent; }
     
 private:
