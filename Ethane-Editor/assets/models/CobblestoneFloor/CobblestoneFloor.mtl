@@ -1,0 +1,6 @@
+# Textures are resolved relative to this model's folder
+newmtl Cobblestone
+Kd 1.0 1.0 1.0
+Ns 8
+map_Kd ../../textures/FloorSandStone/cobblestone.png
+norm ../../textures/FloorSandStone/cobblestone_NRM.png

@@ -7,9 +7,10 @@
 
 namespace Ethane {
 
-	// The default meshes (res/meshes/default/*.fbx) loaded through assimp, lined up on a floor and
-	// seen through the EditorCamera (Alt + left drag: orbit, Alt + middle drag: pan, Alt + right drag /
-	// scroll: zoom). Shader: assets/shaders/mesh.glsl.
+	// The default meshes (res/meshes/default/*.fbx) loaded through assimp, lined up on a textured,
+	// normal-mapped floor (assets/models/CobblestoneFloor, an OBJ + MTL) and seen through the EditorCamera
+	// (Alt + left drag: orbit, Alt + middle drag: pan, Alt + right drag / scroll: zoom).
+	// Shader: assets/shaders/mesh.glsl (set 0: camera, set 1: Ethane::Material).
 	class MeshLayer : public Layer
 	{
 	public:
@@ -27,7 +28,7 @@ namespace Ethane {
 			Ref<Mesh> MeshData;
 			glm::mat4 Normalize{ 1.0f }; // fits the mesh in a unit box resting on y = 0, centered on x/z
 			glm::vec3 Position{ 0.0f };
-			glm::vec4 Color{ 1.0f };
+			std::vector<Ref<Material>> Materials; // by submesh material index
 			bool Spin = true;
 		};
 

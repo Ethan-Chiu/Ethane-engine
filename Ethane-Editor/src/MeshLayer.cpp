@@ -6,10 +6,11 @@
 namespace Ethane {
 
 	namespace {
-		// layout(set = 0, binding = 0) uniform Camera { mat4 viewproj; }
+		// layout(set = 0, binding = 0) uniform Camera { mat4 viewproj; vec4 position; }
 		struct CameraData
 		{
 			glm::mat4 ViewProj;
+			glm::vec4 Position;
 		};
 
 		// Scales the mesh's bounding box to fit a `size` cube, resting on y = 0, centered on x / z
@@ -27,34 +28,6 @@ namespace Ethane {
 		Application& app = Application::Get();
 		GfxBackendAPI& backend = app.GetGfxBackend();
 
-		struct Entry { const char* Name; glm::vec4 Color; };
-		const Entry entries[] = {
-			{ "Cube",     { 0.85f, 0.35f, 0.30f, 1.0f } },
-			{ "Sphere",   { 0.95f, 0.70f, 0.25f, 1.0f } },
-			{ "Cylinder", { 0.45f, 0.75f, 0.35f, 1.0f } },
-			{ "Cone",     { 0.30f, 0.65f, 0.80f, 1.0f } },
-			{ "Torus",    { 0.55f, 0.45f, 0.85f, 1.0f } },
-			{ "Capsule",  { 0.85f, 0.45f, 0.70f, 1.0f } },
-		};
-		const float spacing = 1.6f;
-		const float firstX = -spacing * 0.5f * static_cast<float>(std::size(entries) - 1);
-		for (size_t i = 0; i < std::size(entries); i++)
-		{
-			Ref<Mesh> mesh = Mesh::Load(backend, std::string("res/meshes/default/") + entries[i].Name + ".fbx");
-			if (!mesh) {
-				continue; // logged by Mesh::Load
-			}
-			const glm::mat4 fit = FitToBox(mesh->GetBoundingBox(), 1.0f);
-			m_Models.push_back(Model{ mesh, fit, { firstX + spacing * static_cast<float>(i), 0.0f, 0.0f }, entries[i].Color, true });
-		}
-		if (Ref<Mesh> plane = Mesh::Load(backend, "res/meshes/default/Plane.fbx")) {
-			const AABB& bounds = plane->GetBoundingBox();
-			const float size = std::max(bounds.Max.x - bounds.Min.x, bounds.Max.z - bounds.Min.z);
-			const glm::mat4 fit = glm::scale(glm::mat4(1.0f), glm::vec3(12.0f / std::max(size, 1e-6f)))
-			                    * glm::translate(glm::mat4(1.0f), -0.5f * (bounds.Min + bounds.Max));
-			m_Models.push_back(Model{ plane, fit, { 0.0f, 0.0f, 0.0f }, { 0.6f, 0.6f, 0.6f, 1.0f }, false });
-		}
-
 		m_Shader = backend.CreateShader("assets/shaders/mesh.glsl");
 
 		PipelineSpecification spec;
@@ -63,6 +36,56 @@ namespace Ethane {
 		spec.Layout = Mesh::GetVertexLayout();
 		spec.CullMode = CullMode::BACK;
 		m_Pipeline = backend.CreatePipeline(spec);
+
+		// The fbx files' own materials, recolored; the cube's base color is a texture instead
+		struct Entry { const char* Name; glm::vec4 Color; float Metallic; float Roughness; const char* Texture; };
+		const Entry entries[] = {
+			{ "Cube",     { 1.00f, 1.00f, 1.00f, 1.0f }, 0.0f, 0.6f, "assets/textures/test.png" },
+			{ "Sphere",   { 0.95f, 0.70f, 0.25f, 1.0f }, 1.0f, 0.3f, nullptr }, // gold-ish metal
+			{ "Cylinder", { 0.45f, 0.75f, 0.35f, 1.0f }, 0.0f, 0.9f, nullptr },
+			{ "Cone",     { 0.30f, 0.65f, 0.80f, 1.0f }, 0.0f, 0.2f, nullptr },
+			{ "Torus",    { 0.55f, 0.45f, 0.85f, 1.0f }, 1.0f, 0.5f, nullptr },
+			{ "Capsule",  { 0.85f, 0.45f, 0.70f, 1.0f }, 0.0f, 0.4f, nullptr },
+		};
+		const float spacing = 1.6f;
+		const float firstX = -spacing * 0.5f * static_cast<float>(std::size(entries) - 1);
+		for (size_t i = 0; i < std::size(entries); i++)
+		{
+			const Entry& entry = entries[i];
+			Ref<Mesh> mesh = Mesh::Load(backend, std::string("res/meshes/default/") + entry.Name + ".fbx");
+			if (!mesh) {
+				continue; // logged by Mesh::Load
+			}
+			std::vector<MaterialData> materials = mesh->GetMaterials();
+			for (MaterialData& material : materials) {
+				material.BaseColor = entry.Color;
+				material.Metallic = entry.Metallic;
+				material.Roughness = entry.Roughness;
+				if (entry.Texture) {
+					material.BaseColorTexture = backend.LoadTexture2D(entry.Texture);
+				}
+			}
+			m_Models.push_back(Model{
+				.MeshData  = mesh,
+				.Normalize = FitToBox(mesh->GetBoundingBox(), 1.0f),
+				.Position  = { firstX + spacing * static_cast<float>(i), 0.0f, 0.0f },
+				.Materials = Material::CreateAll(backend, m_Shader, materials),
+				.Spin      = true});
+		}
+
+		// Textures and factors straight from the file's .mtl
+		if (Ref<Mesh> floor = Mesh::Load(backend, "assets/models/CobblestoneFloor/CobblestoneFloor.obj")) {
+			const AABB& bounds = floor->GetBoundingBox();
+			const float size = std::max(bounds.Max.x - bounds.Min.x, bounds.Max.z - bounds.Min.z);
+			const glm::mat4 fit = glm::scale(glm::mat4(1.0f), glm::vec3(12.0f / std::max(size, 1e-6f)))
+			                    * glm::translate(glm::mat4(1.0f), -0.5f * (bounds.Min + bounds.Max));
+			m_Models.push_back(Model{
+				.MeshData  = floor,
+				.Normalize = fit,
+				.Position  = { 0.0f, 0.0f, 0.0f },
+				.Materials = Material::CreateAll(backend, m_Shader, floor->GetMaterials()),
+				.Spin      = false});
+		}
 
 		m_CameraBuffer = backend.CreateUniformBuffer(sizeof(CameraData));
 		m_BindingSet = backend.CreateBindingSet(m_Shader, 0);
@@ -97,7 +120,7 @@ namespace Ethane {
 
 	void MeshLayer::OnRender(ICommandList& commandList)
 	{
-		const CameraData camera{ m_Camera.GetViewProjection() };
+		const CameraData camera{ m_Camera.GetViewProjection(), glm::vec4(m_Camera.GetPosition(), 1.0f) };
 		m_CameraBuffer->SetData(&camera, sizeof(camera));
 
 		commandList.BindPipeline(*m_Pipeline);
@@ -109,9 +132,7 @@ namespace Ethane {
 			if (model.Spin) {
 				transform = glm::rotate(transform, m_Time * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 			}
-			// color at offset 64, after the model matrix Mesh::Draw() pushes
-			commandList.PushConstants(&model.Color, sizeof(model.Color), sizeof(glm::mat4));
-			model.MeshData->Draw(commandList, transform * model.Normalize);
+			model.MeshData->Draw(commandList, transform * model.Normalize, model.Materials);
 		}
 	}
 
