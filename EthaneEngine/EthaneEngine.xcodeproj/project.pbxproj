@@ -18,6 +18,7 @@
 		1C4A5799AED8218B17B0C5D9 /* Log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FCB3E61D337001311DAA4A1 /* Log.cpp */; };
 		2514604DFC678B7F75D4F68D /* VulkanCommandBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1811CF15DF768A076A2E5D55 /* VulkanCommandBuffer.cpp */; };
 		28753B166C890C48605A9156 /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1572F5E4279D050F8407D9E /* Scene.cpp */; };
+		2903465DEF913DCF5D93649D /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */; };
 		2AE10AFBD256A6AD7B1BB13B /* VulkanDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CF24CCE3ADC7685562A96B23 /* VulkanDevice.cpp */; };
 		2C2349C30AC5E535BFA7E803 /* EditorCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 478665CB472948FD817DFC0B /* EditorCamera.cpp */; };
 		32724596C26820487F5CCBD6 /* VulkanShaderCompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B709393EDCB133B0FAE1B77E /* VulkanShaderCompiler.cpp */; };
@@ -245,6 +246,7 @@
 		4A3BCAFB0CFC2B6D6A31093B /* color_space.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = color_space.inl; path = vendor/glm/glm/gtx/color_space.inl; sourceTree = "<group>"; };
 		4AE69B3365B309E56983A173 /* GfxSmokeTest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GfxSmokeTest.h; path = src/Ethane/GfxBackend/GfxSmokeTest.h; sourceTree = "<group>"; };
 		4B069BE3E8E79C95C065E223 /* WindowsWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WindowsWindow.h; path = src/Ethane/Platform/Windows/WindowsWindow.h; sourceTree = "<group>"; };
+		4B498B0F98AC81410ECB814F /* Mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Mesh.h; path = src/Ethane/Renderer/Mesh.h; sourceTree = "<group>"; };
 		4CCB29233DC29715A9C61763 /* vector_packing.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_packing.inl; path = vendor/glm/glm/ext/vector_packing.inl; sourceTree = "<group>"; };
 		4D177F97E771688923A9CDD7 /* quaternion_geometric.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_geometric.hpp; path = vendor/glm/glm/ext/quaternion_geometric.hpp; sourceTree = "<group>"; };
 		4DE070DF41DFBA51C6CACF1F /* normalize_dot.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = normalize_dot.hpp; path = vendor/glm/glm/gtx/normalize_dot.hpp; sourceTree = "<group>"; };
@@ -505,6 +507,7 @@
 		BA5757B97F0CAE2B337B55F9 /* vector_float2_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_float2_precision.hpp; path = vendor/glm/glm/ext/vector_float2_precision.hpp; sourceTree = "<group>"; };
 		BB07D3FCFF56796E417DB23C /* Entity.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Entity.cpp; path = src/Ethane/Scene/Entity.cpp; sourceTree = "<group>"; };
 		BB24FEAF99C79A214EA99CEF /* scalar_relational.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_relational.hpp; path = vendor/glm/glm/ext/scalar_relational.hpp; sourceTree = "<group>"; };
+		BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Mesh.cpp; path = src/Ethane/Renderer/Mesh.cpp; sourceTree = "<group>"; };
 		BC4C8A035E3625F5555D3843 /* transform2.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = transform2.inl; path = vendor/glm/glm/gtx/transform2.inl; sourceTree = "<group>"; };
 		BCE775C34F753FB5B84DE403 /* common.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = common.hpp; path = vendor/glm/glm/gtx/common.hpp; sourceTree = "<group>"; };
 		BDB2212D9CCF3B5F78D8976D /* type_vec4.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_vec4.inl; path = vendor/glm/glm/detail/type_vec4.inl; sourceTree = "<group>"; };
@@ -1139,6 +1142,8 @@
 				233AB207B8B17139274DC847 /* Camera.h */,
 				478665CB472948FD817DFC0B /* EditorCamera.cpp */,
 				646071D5437D8C071F86E815 /* EditorCamera.h */,
+				BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */,
+				4B498B0F98AC81410ECB814F /* Mesh.h */,
 			);
 			name = Renderer;
 			sourceTree = "<group>";
@@ -1666,6 +1671,7 @@
 				0150C26DC30953DF6A2420AD /* WindowsPlatformUtils.cpp in Sources */,
 				BF483ED1557150C316D7AD11 /* WindowsWindow.cpp in Sources */,
 				2C2349C30AC5E535BFA7E803 /* EditorCamera.cpp in Sources */,
+				2903465DEF913DCF5D93649D /* Mesh.cpp in Sources */,
 				9F1963943766494665AD49D4 /* Entity.cpp in Sources */,
 				28753B166C890C48605A9156 /* Scene.cpp in Sources */,
 				E6F7C808F6DCF43AE3507E48 /* SceneCamera.cpp in Sources */,

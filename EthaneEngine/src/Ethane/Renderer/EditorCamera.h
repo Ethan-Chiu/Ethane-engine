@@ -20,6 +20,8 @@ namespace Ethane{
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
+		// Radians. Positive pitch looks down at the focal point; yaw orbits around the vertical axis.
+		inline void SetPitchYaw(float pitch, float yaw) { m_Pitch = pitch; m_Yaw = yaw; UpdateView(); }
 
 		inline void SetViewportSize(float width, float height) 
 		{ 
