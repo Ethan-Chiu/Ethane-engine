@@ -416,6 +416,7 @@ VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
 
     // retrieving queue handles
     m_GraphicsQueue = m_LogicalDevice.getQueue(indices.Graphics.value(), 0);
+    m_PresentQueue  = m_LogicalDevice.getQueue(indices.Present.value(), 0);
     m_ComputeQueue  = m_LogicalDevice.getQueue(indices.Compute.value(), 0);
     m_TransferQueue = m_LogicalDevice.getQueue(indices.Transfer.value(), 0);
 
@@ -447,6 +448,7 @@ void VulkanDevice::Destroy()
 
     // queues aren't owned objects, just drop the handles
     m_GraphicsQueue = nullptr;
+    m_PresentQueue  = nullptr;
     m_ComputeQueue  = nullptr;
     m_TransferQueue = nullptr;
 

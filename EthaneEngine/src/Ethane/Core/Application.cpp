@@ -37,7 +37,7 @@ namespace Ethane
         m_WindowTarget = m_RendererBackend->CreateWindowTarget(m_Window->GetNativeWindow());
         if (GfxSmokeTest::IsEnabled()) {
             GfxSmokeTest::Run(*m_RendererBackend); // ETH_GFX_SMOKE_TEST=1|exit, Debug only
-            m_CloseAfterStartup = GfxSmokeTest::ExitAfterRun();
+            m_SmokeTestDrivesFrames = GfxSmokeTest::ExitAfterRun();
         }
         
 //		RendererConfig config = {
@@ -121,9 +121,9 @@ namespace Ethane
 			//            ETH_CORE_INFO("fps: {0}", 1/(frameTime/frameCount));
 
 			m_Window->PollEvent();
-			if (m_CloseAfterStartup) {
+			if (m_SmokeTestDrivesFrames && GfxSmokeTest::TickFrame(m_Window->GetNativeWindow())) {
 				// same path as the user closing the window (the close callback fires inside PollEvent)
-				m_CloseAfterStartup = false;
+				m_SmokeTestDrivesFrames = false;
 				WindowCloseEvent closeEvent;
 				OnEvent(closeEvent);
 			}
@@ -131,7 +131,8 @@ namespace Ethane
 
 			if (!m_Minimized)
 			{
-//				Renderer::BeginFrame();
+				// false: nothing to present this iteration (e.g. 0-sized window), layers still update
+				const bool frameStarted = m_WindowTarget->BeginFrame();
                 {
                     ETH_PROFILE_SCOPE("LayerStack OnUpdate");
 
@@ -151,7 +152,8 @@ namespace Ethane
                     m_ImGuiLayer->End();
                 }
 
-//				Renderer::EndFrame();
+				if (frameStarted)
+					m_WindowTarget->EndFrame();
 			}
 		}
 	}
@@ -195,6 +197,7 @@ namespace Ethane
 
 		m_Minimized = false;
 		m_Window->OnResize(e.GetWidth(), e.GetHeight());
+		m_WindowTarget->Resize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 }

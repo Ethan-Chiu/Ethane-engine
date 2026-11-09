@@ -16,6 +16,16 @@ class IWindowTarget : public RefCounted<IWindowTarget>
 public:
     virtual ~IWindowTarget() = default;
     virtual void Destroy() = 0;
+
+    // The window's framebuffer changed size: the swapchain is rebuilt before the next frame
+    virtual void Resize(uint32_t width, uint32_t height) = 0;
+
+    // Waits for a free frame slot, acquires the next image and starts recording into it.
+    // Returns false when there is nothing to render to this frame (e.g. a 0-sized window);
+    // call EndFrame() only when BeginFrame() returned true.
+    virtual bool BeginFrame() = 0;
+    // Submits the frame's commands and presents the image
+    virtual void EndFrame() = 0;
 };
 
 class IBuffer : public RefCounted<IBuffer>

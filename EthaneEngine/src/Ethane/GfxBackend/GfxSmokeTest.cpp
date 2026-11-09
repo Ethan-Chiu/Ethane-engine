@@ -7,6 +7,8 @@
 #include "GfxBackendAPI.h"
 #include "Ethane/Core/Log.h"
 
+#include <GLFW/glfw3.h>
+
 #include <cstdlib>
 #include <cstring>
 
@@ -85,6 +87,28 @@ void Run(GfxBackendAPI& backend)
     }
 
     ETH_CORE_INFO("[GfxSmokeTest] PASSED (all resources released)");
+}
+
+bool TickFrame(void* glfwWindow)
+{
+    constexpr int kResizeAtFrame = 5;
+    constexpr int kCloseAtFrame  = 30;
+    static int s_Frame = 0;
+
+    s_Frame++;
+    if (s_Frame == kResizeAtFrame) {
+        GLFWwindow* window = static_cast<GLFWwindow*>(glfwWindow);
+        int width = 0, height = 0;
+        glfwGetWindowSize(window, &width, &height);
+        // the framebuffer-size callback fires on a later poll and goes through Application::OnWindowResize
+        glfwSetWindowSize(window, width + 120, height + 80);
+        ETH_CORE_INFO("[GfxSmokeTest] resizing window {0}x{1} -> {2}x{3}", width, height, width + 120, height + 80);
+    }
+    if (s_Frame == kCloseAtFrame) {
+        ETH_CORE_INFO("[GfxSmokeTest] {0} frames run, closing", s_Frame);
+        return true;
+    }
+    return false;
 }
 
 }

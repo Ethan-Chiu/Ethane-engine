@@ -55,7 +55,7 @@ namespace Ethane
         RefCountPtr<IWindowTarget> m_WindowTarget;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true;
-		bool m_CloseAfterStartup = false; // GfxSmokeTest exit mode: simulate a window close on the first frame
+		bool m_SmokeTestDrivesFrames = false; // GfxSmokeTest exit mode: resizes the window, then closes it after a few frames
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;

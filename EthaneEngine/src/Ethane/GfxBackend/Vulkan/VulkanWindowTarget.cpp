@@ -8,6 +8,7 @@
 #include "ethpch.h"
 #include "VulkanWindowTarget.h"
 #include "VulkanUtils.h"
+#include "VulkanImageUtils.h"
 
 namespace Ethane {
 
@@ -27,11 +28,30 @@ VulkanWindowTarget::VulkanWindowTarget(VulkanContext* context, GLFWwindow* windo
     if (!m_Context->GetPhysicalDevice().IsInitialized()) {
         m_Context->InitDevice(*m_Surface);
     }
-    
-    CreateSwapchain();
+
+    const VulkanDevice& device = m_Context->GetDevice();
+    m_Frames.reserve(kMaxFramesInFlight);
+    for (uint32_t i = 0; i < kMaxFramesInFlight; i++) {
+        m_Frames.emplace_back(device);
+    }
+
+    if (CreateSwapchain()) {
+        CreateSwapchainResources();
+    } else {
+        m_NeedsRecreate = true; // window has no area yet, try again on the next frame
+    }
 }
 
-void VulkanWindowTarget::CreateSwapchain() {
+VulkanWindowTarget::FrameData::FrameData(const VulkanDevice& device)
+    : CommandBuffer(&device)
+{
+    CommandBuffer.Allocate(device.GetGraphicsCommandPool(), true);
+    ImageAvailable = vk::raii::Semaphore(device.Get(), vk::SemaphoreCreateInfo{});
+    // created signaled, so the first wait on each frame slot returns immediately
+    InFlight = vk::raii::Fence(device.Get(), vk::FenceCreateInfo{ .flags = vk::FenceCreateFlagBits::eSignaled });
+}
+
+bool VulkanWindowTarget::CreateSwapchain() {
     const vk::raii::Device& device = m_Context->GetDevice().Get();
     const auto& physicalDevice = m_Context->GetPhysicalDevice();
 
@@ -40,10 +60,13 @@ void VulkanWindowTarget::CreateSwapchain() {
 
     const vk::SurfaceFormatKHR surfaceFormat = ChooseSurfaceFormat(swapChainSupport.formats);
     const vk::PresentModeKHR presentMode = ChoosePresentMode(swapChainSupport.presentModes);
-    m_Extent = ChooseExtent(capabilities);
-    m_Width = m_Extent.width;
-    m_Height = m_Extent.height;
-    ETH_CORE_INFO("width: {0}, height: {1}", m_Width, m_Height);
+    const vk::Extent2D extent = ChooseExtent(capabilities);
+    if (extent.width == 0 || extent.height == 0) {
+        // e.g. minimized: a swapchain can't have a 0 extent, keep the current one until the window has an area again
+        return false;
+    }
+    m_Extent = extent;
+    ETH_CORE_INFO("width: {0}, height: {1}", m_Extent.width, m_Extent.height);
 
     m_ImageFormat = surfaceFormat.format;
     m_ImageColorSpace = surfaceFormat.colorSpace;
@@ -55,9 +78,6 @@ void VulkanWindowTarget::CreateSwapchain() {
     {
         imageCount = capabilities.maxImageCount;
     }
-
-    m_MaxFramesInFlight = imageCount - 1;
-    ETH_CORE_TRACE("Max frames in flight is {0}", m_MaxFramesInFlight);
 
     // find the transformation of the surface: prefer a non-rotated transform
     const vk::SurfaceTransformFlagBitsKHR preTransform =
@@ -109,9 +129,12 @@ void VulkanWindowTarget::CreateSwapchain() {
     vk::raii::SwapchainKHR newSwapchain(device, swapchainCreateInfo);
     if (*m_Swapchain)
     {
-        ETH_CORE_WARN("Clean up old swapchain");
+        ETH_CORE_INFO("Recreating swapchain ({0}x{1})", m_Extent.width, m_Extent.height);
         device.waitIdle();
-        m_ImageViews.clear(); // views of the old images go first...
+        // everything referencing the old images goes first...
+        m_RenderFinished.clear();
+        m_Framebuffers.clear();
+        m_ImageViews.clear();
     }
     m_Swapchain = std::move(newSwapchain); // ...then move-assignment destroys the old swapchain
 
@@ -135,35 +158,152 @@ void VulkanWindowTarget::CreateSwapchain() {
                 .baseArrayLayer = 0,
                 .layerCount     = 1}});
     }
-    
-//    if (m_ImageAvailableSemaphores.empty() || m_RenderFinishedSemaphores.empty() || m_InFlightFences.empty())
-//    {
-//        ETH_CORE_TRACE("Create Synchronization Objects");
-//        m_ImageAvailableSemaphores.resize(m_MaxFramesInFlight);
-//        m_RenderFinishedSemaphores.resize(m_MaxFramesInFlight);
-//        m_InFlightFences.resize(m_MaxFramesInFlight);
-//        m_ImagesInFlight.resize(m_Images.size(), VK_NULL_HANDLE);
-//
-//        VkSemaphoreCreateInfo semaphoreInfo{};
-//        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-//
-//        VkFenceCreateInfo fenceInfo{};
-//        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-//        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-//
-//        for (size_t i = 0; i < m_MaxFramesInFlight; i++) {
-//            VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]));
-//            VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]));
-//            VK_CHECK_RESULT(vkCreateFence(device, &fenceInfo, nullptr, &m_InFlightFences[i]));
-//        }
-//    }
 
     ETH_CORE_INFO("SwapChain created");
+    return true;
+}
+
+void VulkanWindowTarget::CreateSwapchainResources() {
+    const VulkanDevice& device = m_Context->GetDevice();
+
+    // The render pass only depends on the image format, which normally survives a recreation
+    if (!m_RenderPass || m_RenderPassFormat != m_ImageFormat) {
+        const ImageFormat format = ImageUtils::VulkanImageFormatToImageFormat(static_cast<VkFormat>(m_ImageFormat));
+        ETH_CORE_ASSERT(format != ImageFormat::None, "Swapchain format has no ImageFormat equivalent");
+        m_Framebuffers.clear(); // built against the old render pass
+        m_RenderPass = MakeRefCountPtr<VulkanRenderPass>(&device, std::vector<ImageFormat>{ format }, ImageFormat::None, true, true);
+        m_RenderPassFormat = m_ImageFormat;
+    }
+
+    m_Framebuffers.clear();
+    m_Framebuffers.reserve(m_ImageCount);
+    for (const vk::raii::ImageView& view : m_ImageViews) {
+        const vk::ImageView attachment = *view;
+        m_Framebuffers.emplace_back(device.Get(), vk::FramebufferCreateInfo{
+            .renderPass      = m_RenderPass->GetHandle(),
+            .attachmentCount = 1,
+            .pAttachments    = &attachment,
+            .width           = m_Extent.width,
+            .height          = m_Extent.height,
+            .layers          = 1});
+    }
+
+    m_RenderFinished.clear();
+    m_RenderFinished.reserve(m_ImageCount);
+    for (uint32_t i = 0; i < m_ImageCount; i++) {
+        m_RenderFinished.emplace_back(device.Get(), vk::SemaphoreCreateInfo{});
+    }
+}
+
+bool VulkanWindowTarget::RecreateSwapchain() {
+    if (!CreateSwapchain()) {
+        return false; // still 0-sized, m_NeedsRecreate stays set
+    }
+    CreateSwapchainResources();
+    m_NeedsRecreate = false;
+    return true;
+}
+
+void VulkanWindowTarget::Resize(uint32_t width, uint32_t height) {
+    // The new extent is read from the surface when the swapchain is rebuilt; this only marks it stale.
+    // Recreating here would be wasteful: a drag-resize sends many events per frame.
+    ETH_CORE_TRACE("Window target resized to {0}x{1}", width, height);
+    m_NeedsRecreate = true;
+}
+
+bool VulkanWindowTarget::BeginFrame() {
+    ETH_CORE_ASSERT(!m_FrameStarted, "BeginFrame() called twice without EndFrame()");
+    if (!*m_Surface) {
+        return false;
+    }
+    if (m_NeedsRecreate && !RecreateSwapchain()) {
+        return false;
+    }
+
+    const vk::raii::Device& device = m_Context->GetDevice().Get();
+    FrameData& frame = m_Frames[m_CurrentFrame];
+
+    // Wait until the GPU is done with this frame slot (its command buffer and semaphore are free again)
+    [[maybe_unused]] const vk::Result waitResult = device.waitForFences(*frame.InFlight, vk::True, UINT64_MAX);
+    ETH_CORE_ASSERT(waitResult == vk::Result::eSuccess, "Waiting for the in-flight fence failed");
+
+    try {
+        const auto [result, imageIndex] = m_Swapchain.acquireNextImage(UINT64_MAX, *frame.ImageAvailable, nullptr);
+        ETH_CORE_ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Image acquisition timed out");
+        if (result == vk::Result::eSuboptimalKHR) {
+            m_NeedsRecreate = true; // still presentable: render this frame, rebuild before the next one
+        }
+        m_ImageIndex = imageIndex;
+    } catch (const vk::OutOfDateKHRError&) {
+        // nothing was acquired and the semaphore isn't signaled; the fence wasn't reset, so the slot stays usable
+        m_NeedsRecreate = true;
+        RecreateSwapchain();
+        return false;
+    }
+
+    // Only reset once we know we'll submit: resetting and then bailing out would deadlock the next wait
+    device.resetFences(*frame.InFlight);
+
+    // Begin implicitly resets the buffer (the pool was created with eResetCommandBuffer)
+    frame.CommandBuffer.Begin(true, false, false);
+    m_RenderPass->Begin(frame.CommandBuffer.Get(), m_Extent.width, m_Extent.height, *m_Framebuffers[m_ImageIndex]);
+
+    m_FrameStarted = true;
+    return true;
+}
+
+void VulkanWindowTarget::EndFrame() {
+    ETH_CORE_ASSERT(m_FrameStarted, "EndFrame() called without a successful BeginFrame()");
+    m_FrameStarted = false;
+
+    const VulkanDevice& device = m_Context->GetDevice();
+    FrameData& frame = m_Frames[m_CurrentFrame];
+
+    m_RenderPass->End(frame.CommandBuffer.Get());
+    frame.CommandBuffer.End();
+
+    // The color attachment write is the first use of the acquired image, so only that stage waits for it
+    const vk::Semaphore waitSemaphore = *frame.ImageAvailable;
+    const vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    const vk::CommandBuffer commandBuffer = frame.CommandBuffer.GetHandle();
+    const vk::Semaphore renderFinished = *m_RenderFinished[m_ImageIndex];
+
+    device.GetGraphicsQueue().submit(vk::SubmitInfo{
+        .waitSemaphoreCount   = 1,
+        .pWaitSemaphores      = &waitSemaphore,
+        .pWaitDstStageMask    = &waitStage,
+        .commandBufferCount   = 1,
+        .pCommandBuffers      = &commandBuffer,
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores    = &renderFinished}, *frame.InFlight);
+    frame.CommandBuffer.UpdateSubmitted();
+
+    const vk::SwapchainKHR swapchain = *m_Swapchain;
+    try {
+        const vk::Result result = device.GetPresentQueue().presentKHR(vk::PresentInfoKHR{
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores    = &renderFinished,
+            .swapchainCount     = 1,
+            .pSwapchains        = &swapchain,
+            .pImageIndices      = &m_ImageIndex});
+        if (result == vk::Result::eSuboptimalKHR) {
+            m_NeedsRecreate = true;
+        }
+    } catch (const vk::OutOfDateKHRError&) {
+        m_NeedsRecreate = true; // rebuilt at the start of the next frame
+    }
+
+    m_CurrentFrame = (m_CurrentFrame + 1) % kMaxFramesInFlight;
 }
 
 void VulkanWindowTarget::Destroy() {
-    if (*m_Swapchain || !m_ImageViews.empty()) {
+    if (*m_Swapchain || !m_Frames.empty()) {
+        // frame slots may still be executing / being presented
         m_Context->GetDevice().Get().waitIdle();
+        m_Frames.clear();
+        m_RenderFinished.clear();
+        m_Framebuffers.clear();
+        m_RenderPass.reset();
         m_ImageViews.clear();
         m_Images.clear();
         m_Swapchain = nullptr;

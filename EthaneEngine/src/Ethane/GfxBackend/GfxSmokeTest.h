@@ -8,7 +8,8 @@
 //
 //  Enabled by the environment variable ETH_GFX_SMOKE_TEST (Debug builds only):
 //    ETH_GFX_SMOKE_TEST=1     run the test at startup, then continue normally
-//    ETH_GFX_SMOKE_TEST=exit  run the test, then close the app (full startup -> shutdown check)
+//    ETH_GFX_SMOKE_TEST=exit  run the test, render a few frames with one window resize in between,
+//                             then close the app (full startup -> frame loop -> shutdown check)
 //
 #pragma once
 
@@ -26,6 +27,10 @@ namespace GfxSmokeTest {
     // Creates/uploads/releases a vertex buffer, index buffer, shader, render pass and pipeline.
     // All resources are released before this returns. Logs "[GfxSmokeTest] PASSED" on success.
     void Run(GfxBackendAPI& backend);
+
+    // Exit mode: call once per main-loop iteration. Resizes `glfwWindow` once (exercising swapchain
+    // recreation), then returns true once enough frames have run and the app should close.
+    bool TickFrame(void* glfwWindow);
 
 }
 }

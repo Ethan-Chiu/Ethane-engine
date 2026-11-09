@@ -213,6 +213,7 @@ public:
     const vk::raii::Device& Get() const { return m_LogicalDevice; }
 
     const vk::raii::Queue& GetGraphicsQueue() const { return m_GraphicsQueue; }
+    const vk::raii::Queue& GetPresentQueue() const { return m_PresentQueue; }  // may be the same queue as graphics
     const vk::raii::Queue& GetComputeQueue() const { return m_ComputeQueue; }
     const vk::raii::CommandPool& GetGraphicsCommandPool() const { return m_GraphicsCommandPool; }
     const vk::raii::CommandPool& GetComputeCommandPool() const { return m_ComputeCommandPool; }
@@ -228,6 +229,7 @@ private:
     vk::raii::Device m_LogicalDevice = nullptr;
 
     vk::raii::Queue m_GraphicsQueue = nullptr;
+    vk::raii::Queue m_PresentQueue  = nullptr;
     vk::raii::Queue m_ComputeQueue  = nullptr;
     vk::raii::Queue m_TransferQueue = nullptr;
 
