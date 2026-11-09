@@ -248,6 +248,9 @@ project "Ethane-Editor"
         systemversion "latest"
     filter "system:macosx"
         systemversion "10.15.0:14:0.0"
+        -- Read by the shared Xcode scheme ($(VULKAN_SDK)) to point the Vulkan loader at the SDK's
+        -- validation layer and MoltenVK driver, like setup-env.sh does for a shell launch
+        xcodebuildsettings { ["VULKAN_SDK"] = VULKAN_SDK }
     filter {}
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")

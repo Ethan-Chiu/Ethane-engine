@@ -222,6 +222,9 @@
 					../EthaneEngine/vendor/imgui,
 					"$(inherited)",
 				);
+				VULKAN_SDK = (
+					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
+				);
 			};
 			name = Release;
 		};
@@ -235,6 +238,9 @@
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
 				PRODUCT_NAME = "Ethane-Editor";
+				VULKAN_SDK = (
+					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
+				);
 			};
 			name = Debug;
 		};
@@ -248,6 +254,9 @@
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
 				PRODUCT_NAME = "Ethane-Editor";
+				VULKAN_SDK = (
+					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
+				);
 			};
 			name = Release;
 		};
@@ -287,6 +296,9 @@
 					../EthaneEngine/vendor/imgui,
 					"$(inherited)",
 				);
+				VULKAN_SDK = (
+					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
+				);
 			};
 			name = Dist;
 		};
@@ -300,6 +312,9 @@
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
 				PRODUCT_NAME = "Ethane-Editor";
+				VULKAN_SDK = (
+					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
+				);
 			};
 			name = Dist;
 		};
@@ -338,6 +353,9 @@
 					"../EthaneEngine/vendor/yaml-cpp/include",
 					../EthaneEngine/vendor/imgui,
 					"$(inherited)",
+				);
+				VULKAN_SDK = (
+					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
 				);
 			};
 			name = Debug;

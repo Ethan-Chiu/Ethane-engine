@@ -109,7 +109,8 @@ void VulkanContext::Init(ContextCreateInfo& info)
         m_ContextInfo.AddInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, true);
         m_ContextInfo.AddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
         const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
-        m_ContextInfo.AddInstanceLayer(validationLayerName);
+        // optional: a missing layer (SDK not on the loader's search path) disables validation instead of failing startup
+        m_ContextInfo.AddInstanceLayer(validationLayerName, true);
         const char* fpsLayerName = "VK_LAYER_LUNARG_monitor";
         m_ContextInfo.AddInstanceLayer(fpsLayerName, true);
     }
@@ -130,6 +131,7 @@ void VulkanContext::Init(ContextCreateInfo& info)
     // Create Instance
     if (!InitInstance()) {
         ETH_CORE_ERROR("Instance creation failed!");
+        ETH_CORE_ASSERT(false, "Vulkan instance creation failed, see the log above");
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -180,6 +182,13 @@ bool VulkanContext::InitInstance()
         if (VulkanContextUtils::CheckAndFillLayerProperties(instanceLayerProperties, info.InstanceLayers, m_UsedInstanceLayers) != VK_SUCCESS)
         {
             return false;
+        }
+
+        if (info.Validation &&
+            std::find(m_UsedInstanceLayers.begin(), m_UsedInstanceLayers.end(), "VK_LAYER_KHRONOS_validation") == m_UsedInstanceLayers.end())
+        {
+            ETH_CORE_ERROR("VK_LAYER_KHRONOS_validation not found: running WITHOUT validation. "
+                           "Point the loader at the SDK (source setup-env.sh, or set VK_ADD_LAYER_PATH to $VULKAN_SDK/share/vulkan/explicit_layer.d).");
         }
             
         // Log available properties

@@ -16,6 +16,10 @@ VulkanWindowTarget::VulkanWindowTarget(VulkanContext* context, GLFWwindow* windo
     : m_Context(context), m_Window(window)
 {
     const vk::raii::Instance& instance = m_Context->GetInstance();
+    if (!*instance) {
+        ETH_CORE_ERROR("Can't create a window target without a Vulkan instance");
+        return;
+    }
 
     // GLFW creates the surface as a raw handle; hand ownership to raii
     VkSurfaceKHR rawSurface = VK_NULL_HANDLE;
