@@ -16,6 +16,13 @@ workspace "EthaneEngine"
         "MultiProcessorCompile"
     }
 
+    -- Vulkan clip space has depth 0..1: glm's projection matrices must produce that. Workspace-wide so
+    -- every project sees the same glm configuration (inline functions are shared across the dylib boundary).
+    defines
+    {
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
+    }
+
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 

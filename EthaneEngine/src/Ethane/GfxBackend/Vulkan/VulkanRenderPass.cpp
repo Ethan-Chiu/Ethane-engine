@@ -19,7 +19,8 @@ namespace Ethane {
         const VulkanPhysicalDevice& physicalDevice = m_Device->GetPhysicalDevice();
 
         uint32_t attachmentIndex = 0;
-        bool hasDepth = (depthAttachmentFormat != ImageFormat::None);
+        const bool hasDepth = (depthAttachmentFormat != ImageFormat::None);
+        m_HasDepth = hasDepth;
 
         m_AttachmentCount = colorAttachmentFormats.size();
         for (auto attachmentFormat : colorAttachmentFormats)
@@ -54,17 +55,20 @@ namespace Ethane {
                                vk::to_string(format), vk::to_string(physicalDevice.GetDepthFormat()));
                 ETH_CORE_ASSERT(false, "Unsupported depth attachment format");
             }
-            vk::AttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back(vk::AttachmentDescription{
+            // A presenting pass (the window) never reads its depth afterwards: don't store it and leave it in
+            // the attachment layout. Offscreen passes keep it for sampling.
+            // The combined depth-stencil layouts are valid for depth-only formats too. Separate depth / stencil
+            // layouts (eDepthAttachmentOptimal, ...) would need the separateDepthStencilLayouts feature.
+            const Layout keptLayout = finalPresent ? Layout::eDepthStencilAttachmentOptimal : Layout::eDepthStencilReadOnlyOptimal;
+            attachmentDescriptions.push_back(vk::AttachmentDescription{
                 .format         = format,
                 .samples        = vk::SampleCountFlagBits::e1,
                 .loadOp         = clearOnLoad ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eLoad,
-                .storeOp        = vk::AttachmentStoreOp::eStore, // TODO: if sampling, needs to be store (otherwise DONT_CARE is fine)
+                .storeOp        = finalPresent ? vk::AttachmentStoreOp::eDontCare : vk::AttachmentStoreOp::eStore,
                 .stencilLoadOp  = vk::AttachmentLoadOp::eDontCare,
                 .stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
-                .initialLayout  = clearOnLoad ? Layout::eUndefined : Layout::eDepthStencilReadOnlyOptimal});
-            // The combined depth-stencil layouts are valid for depth-only formats too. Separate depth / stencil
-            // layouts (eDepthAttachmentOptimal, ...) would need the separateDepthStencilLayouts feature.
-            attachmentDescription.finalLayout = Layout::eDepthStencilReadOnlyOptimal; // TODO: eDepthStencilAttachmentOptimal if not sampling
+                .initialLayout  = clearOnLoad ? Layout::eUndefined : keptLayout,
+                .finalLayout    = keptLayout});
             depthAttachmentReference = vk::AttachmentReference{ .attachment = attachmentIndex, .layout = Layout::eDepthStencilAttachmentOptimal };
             attachmentIndex++;
         }
@@ -95,15 +99,21 @@ namespace Ethane {
 
         if (hasDepth)
         {
+            // Before the clear / first depth test: earlier users of the same depth image must be done. That's
+            // the previous frame's depth tests (one depth image is shared by all frames in flight: write after
+            // write) or, for an offscreen pass, shaders that sampled it (write after read).
             subpassDependencies.push_back(vk::SubpassDependency{
-                .srcSubpass      = VK_SUBPASS_EXTERNAL,
-                .dstSubpass      = 0,
-                .srcStageMask    = Stage::eFragmentShader,
-                .dstStageMask    = Stage::eEarlyFragmentTests,
-                .srcAccessMask   = Access::eShaderRead,
-                .dstAccessMask   = Access::eDepthStencilAttachmentWrite,
-                .dependencyFlags = vk::DependencyFlagBits::eByRegion});
+                .srcSubpass    = VK_SUBPASS_EXTERNAL,
+                .dstSubpass    = 0,
+                .srcStageMask  = Stage::eEarlyFragmentTests | Stage::eLateFragmentTests | Stage::eFragmentShader,
+                .dstStageMask  = Stage::eEarlyFragmentTests | Stage::eLateFragmentTests,
+                .srcAccessMask = Access::eDepthStencilAttachmentWrite,
+                .dstAccessMask = Access::eDepthStencilAttachmentRead | Access::eDepthStencilAttachmentWrite});
+        }
 
+        if (hasDepth && !finalPresent)
+        {
+            // Depth written here is sampled by later passes
             subpassDependencies.push_back(vk::SubpassDependency{
                 .srcSubpass      = 0,
                 .dstSubpass      = VK_SUBPASS_EXTERNAL,
@@ -126,11 +136,13 @@ namespace Ethane {
 
     void VulkanRenderPass::Begin(const vk::raii::CommandBuffer& cmdBuffer, uint32_t width, uint32_t height, vk::Framebuffer frameBuffer) const
     {
+        // One clear value per attachment, indexed like the attachments: colors first, then depth
         // NOTE: vulkan-hpp unions keep their constructors (VULKAN_HPP_NO_STRUCT_CONSTRUCTORS only affects structs)
-        const std::array<vk::ClearValue, 2> clearValues = {
-            vk::ClearValue{ vk::ClearColorValue{ std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f } } },
-            vk::ClearValue{ vk::ClearDepthStencilValue{ .depth = 1.0f, .stencil = 0 } },
-        };
+        std::vector<vk::ClearValue> clearValues(m_AttachmentCount,
+            vk::ClearValue{ vk::ClearColorValue{ std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f } } });
+        if (m_HasDepth) {
+            clearValues.push_back(vk::ClearValue{ vk::ClearDepthStencilValue{ .depth = 1.0f, .stencil = 0 } });
+        }
 
         cmdBuffer.beginRenderPass(vk::RenderPassBeginInfo{
             .renderPass      = *m_RenderPass,

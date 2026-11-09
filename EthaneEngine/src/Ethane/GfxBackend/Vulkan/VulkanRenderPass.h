@@ -16,7 +16,9 @@ namespace Ethane {
 		void End(const vk::raii::CommandBuffer& cmdBuffer) const;
 
 		vk::RenderPass GetHandle() const { return *m_RenderPass; }
+		// Color attachments only (the depth attachment, if any, comes after them)
 		uint8_t GetAttachmentCount() const { return m_AttachmentCount; }
+		bool HasDepth() const { return m_HasDepth; }
 
 	private:
         const VulkanDevice* m_Device;
@@ -24,6 +26,7 @@ namespace Ethane {
 		vk::raii::RenderPass m_RenderPass = nullptr;
 
 		uint8_t m_AttachmentCount = 0;
+		bool m_HasDepth = false;
 	};
 
 }

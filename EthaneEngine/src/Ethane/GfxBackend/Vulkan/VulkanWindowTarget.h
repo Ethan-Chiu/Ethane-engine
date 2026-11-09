@@ -26,7 +26,7 @@ public:
     VulkanWindowTarget(VulkanContext* context, GLFWwindow* window);
     ~VulkanWindowTarget();
     
-    // Releases frame data -> framebuffers -> render pass -> image views -> swapchain -> surface. Safe to call more than once.
+    // Releases frame data -> framebuffers -> render pass -> depth buffer -> image views -> swapchain -> surface. Safe to call more than once.
     virtual void Destroy() override;
 
     virtual void Resize(uint32_t width, uint32_t height) override;
@@ -34,7 +34,7 @@ public:
     virtual void EndFrame() override;
 
     // Valid between BeginFrame() and EndFrame(): the command buffer recording the frame,
-    // already inside the window's render pass (which clears the image)
+    // already inside the window's render pass (which clears the color and depth buffers)
     virtual ICommandList& GetCommandList() override;
     // NOTE: recreated if the swapchain format ever changes, which would make existing pipelines incompatible
     virtual RefCountPtr<IRenderPass> GetRenderPass() const override { return RefCountPtr<IRenderPass>(m_RenderPass); }
@@ -54,8 +54,10 @@ private:
     // Creates the swapchain, or recreates it from the current one (e.g. after a resize).
     // Returns false (and leaves the current swapchain alone) when the surface has a 0 extent.
     bool CreateSwapchain();
-    // Image-dependent objects: render pass (if the format changed), framebuffers, render-finished semaphores
+    // Image-dependent objects: render pass (if the format changed), depth buffer, framebuffers, render-finished semaphores
     void CreateSwapchainResources();
+    // Depth image the size of the swapchain, shared by all frames (the render pass orders their depth tests)
+    void CreateDepthBuffer();
     // Waits for the GPU, then rebuilds the swapchain and everything that depends on its images
     bool RecreateSwapchain();
 
@@ -70,12 +72,15 @@ private:
     std::optional<VulkanLiveResource> m_LiveResource{ std::in_place };
 
     // NOTE: declaration order matters, members are destroyed in reverse:
-    // frames -> render-finished semaphores -> framebuffers -> render pass -> image views -> swapchain -> surface
+    // frames -> render-finished semaphores -> framebuffers -> render pass -> depth buffer -> image views -> swapchain -> surface
     vk::raii::SurfaceKHR m_Surface = nullptr;
     vk::raii::SwapchainKHR m_Swapchain = nullptr;
     std::vector<vk::Image> m_Images;               // owned by the swapchain, not destroyed by us
     std::vector<vk::raii::ImageView> m_ImageViews;
-    RefCountPtr<VulkanRenderPass> m_RenderPass;    // clears the image, ends in PRESENT_SRC
+    vk::raii::DeviceMemory m_DepthMemory = nullptr;
+    vk::raii::Image m_DepthImage = nullptr;
+    vk::raii::ImageView m_DepthView = nullptr;
+    RefCountPtr<VulkanRenderPass> m_RenderPass;    // color + depth, both cleared; color ends in PRESENT_SRC
     std::vector<vk::raii::Framebuffer> m_Framebuffers;
     // One per swapchain image, not per frame slot: the presentation engine may still be waiting on it
     // after the frame's fence signals, so it can only be reused once the same image is acquired again
@@ -85,6 +90,7 @@ private:
     vk::Extent2D m_Extent;
     vk::Format m_ImageFormat = vk::Format::eUndefined;
     vk::Format m_RenderPassFormat = vk::Format::eUndefined;
+    vk::Format m_DepthFormat = vk::Format::eUndefined;
     vk::ColorSpaceKHR m_ImageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
     
     uint32_t m_ImageCount = 0;

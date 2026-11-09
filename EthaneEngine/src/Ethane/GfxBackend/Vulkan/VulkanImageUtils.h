@@ -91,6 +91,22 @@ namespace ImageUtils {
         }
     }
 
+    inline bool HasStencilComponent(vk::Format format)
+    {
+        return format == vk::Format::eS8Uint || format == vk::Format::eD16UnormS8Uint
+            || format == vk::Format::eD24UnormS8Uint || format == vk::Format::eD32SfloatS8Uint;
+    }
+
+    // Aspects of a depth/stencil attachment view: all the format has
+    inline vk::ImageAspectFlags DepthAttachmentAspect(vk::Format format)
+    {
+        vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eDepth;
+        if (HasStencilComponent(format)) {
+            aspect |= vk::ImageAspectFlagBits::eStencil;
+        }
+        return aspect;
+    }
+
     inline VkImageLayout VulkanImageLayout(ImageLayout layout)
     {
         switch (layout)

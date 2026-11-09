@@ -175,18 +175,21 @@ void VulkanWindowTarget::CreateSwapchainResources() {
         const ImageFormat format = ImageUtils::VulkanImageFormatToImageFormat(static_cast<VkFormat>(m_ImageFormat));
         ETH_CORE_ASSERT(format != ImageFormat::None, "Swapchain format has no ImageFormat equivalent");
         m_Framebuffers.clear(); // built against the old render pass
-        m_RenderPass = MakeRefCountPtr<VulkanRenderPass>(&device, std::vector<ImageFormat>{ format }, ImageFormat::None, true, true);
+        // ImageFormat::Depth: the device's depth format (VulkanPhysicalDevice::GetDepthFormat())
+        m_RenderPass = MakeRefCountPtr<VulkanRenderPass>(&device, std::vector<ImageFormat>{ format }, ImageFormat::Depth, true, true);
         m_RenderPassFormat = m_ImageFormat;
     }
 
-    m_Framebuffers.clear();
+    m_Framebuffers.clear(); // before the depth view they reference is replaced
+    CreateDepthBuffer();
+
     m_Framebuffers.reserve(m_ImageCount);
     for (const vk::raii::ImageView& view : m_ImageViews) {
-        const vk::ImageView attachment = *view;
+        const std::array<vk::ImageView, 2> attachments = { *view, *m_DepthView }; // render pass order: color, depth
         m_Framebuffers.emplace_back(device.Get(), vk::FramebufferCreateInfo{
             .renderPass      = m_RenderPass->GetHandle(),
-            .attachmentCount = 1,
-            .pAttachments    = &attachment,
+            .attachmentCount = static_cast<uint32_t>(attachments.size()),
+            .pAttachments    = attachments.data(),
             .width           = m_Extent.width,
             .height          = m_Extent.height,
             .layers          = 1});
@@ -197,6 +200,47 @@ void VulkanWindowTarget::CreateSwapchainResources() {
     for (uint32_t i = 0; i < m_ImageCount; i++) {
         m_RenderFinished.emplace_back(device.Get(), vk::SemaphoreCreateInfo{});
     }
+}
+
+void VulkanWindowTarget::CreateDepthBuffer() {
+    const VulkanDevice& device = m_Context->GetDevice();
+    const vk::raii::Device& vkDevice = device.Get();
+    m_DepthFormat = device.GetPhysicalDevice().GetDepthFormat(); // what the render pass was built with
+
+    // replaced in reverse creation order (the GPU is idle: first creation, or CreateSwapchain() waited)
+    m_DepthView = nullptr;
+    m_DepthImage = nullptr;
+    m_DepthMemory = nullptr;
+
+    m_DepthImage = vk::raii::Image(vkDevice, vk::ImageCreateInfo{
+        .imageType     = vk::ImageType::e2D,
+        .format        = m_DepthFormat,
+        .extent        = { m_Extent.width, m_Extent.height, 1 },
+        .mipLevels     = 1,
+        .arrayLayers   = 1,
+        .samples       = vk::SampleCountFlagBits::e1,
+        .tiling        = vk::ImageTiling::eOptimal,
+        .usage         = vk::ImageUsageFlagBits::eDepthStencilAttachment,
+        .sharingMode   = vk::SharingMode::eExclusive,
+        .initialLayout = vk::ImageLayout::eUndefined}); // the render pass clears it from undefined every frame
+
+    const vk::MemoryRequirements requirements = m_DepthImage.getMemoryRequirements();
+    m_DepthMemory = vk::raii::DeviceMemory(vkDevice, vk::MemoryAllocateInfo{
+        .allocationSize  = requirements.size,
+        .memoryTypeIndex = device.FindMemoryType(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)});
+    m_DepthImage.bindMemory(*m_DepthMemory, 0);
+
+    m_DepthView = vk::raii::ImageView(vkDevice, vk::ImageViewCreateInfo{
+        .image            = *m_DepthImage,
+        .viewType         = vk::ImageViewType::e2D,
+        .format           = m_DepthFormat,
+        .components       = {},
+        .subresourceRange = {
+            .aspectMask     = ImageUtils::DepthAttachmentAspect(m_DepthFormat),
+            .baseMipLevel   = 0,
+            .levelCount     = 1,
+            .baseArrayLayer = 0,
+            .layerCount     = 1}});
 }
 
 bool VulkanWindowTarget::RecreateSwapchain() {
@@ -327,6 +371,9 @@ void VulkanWindowTarget::Destroy() {
         m_RenderFinished.clear();
         m_Framebuffers.clear();
         m_RenderPass.reset();
+        m_DepthView = nullptr;
+        m_DepthImage = nullptr;
+        m_DepthMemory = nullptr;
         m_ImageViews.clear();
         m_Images.clear();
         m_Swapchain = nullptr;
