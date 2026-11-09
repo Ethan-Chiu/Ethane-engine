@@ -264,7 +264,6 @@ project "Ethane-Editor"
 
     externalincludedirs 
     { 
-        "%{wks.location}/EthaneEngine/src",
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
@@ -277,8 +276,11 @@ project "Ethane-Editor"
         "%{IncludeDir.imgui}"
     }
 
+    -- Not external: system header paths are left out of compiler dependency files, so editor
+    -- sources wouldn't rebuild when an engine header changes (stale vtables / class layouts)
     includedirs
     {
+        "%{wks.location}/EthaneEngine/src",
     }
 
     links

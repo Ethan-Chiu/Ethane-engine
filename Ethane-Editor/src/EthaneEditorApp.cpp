@@ -1,6 +1,6 @@
-#include <Ethane.h>
+#include "Ethane.h"
 //-----EntryPoint-----
-#include <Ethane/Core/EntryPoint.h>
+#include "Ethane/Core/EntryPoint.h"
 
 #include "EditorLayer.h"
 
