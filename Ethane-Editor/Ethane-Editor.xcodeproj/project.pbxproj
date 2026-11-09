@@ -10,6 +10,7 @@
 		1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */; };
 		6F1D57DF9EADB6D10B0E661F /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 56DE898790A9403946048FC7 /* libEthaneEngine.dylib */; };
 		7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */; };
+		79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */; };
 		DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,8 @@
 		1C4E48BADFBA0A6C1E5DAEFA /* TriangleLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TriangleLayer.h; path = src/TriangleLayer.h; sourceTree = "<group>"; };
 		1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorLayer.cpp; path = src/EditorLayer.cpp; sourceTree = "<group>"; };
 		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor"; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6600948E3423E840BB323ACE /* TexturedQuadLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TexturedQuadLayer.h; path = src/TexturedQuadLayer.h; sourceTree = "<group>"; };
+		9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TexturedQuadLayer.cpp; path = src/TexturedQuadLayer.cpp; sourceTree = "<group>"; };
 		91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TriangleLayer.cpp; path = src/TriangleLayer.cpp; sourceTree = "<group>"; };
 		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -71,6 +74,8 @@
 				1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */,
 				989FA13CC0DA59EEA875E77C /* EditorLayer.h */,
 				17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */,
+				9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */,
+				6600948E3423E840BB323ACE /* TexturedQuadLayer.h */,
 				91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */,
 				1C4E48BADFBA0A6C1E5DAEFA /* TriangleLayer.h */,
 				A6C936B49B3FADE6EA134CF4 /* Products */,
@@ -176,6 +181,7 @@
 			files = (
 				7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */,
 				1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */,
+				79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */,
 				DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

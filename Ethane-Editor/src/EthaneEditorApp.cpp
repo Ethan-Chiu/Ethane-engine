@@ -4,6 +4,7 @@
 
 #include "EditorLayer.h"
 #include "TriangleLayer.h"
+#include "TexturedQuadLayer.h"
 
 namespace Ethane {
 
@@ -15,6 +16,7 @@ namespace Ethane {
 		{
 			PushLayer(new EditorLayer());
 			PushLayer(new TriangleLayer());
+			PushLayer(new TexturedQuadLayer());
 		}
 
 		~EthaneEditor()

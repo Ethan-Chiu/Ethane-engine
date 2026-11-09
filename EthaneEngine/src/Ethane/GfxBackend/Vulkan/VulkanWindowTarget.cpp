@@ -248,6 +248,9 @@ bool VulkanWindowTarget::BeginFrame() {
     // Only reset once we know we'll submit: resetting and then bailing out would deadlock the next wait
     device.resetFences(*frame.InFlight);
 
+    // From here on this slot's per-frame copies (uniform buffers, descriptor sets) are free to write
+    m_Context->m_Device.SetFrameState(m_CurrentFrame, true);
+
     // Begin implicitly resets the buffer (the pool was created with eResetCommandBuffer)
     frame.CommandBuffer.Begin(true, false, false);
     const vk::raii::CommandBuffer& cmd = frame.CommandBuffer.Get();
@@ -296,6 +299,7 @@ void VulkanWindowTarget::EndFrame() {
         .signalSemaphoreCount = 1,
         .pSignalSemaphores    = &renderFinished}, *frame.InFlight);
     frame.CommandBuffer.UpdateSubmitted();
+    m_Context->m_Device.SetFrameState(m_CurrentFrame, false);
 
     const vk::SwapchainKHR swapchain = *m_Swapchain;
     try {

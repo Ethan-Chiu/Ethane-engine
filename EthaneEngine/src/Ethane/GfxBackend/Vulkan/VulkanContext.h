@@ -198,6 +198,10 @@ private:
 class VulkanDevice
 {
 public:
+    // Frames the CPU may record ahead of the GPU. Per-frame resources (frame command buffers, uniform buffer
+    // copies, descriptor sets) keep this many copies and use GetFrameIndex() to pick theirs.
+    static constexpr uint32_t kMaxFramesInFlight = 2;
+
     // Empty (null) device; a real one is move-assigned in VulkanContext::InitDevice
     VulkanDevice() = default;
     explicit VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
@@ -230,6 +234,21 @@ public:
     const vk::raii::Queue& GetQueue(QueueFamilyTypes type) const;
     const vk::raii::CommandPool& GetCommandPool(QueueFamilyTypes type) const;
 
+    // Frame slot being recorded (0..kMaxFramesInFlight-1). Only meaningful while IsFrameInProgress():
+    // the window target sets it after waiting for that slot's fence, so the slot's copies are free to write.
+    uint32_t GetFrameIndex() const { return m_FrameIndex; }
+    bool IsFrameInProgress() const { return m_FrameInProgress; }
+    // Increases with every frame started: tells "earlier in this frame" apart from "in an older frame"
+    uint64_t GetFrameSerial() const { return m_FrameSerial; }
+    void SetFrameState(uint32_t frameIndex, bool inProgress)
+    {
+        m_FrameIndex = frameIndex;
+        m_FrameInProgress = inProgress;
+        if (inProgress) {
+            m_FrameSerial++;
+        }
+    }
+
 private:
     const VulkanPhysicalDevice* m_PhysicalDevice = nullptr;
 
@@ -243,6 +262,10 @@ private:
 
     vk::raii::CommandPool m_GraphicsCommandPool = nullptr;
     vk::raii::CommandPool m_ComputeCommandPool  = nullptr;
+
+    uint32_t m_FrameIndex = 0;
+    uint64_t m_FrameSerial = 0;
+    bool m_FrameInProgress = false;
 };
 
 

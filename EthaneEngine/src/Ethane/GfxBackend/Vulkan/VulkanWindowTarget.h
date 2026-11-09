@@ -20,7 +20,7 @@ class VulkanWindowTarget : public IWindowTarget
 public:
     // Frames the CPU may record ahead of the GPU. Each frame slot has its own command buffer,
     // acquire semaphore and fence, so slot N can be recorded while slot N-1 is still executing.
-    static constexpr uint32_t kMaxFramesInFlight = 2;
+    static constexpr uint32_t kMaxFramesInFlight = VulkanDevice::kMaxFramesInFlight;
 
     // NOTE: `context` must outlive this window target (the swapchain belongs to its device)
     VulkanWindowTarget(VulkanContext* context, GLFWwindow* window);

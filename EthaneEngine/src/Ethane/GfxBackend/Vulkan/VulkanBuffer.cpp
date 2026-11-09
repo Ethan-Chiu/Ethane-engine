@@ -196,4 +196,30 @@ namespace Ethane {
 	{
 		TransferData(data, size, offset);
 	}
+
+
+    VulkanUniformBuffer::VulkanUniformBuffer(const VulkanDevice* device, uint32_t size)
+        : m_Device(device), m_Size(size)
+    {
+        for (auto& copy : m_Copies) {
+            copy = std::make_unique<VulkanBuffer>(device);
+            copy->CreateVulkanBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer,
+                                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
+        }
+    }
+
+    void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
+    {
+        if (m_Device->IsFrameInProgress()) {
+            // the window target waited for this frame slot's fence, so the GPU is done with its copy
+            m_Copies[m_Device->GetFrameIndex()]->SetData(data, 0, size, offset);
+            return;
+        }
+
+        // Outside a frame any copy may still be in use by a submitted frame
+        m_Device->Get().waitIdle();
+        for (auto& copy : m_Copies) {
+            copy->SetData(data, 0, size, offset);
+        }
+    }
 }

@@ -10,11 +10,11 @@ namespace Ethane {
 			float Color[3];
 		};
 
-		// Clip space, +Y up; counter-clockwise, so it survives back-face culling
+		// Clip space, +Y up, left half of the window; counter-clockwise, so it survives back-face culling
 		constexpr Vertex kVertices[] = {
-			{ {  0.0f,  0.5f }, { 1.0f, 0.0f, 0.0f } }, // top
-			{ { -0.5f, -0.5f }, { 0.0f, 0.0f, 1.0f } }, // bottom left
-			{ {  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } }, // bottom right
+			{ { -0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f } }, // top
+			{ { -0.9f, -0.5f }, { 0.0f, 0.0f, 1.0f } }, // bottom left
+			{ { -0.1f, -0.5f }, { 0.0f, 1.0f, 0.0f } }, // bottom right
 		};
 		constexpr uint32_t kIndices[] = { 0, 1, 2 };
 	}

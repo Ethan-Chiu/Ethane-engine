@@ -3,6 +3,7 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanPipeline.h"
 #include "VulkanBuffer.h"
+#include "VulkanBindingSet.h"
 
 
 namespace Ethane {
@@ -47,6 +48,7 @@ namespace Ethane {
 
         m_CommandBuffer.begin(vk::CommandBufferBeginInfo{ .flags = flags });
         m_State = CommandBufferState::RECORDING;
+        m_BoundPipelineLayout = nullptr;
     }
 
     void VulkanCommandBuffer::End() {
@@ -98,7 +100,18 @@ namespace Ethane {
     void VulkanCommandBuffer::BindPipeline(const IPipeline& pipeline)
     {
         ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
-        static_cast<const VulkanPipeline&>(pipeline).Bind(m_CommandBuffer);
+        const auto& vulkanPipeline = static_cast<const VulkanPipeline&>(pipeline);
+        vulkanPipeline.Bind(m_CommandBuffer);
+        m_BoundPipelineLayout = vulkanPipeline.GetPipelineLayout();
+    }
+
+    void VulkanCommandBuffer::BindBindingSet(IBindingSet& bindingSet)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        ETH_CORE_ASSERT(m_BoundPipelineLayout, "Bind a pipeline before its binding sets");
+        auto& vulkanSet = static_cast<VulkanBindingSet&>(bindingSet);
+        const vk::DescriptorSet set = vulkanSet.Prepare();
+        m_CommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_BoundPipelineLayout, vulkanSet.GetSetIndex(), set, {});
     }
 
     void VulkanCommandBuffer::BindVertexBuffer(const IVertexBuffer& buffer)

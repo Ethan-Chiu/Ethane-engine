@@ -170,7 +170,8 @@ namespace Ethane
 	{
 		Close();
 
-		// shutdown all layers first
+		// shutdown all layers first; the last frames may still be using their GPU resources
+		m_RendererBackend->WaitIdle();
 		m_LayerStack.Detach();
 
 		AssetManager::Shutdown();

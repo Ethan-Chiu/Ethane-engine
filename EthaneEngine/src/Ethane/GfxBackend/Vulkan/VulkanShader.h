@@ -30,6 +30,7 @@ namespace Ethane {
     friend class VulkanPipeline;
     friend class VulkanComputePipeline;
     friend class VulkanShaderSystem;
+    friend class VulkanBindingSet;
     protected:
 		const std::vector<vk::PipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
 		std::vector<vk::PushConstantRange> GetPushConstantRanges() const;

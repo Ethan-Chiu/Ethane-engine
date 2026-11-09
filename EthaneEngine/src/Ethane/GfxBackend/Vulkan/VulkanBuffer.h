@@ -91,4 +91,23 @@ namespace Ethane {
 
         using VulkanBuffer::GetHandle; // for binding
     };
+
+    // One host-visible copy per frame in flight: the GPU may still read frame N-1's copy while frame N's is written
+    class VulkanUniformBuffer : public IUniformBuffer {
+    public:
+        VulkanUniformBuffer(const VulkanDevice* device, uint32_t size);
+        virtual ~VulkanUniformBuffer() = default;
+
+        // During a frame: writes the current frame's copy. Outside a frame: waits for the GPU, writes all copies.
+        virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+        virtual uint32_t GetSize() const override { return m_Size; }
+
+        vk::Buffer GetHandle(uint32_t frameIndex) const { return m_Copies[frameIndex]->GetHandle(); }
+
+    private:
+        const VulkanDevice* m_Device = nullptr;
+        uint32_t m_Size = 0;
+        // unique_ptr: VulkanBuffer isn't movable
+        std::array<std::unique_ptr<VulkanBuffer>, VulkanDevice::kMaxFramesInFlight> m_Copies;
+    };
 }

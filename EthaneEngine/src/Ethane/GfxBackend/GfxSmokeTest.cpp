@@ -83,6 +83,20 @@ void Run(GfxBackendAPI& backend)
         RefCountPtr<IPipeline> pipeline = backend.CreatePipeline(spec);
         ETH_CORE_INFO("[GfxSmokeTest] pipeline created");
 
+        // Resources for set 0 of test.glsl: uniform buffer (binding 0) + texture (binding 1)
+        RefCountPtr<IUniformBuffer> uniformBuffer = backend.CreateUniformBuffer(sizeof(float) * 16);
+        const float identity[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
+        uniformBuffer->SetData(identity, sizeof(identity)); // outside a frame: writes every per-frame copy
+
+        const uint8_t checker[2 * 2 * 4] = { 255,255,255,255,  0,0,0,255,  0,0,0,255,  255,255,255,255 };
+        RefCountPtr<ITexture2D> texture = backend.CreateTexture2D(TextureSpecification{ .Width = 2, .Height = 2, .Filter = TextureFilter::Nearest }, checker);
+        ETH_CORE_INFO("[GfxSmokeTest] uniform buffer + 2x2 texture created");
+
+        RefCountPtr<IBindingSet> bindingSet = backend.CreateBindingSet(shader, 0);
+        bindingSet->SetUniformBuffer(0, uniformBuffer);
+        bindingSet->SetTexture(1, texture);
+        ETH_CORE_INFO("[GfxSmokeTest] binding set filled");
+
         // Everything is released here, in reverse order of creation
     }
 

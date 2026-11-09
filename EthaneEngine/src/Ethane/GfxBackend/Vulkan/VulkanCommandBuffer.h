@@ -40,6 +40,7 @@ namespace Ethane {
         virtual void BindPipeline(const IPipeline& pipeline) override;
         virtual void BindVertexBuffer(const IVertexBuffer& buffer) override;
         virtual void BindIndexBuffer(const IIndexBuffer& buffer) override;
+        virtual void BindBindingSet(IBindingSet& bindingSet) override;
         virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
         virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override;
 
@@ -52,5 +53,8 @@ namespace Ethane {
 
         vk::raii::CommandBuffer m_CommandBuffer = nullptr;
         CommandBufferState m_State = CommandBufferState::NOT_ALLOCATED;
+
+        // Last pipeline bound while recording: descriptor sets are bound against its layout
+        vk::PipelineLayout m_BoundPipelineLayout = nullptr;
     };
 }

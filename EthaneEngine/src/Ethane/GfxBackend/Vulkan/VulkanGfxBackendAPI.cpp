@@ -15,6 +15,8 @@
 #include "VulkanWindowTarget.h"
 #include "VulkanBuffer.h"
 #include "VulkanShader.h"
+#include "VulkanTexture.h"
+#include "VulkanBindingSet.h"
 
 
 namespace Ethane {
@@ -40,6 +42,24 @@ RefCountPtr<IVertexBuffer> VulkanGfxBackendAPI::CreateVertexBuffer(uint32_t size
 
 RefCountPtr<IIndexBuffer> VulkanGfxBackendAPI::CreateIndexBuffer(uint32_t size) {
     return MakeRefCountPtr<VulkanIndexBuffer>(&m_Context.GetDevice(), size);
+}
+
+RefCountPtr<IUniformBuffer> VulkanGfxBackendAPI::CreateUniformBuffer(uint32_t size) {
+    return MakeRefCountPtr<VulkanUniformBuffer>(&m_Context.GetDevice(), size);
+}
+
+RefCountPtr<ITexture2D> VulkanGfxBackendAPI::CreateTexture2D(const TextureSpecification& spec, const void* pixels) {
+    return MakeRefCountPtr<VulkanTexture2D>(&m_Context.GetDevice(), spec, pixels);
+}
+
+RefCountPtr<IBindingSet> VulkanGfxBackendAPI::CreateBindingSet(const RefCountPtr<IShader>& shader, uint32_t set) {
+    return MakeRefCountPtr<VulkanBindingSet>(&m_Context.GetDevice(), dynamic_pointer_cast<VulkanShader>(shader), set);
+}
+
+void VulkanGfxBackendAPI::WaitIdle() {
+    if (m_Context.GetDevice().IsInitialized()) {
+        m_Context.GetDevice().Get().waitIdle();
+    }
 }
 
 RefCountPtr<IShader> VulkanGfxBackendAPI::CreateShader(const std::string& filepath) {
