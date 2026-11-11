@@ -56,7 +56,7 @@ endif
 ImGui:
 ifneq (,$(ImGui_config))
 	@echo "==== Building ImGui ($(ImGui_config)) ===="
-	@${MAKE} --no-print-directory -C EthaneEngine/vendor/imgui -f Makefile config=$(ImGui_config)
+	@${MAKE} --no-print-directory -C EthaneEngine/vendor/build/projects/ImGui -f Makefile config=$(ImGui_config)
 endif
 
 EthaneEngine: GLFW Glad ImGui
@@ -74,7 +74,7 @@ endif
 clean:
 	@${MAKE} --no-print-directory -C EthaneEngine/vendor/GLFW -f Makefile clean
 	@${MAKE} --no-print-directory -C EthaneEngine/vendor/Glad -f Makefile clean
-	@${MAKE} --no-print-directory -C EthaneEngine/vendor/imgui -f Makefile clean
+	@${MAKE} --no-print-directory -C EthaneEngine/vendor/build/projects/ImGui -f Makefile clean
 	@${MAKE} --no-print-directory -C EthaneEngine -f Makefile clean
 	@${MAKE} --no-print-directory -C Ethane-Editor -f Makefile clean
 

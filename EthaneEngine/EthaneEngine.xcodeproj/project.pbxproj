@@ -45,7 +45,6 @@
 		9F1963943766494665AD49D4 /* Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB07D3FCFF56796E417DB23C /* Entity.cpp */; };
 		A7DC1E7D98D38C6F04D70CBD /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F978450591C52AB7C00C2B45 /* Application.cpp */; };
 		ACB1B4470811D8F94A557A87 /* VulkanPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A7B416FE70245E16FA4FFAF /* VulkanPipeline.cpp */; };
-		B12C6C2047557E1208BBDA60 /* libImGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 147A2428C7702DDA18928A68 /* libImGui.a */; };
 		BF483ED1557150C316D7AD11 /* WindowsWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8001A27932F7AC2B841A08B9 /* WindowsWindow.cpp */; };
 		CB629BEAC42D5B9C4EA1C22A /* ShaderIncluder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F6FF25272EF31C48AE91092 /* ShaderIncluder.cpp */; };
 		D551503C6F75456E1F9B267C /* ShaderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 70B34DC4E50D92B662F11C04 /* ShaderSystem.cpp */; };
@@ -55,6 +54,7 @@
 		E6F7C808F6DCF43AE3507E48 /* SceneCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BEFB583060E4F422580C0670 /* SceneCamera.cpp */; };
 		EBD8E94289B9E9F461382F82 /* AssetManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CFB71EAEFBBD25C4CF0B02A /* AssetManager.cpp */; };
 		EE15C9CF457B3CC1F789580F /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8160B437B359FEE92D393A77 /* Layer.cpp */; };
+		EF3A5624CDDCF19682BEF464 /* libImGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD98E42CAD3BC75EE7907A6C /* libImGui.a */; };
 		F155C73FF0F8AA712B4D5D7F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7127FC27C88D6F197A9B8A67 /* FileUtils.cpp */; };
 		F8E8DBA28B76A594F44F49E2 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D6BC6AA50D7885C8F7B2CEA /* Cocoa.framework */; };
 		F992D3E1ED921D53727D3221 /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7920A109BD34723BB105F749 /* Material.cpp */; };
@@ -77,7 +77,7 @@
 		};
 		588D649D43798A8F8B5F52DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = E19C4EDD3901C1CFEB0FDD1D /* vendor/imgui/ImGui.xcodeproj */;
+			containerPortal = 3B4682B5D9278367B0A5C8F5 /* vendor/build/projects/ImGui/ImGui.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = B27392EA23FEAB5CD2FFD12A;
 			remoteInfo = libImGui.a;
@@ -91,7 +91,7 @@
 		};
 		AAC7D73695B3FD28DD99C576 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = E19C4EDD3901C1CFEB0FDD1D /* vendor/imgui/ImGui.xcodeproj */;
+			containerPortal = 3B4682B5D9278367B0A5C8F5 /* vendor/build/projects/ImGui/ImGui.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = F03FB590F3B087C2751D2BD0;
 			remoteInfo = libImGui.a;
@@ -210,6 +210,7 @@
 		38A7A0AB384A83DD729F36EB /* type_mat4x3.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat4x3.inl; path = vendor/glm/glm/detail/type_mat4x3.inl; sourceTree = "<group>"; };
 		3906931786698949FC888957 /* Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Event.h; path = src/Ethane/Events/Event.h; sourceTree = "<group>"; };
 		3A4CB2E6AEA6F7D82C8A8126 /* type_aligned.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_aligned.hpp; path = vendor/glm/glm/gtc/type_aligned.hpp; sourceTree = "<group>"; };
+		3B4682B5D9278367B0A5C8F5 /* libImGui.a */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "ImGui.xcodeproj"; path = vendor/build/projects/ImGui/ImGui.xcodeproj; sourceTree = SOURCE_ROOT; };
 		3B47EA89096B3E3B907990C9 /* KeyEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = KeyEvent.h; path = src/Ethane/Events/KeyEvent.h; sourceTree = "<group>"; };
 		3BAABBC12CA229B398A5AA01 /* orthonormalize.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = orthonormalize.inl; path = vendor/glm/glm/gtx/orthonormalize.inl; sourceTree = "<group>"; };
 		3BE1CFCDD63BB8BF12741E0D /* matrix_uint2x3_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint2x3_sized.hpp; path = vendor/glm/glm/ext/matrix_uint2x3_sized.hpp; sourceTree = "<group>"; };
@@ -584,7 +585,6 @@
 		E10A9BD311EE93C52506CA13 /* vec4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vec4.hpp; path = vendor/glm/glm/vec4.hpp; sourceTree = "<group>"; };
 		E17E84D3C09B9F059CA4FB13 /* type_vec2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_vec2.hpp; path = vendor/glm/glm/detail/type_vec2.hpp; sourceTree = "<group>"; };
 		E18A8F33E12D72651B822573 /* type_mat2x4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat2x4.hpp; path = vendor/glm/glm/detail/type_mat2x4.hpp; sourceTree = "<group>"; };
-		E19C4EDD3901C1CFEB0FDD1D /* libImGui.a */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "ImGui.xcodeproj"; path = vendor/imgui/ImGui.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E24FCBC374DD95B5DDB63A03 /* normal.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = normal.hpp; path = vendor/glm/glm/gtx/normal.hpp; sourceTree = "<group>"; };
 		E35E8995F343B5C7DFB73FD5 /* _swizzle_func.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = _swizzle_func.hpp; path = vendor/glm/glm/detail/_swizzle_func.hpp; sourceTree = "<group>"; };
 		E47AE9BB866485AD7D8B97FB /* PlatformUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PlatformUtils.h; path = src/Ethane/Utils/PlatformUtils.h; sourceTree = "<group>"; };
@@ -660,7 +660,7 @@
 				713678D803C442CA6C9CE718 /* IOKit.framework in Frameworks */,
 				494D8CF4E3A775E61FDFDB34 /* libGLFW.a in Frameworks */,
 				65DF459400392E863C7193D4 /* libGlad.a in Frameworks */,
-				B12C6C2047557E1208BBDA60 /* libImGui.a in Frameworks */,
+				EF3A5624CDDCF19682BEF464 /* libImGui.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -931,7 +931,7 @@
 		3684523D5CAA81EFC3B1787D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				147A2428C7702DDA18928A68 /* libImGui.a */,
+				AD98E42CAD3BC75EE7907A6C /* libImGui.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1284,7 +1284,7 @@
 			children = (
 				11BF275CF6062F8E79F35D9C /* GLFW.xcodeproj */,
 				1197FB54F5DF038679CC3194 /* Glad.xcodeproj */,
-				E19C4EDD3901C1CFEB0FDD1D /* ImGui.xcodeproj */,
+				3B4682B5D9278367B0A5C8F5 /* ImGui.xcodeproj */,
 			);
 			name = Projects;
 			sourceTree = "<group>";
@@ -1594,7 +1594,7 @@
 				},
 				{
 					ProductGroup = 3684523D5CAA81EFC3B1787D /* Products */;
-					ProjectRef = E19C4EDD3901C1CFEB0FDD1D /* ImGui.xcodeproj */;
+					ProjectRef = 3B4682B5D9278367B0A5C8F5 /* ImGui.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -1605,18 +1605,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		147A2428C7702DDA18928A68 /* libImGui.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libImGui.a;
-			remoteRef = 588D649D43798A8F8B5F52DD /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		4ED61E5CECB71F0EC435649C /* libGLFW.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libGLFW.a;
 			remoteRef = 7AC179D2A0E7A98407EEA012 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AD98E42CAD3BC75EE7907A6C /* libImGui.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libImGui.a;
+			remoteRef = 588D649D43798A8F8B5F52DD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		D23A59FC701B5AAE4799A03C /* libGlad.a */ = {

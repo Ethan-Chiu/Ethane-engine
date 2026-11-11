@@ -33,7 +33,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 group "Dependencies"
     include "EthaneEngine/vendor/GLFW"
     include "EthaneEngine/vendor/Glad"
-    include "EthaneEngine/vendor/imgui"
+    include "premake/ImGui.lua"
 
 group ""
     project "EthaneEngine"

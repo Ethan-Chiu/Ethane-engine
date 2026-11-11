@@ -10,7 +10,7 @@
 	url = https://github.com/g-truc/glm.git
 [submodule "EthaneEngine/vendor/imgui"]
 	path = EthaneEngine/vendor/imgui
-	url = https://github.com/Ethan-Chiu/imgui_forked.git
+	url = https://github.com/ocornut/imgui.git
 	branch = docking
 [submodule "EthaneEngine/vendor/assimp"]
 	path = EthaneEngine/vendor/assimp

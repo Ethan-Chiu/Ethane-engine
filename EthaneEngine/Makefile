@@ -51,8 +51,8 @@ OBJDIR = ../bin-int/Debug-macosx-ARM64/EthaneEngine
 DEFINES += -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DCFG_MACOS -D__APPLE__ -DETH_DEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -fPIC -g -mmacosx-version-min=10.15.0
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -fPIC -g -std=c++20 -mmacosx-version-min=10.15.0
-LIBS += vendor/GLFW/bin/Debug-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-ARM64/Glad/libGlad.a vendor/imgui/bin/Debug-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
-LDDEPS += vendor/GLFW/bin/Debug-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-ARM64/Glad/libGlad.a vendor/imgui/bin/Debug-macosx-ARM64/ImGui/libImGui.a
+LIBS += vendor/GLFW/bin/Debug-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-ARM64/Glad/libGlad.a ../bin/Debug-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
+LDDEPS += vendor/GLFW/bin/Debug-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-ARM64/Glad/libGlad.a ../bin/Debug-macosx-ARM64/ImGui/libImGui.a
 
 else ifeq ($(config),release)
 TARGETDIR = ../bin/Release-macosx-ARM64/EthaneEngine
@@ -61,8 +61,8 @@ OBJDIR = ../bin-int/Release-macosx-ARM64/EthaneEngine
 DEFINES += -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DCFG_MACOS -D__APPLE__ -DETH_RELEASE
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC -mmacosx-version-min=10.15.0
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC -std=c++20 -mmacosx-version-min=10.15.0
-LIBS += vendor/GLFW/bin/Release-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-ARM64/Glad/libGlad.a vendor/imgui/bin/Release-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
-LDDEPS += vendor/GLFW/bin/Release-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-ARM64/Glad/libGlad.a vendor/imgui/bin/Release-macosx-ARM64/ImGui/libImGui.a
+LIBS += vendor/GLFW/bin/Release-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-ARM64/Glad/libGlad.a ../bin/Release-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
+LDDEPS += vendor/GLFW/bin/Release-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-ARM64/Glad/libGlad.a ../bin/Release-macosx-ARM64/ImGui/libImGui.a
 
 else ifeq ($(config),dist)
 TARGETDIR = ../bin/Dist-macosx-ARM64/EthaneEngine
@@ -71,8 +71,8 @@ OBJDIR = ../bin-int/Dist-macosx-ARM64/EthaneEngine
 DEFINES += -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DCFG_MACOS -D__APPLE__ -DETH_DIST
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -fPIC -g -mmacosx-version-min=10.15.0
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -fPIC -g -std=c++20 -mmacosx-version-min=10.15.0
-LIBS += vendor/GLFW/bin/Dist-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-ARM64/Glad/libGlad.a vendor/imgui/bin/Dist-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
-LDDEPS += vendor/GLFW/bin/Dist-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-ARM64/Glad/libGlad.a vendor/imgui/bin/Dist-macosx-ARM64/ImGui/libImGui.a
+LIBS += vendor/GLFW/bin/Dist-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-ARM64/Glad/libGlad.a ../bin/Dist-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
+LDDEPS += vendor/GLFW/bin/Dist-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-ARM64/Glad/libGlad.a ../bin/Dist-macosx-ARM64/ImGui/libImGui.a
 
 endif
 
