@@ -30,6 +30,7 @@
 		53907229B017769B38BA3069 /* MacosWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75A0C8D18585F50371F97F11 /* MacosWindow.cpp */; };
 		5D75FCD99740B38B4C9C0319 /* VulkanWindowTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42B817E1076D6E53BBDC1621 /* VulkanWindowTarget.cpp */; };
 		614E9EC904B5CC7B1BEB8509 /* VulkanRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A8DA0D1A3058E43CEEC7F11 /* VulkanRenderPass.cpp */; };
+		6426D3A1ACC611D3CFF1C9E1 /* BrickSerializer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 017F2809F27695FB5E7A1649 /* BrickSerializer.cpp */; };
 		65DF459400392E863C7193D4 /* libGlad.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D23A59FC701B5AAE4799A03C /* libGlad.a */; };
 		661CEB61FE94D8D32A7BC9A1 /* WindowsInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 992ECF093352C43BE378A549 /* WindowsInput.cpp */; };
 		6923B6B97ADAF6ABF048E4F9 /* MacosInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33FECD61A7E74513CA34F3A1 /* MacosInput.cpp */; };
@@ -116,6 +117,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		017F2809F27695FB5E7A1649 /* BrickSerializer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = BrickSerializer.cpp; path = src/Ethane/Brick/BrickSerializer.cpp; sourceTree = "<group>"; };
 		02BCBE6976A5361B98F2E4A9 /* GfxSmokeTest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = GfxSmokeTest.cpp; path = src/Ethane/GfxBackend/GfxSmokeTest.cpp; sourceTree = "<group>"; };
 		03DA2EB7E27CCA29975ECCF7 /* VulkanBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanBuffer.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanBuffer.cpp; sourceTree = "<group>"; };
 		0561F2897684937B2C4B40C9 /* norm.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = norm.hpp; path = vendor/glm/glm/gtx/norm.hpp; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 		27FF17FBC5E018AD9D5E5E3B /* func_geometric.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = func_geometric.inl; path = vendor/glm/glm/detail/func_geometric.inl; sourceTree = "<group>"; };
 		287A8A31EB3AEAA3486FC871 /* optimum_pow.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = optimum_pow.hpp; path = vendor/glm/glm/gtx/optimum_pow.hpp; sourceTree = "<group>"; };
 		29D3D13B44A03FED4870D77B /* TypeRegistry.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TypeRegistry.cpp; path = src/Ethane/Schema/TypeRegistry.cpp; sourceTree = "<group>"; };
+		2A6A13539EC458451CA7E193 /* BrickSerializer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BrickSerializer.h; path = src/Ethane/Brick/BrickSerializer.h; sourceTree = "<group>"; };
 		2A788FD881DE02CA33EC1E18 /* bitfield.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = bitfield.inl; path = vendor/glm/glm/gtc/bitfield.inl; sourceTree = "<group>"; };
 		2B44F4B7C3BCE229EFA3D2F7 /* scalar_multiplication.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_multiplication.hpp; path = vendor/glm/glm/gtx/scalar_multiplication.hpp; sourceTree = "<group>"; };
 		2B4AA1C5854BB8B74C92B005 /* matrix_transform.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_transform.inl; path = vendor/glm/glm/ext/matrix_transform.inl; sourceTree = "<group>"; };
@@ -727,6 +730,8 @@
 				F3FE2B156520CC071AE77955 /* Brick.cpp */,
 				A72D4F9FD8114791EB297DDF /* Brick.h */,
 				1EEB0BC36339B135A560EA03 /* BrickOps.h */,
+				017F2809F27695FB5E7A1649 /* BrickSerializer.cpp */,
+				2A6A13539EC458451CA7E193 /* BrickSerializer.h */,
 				94155235086F972786532075 /* BrickSnapshot.cpp */,
 				1078FFBFB2629BB1A989ADFF /* BrickSnapshot.h */,
 				ADFCB75FA1FC00D126E7159F /* ComponentValue.cpp */,
@@ -1718,6 +1723,7 @@
 				EBD8E94289B9E9F461382F82 /* AssetManager.cpp in Sources */,
 				0A575D201A3C895206B01360 /* ImageLoader.cpp in Sources */,
 				F961D36D3D75A49F314729AD /* Brick.cpp in Sources */,
+				6426D3A1ACC611D3CFF1C9E1 /* BrickSerializer.cpp in Sources */,
 				2FBE848DC9E279BF7A085ACD /* BrickSnapshot.cpp in Sources */,
 				B4D5A05767CBAA09B8EE0697 /* ComponentValue.cpp in Sources */,
 				BC7E8D81D74AFC33DB1B93C1 /* OrderKey.cpp in Sources */,

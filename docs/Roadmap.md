@@ -10,13 +10,13 @@ as its own commits.
 - [x] Type-erased field access (`FieldValue`, field paths) and generic copy / compare
 - [x] Unit tests (new `Ethane-Tests` project)
 
-## 2. Brick
+## 2. Brick ✅
 
 - [x] `ObjectId`, objects with name / parent / order key / components
 - [x] Immutable snapshots with structural sharing
 - [x] Transactions, ops, `Commit`, ChangeSets and subscriptions
 - [x] Undo / redo from inverse ops; transactions that stay open while dragging
-- [ ] YAML serializer driven by the schema, with schema versions in the file
+- [x] YAML serializer driven by the schema, with schema versions in the file
 
 ## 3. Frame packet and renderer API
 
@@ -58,6 +58,9 @@ as its own commits.
 - [ ] A second `World` implementation, validated against `EnttWorld` by comparing frame packets
 
 ## Later
+
+- Schema migrations: a per-type hook to convert data saved with an older type version
+- Persistent hash map for the brick's object index (only if commits show up in profiles)
 
 - Prefab bricks (reference plus overrides)
 - Array fields in the schema

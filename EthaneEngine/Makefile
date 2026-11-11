@@ -91,6 +91,7 @@ OBJECTS :=
 GENERATED += $(OBJDIR)/Application.o
 GENERATED += $(OBJDIR)/AssetManager.o
 GENERATED += $(OBJDIR)/Brick.o
+GENERATED += $(OBJDIR)/BrickSerializer.o
 GENERATED += $(OBJDIR)/BrickSnapshot.o
 GENERATED += $(OBJDIR)/ComponentValue.o
 GENERATED += $(OBJDIR)/EditorCamera.o
@@ -146,6 +147,7 @@ GENERATED += $(OBJDIR)/stb_image.o
 OBJECTS += $(OBJDIR)/Application.o
 OBJECTS += $(OBJDIR)/AssetManager.o
 OBJECTS += $(OBJDIR)/Brick.o
+OBJECTS += $(OBJDIR)/BrickSerializer.o
 OBJECTS += $(OBJDIR)/BrickSnapshot.o
 OBJECTS += $(OBJDIR)/ComponentValue.o
 OBJECTS += $(OBJDIR)/EditorCamera.o
@@ -268,6 +270,9 @@ $(OBJDIR)/ImageLoader.o: src/Ethane/Asset/ImageLoader.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Brick.o: src/Ethane/Brick/Brick.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/BrickSerializer.o: src/Ethane/Brick/BrickSerializer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/BrickSnapshot.o: src/Ethane/Brick/BrickSnapshot.cpp
