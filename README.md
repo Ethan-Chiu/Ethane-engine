@@ -34,6 +34,18 @@ and the assimp / yaml-cpp builds.
    * macOS: open `EthaneEngine.xcworkspace` and run the `Ethane-Editor` scheme.
    * Windows: open `EthaneEngine.sln` and run `Ethane-Editor` (F5).
 
+## Tests
+
+`Ethane-Tests` holds unit tests for engine code that needs no window or GPU (schema, bricks). Run the
+`Ethane-Tests` scheme / project, or from a shell after building Debug on macOS:
+
+    DYLD_FALLBACK_LIBRARY_PATH=bin/Debug-macosx-ARM64/EthaneEngine bin/Debug-macosx-ARM64/Ethane-Tests/Ethane-Tests [filter]
+
+## Design
+
+[docs/Architecture.md](docs/Architecture.md) describes how bricks, worlds and frame packets fit together;
+[docs/Roadmap.md](docs/Roadmap.md) tracks progress.
+
 ## Note ( For developer ) 
 
 Memory management: unreal Core/HAL
