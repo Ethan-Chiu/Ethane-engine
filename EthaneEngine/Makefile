@@ -92,6 +92,7 @@ GENERATED += $(OBJDIR)/Application.o
 GENERATED += $(OBJDIR)/AssetManager.o
 GENERATED += $(OBJDIR)/EditorCamera.o
 GENERATED += $(OBJDIR)/Entity.o
+GENERATED += $(OBJDIR)/FieldAccess.o
 GENERATED += $(OBJDIR)/FileUtils.o
 GENERATED += $(OBJDIR)/GfxBackendAPI.o
 GENERATED += $(OBJDIR)/GfxSmokeTest.o
@@ -113,6 +114,7 @@ GENERATED += $(OBJDIR)/SceneSerializer.o
 GENERATED += $(OBJDIR)/ShaderIncluder.o
 GENERATED += $(OBJDIR)/ShaderSystem.o
 GENERATED += $(OBJDIR)/TextureSystem.o
+GENERATED += $(OBJDIR)/TypeRegistry.o
 GENERATED += $(OBJDIR)/UUID.o
 GENERATED += $(OBJDIR)/VulkanBindingSet.o
 GENERATED += $(OBJDIR)/VulkanBuffer.o
@@ -139,6 +141,7 @@ OBJECTS += $(OBJDIR)/Application.o
 OBJECTS += $(OBJDIR)/AssetManager.o
 OBJECTS += $(OBJDIR)/EditorCamera.o
 OBJECTS += $(OBJDIR)/Entity.o
+OBJECTS += $(OBJDIR)/FieldAccess.o
 OBJECTS += $(OBJDIR)/FileUtils.o
 OBJECTS += $(OBJDIR)/GfxBackendAPI.o
 OBJECTS += $(OBJDIR)/GfxSmokeTest.o
@@ -160,6 +163,7 @@ OBJECTS += $(OBJDIR)/SceneSerializer.o
 OBJECTS += $(OBJDIR)/ShaderIncluder.o
 OBJECTS += $(OBJDIR)/ShaderSystem.o
 OBJECTS += $(OBJDIR)/TextureSystem.o
+OBJECTS += $(OBJDIR)/TypeRegistry.o
 OBJECTS += $(OBJDIR)/UUID.o
 OBJECTS += $(OBJDIR)/VulkanBindingSet.o
 OBJECTS += $(OBJDIR)/VulkanBuffer.o
@@ -366,6 +370,12 @@ $(OBJDIR)/SceneCamera.o: src/Ethane/Scene/SceneCamera.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/SceneSerializer.o: src/Ethane/Scene/SceneSerializer.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/FieldAccess.o: src/Ethane/Schema/FieldAccess.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/TypeRegistry.o: src/Ethane/Schema/TypeRegistry.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ResourceSystem.o: src/Ethane/Systems/ResourceSystem.cpp
