@@ -84,15 +84,15 @@ GENERATED :=
 OBJECTS :=
 
 GENERATED += $(OBJDIR)/CubeLayer.o
+GENERATED += $(OBJDIR)/DemoScene.o
 GENERATED += $(OBJDIR)/EditorLayer.o
 GENERATED += $(OBJDIR)/EthaneEditorApp.o
-GENERATED += $(OBJDIR)/MeshLayer.o
 GENERATED += $(OBJDIR)/TexturedQuadLayer.o
 GENERATED += $(OBJDIR)/TriangleLayer.o
 OBJECTS += $(OBJDIR)/CubeLayer.o
+OBJECTS += $(OBJDIR)/DemoScene.o
 OBJECTS += $(OBJDIR)/EditorLayer.o
 OBJECTS += $(OBJDIR)/EthaneEditorApp.o
-OBJECTS += $(OBJDIR)/MeshLayer.o
 OBJECTS += $(OBJDIR)/TexturedQuadLayer.o
 OBJECTS += $(OBJDIR)/TriangleLayer.o
 
@@ -161,13 +161,13 @@ endif
 $(OBJDIR)/CubeLayer.o: src/CubeLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/DemoScene.o: src/DemoScene.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EditorLayer.o: src/EditorLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EthaneEditorApp.o: src/EthaneEditorApp.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/MeshLayer.o: src/MeshLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/TexturedQuadLayer.o: src/TexturedQuadLayer.cpp

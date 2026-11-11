@@ -8,11 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */; };
-		30FC6ED6A21F0FC857E5BD16 /* MeshLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6E16869E96513F507DECCCDE /* MeshLayer.cpp */; };
 		74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */; };
 		7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */; };
 		79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
+		CC67A8683D8A495AF350F6A8 /* DemoScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1007E10C93B36C2B0D6C450 /* DemoScene.cpp */; };
 		DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */; };
 /* End PBXBuildFile section */
 
@@ -39,14 +39,14 @@
 		1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorLayer.cpp; path = src/EditorLayer.cpp; sourceTree = "<group>"; };
 		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor"; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6600948E3423E840BB323ACE /* TexturedQuadLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TexturedQuadLayer.h; path = src/TexturedQuadLayer.h; sourceTree = "<group>"; };
-		6E16869E96513F507DECCCDE /* MeshLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MeshLayer.cpp; path = src/MeshLayer.cpp; sourceTree = "<group>"; };
+		750115BA9B27456C022E3BFA /* DemoScene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DemoScene.h; path = src/DemoScene.h; sourceTree = "<group>"; };
 		9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TexturedQuadLayer.cpp; path = src/TexturedQuadLayer.cpp; sourceTree = "<group>"; };
 		91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TriangleLayer.cpp; path = src/TriangleLayer.cpp; sourceTree = "<group>"; };
 		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
+		A1007E10C93B36C2B0D6C450 /* DemoScene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DemoScene.cpp; path = src/DemoScene.cpp; sourceTree = "<group>"; };
 		AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = CubeLayer.cpp; path = src/CubeLayer.cpp; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
 		F352F86C1979281E80801EAC /* CubeLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CubeLayer.h; path = src/CubeLayer.h; sourceTree = "<group>"; };
-		FD497908236FA8BA8A769F48 /* MeshLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MeshLayer.h; path = src/MeshLayer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,11 +79,11 @@
 			children = (
 				AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */,
 				F352F86C1979281E80801EAC /* CubeLayer.h */,
+				A1007E10C93B36C2B0D6C450 /* DemoScene.cpp */,
+				750115BA9B27456C022E3BFA /* DemoScene.h */,
 				1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */,
 				989FA13CC0DA59EEA875E77C /* EditorLayer.h */,
 				17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */,
-				6E16869E96513F507DECCCDE /* MeshLayer.cpp */,
-				FD497908236FA8BA8A769F48 /* MeshLayer.h */,
 				9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */,
 				6600948E3423E840BB323ACE /* TexturedQuadLayer.h */,
 				91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */,
@@ -190,9 +190,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */,
+				CC67A8683D8A495AF350F6A8 /* DemoScene.cpp in Sources */,
 				7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */,
 				1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */,
-				30FC6ED6A21F0FC857E5BD16 /* MeshLayer.cpp in Sources */,
 				79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */,
 				DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */,
 			);

@@ -1,4 +1,4 @@
-#include "MeshLayer.h"
+#include "DemoScene.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,16 +23,13 @@ namespace Ethane {
 		}
 	}
 
-	void MeshLayer::OnAttach()
+	DemoScene::DemoScene(GfxBackendAPI& backend, const RefCountPtr<IRenderPass>& renderPass)
 	{
-		Application& app = Application::Get();
-		GfxBackendAPI& backend = app.GetGfxBackend();
-
 		m_Shader = backend.CreateShader("assets/shaders/mesh.glsl");
 
 		PipelineSpecification spec;
 		spec.Shader = m_Shader;
-		spec.RenderPass = app.GetWindowTarget().GetRenderPass();
+		spec.RenderPass = renderPass;
 		spec.Layout = Mesh::GetVertexLayout();
 		spec.CullMode = CullMode::BACK;
 		m_Pipeline = backend.CreatePipeline(spec);
@@ -58,6 +55,7 @@ namespace Ethane {
 			}
 			std::vector<MaterialData> materials = mesh->GetMaterials();
 			for (MaterialData& material : materials) {
+				material.Name = entry.Name;
 				material.BaseColor = entry.Color;
 				material.Metallic = entry.Metallic;
 				material.Roughness = entry.Roughness;
@@ -66,6 +64,7 @@ namespace Ethane {
 				}
 			}
 			m_Models.push_back(Model{
+				.Name      = entry.Name,
 				.MeshData  = mesh,
 				.Normalize = FitToBox(mesh->GetBoundingBox(), 1.0f),
 				.Position  = { firstX + spacing * static_cast<float>(i), 0.0f, 0.0f },
@@ -80,9 +79,9 @@ namespace Ethane {
 			const glm::mat4 fit = glm::scale(glm::mat4(1.0f), glm::vec3(12.0f / std::max(size, 1e-6f)))
 			                    * glm::translate(glm::mat4(1.0f), -0.5f * (bounds.Min + bounds.Max));
 			m_Models.push_back(Model{
+				.Name      = "Floor",
 				.MeshData  = floor,
 				.Normalize = fit,
-				.Position  = { 0.0f, 0.0f, 0.0f },
 				.Materials = Material::CreateAll(backend, m_Shader, floor->GetMaterials()),
 				.Spin      = false});
 		}
@@ -90,48 +89,31 @@ namespace Ethane {
 		m_CameraBuffer = backend.CreateUniformBuffer(sizeof(CameraData));
 		m_BindingSet = backend.CreateBindingSet(m_Shader, 0);
 		m_BindingSet->SetUniformBuffer(0, m_CameraBuffer);
-
-		m_Camera.SetDistance(9.0f);
-		m_Camera.SetPitchYaw(0.45f, 0.0f);
 	}
 
-	void MeshLayer::OnDetach()
+	void DemoScene::OnUpdate(Timestep ts)
 	{
-		m_BindingSet.reset();
-		m_CameraBuffer.reset();
-		m_Pipeline.reset();
-		m_Shader.reset();
-		m_Models.clear();
+		m_Time += ts * SpinSpeed;
 	}
 
-	void MeshLayer::OnUpdate(Timestep ts)
+	void DemoScene::Render(ICommandList& commandList, const EditorCamera& camera)
 	{
-		m_Time += ts;
-
-		const Window& window = Application::Get().GetWindow();
-		m_Camera.SetViewportSize(static_cast<float>(window.GetWidth()), static_cast<float>(window.GetHeight())); // ignores 0 sizes
-		m_Camera.OnUpdate(ts);
-	}
-
-	void MeshLayer::OnEvent(Event& e)
-	{
-		m_Camera.OnEvent(e);
-	}
-
-	void MeshLayer::OnRender(ICommandList& commandList)
-	{
-		const CameraData camera{ m_Camera.GetViewProjection(), glm::vec4(m_Camera.GetPosition(), 1.0f) };
-		m_CameraBuffer->SetData(&camera, sizeof(camera));
+		const CameraData cameraData{ camera.GetViewProjection(), glm::vec4(camera.GetPosition(), 1.0f) };
+		m_CameraBuffer->SetData(&cameraData, sizeof(cameraData));
 
 		commandList.BindPipeline(*m_Pipeline);
 		commandList.BindBindingSet(*m_BindingSet);
 
 		for (const Model& model : m_Models)
 		{
+			if (!model.Visible) {
+				continue;
+			}
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), model.Position);
 			if (model.Spin) {
-				transform = glm::rotate(transform, m_Time * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+				transform = glm::rotate(transform, m_Time, glm::vec3(0.0f, 1.0f, 0.0f));
 			}
+			transform = glm::scale(transform, glm::vec3(model.Scale));
 			model.MeshData->Draw(commandList, transform * model.Normalize, model.Materials);
 		}
 	}

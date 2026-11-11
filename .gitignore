@@ -17,6 +17,8 @@ EthaneProfile-Startup.json
 
 # Ethane files
 *.log
+# Per-user ImGui window layout (the editor builds a default one)
+imgui.ini
 Ethane-Editor/*.json
 Sandbox/*.json
 

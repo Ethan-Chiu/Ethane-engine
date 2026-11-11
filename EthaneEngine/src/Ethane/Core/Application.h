@@ -44,6 +44,7 @@ namespace Ethane
 
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
+		// Shuts the application down at the start of the next frame (safe to call from a layer)
 		void Close();
 
 		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
@@ -57,6 +58,7 @@ namespace Ethane
         RefCountPtr<IWindowTarget> m_WindowTarget;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true;
+		bool m_CloseRequested = false;
 		bool m_SmokeTestDrivesFrames = false; // GfxSmokeTest exit mode: resizes the window, then closes it after a few frames
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;

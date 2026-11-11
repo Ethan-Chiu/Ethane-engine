@@ -24,7 +24,7 @@ namespace Ethane
 		ETH_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = Window::Create(WindowProps(name, 400, 300));
+		m_Window = Window::Create(WindowProps(name, 1600, 900));
 		m_Window->SetEventCallback(BIND_EVENT_FUNCTION(OnEvent));
 		m_Window->SetVSync(false);
         glfwWaitEvents();
@@ -82,7 +82,7 @@ namespace Ethane
 
 	void Application::Close()
 	{
-		m_Running = false;
+		m_CloseRequested = true;
 	}
 
 	void Application::OnEvent(Event& e)
@@ -124,6 +124,12 @@ namespace Ethane
 			if (m_SmokeTestDrivesFrames && GfxSmokeTest::TickFrame(m_Window->GetNativeWindow())) {
 				// same path as the user closing the window (the close callback fires inside PollEvent)
 				m_SmokeTestDrivesFrames = false;
+				WindowCloseEvent closeEvent;
+				OnEvent(closeEvent);
+			}
+			if (m_CloseRequested) {
+				// Close(): handled here, between frames, like the user closing the window
+				m_CloseRequested = false;
 				WindowCloseEvent closeEvent;
 				OnEvent(closeEvent);
 			}
@@ -173,7 +179,7 @@ namespace Ethane
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
-		Close();
+		m_Running = false;
 
 		// shutdown all layers first; the last frames may still be using their GPU resources
 		m_RendererBackend->WaitIdle();
