@@ -28,11 +28,11 @@ ifeq ($(origin AR), default)
   AR = ar
 endif
 RESCOMP = windres
-INCLUDES += -isystem ../EthaneEngine/src -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem ../../../../VulkanSDK/1.4.309.0/macOS/Include -isystem ../EthaneEngine/vendor/assimp/include -isystem ../EthaneEngine/vendor/yaml-cpp/include -isystem ../EthaneEngine/vendor/imgui
+INCLUDES += -I../EthaneEngine/src -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem ../../../../VulkanSDK/1.4.309.0/macOS/Include -isystem ../EthaneEngine/vendor/build/Release/include -isystem ../EthaneEngine/vendor/imgui
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-ALL_LDFLAGS += $(LDFLAGS) -Wl,-rpath,'@loader_path/../EthaneEngine' -m64
+ALL_LDFLAGS += $(LDFLAGS) -Wl,-rpath,'@loader_path/../EthaneEngine'
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef
@@ -42,34 +42,34 @@ define POSTBUILDCMDS
 endef
 
 ifeq ($(config),debug)
-TARGETDIR = ../bin/Debug-macosx-x86_64/Ethane-Editor
+TARGETDIR = ../bin/Debug-macosx-ARM64/Ethane-Editor
 TARGET = $(TARGETDIR)/Ethane-Editor
-OBJDIR = ../bin-int/Debug-macosx-x86_64/Ethane-Editor
-DEFINES += -DETH_DEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -mmacosx-version-min=10.15.0
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -mmacosx-version-min=10.15.0
-LIBS += ../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
-LDDEPS += ../bin/Debug-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
+OBJDIR = ../bin-int/Debug-macosx-ARM64/Ethane-Editor
+DEFINES += -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DETH_DEBUG
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g -std=c++20 -mmacosx-version-min=10.15.0
+LIBS += ../bin/Debug-macosx-ARM64/EthaneEngine/libEthaneEngine.dylib
+LDDEPS += ../bin/Debug-macosx-ARM64/EthaneEngine/libEthaneEngine.dylib
 
 else ifeq ($(config),release)
-TARGETDIR = ../bin/Release-macosx-x86_64/Ethane-Editor
+TARGETDIR = ../bin/Release-macosx-ARM64/Ethane-Editor
 TARGET = $(TARGETDIR)/Ethane-Editor
-OBJDIR = ../bin-int/Release-macosx-x86_64/Ethane-Editor
-DEFINES += -DETH_RELEASE
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -mmacosx-version-min=10.15.0
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20 -mmacosx-version-min=10.15.0
-LIBS += ../bin/Release-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
-LDDEPS += ../bin/Release-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
+OBJDIR = ../bin-int/Release-macosx-ARM64/Ethane-Editor
+DEFINES += -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DETH_RELEASE
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2 -std=c++20 -mmacosx-version-min=10.15.0
+LIBS += ../bin/Release-macosx-ARM64/EthaneEngine/libEthaneEngine.dylib
+LDDEPS += ../bin/Release-macosx-ARM64/EthaneEngine/libEthaneEngine.dylib
 
 else ifeq ($(config),dist)
-TARGETDIR = ../bin/Dist-macosx-x86_64/Ethane-Editor
+TARGETDIR = ../bin/Dist-macosx-ARM64/Ethane-Editor
 TARGET = $(TARGETDIR)/Ethane-Editor
-OBJDIR = ../bin-int/Dist-macosx-x86_64/Ethane-Editor
-DEFINES += -DETH_DIST
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -mmacosx-version-min=10.15.0
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -mmacosx-version-min=10.15.0
-LIBS += ../bin/Dist-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
-LDDEPS += ../bin/Dist-macosx-x86_64/EthaneEngine/libEthaneEngine.dylib
+OBJDIR = ../bin-int/Dist-macosx-ARM64/Ethane-Editor
+DEFINES += -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DETH_DIST
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -mmacosx-version-min=10.15.0
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g -std=c++20 -mmacosx-version-min=10.15.0
+LIBS += ../bin/Dist-macosx-ARM64/EthaneEngine/libEthaneEngine.dylib
+LDDEPS += ../bin/Dist-macosx-ARM64/EthaneEngine/libEthaneEngine.dylib
 
 endif
 
@@ -83,10 +83,18 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/CubeLayer.o
 GENERATED += $(OBJDIR)/EditorLayer.o
 GENERATED += $(OBJDIR)/EthaneEditorApp.o
+GENERATED += $(OBJDIR)/MeshLayer.o
+GENERATED += $(OBJDIR)/TexturedQuadLayer.o
+GENERATED += $(OBJDIR)/TriangleLayer.o
+OBJECTS += $(OBJDIR)/CubeLayer.o
 OBJECTS += $(OBJDIR)/EditorLayer.o
 OBJECTS += $(OBJDIR)/EthaneEditorApp.o
+OBJECTS += $(OBJDIR)/MeshLayer.o
+OBJECTS += $(OBJDIR)/TexturedQuadLayer.o
+OBJECTS += $(OBJDIR)/TriangleLayer.o
 
 # Rules
 # #############################################
@@ -150,10 +158,22 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/CubeLayer.o: src/CubeLayer.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EditorLayer.o: src/EditorLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EthaneEditorApp.o: src/EthaneEditorApp.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/MeshLayer.o: src/MeshLayer.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/TexturedQuadLayer.o: src/TexturedQuadLayer.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/TriangleLayer.o: src/TriangleLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

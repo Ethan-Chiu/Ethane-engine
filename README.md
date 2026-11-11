@@ -1,41 +1,41 @@
-# EthaneEngineWindows
+# EthaneEngine
 
 ## Introduction
 
-Ethane Game Engine Windows dev
+Ethane Game Engine: a Vulkan engine and editor for macOS (Apple Silicon) and Windows.
 
-## How to install
+## Setup
 
-* Requirement:
+Requirements:
 
-    1, Visual Studio 2019 or 2022 / Xcode / make 
+* Python 3.9 or newer
+* git
+* macOS: Xcode; Windows: Visual Studio 2022
 
-    https://visualstudio.microsoft.com/downloads
+Everything else is found or, after asking, downloaded by the setup script: the Vulkan SDK, premake, CMake,
+and the assimp / yaml-cpp builds.
 
-    2, python installed
-    
-</br>
+1. Clone the repository (the setup script fetches the submodules if you leave out `--recursive`):
 
-* To run the engine, follow these steps: 
+        git clone --recursive https://github.com/Ethan-Chiu/Ethane-engine.git
 
-    1, Clone this repository, run 
-    
-        git clone https://github.com/Ethan-Chiu/EthaneEngineWindows.git 
+2. Run the setup script, from any directory:
 
-    2, Go into `EthaneEngineWindows/scripts`
-            
-        cd EthaneEngineWindows/scripts
+        scripts/Setup.sh            # macOS
+        scripts\Setup.bat           # Windows (or double-click it)
 
-    3, Run  `Setup.bat/Setup.sh` by double click it
+   It checks out the submodules, finds the Vulkan SDK (`VULKAN_SDK`, else the installer's default
+   location), downloads premake, builds assimp and yaml-cpp into `EthaneEngine/vendor/build`, and
+   generates the project files. Finished steps are skipped, so rerun it whenever premake files or
+   submodules change. `--help` lists the options, e.g. `--no-deps` to only regenerate project files,
+   `--rebuild-deps` for a clean dependency build, `--yes` to accept every download.
 
-    4, Open the generated `EthaneEngine.sln`
-
-    5, Once you open it, you will see Visual studio boots up and you can click `Local Windows Debugger` to run it (or by pressing `F5`).
-
-</br>
+3. Build and run `Ethane-Editor`:
+   * macOS: open `EthaneEngine.xcworkspace` and run the `Ethane-Editor` scheme.
+   * Windows: open `EthaneEngine.sln` and run `Ethane-Editor` (F5).
 
 ## Note ( For developer ) 
 
 Memory management: unreal Core/HAL
 
-Vulkan Descriptor pool: VulkanImGuiLayer, VulkanMaterial, 
+Vulkan Descriptor pool: VulkanImGuiLayer, VulkanMaterial,

@@ -1,67 +1,104 @@
-import os
-import subprocess
+"""Sets up EthaneEngine for development: submodules, Vulkan SDK, premake, dependencies, project files.
+
+Run from anywhere, as often as you like; finished steps are skipped:
+    python3 scripts/Setup.py              (or scripts/Setup.sh, scripts\\Setup.bat)
+    python3 scripts/Setup.py --help
+"""
+
 import sys
 
-import CheckPython
+if sys.version_info < (3, 9):
+    sys.exit(f"Setup needs Python 3.9 or newer (this is {sys.version.split()[0]})")
+
+import argparse
+
+import CMake
 import Config
-# Make sure everything we need is installed
-CheckPython.ValidatePackages()
-
-import Vulkan
+import Dependencies
 import Premake
-import Cmake
 import Utils
-from PostProcess import AssimpBuild, YamlCppBuild
-
-argument1 = sys.argv[1] if len(sys.argv) > 1 else None
-build_deps = False
-argument_rest = None
-if argument1 == "build":
-    build_deps = True
-    argument_rest = sys.argv[2:] if len(sys.argv) > 2 else None
-
-# Change from Scripts directory to root
-os.chdir('../')
-
-if (not Vulkan.CheckVulkanSDK()):
-    print("Vulkan SDK not installed.")
-print("----------------------------------------")
-
-# if (not Vulkan.CheckVulkanSDKDebugLibs()):
-#     print("Vulkan SDK debug libs not found.")
-#     quit()
-# print("----------------------------------------")
-
-if (not Premake.check_premake_installed()):
-    print("Premake not installed. ")
-    quit()
-print("----------------------------------------")
-
-if (not Cmake.check_cmake_installed()):
-    print("Cmake not installed. ")
-print("----------------------------------------")
-
-print("Running premake...")
-for action in Config.premake_config.actions:
-    premake_path = Utils.filename_in_dir('premake', Config.premake_config.install_dir)
-    if premake_path is None:
-        print("Premake executable not found.")
-        quit()
-    print(f"Running: {premake_path.absolute()} {action}")
-    subprocess.call([str(premake_path.absolute()), action])
-print("----------------------------------------")
+import Vulkan
 
 
-if build_deps: 
-    print("Post processing...")
-    build_all = argument_rest is None
-    assimp_task = AssimpBuild() 
-    yaml_cpp_task = YamlCppBuild()
-    if build_all or assimp_task.get_key() in argument_rest:
-        assimp_task.process()
-        print("----------------------------------------")
-    if build_all or yaml_cpp_task.get_key() in argument_rest:
-        yaml_cpp_task.process()
-        print("----------------------------------------")
+def check_platform():
+    if not (Config.IS_MAC or Config.IS_WINDOWS):
+        raise Utils.SetupError(f"{Config.SYSTEM} isn't supported yet (macOS and Windows are)")
 
-input("Program ended. Press [Enter] to close ... ")
+
+def init_submodules():
+    if not (Config.ROOT / ".git").exists():
+        Utils.warn("Not a git checkout: can't fetch submodules (clone the repository with git instead)")
+        return
+    status = Utils.output(["git", "submodule", "status"], cwd=Config.ROOT).splitlines()
+    missing = [line.split()[1] for line in status if line.startswith("-")]
+    moved = [line.split()[1] for line in status if line.startswith("+")]
+    if missing:
+        Utils.run(["git", "submodule", "update", "--init", "--recursive", "--", *missing], cwd=Config.ROOT)
+    for path in moved:  # left alone: may be deliberate local work
+        Utils.warn(f"{path} is not at the commit this repository records (`git submodule update {path}` resets it)")
+    Utils.ok(f"{len(status)} submodules checked out")
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Sets up EthaneEngine for development.")
+    parser.add_argument("-y", "--yes", action="store_true",
+                        help="answer yes to every download / install question")
+    parser.add_argument("--no-deps", action="store_true",
+                        help="don't build assimp / yaml-cpp (just regenerate project files)")
+    parser.add_argument("--rebuild-deps", nargs="*", metavar="LIB",
+                        help=f"rebuild dependencies from scratch: {', '.join(Config.Deps.libraries)} (all if none given)")
+    parser.add_argument("--action", action="append", metavar="ACTION",
+                        help=f"premake action(s) to run (default: {' '.join(Config.Premake.actions)})")
+    return parser.parse_args()
+
+
+def print_next_steps(vulkan_sdk):
+    Utils.step("Done")
+    if Config.IS_MAC:
+        Utils.info("Open EthaneEngine.xcworkspace in Xcode and run the Ethane-Editor scheme")
+        Utils.info(f"(Launching from a shell instead needs: source \"{vulkan_sdk.parent / 'setup-env.sh'}\")")
+    else:
+        Utils.info("Open EthaneEngine.sln in Visual Studio and run Ethane-Editor (F5)")
+    Utils.info("Rerun this script after pulling changes to premake files or submodules.")
+
+
+def main():
+    sys.stdout.reconfigure(line_buffering=True)  # keeps output in order with stderr when piped
+    args = parse_args()
+    Utils.assume_yes = args.yes
+    check_platform()
+
+    Utils.step("Submodules")
+    init_submodules()
+
+    Utils.step("Vulkan SDK")
+    vulkan_sdk = Vulkan.ensure()
+
+    Utils.step("Premake")
+    premake = Premake.ensure()
+
+    if args.no_deps:
+        Utils.step("Dependencies (skipped: --no-deps)")
+    else:
+        Utils.step("Dependencies")
+        cmake = CMake.ensure()
+        rebuild = args.rebuild_deps
+        if rebuild is not None and not rebuild:  # --rebuild-deps without names: everything
+            rebuild = list(Config.Deps.libraries)
+        Dependencies.build(cmake, rebuild or ())
+
+    Utils.step("Project files")
+    Premake.generate(premake, vulkan_sdk, args.action or Config.Premake.actions)
+
+    print_next_steps(vulkan_sdk)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Utils.SetupError as e:
+        Utils.error(f"Setup failed: {e}")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print()
+        sys.exit(130)

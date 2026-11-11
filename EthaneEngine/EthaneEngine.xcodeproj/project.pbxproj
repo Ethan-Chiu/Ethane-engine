@@ -1753,8 +1753,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					../../../../VulkanSDK/1.4.309.0/macOS/lib,
-					"vendor/yaml-cpp/build",
-					vendor/assimp/lib,
+					vendor/build/Release/lib,
 				);
 				OBJROOT = "../bin-int/Release-macosx-ARM64/EthaneEngine";
 				ONLY_ACTIVE_ARCH = NO;
@@ -1778,8 +1777,7 @@
 					vendor/stb_image,
 					vendor/entt/include,
 					../../../../VulkanSDK/1.4.309.0/macOS/Include,
-					vendor/assimp/include,
-					"vendor/yaml-cpp/include",
+					vendor/build/Release/include,
 					vendor/imgui,
 					"$(inherited)",
 				);
@@ -1829,8 +1827,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					../../../../VulkanSDK/1.4.309.0/macOS/lib,
-					"vendor/yaml-cpp/build",
-					vendor/assimp/lib,
+					vendor/build/Release/lib,
 				);
 				OBJROOT = "../bin-int/Debug-macosx-ARM64/EthaneEngine";
 				ONLY_ACTIVE_ARCH = YES;
@@ -1854,8 +1851,7 @@
 					vendor/stb_image,
 					vendor/entt/include,
 					../../../../VulkanSDK/1.4.309.0/macOS/Include,
-					vendor/assimp/include,
-					"vendor/yaml-cpp/include",
+					vendor/build/Release/include,
 					vendor/imgui,
 					"$(inherited)",
 				);
@@ -1891,8 +1887,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					../../../../VulkanSDK/1.4.309.0/macOS/lib,
-					"vendor/yaml-cpp/build",
-					vendor/assimp/lib,
+					vendor/build/Release/lib,
 				);
 				OBJROOT = "../bin-int/Dist-macosx-ARM64/EthaneEngine";
 				ONLY_ACTIVE_ARCH = YES;
@@ -1916,8 +1911,7 @@
 					vendor/stb_image,
 					vendor/entt/include,
 					../../../../VulkanSDK/1.4.309.0/macOS/Include,
-					vendor/assimp/include,
-					"vendor/yaml-cpp/include",
+					vendor/build/Release/include,
 					vendor/imgui,
 					"$(inherited)",
 				);

@@ -129,7 +129,8 @@ project "EthaneEngine"
         defines
         {
             "ETH_BUILD_DLL",
-            "GLFW_INCLUDE_NONE"
+            "GLFW_INCLUDE_NONE",
+            "YAML_CPP_STATIC_DEFINE" -- static yaml-cpp: no __declspec(dllimport)
         }
 
         links 
@@ -141,8 +142,7 @@ project "EthaneEngine"
     filter { "system:windows", "configurations:Debug" }
         libdirs
         {
-            "%{LibraryDir.yamlcpp}/Debug",
-            "%{LibraryDir.assimp}/Debug"
+            "%{LibraryDir.DepsDebug}"
         }
 
         links
@@ -159,8 +159,7 @@ project "EthaneEngine"
     filter { "system:windows", "configurations:Release" }
         libdirs
         {
-            "%{LibraryDir.yamlcpp}/Release",
-            "%{LibraryDir.assimp}/Release"
+            "%{LibraryDir.DepsRelease}"
         }
 
         links
@@ -176,8 +175,7 @@ project "EthaneEngine"
 
     filter { "system:windows", "configurations:Dist" }
         libdirs {
-            "%{LibraryDir.yamlcpp}/Release",
-            "%{LibraryDir.assimp}/Release"
+            "%{LibraryDir.DepsRelease}"
         }
 
         links
@@ -204,8 +202,7 @@ project "EthaneEngine"
 
         libdirs 
         { 
-            "%{LibraryDir.yamlcpp}",
-            "%{LibraryDir.assimp}"
+            "%{LibraryDir.DepsRelease}"
         }
 
         links 
@@ -308,7 +305,7 @@ project "Ethane-Editor"
     filter { "system:windows", "configurations:Debug"}
         postbuildcommands 
         {
-        '{COPY} "%{LibraryDir.vendor}/assimp/bin/Debug/%{Library.AssimpDebug}.dll" "%{cfg.targetdir}"'
+        '{COPY} "%{LibraryDir.DepsBinDebug}/%{Library.AssimpDebug}.dll" "%{cfg.targetdir}"'
         }
 
     filter "configurations:Release"
@@ -319,7 +316,7 @@ project "Ethane-Editor"
     filter { "system:windows", "configurations:Release"}
         postbuildcommands 
         {
-        '{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
+        '{COPY} "%{LibraryDir.DepsBinRelease}/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
         }
 
     filter "configurations:Dist"
@@ -330,6 +327,6 @@ project "Ethane-Editor"
     filter { "system:windows", "configurations:Dist"}
         postbuildcommands 
         {
-            '{COPY} "%{LibraryDir.vendor}/assimp/bin/Release/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
+            '{COPY} "%{LibraryDir.DepsBinRelease}/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
         }
 

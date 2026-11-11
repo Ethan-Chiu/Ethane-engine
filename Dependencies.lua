@@ -12,8 +12,9 @@ IncludeDir["entt"] = "%{wks.location}/EthaneEngine/vendor/entt/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 -- IncludeDir["shaderc"] = "%{wks.location}/EthaneEngine/vendor/shaderc/include"
 -- IncludeDir["SPIRV_Cross"] = "%{wks.location}/EthaneEngine/vendor/SPIRV-Cross"
-IncludeDir["assimp"] = "%{wks.location}/EthaneEngine/vendor/assimp/include"
-IncludeDir["yaml_cpp"] = "%{wks.location}/EthaneEngine/vendor/yaml-cpp/include"
+-- assimp and yaml-cpp are built and installed by scripts/Setup.py (headers are the same in every configuration)
+IncludeDir["assimp"] = "%{wks.location}/EthaneEngine/vendor/build/Release/include"
+IncludeDir["yaml_cpp"] = "%{wks.location}/EthaneEngine/vendor/build/Release/include"
 IncludeDir["imgui"] = "%{wks.location}/EthaneEngine/vendor/imgui"
 IncludeDir["ImGuizmo"] = "%{wks.location}/EthaneEngine/vendor/ImGuizmo"
 
@@ -22,8 +23,12 @@ LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/lib"
 LibraryDir["vendor"] = "%{wks.location}/EthaneEngine/vendor"
 
-LibraryDir["assimp"] = "%{LibraryDir.vendor}/assimp/lib"
-LibraryDir["yamlcpp"] = "%{LibraryDir.vendor}/yaml-cpp/build"
+-- Install prefixes of the dependencies built by scripts/Setup.py: Debug and Release on Windows,
+-- Release only on macOS (linked by every configuration there)
+LibraryDir["DepsDebug"] = "%{LibraryDir.vendor}/build/Debug/lib"
+LibraryDir["DepsRelease"] = "%{LibraryDir.vendor}/build/Release/lib"
+LibraryDir["DepsBinDebug"] = "%{LibraryDir.vendor}/build/Debug/bin"
+LibraryDir["DepsBinRelease"] = "%{LibraryDir.vendor}/build/Release/bin"
 
 -- General
 Library = {}
