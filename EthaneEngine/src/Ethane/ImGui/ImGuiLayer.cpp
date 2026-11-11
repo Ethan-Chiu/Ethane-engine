@@ -3,20 +3,29 @@
 
 #include <imgui.h>
 
-//#include "Ethane/Renderer/Vulkan/ImGui/VulkanImGuiLayer.h"
-//#include "Ethane/Renderer/RendererAPI.h"
+#include "Ethane/GfxBackend/GfxBackendAPI.h"
+#include "Ethane/GfxBackend/Vulkan/VulkanImGuiLayer.h"
 
 namespace Ethane {
 	
-	ImGuiLayer* ImGuiLayer::Create()
+	ImGuiLayer* ImGuiLayer::Create(GfxBackendAPI& backend, IWindowTarget& windowTarget, void* nativeWindow)
 	{
-//		switch (RendererAPI::GetAPI())
-//		{
-//			case RendererAPI::API::None:    return nullptr;
-//			case RendererAPI::API::Vulkan:  return new VulkanImGuiLayer();
-//		}
-		ETH_CORE_ASSERT(false, "Unknown RendererAPI");
+		switch (GfxBackendAPI::GetAPI())
+		{
+			case GfxBackendAPI::API::Vulkan: return new VulkanImGuiLayer(backend, windowTarget, nativeWindow);
+			case GfxBackendAPI::API::None:   break;
+		}
+		ETH_CORE_ASSERT(false, "Unknown GfxBackendAPI");
 		return nullptr;
+	}
+
+	void ImGuiLayer::OnEvent(Event& e)
+	{
+		if (!m_BlockEvents)
+			return;
+		const ImGuiIO& io = ImGui::GetIO();
+		e.Handled |= e.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
+		e.Handled |= e.IsInCategory(EventCategoryKeyboard) && io.WantCaptureKeyboard;
 	}
 
 	void ImGuiLayer::SetDarkThemeColors()
@@ -42,9 +51,9 @@ namespace Ethane {
 		// Tabs
 		colors[ImGuiCol_Tab] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 		colors[ImGuiCol_TabHovered] = ImVec4{ 0.38f, 0.3805f, 0.381f, 1.0f };
-		colors[ImGuiCol_TabActive] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
-		colors[ImGuiCol_TabUnfocused] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
-		colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+		colors[ImGuiCol_TabSelected] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
+		colors[ImGuiCol_TabDimmed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+		colors[ImGuiCol_TabDimmedSelected] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
 
 		// Title
 		colors[ImGuiCol_TitleBg] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };

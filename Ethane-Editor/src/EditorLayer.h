@@ -27,6 +27,7 @@ namespace Ethane {
         
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
         bool m_NeedResize = false;
+        bool m_ShowImGuiDemo = false;
         
 //        EditorCamera m_EditorCamera;
 

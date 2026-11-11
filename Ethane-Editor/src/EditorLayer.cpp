@@ -85,9 +85,15 @@ namespace Ethane {
 
 	void EditorLayer::OnImGuiRender()
 	{
-//        ImGui::Begin("Control Panel");
-//        ImGui::Text("HIHIHI");
-//        ImGui::End();
+		const ImGuiIO& io = ImGui::GetIO();
+		ImGui::Begin("Stats");
+		ImGui::Text("%.1f FPS (%.2f ms)", io.Framerate, 1000.0f / std::max(io.Framerate, 1e-3f));
+		ImGui::Text("ImGui %s", ImGui::GetVersion());
+		ImGui::Checkbox("ImGui demo window", &m_ShowImGuiDemo);
+		ImGui::End();
+
+		if (m_ShowImGuiDemo)
+			ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
 	}
 
     bool EditorLayer::OnResize(WindowResizeEvent& e)
@@ -99,7 +105,7 @@ namespace Ethane {
 //        m_ViewportHeight = e.GetHeight();
 //        
 //        m_NeedResize = true;
-//        return false;
+        return false;
     }
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
@@ -115,7 +121,7 @@ namespace Ethane {
 //            default:
 //                break;
 //        }
-//        return false;
+        return false;
     }
 
 }

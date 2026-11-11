@@ -278,6 +278,8 @@ public:
     const vk::raii::Instance& GetInstance() const { return m_VulkanInstance; }
     const VulkanPhysicalDevice& GetPhysicalDevice() const { return m_PhysicalDevice; }
     const VulkanDevice& GetDevice() const { return m_Device; }
+    // The API version the instance was created with (VkApplicationInfo::apiVersion)
+    uint32_t GetApiVersion() const { return VK_MAKE_API_VERSION(0, m_ContextInfo.ApiMajor, m_ContextInfo.ApiMinor, 0); }
 
 protected:
     void Init(ContextCreateInfo& info);

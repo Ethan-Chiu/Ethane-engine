@@ -35,7 +35,6 @@ INCLUDES += -Isrc -isystem vendor/spdlog/include -isystem vendor/GLFW/include -i
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.4.309.0/macOS/lib -Lvendor/build/Release/lib -Wl,-rpath,'@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib' -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef
@@ -53,6 +52,7 @@ ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -fPIC -g -mmacosx-version-min=10.15.0
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -fPIC -g -std=c++20 -mmacosx-version-min=10.15.0
 LIBS += vendor/GLFW/bin/Debug-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-ARM64/Glad/libGlad.a ../bin/Debug-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
 LDDEPS += vendor/GLFW/bin/Debug-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Debug-macosx-ARM64/Glad/libGlad.a ../bin/Debug-macosx-ARM64/ImGui/libImGui.a
+ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.4.309.0/macOS/lib -Lvendor/build/Release/lib -Wl,-rpath,'@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib' -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib -Wl,-force_load,../bin/Debug-macosx-ARM64/ImGui/libImGui.a
 
 else ifeq ($(config),release)
 TARGETDIR = ../bin/Release-macosx-ARM64/EthaneEngine
@@ -63,6 +63,7 @@ ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC -mmacosx-version-min=10.15.0
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC -std=c++20 -mmacosx-version-min=10.15.0
 LIBS += vendor/GLFW/bin/Release-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-ARM64/Glad/libGlad.a ../bin/Release-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
 LDDEPS += vendor/GLFW/bin/Release-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Release-macosx-ARM64/Glad/libGlad.a ../bin/Release-macosx-ARM64/ImGui/libImGui.a
+ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.4.309.0/macOS/lib -Lvendor/build/Release/lib -Wl,-rpath,'@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib' -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib -Wl,-force_load,../bin/Release-macosx-ARM64/ImGui/libImGui.a
 
 else ifeq ($(config),dist)
 TARGETDIR = ../bin/Dist-macosx-ARM64/EthaneEngine
@@ -73,6 +74,7 @@ ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -fPIC -g -mmacosx-version-min=10.15.0
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -fPIC -g -std=c++20 -mmacosx-version-min=10.15.0
 LIBS += vendor/GLFW/bin/Dist-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-ARM64/Glad/libGlad.a ../bin/Dist-macosx-ARM64/ImGui/libImGui.a -framework OpenGL -framework Cocoa -framework IOKit -lvulkan -lz -lshaderc_shared -lshaderc_util -lspirv-cross-core -lspirv-cross-glsl -lSPIRV-Tools -lassimp -lyaml-cpp
 LDDEPS += vendor/GLFW/bin/Dist-macosx-ARM64/GLFW/libGLFW.a vendor/Glad/bin/Dist-macosx-ARM64/Glad/libGlad.a ../bin/Dist-macosx-ARM64/ImGui/libImGui.a
+ALL_LDFLAGS += $(LDFLAGS) -L../../../../VulkanSDK/1.4.309.0/macOS/lib -Lvendor/build/Release/lib -Wl,-rpath,'@loader_path/../../../../../../VulkanSDK/1.4.309.0/macOS/lib' -dynamiclib -Wl,-install_name,@rpath/libEthaneEngine.dylib -Wl,-force_load,../bin/Dist-macosx-ARM64/ImGui/libImGui.a
 
 endif
 
@@ -118,6 +120,7 @@ GENERATED += $(OBJDIR)/VulkanCommandBuffer.o
 GENERATED += $(OBJDIR)/VulkanContext.o
 GENERATED += $(OBJDIR)/VulkanDevice.o
 GENERATED += $(OBJDIR)/VulkanGfxBackendAPI.o
+GENERATED += $(OBJDIR)/VulkanImGuiLayer.o
 GENERATED += $(OBJDIR)/VulkanPipeline.o
 GENERATED += $(OBJDIR)/VulkanRenderPass.o
 GENERATED += $(OBJDIR)/VulkanShader.o
@@ -163,6 +166,7 @@ OBJECTS += $(OBJDIR)/VulkanCommandBuffer.o
 OBJECTS += $(OBJDIR)/VulkanContext.o
 OBJECTS += $(OBJDIR)/VulkanDevice.o
 OBJECTS += $(OBJDIR)/VulkanGfxBackendAPI.o
+OBJECTS += $(OBJDIR)/VulkanImGuiLayer.o
 OBJECTS += $(OBJDIR)/VulkanPipeline.o
 OBJECTS += $(OBJDIR)/VulkanRenderPass.o
 OBJECTS += $(OBJDIR)/VulkanShader.o
@@ -294,6 +298,9 @@ $(OBJDIR)/VulkanDevice.o: src/Ethane/GfxBackend/Vulkan/VulkanDevice.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanGfxBackendAPI.o: src/Ethane/GfxBackend/Vulkan/VulkanGfxBackendAPI.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanImGuiLayer.o: src/Ethane/GfxBackend/Vulkan/VulkanImGuiLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanPipeline.o: src/Ethane/GfxBackend/Vulkan/VulkanPipeline.cpp

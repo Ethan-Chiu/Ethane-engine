@@ -205,6 +205,10 @@ project "EthaneEngine"
             "%{LibraryDir.DepsRelease}"
         }
 
+        -- Load all of ImGui into the dylib, not just what the engine itself calls: the editor uses ImGui
+        -- through the engine (one shared ImGui context), e.g. ImGui::ShowDemoWindow
+        linkoptions { "-Wl,-force_load,%{wks.location}/bin/" .. outputdir .. "/ImGui/libImGui.a" }
+
         links 
         {
             "OpenGL.framework",

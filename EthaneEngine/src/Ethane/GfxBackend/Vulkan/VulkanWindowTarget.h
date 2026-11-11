@@ -39,6 +39,8 @@ public:
     // NOTE: recreated if the swapchain format ever changes, which would make existing pipelines incompatible
     virtual RefCountPtr<IRenderPass> GetRenderPass() const override { return RefCountPtr<IRenderPass>(m_RenderPass); }
     vk::Extent2D GetExtent() const { return m_Extent; }
+    // The window's render pass, for Vulkan-specific integrations (e.g. VulkanImGuiLayer)
+    vk::RenderPass GetRenderPassHandle() const { return m_RenderPass->GetHandle(); }
     
 private:
     struct FrameData

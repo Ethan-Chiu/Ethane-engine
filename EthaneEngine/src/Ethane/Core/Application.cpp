@@ -55,8 +55,8 @@ namespace Ethane
 
 		AssetManager::Init();
 
-//		m_ImGuiLayer = ImGuiLayer::Create();
-//		PushOverlay(m_ImGuiLayer);
+		m_ImGuiLayer = ImGuiLayer::Create(*m_RendererBackend, *m_WindowTarget, m_Window->GetNativeWindow());
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -138,6 +138,17 @@ namespace Ethane
                         layer->OnUpdate(timestep);
                 }
 
+				// The UI is built before recording, so OnImGuiRender can change what OnRender draws this frame
+				if (m_ImGuiLayer)
+				{
+					ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+					m_ImGuiLayer->Begin();
+					for (Layer* layer : m_LayerStack)
+						layer->OnImGuiRender();
+					m_ImGuiLayer->End();
+				}
+
 				// false: nothing to present this iteration (e.g. 0-sized window), skip recording
 				if (m_WindowTarget->BeginFrame())
 				{
@@ -146,21 +157,11 @@ namespace Ethane
 					ICommandList& commandList = m_WindowTarget->GetCommandList();
 					for (Layer* layer : m_LayerStack)
 						layer->OnRender(commandList);
+					if (m_ImGuiLayer)
+						m_ImGuiLayer->Render(commandList); // on top of everything
 
 					m_WindowTarget->EndFrame();
 				}
-
-                if (m_ImGuiLayer)
-                {
-                    m_ImGuiLayer->Begin();
-                    {
-                        ETH_PROFILE_SCOPE("LayerStack OnImGuiRender");
-
-                        for (Layer* layer : m_LayerStack)
-                            layer->OnImGuiRender();
-                    }
-                    m_ImGuiLayer->End();
-                }
 
 			}
 		}

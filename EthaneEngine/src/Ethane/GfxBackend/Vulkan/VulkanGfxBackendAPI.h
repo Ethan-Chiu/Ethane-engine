@@ -39,6 +39,9 @@ namespace Ethane {
         virtual void EndFrame() override;
     public:
         ~VulkanGfxBackendAPI() = default;
+
+        // For Vulkan-specific integrations (e.g. VulkanImGuiLayer)
+        const VulkanContext& GetContext() const { return m_Context; }
         
     private:
         VulkanContext m_Context;
