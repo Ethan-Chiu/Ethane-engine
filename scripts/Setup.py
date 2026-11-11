@@ -29,6 +29,8 @@ def init_submodules():
     if not (Config.ROOT / ".git").exists():
         Utils.warn("Not a git checkout: can't fetch submodules (clone the repository with git instead)")
         return
+    # Picks up submodule URL changes from .gitmodules (e.g. imgui moved from a fork to upstream)
+    Utils.output(["git", "submodule", "sync", "--quiet", "--recursive"], cwd=Config.ROOT)
     status = Utils.output(["git", "submodule", "status"], cwd=Config.ROOT).splitlines()
     missing = [line.split()[1] for line in status if line.startswith("-")]
     moved = [line.split()[1] for line in status if line.startswith("+")]
