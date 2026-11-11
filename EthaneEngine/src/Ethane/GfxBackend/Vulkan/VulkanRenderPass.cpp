@@ -87,14 +87,29 @@ namespace Ethane {
 
         if (colorAttachmentFormats.size())
         {
-            // TODO: configure
+            // Before the clear / first write. Presenting: the window waits on the acquire semaphore at the
+            // color output stage, which this chains to. Offscreen: shaders of the previous frame may still be
+            // sampling the image (write after read: an execution dependency is enough).
             subpassDependencies.push_back(vk::SubpassDependency{
                 .srcSubpass    = VK_SUBPASS_EXTERNAL,
                 .dstSubpass    = 0,
-                .srcStageMask  = Stage::eColorAttachmentOutput,
+                .srcStageMask  = finalPresent ? vk::PipelineStageFlags(Stage::eColorAttachmentOutput)
+                                              : Stage::eColorAttachmentOutput | Stage::eFragmentShader,
                 .dstStageMask  = Stage::eColorAttachmentOutput,
                 .srcAccessMask = {},
                 .dstAccessMask = Access::eColorAttachmentWrite});
+        }
+
+        if (colorAttachmentFormats.size() && !finalPresent)
+        {
+            // Colors written here are sampled by later passes (e.g. ImGui showing the image)
+            subpassDependencies.push_back(vk::SubpassDependency{
+                .srcSubpass    = 0,
+                .dstSubpass    = VK_SUBPASS_EXTERNAL,
+                .srcStageMask  = Stage::eColorAttachmentOutput,
+                .dstStageMask  = Stage::eFragmentShader,
+                .srcAccessMask = Access::eColorAttachmentWrite,
+                .dstAccessMask = Access::eShaderRead});
         }
 
         if (hasDepth)
@@ -134,12 +149,13 @@ namespace Ethane {
             .pDependencies   = subpassDependencies.data()});
     }
 
-    void VulkanRenderPass::Begin(const vk::raii::CommandBuffer& cmdBuffer, uint32_t width, uint32_t height, vk::Framebuffer frameBuffer) const
+    void VulkanRenderPass::Begin(const vk::raii::CommandBuffer& cmdBuffer, uint32_t width, uint32_t height, vk::Framebuffer frameBuffer,
+                                 const std::array<float, 4>& clearColor) const
     {
         // One clear value per attachment, indexed like the attachments: colors first, then depth
         // NOTE: vulkan-hpp unions keep their constructors (VULKAN_HPP_NO_STRUCT_CONSTRUCTORS only affects structs)
         std::vector<vk::ClearValue> clearValues(m_AttachmentCount,
-            vk::ClearValue{ vk::ClearColorValue{ std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f } } });
+            vk::ClearValue{ vk::ClearColorValue{ clearColor } });
         if (m_HasDepth) {
             clearValues.push_back(vk::ClearValue{ vk::ClearDepthStencilValue{ .depth = 1.0f, .stencil = 0 } });
         }

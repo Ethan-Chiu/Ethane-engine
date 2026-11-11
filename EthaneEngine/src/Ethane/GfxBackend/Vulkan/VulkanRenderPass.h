@@ -12,7 +12,9 @@ namespace Ethane {
 		VulkanRenderPass(const VulkanDevice* device, const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false);
 		virtual ~VulkanRenderPass() = default;
 
-		void Begin(const vk::raii::CommandBuffer& cmdBuffer, uint32_t width, uint32_t height, vk::Framebuffer frameBuffer) const;
+		// Clears the color attachments to `clearColor` and the depth attachment to 1.0
+		void Begin(const vk::raii::CommandBuffer& cmdBuffer, uint32_t width, uint32_t height, vk::Framebuffer frameBuffer,
+		           const std::array<float, 4>& clearColor = { 0.0f, 0.0f, 0.0f, 1.0f }) const;
 		void End(const vk::raii::CommandBuffer& cmdBuffer) const;
 
 		vk::RenderPass GetHandle() const { return *m_RenderPass; }

@@ -32,6 +32,7 @@ namespace Ethane {
         virtual RefCountPtr<IShader> CreateShader(const std::string& filepath) override;
         virtual RefCountPtr<IRenderPass> CreateRenderPass(const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false) override;
         virtual RefCountPtr<IPipeline> CreatePipeline(const PipelineSpecification& spec) override;
+        virtual RefCountPtr<IRenderTarget> CreateRenderTarget(const RenderTargetSpecification& spec) override;
 
         virtual void WaitIdle() override;
 

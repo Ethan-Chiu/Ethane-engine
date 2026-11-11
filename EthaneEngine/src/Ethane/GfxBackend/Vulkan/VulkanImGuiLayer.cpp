@@ -4,6 +4,7 @@
 #include "VulkanGfxBackendAPI.h"
 #include "VulkanWindowTarget.h"
 #include "VulkanCommandBuffer.h"
+#include "VulkanRenderTarget.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -78,6 +79,7 @@ namespace Ethane {
     void VulkanImGuiLayer::OnDetach()
     {
         // Application waits for the GPU to go idle before detaching layers
+        ReleaseUnusedTextures(true);
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -85,6 +87,8 @@ namespace Ethane {
 
     void VulkanImGuiLayer::Begin()
     {
+        m_FrameCounter++;
+        ReleaseUnusedTextures(false);
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -103,6 +107,31 @@ namespace Ethane {
         }
         // Also uploads new / changed textures (font glyphs); sets its own pipeline, viewport and scissor
         ImGui_ImplVulkan_RenderDrawData(drawData, static_cast<VulkanCommandBuffer&>(commandList).GetHandle());
+    }
+
+    ImTextureID VulkanImGuiLayer::GetTextureID(const IRenderTarget& target)
+    {
+        const auto& vulkanTarget = static_cast<const VulkanRenderTarget&>(target);
+        auto [it, inserted] = m_Textures.try_emplace(vulkanTarget.GetImageId());
+        if (inserted) {
+            it->second.Set = ImGui_ImplVulkan_AddTexture(vulkanTarget.GetColorView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
+        it->second.LastUsedFrame = m_FrameCounter;
+        return reinterpret_cast<ImTextureID>(it->second.Set);
+    }
+
+    void VulkanImGuiLayer::ReleaseUnusedTextures(bool all)
+    {
+        // A set last used in UI frame N is recorded into GPU frame N; once kMaxFramesInFlight more frames
+        // have started, frame N's fence has been waited on. (Resizing a target waits for the GPU anyway.)
+        for (auto it = m_Textures.begin(); it != m_Textures.end();) {
+            if (all || it->second.LastUsedFrame + VulkanDevice::kMaxFramesInFlight + 1 < m_FrameCounter) {
+                ImGui_ImplVulkan_RemoveTexture(it->second.Set);
+                it = m_Textures.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 
 }

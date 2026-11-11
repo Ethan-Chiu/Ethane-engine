@@ -9,6 +9,8 @@
 #include "Resource.h"
 #include "ShaderConfig.h"
 
+#include <array>
+
 namespace Ethane {
 
 class IBuffer : public RefCounted<IBuffer>
@@ -130,6 +132,33 @@ public:
     virtual ~IRenderPass() = default;
 };
 
+struct RenderTargetSpecification
+{
+    uint32_t Width = 1;
+    uint32_t Height = 1;
+    ImageFormat ColorFormat = ImageFormat::RGBA;
+    ImageFormat DepthFormat = ImageFormat::Depth; // ImageFormat::None: no depth buffer
+    std::array<float, 4> ClearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
+};
+
+// Offscreen color (+ depth) images to render into, e.g. an editor viewport. Every render pass on it clears
+// it; afterwards the color image can be sampled (ImGuiLayer::GetTextureID shows it in ImGui). Row 0 is the
+// top of the rendered image, like the window. One set of images is shared by all frames in flight: the
+// render pass orders a frame's drawing after the previous frame's reads.
+class IRenderTarget : public RefCounted<IRenderTarget>
+{
+public:
+    virtual ~IRenderTarget() = default;
+    virtual const RenderTargetSpecification& GetSpecification() const = 0;
+
+    // Recreates the images at the new size (no-op if unchanged; 0 is clamped to 1). Waits for the GPU to go
+    // idle first, so call it outside of recording (e.g. in OnUpdate), not every frame.
+    virtual void Resize(uint32_t width, uint32_t height) = 0;
+
+    // What pipelines drawing into this target must be created with (stays the same across resizes)
+    virtual RefCountPtr<IRenderPass> GetRenderPass() const = 0;
+};
+
 enum class CullMode {
     NONE,
     FRONT,
@@ -180,14 +209,21 @@ public:
     virtual void SetTexture(uint32_t binding, const RefCountPtr<ITexture2D>& texture) = 0;
 };
 
-// Records GPU commands into the frame being built. Handed to Layer::OnRender(), valid only during
-// that call; recording happens inside the window target's render pass, with the viewport and scissor
-// already covering the whole window (y up, like OpenGL). The pass has a depth buffer, cleared to 1.0
-// each frame (pipelines test with LESS); clip-space depth is 0..1 (GLM_FORCE_DEPTH_ZERO_TO_ONE).
+// Records GPU commands into the frame being built. Handed to Layer::OnRenderOffscreen() and Layer::OnRender(),
+// valid only during those calls. Draws happen inside a render pass, whose viewport and scissor cover its
+// whole target (y up, like OpenGL):
+// - OnRenderOffscreen: no pass is active; draw into IRenderTargets with BeginRenderPass / EndRenderPass.
+// - OnRender: inside the window's render pass.
+// Every pass clears its depth buffer to 1.0 (pipelines test with LESS); clip-space depth is 0..1
+// (GLM_FORCE_DEPTH_ZERO_TO_ONE).
 class ICommandList
 {
 public:
     virtual ~ICommandList() = default;
+
+    // Clears `target` and starts drawing into it (it must stay alive until the frame has been rendered)
+    virtual void BeginRenderPass(IRenderTarget& target) = 0;
+    virtual void EndRenderPass() = 0;
 
     virtual void BindPipeline(const IPipeline& pipeline) = 0;
     virtual void BindVertexBuffer(const IVertexBuffer& buffer) = 0;
@@ -211,11 +247,14 @@ public:
     // The window's framebuffer changed size: the swapchain is rebuilt before the next frame
     virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-    // Waits for a free frame slot, acquires the next image and starts recording into it.
+    // Waits for a free frame slot, acquires the next image and starts recording (outside any render pass).
     // Returns false when there is nothing to render to this frame (e.g. a 0-sized window);
     // call EndFrame() only when BeginFrame() returned true.
     virtual bool BeginFrame() = 0;
-    // Submits the frame's commands and presents the image
+    // Starts the window's render pass (clears color and depth), at most once per frame
+    virtual void BeginRenderPass() = 0;
+    // Ends the window's render pass (running it, to clear the image, if it wasn't started), submits the
+    // frame's commands and presents the image
     virtual void EndFrame() = 0;
 
     // Valid between BeginFrame() and EndFrame()

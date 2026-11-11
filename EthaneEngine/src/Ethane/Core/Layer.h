@@ -17,7 +17,10 @@ namespace Ethane {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate(Timestep ts) {}
-		// Called after OnUpdate, only when a frame is being rendered: record draw commands here
+		// Called after OnUpdate (and the ImGui UI is built), only when a frame is being rendered. First every
+		// layer's OnRenderOffscreen, outside any render pass: draw into IRenderTargets here. Then every
+		// layer's OnRender, inside the window's render pass.
+		virtual void OnRenderOffscreen(ICommandList& commandList) {}
 		virtual void OnRender(ICommandList& commandList) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}

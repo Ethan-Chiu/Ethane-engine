@@ -156,6 +156,10 @@ namespace Ethane
 
 					ICommandList& commandList = m_WindowTarget->GetCommandList();
 					for (Layer* layer : m_LayerStack)
+						layer->OnRenderOffscreen(commandList);
+
+					m_WindowTarget->BeginRenderPass();
+					for (Layer* layer : m_LayerStack)
 						layer->OnRender(commandList);
 					if (m_ImGuiLayer)
 						m_ImGuiLayer->Render(commandList); // on top of everything

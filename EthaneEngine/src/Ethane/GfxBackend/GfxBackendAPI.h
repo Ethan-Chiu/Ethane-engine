@@ -46,6 +46,8 @@ public:
     virtual RefCountPtr<IShader> CreateShader(const std::string& filepath) = 0;
     virtual RefCountPtr<IRenderPass> CreateRenderPass(const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false) = 0;
     virtual RefCountPtr<IPipeline> CreatePipeline(const PipelineSpecification& spec) = 0;
+    // Offscreen color (+ depth) images to render into and sample afterwards
+    virtual RefCountPtr<IRenderTarget> CreateRenderTarget(const RenderTargetSpecification& spec) = 0;
 
     // Blocks until the GPU has finished all submitted work (e.g. before releasing resources it may use)
     virtual void WaitIdle() = 0;

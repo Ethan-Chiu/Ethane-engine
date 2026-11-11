@@ -17,6 +17,7 @@
 #include "VulkanShader.h"
 #include "VulkanTexture.h"
 #include "VulkanBindingSet.h"
+#include "VulkanRenderTarget.h"
 
 
 namespace Ethane {
@@ -69,6 +70,10 @@ RefCountPtr<IShader> VulkanGfxBackendAPI::CreateShader(const std::string& filepa
 
 RefCountPtr<IRenderPass> VulkanGfxBackendAPI::CreateRenderPass(const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent) {
     return MakeRefCountPtr<VulkanRenderPass>(&m_Context.GetDevice(), colorAttachmentFormats, depthAttachmentFormat, clearOnLoad, finalPresent);
+}
+
+RefCountPtr<IRenderTarget> VulkanGfxBackendAPI::CreateRenderTarget(const RenderTargetSpecification& spec) {
+    return MakeRefCountPtr<VulkanRenderTarget>(&m_Context.GetDevice(), spec);
 }
 
 RefCountPtr<IPipeline> VulkanGfxBackendAPI::CreatePipeline(const PipelineSpecification& spec) {

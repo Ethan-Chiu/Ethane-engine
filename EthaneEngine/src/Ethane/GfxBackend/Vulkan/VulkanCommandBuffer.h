@@ -2,7 +2,7 @@
 #include "Ethane/GfxBackend/GfxObject.h"
 #include "VulkanContext.h"
 
-namespace Ethane { class VulkanPipeline; }
+namespace Ethane { class VulkanPipeline; class VulkanRenderPass; }
 
 namespace Ethane {
 
@@ -38,7 +38,14 @@ namespace Ethane {
         void AllocateAndBeginSingleUse(QueueFamilyTypes type);
         void EndSingleUse(QueueFamilyTypes type);
 
+        // Begins `renderPass` on `framebuffer` and sets the viewport (y up) and scissor to cover `extent`
+        void BeginRenderPass(const VulkanRenderPass& renderPass, vk::Framebuffer framebuffer, vk::Extent2D extent,
+                             const std::array<float, 4>& clearColor);
+        bool IsInRenderPass() const { return m_RenderPass != nullptr; }
+
         // ICommandList: recording (the buffer must be in the RECORDING state)
+        virtual void BeginRenderPass(IRenderTarget& target) override;
+        virtual void EndRenderPass() override;
         virtual void BindPipeline(const IPipeline& pipeline) override;
         virtual void BindVertexBuffer(const IVertexBuffer& buffer) override;
         virtual void BindIndexBuffer(const IIndexBuffer& buffer) override;
@@ -56,6 +63,7 @@ namespace Ethane {
 
         vk::raii::CommandBuffer m_CommandBuffer = nullptr;
         CommandBufferState m_State = CommandBufferState::NOT_ALLOCATED;
+        const VulkanRenderPass* m_RenderPass = nullptr; // the render pass being recorded, if any
 
         // Last pipeline bound while recording: descriptor sets and push constants use its layout
         const VulkanPipeline* m_BoundPipeline = nullptr;

@@ -31,10 +31,10 @@ public:
 
     virtual void Resize(uint32_t width, uint32_t height) override;
     virtual bool BeginFrame() override;
+    virtual void BeginRenderPass() override;
     virtual void EndFrame() override;
 
-    // Valid between BeginFrame() and EndFrame(): the command buffer recording the frame,
-    // already inside the window's render pass (which clears the color and depth buffers)
+    // Valid between BeginFrame() and EndFrame(): the command buffer recording the frame
     virtual ICommandList& GetCommandList() override;
     // NOTE: recreated if the swapchain format ever changes, which would make existing pipelines incompatible
     virtual RefCountPtr<IRenderPass> GetRenderPass() const override { return RefCountPtr<IRenderPass>(m_RenderPass); }
@@ -99,6 +99,7 @@ private:
     uint32_t m_CurrentFrame = 0;   // frame slot, cycles through kMaxFramesInFlight
     uint32_t m_ImageIndex = 0;     // swapchain image acquired for the current frame
     bool m_FrameStarted = false;
+    bool m_RenderPassStarted = false; // the window's render pass, this frame
     bool m_NeedsRecreate = false;  // set by Resize() or an out-of-date/suboptimal acquire/present
 };
 

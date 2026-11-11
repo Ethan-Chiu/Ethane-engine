@@ -4,6 +4,8 @@
 #include "VulkanPipeline.h"
 #include "VulkanBuffer.h"
 #include "VulkanBindingSet.h"
+#include "VulkanRenderPass.h"
+#include "VulkanRenderTarget.h"
 
 
 namespace Ethane {
@@ -50,9 +52,11 @@ namespace Ethane {
         m_State = CommandBufferState::RECORDING;
         m_BoundPipeline = nullptr;
         m_BoundPipelineLayout = nullptr;
+        m_RenderPass = nullptr;
     }
 
     void VulkanCommandBuffer::End() {
+        ETH_CORE_ASSERT(!m_RenderPass, "End() inside a render pass: EndRenderPass() first");
         m_CommandBuffer.end();
         m_State = CommandBufferState::RECORDING_ENDED;
     }
@@ -162,15 +166,49 @@ namespace Ethane {
         m_CommandBuffer.bindIndexBuffer(static_cast<const VulkanIndexBuffer&>(buffer).GetHandle(), 0, vk::IndexType::eUint32);
     }
 
+    void VulkanCommandBuffer::BeginRenderPass(const VulkanRenderPass& renderPass, vk::Framebuffer framebuffer, vk::Extent2D extent,
+                                              const std::array<float, 4>& clearColor)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        ETH_CORE_ASSERT(!m_RenderPass, "BeginRenderPass() inside a render pass");
+        renderPass.Begin(m_CommandBuffer, extent.width, extent.height, framebuffer, clearColor);
+        m_RenderPass = &renderPass;
+
+        // Dynamic state of every pipeline (see VulkanPipeline), valid for all pipelines bound in this pass.
+        // The negative height flips Y so +Y is up in clip space (like OpenGL), which keeps counter-clockwise
+        // front faces and GL-style projection matrices working; row 0 of the image is still its top.
+        const float width = static_cast<float>(extent.width);
+        const float height = static_cast<float>(extent.height);
+        m_CommandBuffer.setViewport(0, vk::Viewport{ .x = 0.0f, .y = height, .width = width, .height = -height, .minDepth = 0.0f, .maxDepth = 1.0f });
+        m_CommandBuffer.setScissor(0, vk::Rect2D{ .offset = { 0, 0 }, .extent = extent });
+        m_CommandBuffer.setLineWidth(1.0f);
+    }
+
+    void VulkanCommandBuffer::BeginRenderPass(IRenderTarget& target)
+    {
+        auto& vulkanTarget = static_cast<VulkanRenderTarget&>(target);
+        BeginRenderPass(vulkanTarget.GetVulkanRenderPass(), vulkanTarget.GetFramebuffer(), vulkanTarget.GetExtent(),
+                        vulkanTarget.GetSpecification().ClearColor);
+    }
+
+    void VulkanCommandBuffer::EndRenderPass()
+    {
+        ETH_CORE_ASSERT(m_RenderPass, "EndRenderPass() without BeginRenderPass()");
+        m_RenderPass->End(m_CommandBuffer);
+        m_RenderPass = nullptr;
+    }
+
     void VulkanCommandBuffer::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
     {
         ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        ETH_CORE_ASSERT(m_RenderPass, "Draw() outside a render pass");
         m_CommandBuffer.draw(vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
     void VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
     {
         ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        ETH_CORE_ASSERT(m_RenderPass, "DrawIndexed() outside a render pass");
         m_CommandBuffer.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 }

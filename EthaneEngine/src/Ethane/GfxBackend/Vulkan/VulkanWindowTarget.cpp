@@ -297,20 +297,17 @@ bool VulkanWindowTarget::BeginFrame() {
 
     // Begin implicitly resets the buffer (the pool was created with eResetCommandBuffer)
     frame.CommandBuffer.Begin(true, false, false);
-    const vk::raii::CommandBuffer& cmd = frame.CommandBuffer.Get();
-    m_RenderPass->Begin(cmd, m_Extent.width, m_Extent.height, *m_Framebuffers[m_ImageIndex]);
-
-    // Dynamic state of every pipeline (see VulkanPipeline). Set once here, it stays valid for all pipelines
-    // bound later in this command buffer. The negative height flips Y so +Y is up in clip space (like OpenGL),
-    // which keeps counter-clockwise front faces and GL-style projection matrices working.
-    const float width = static_cast<float>(m_Extent.width);
-    const float height = static_cast<float>(m_Extent.height);
-    cmd.setViewport(0, vk::Viewport{ .x = 0.0f, .y = height, .width = width, .height = -height, .minDepth = 0.0f, .maxDepth = 1.0f });
-    cmd.setScissor(0, vk::Rect2D{ .offset = { 0, 0 }, .extent = m_Extent });
-    cmd.setLineWidth(1.0f);
 
     m_FrameStarted = true;
+    m_RenderPassStarted = false;
     return true;
+}
+
+void VulkanWindowTarget::BeginRenderPass() {
+    ETH_CORE_ASSERT(m_FrameStarted, "BeginRenderPass() is only valid between BeginFrame() and EndFrame()");
+    ETH_CORE_ASSERT(!m_RenderPassStarted, "The window's render pass was already started this frame");
+    m_Frames[m_CurrentFrame].CommandBuffer.BeginRenderPass(*m_RenderPass, *m_Framebuffers[m_ImageIndex], m_Extent, { 0.0f, 0.0f, 0.0f, 1.0f });
+    m_RenderPassStarted = true;
 }
 
 ICommandList& VulkanWindowTarget::GetCommandList() {
@@ -325,7 +322,11 @@ void VulkanWindowTarget::EndFrame() {
     const VulkanDevice& device = m_Context->GetDevice();
     FrameData& frame = m_Frames[m_CurrentFrame];
 
-    m_RenderPass->End(frame.CommandBuffer.Get());
+    // The pass also moves the image into the present layout, so it always runs
+    if (!m_RenderPassStarted) {
+        BeginRenderPass();
+    }
+    frame.CommandBuffer.EndRenderPass();
     frame.CommandBuffer.End();
 
     // The color attachment write is the first use of the acquired image, so only that stage waits for it
