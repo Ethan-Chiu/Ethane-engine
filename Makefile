@@ -14,6 +14,7 @@ ifeq ($(config),debug)
   ImGui_config = debug
   EthaneEngine_config = debug
   Ethane_Editor_config = debug
+  Ethane_Tests_config = debug
 
 else ifeq ($(config),release)
   GLFW_config = release
@@ -21,6 +22,7 @@ else ifeq ($(config),release)
   ImGui_config = release
   EthaneEngine_config = release
   Ethane_Editor_config = release
+  Ethane_Tests_config = release
 
 else ifeq ($(config),dist)
   GLFW_config = dist
@@ -28,12 +30,13 @@ else ifeq ($(config),dist)
   ImGui_config = dist
   EthaneEngine_config = dist
   Ethane_Editor_config = dist
+  Ethane_Tests_config = dist
 
 else
   $(error "invalid configuration $(config)")
 endif
 
-PROJECTS := GLFW Glad ImGui EthaneEngine Ethane-Editor
+PROJECTS := GLFW Glad ImGui EthaneEngine Ethane-Editor Ethane-Tests
 
 .PHONY: all clean help $(PROJECTS) Dependencies
 
@@ -71,12 +74,19 @@ ifneq (,$(Ethane_Editor_config))
 	@${MAKE} --no-print-directory -C Ethane-Editor -f Makefile config=$(Ethane_Editor_config)
 endif
 
+Ethane-Tests: EthaneEngine
+ifneq (,$(Ethane_Tests_config))
+	@echo "==== Building Ethane-Tests ($(Ethane_Tests_config)) ===="
+	@${MAKE} --no-print-directory -C Ethane-Tests -f Makefile config=$(Ethane_Tests_config)
+endif
+
 clean:
 	@${MAKE} --no-print-directory -C EthaneEngine/vendor/GLFW -f Makefile clean
 	@${MAKE} --no-print-directory -C EthaneEngine/vendor/Glad -f Makefile clean
 	@${MAKE} --no-print-directory -C EthaneEngine/vendor/build/projects/ImGui -f Makefile clean
 	@${MAKE} --no-print-directory -C EthaneEngine -f Makefile clean
 	@${MAKE} --no-print-directory -C Ethane-Editor -f Makefile clean
+	@${MAKE} --no-print-directory -C Ethane-Tests -f Makefile clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
@@ -94,5 +104,6 @@ help:
 	@echo "   ImGui"
 	@echo "   EthaneEngine"
 	@echo "   Ethane-Editor"
+	@echo "   Ethane-Tests"
 	@echo ""
 	@echo "For more information, see https://github.com/premake/premake-core/wiki"

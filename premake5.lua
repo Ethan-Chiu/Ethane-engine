@@ -41,6 +41,9 @@ group ""
 group ""
     project "Ethane-Editor"
 
+group ""
+    project "Ethane-Tests"
+
 
 -------------------------------------------------------------------------------
 -- Ethane Engine ( main library )
@@ -334,3 +337,74 @@ project "Ethane-Editor"
             '{COPY} "%{LibraryDir.DepsBinRelease}/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
         }
 
+
+-------------------------------------------------------------------------------
+-- Ethane Tests ( unit tests for engine code that doesn't need a window or GPU )
+-------------------------------------------------------------------------------
+project "Ethane-Tests"
+
+    location "Ethane-Tests"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++20"
+    staticruntime "off"
+
+    filter "system:windows"
+        systemversion "latest"
+    filter "system:macosx"
+        systemversion "10.15.0:14:0.0"
+    filter {}
+
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+    files
+    {
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.cpp"
+    }
+
+    externalincludedirs
+    {
+        "%{IncludeDir.spdlog}",
+        "%{IncludeDir.glm}",
+    }
+
+    includedirs
+    {
+        "%{wks.location}/EthaneEngine/src",
+    }
+
+    links
+    {
+        "EthaneEngine"
+    }
+
+    filter "configurations:Debug"
+        defines "ETH_DEBUG"
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        defines "ETH_RELEASE"
+        runtime "Release"
+        optimize "on"
+
+    filter "configurations:Dist"
+        defines "ETH_DIST"
+        runtime "Release"
+        symbols "on"
+
+    filter { "system:windows", "configurations:Debug" }
+        postbuildcommands
+        {
+            '{COPY} "%{LibraryDir.DepsBinDebug}/%{Library.AssimpDebug}.dll" "%{cfg.targetdir}"'
+        }
+
+    filter { "system:windows", "configurations:not Debug" }
+        postbuildcommands
+        {
+            '{COPY} "%{LibraryDir.DepsBinRelease}/%{Library.Assimp}.dll" "%{cfg.targetdir}"'
+        }
+
+    filter {}

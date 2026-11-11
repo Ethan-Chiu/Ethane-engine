@@ -1,0 +1,356 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51029A7499737EA6DE1250B4 /* TestMain.cpp */; };
+		B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */; };
+		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1FDD6BE6E3492D9821ECD226 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2CBAE1B4CEFA34DFD15845B /* ../EthaneEngine/EthaneEngine.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = C4F9A0D3F48B6FC5CF98AF13;
+			remoteInfo = libEthaneEngine.dylib;
+		};
+		CDA2F94D910EBAFFCFB25F8D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2CBAE1B4CEFA34DFD15845B /* ../EthaneEngine/EthaneEngine.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1E6AE68D403693BF7CEBBCCD;
+			remoteInfo = libEthaneEngine.dylib;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		414F29FE420226F0B5E3F83E /* Ethane-Tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Tests"; path = "Ethane-Tests"; sourceTree = BUILT_PRODUCTS_DIR; };
+		51029A7499737EA6DE1250B4 /* TestMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TestMain.cpp; path = src/TestMain.cpp; sourceTree = "<group>"; };
+		A5B725344902AE6663D37B74 /* Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Test.h; path = src/Test.h; sourceTree = "<group>"; };
+		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
+		DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1C2FD06E4AD62460A4177EAE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BD30F45A2EBC0CCCDDBD329A /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXGroup section */
+		7FE210EDDB23645FAE7DAF2D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		870CC795336F87C7F1F7FDD5 /* Ethane-Tests */ = {
+			isa = PBXGroup;
+			children = (
+				DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */,
+				A5B725344902AE6663D37B74 /* Test.h */,
+				51029A7499737EA6DE1250B4 /* TestMain.cpp */,
+				A6C936B49B3FADE6EA134CF4 /* Products */,
+				9D968EAA920D05DCE0E0A4EA /* Projects */,
+			);
+			name = "Ethane-Tests";
+			sourceTree = "<group>";
+		};
+		9D968EAA920D05DCE0E0A4EA /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				B2CBAE1B4CEFA34DFD15845B /* EthaneEngine.xcodeproj */,
+			);
+			name = Projects;
+			sourceTree = "<group>";
+		};
+		A6C936B49B3FADE6EA134CF4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				414F29FE420226F0B5E3F83E /* Ethane-Tests */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8FBABA2432A8E0D6C1CEC064 /* Ethane-Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0A6B18CD39116CBF9252C70D /* Build configuration list for PBXNativeTarget "Ethane-Tests" */;
+			buildPhases = (
+				8C17510EBABDA50013FEFF4E /* Resources */,
+				F5C46A65246ABE577DAC18A5 /* Sources */,
+				1C2FD06E4AD62460A4177EAE /* Frameworks */,
+				BD30F45A2EBC0CCCDDBD329A /* Embed Libraries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6D9A4DF6C8DBA1689C35EC36 /* PBXTargetDependency */,
+			);
+			name = "Ethane-Tests";
+			productInstallPath = "$(HOME)/bin";
+			productName = "Ethane-Tests";
+			productReference = 414F29FE420226F0B5E3F83E /* Ethane-Tests */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "Ethane-Tests" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 870CC795336F87C7F1F7FDD5 /* Ethane-Tests */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 7FE210EDDB23645FAE7DAF2D /* Products */;
+					ProjectRef = B2CBAE1B4CEFA34DFD15845B /* EthaneEngine.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				8FBABA2432A8E0D6C1CEC064 /* Ethane-Tests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libEthaneEngine.dylib;
+			remoteRef = CDA2F94D910EBAFFCFB25F8D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8C17510EBABDA50013FEFF4E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F5C46A65246ABE577DAC18A5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */,
+				A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6D9A4DF6C8DBA1689C35EC36 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = libEthaneEngine.dylib;
+			targetProxy = 1FDD6BE6E3492D9821ECD226 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1B6B6AFE1C1E67F09000393E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					GLM_FORCE_DEPTH_ZERO_TO_ONE,
+					ETH_RELEASE,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
+				OBJROOT = "../bin-int/Release-macosx-ARM64/Ethane-Tests";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "../bin/Release-macosx-ARM64/Ethane-Tests";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/vendor/spdlog/include,
+					../EthaneEngine/vendor/glm,
+					"$(inherited)",
+				);
+				USER_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/src,
+				);
+			};
+			name = Release;
+		};
+		6C0774CDC748C83F9AA3130D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-ARM64/Ethane-Tests";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
+				PRODUCT_NAME = "Ethane-Tests";
+			};
+			name = Release;
+		};
+		793A5400A1750CB289109A40 /* Dist */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-ARM64/Ethane-Tests";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
+				PRODUCT_NAME = "Ethane-Tests";
+			};
+			name = Dist;
+		};
+		7CA08FC4EE2BA8369D2CCE04 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					GLM_FORCE_DEPTH_ZERO_TO_ONE,
+					ETH_DEBUG,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
+				OBJROOT = "../bin-int/Debug-macosx-ARM64/Ethane-Tests";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "../bin/Debug-macosx-ARM64/Ethane-Tests";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/vendor/spdlog/include,
+					../EthaneEngine/vendor/glm,
+					"$(inherited)",
+				);
+				USER_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/src,
+				);
+			};
+			name = Debug;
+		};
+		C2ADC913F23F9805CD4CD753 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-ARM64/Ethane-Tests";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = 10.15.0;
+				PRODUCT_NAME = "Ethane-Tests";
+			};
+			name = Debug;
+		};
+		C3FD1E71C76DF0A348DA94B1 /* Dist */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					GLM_FORCE_DEPTH_ZERO_TO_ONE,
+					ETH_DIST,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@loader_path/../EthaneEngine",
+				);
+				OBJROOT = "../bin-int/Dist-macosx-ARM64/Ethane-Tests";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "../bin/Dist-macosx-ARM64/Ethane-Tests";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/vendor/spdlog/include,
+					../EthaneEngine/vendor/glm,
+					"$(inherited)",
+				);
+				USER_HEADER_SEARCH_PATHS = (
+					../EthaneEngine/src,
+				);
+			};
+			name = Dist;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0A6B18CD39116CBF9252C70D /* Build configuration list for PBXNativeTarget "Ethane-Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C2ADC913F23F9805CD4CD753 /* Debug */,
+				6C0774CDC748C83F9AA3130D /* Release */,
+				793A5400A1750CB289109A40 /* Dist */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "Ethane-Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7CA08FC4EE2BA8369D2CCE04 /* Debug */,
+				1B6B6AFE1C1E67F09000393E /* Release */,
+				C3FD1E71C76DF0A348DA94B1 /* Dist */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+};
+rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
