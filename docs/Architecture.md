@@ -76,7 +76,12 @@ AddComponent, RemoveComponent, MoveObject(object, newParent, orderKey)
 
 `Commit` is the single write point. It validates the ops, builds the next snapshot by copying only the
 objects that changed (everything else is shared with the previous snapshot), bumps the version and
-publishes a **ChangeSet** (the ops plus from/to versions and the author) to subscribers.
+publishes a **ChangeSet** (the ops as applied, their inverse and the new snapshot) to subscribers.
+
+Implementation note: objects and components are shared between snapshots, but the index from
+`ObjectId` to object (and the child lists' index) is copied on every commit, which is O(objects) pointer
+copies. That is negligible at editing rates for tens of thousands of objects; if it ever shows up in a
+profile, the index can become a persistent hash map without changing the API.
 
 Each committed transaction keeps its inverse ops, which is the undo history. A continuous edit such as
 dragging a slider is one transaction that is updated while dragging and committed on release.

@@ -90,6 +90,9 @@ OBJECTS :=
 
 GENERATED += $(OBJDIR)/Application.o
 GENERATED += $(OBJDIR)/AssetManager.o
+GENERATED += $(OBJDIR)/Brick.o
+GENERATED += $(OBJDIR)/BrickSnapshot.o
+GENERATED += $(OBJDIR)/ComponentValue.o
 GENERATED += $(OBJDIR)/EditorCamera.o
 GENERATED += $(OBJDIR)/Entity.o
 GENERATED += $(OBJDIR)/FieldAccess.o
@@ -107,6 +110,7 @@ GENERATED += $(OBJDIR)/MacosWindow.o
 GENERATED += $(OBJDIR)/Material.o
 GENERATED += $(OBJDIR)/Math.o
 GENERATED += $(OBJDIR)/Mesh.o
+GENERATED += $(OBJDIR)/OrderKey.o
 GENERATED += $(OBJDIR)/ResourceSystem.o
 GENERATED += $(OBJDIR)/Scene.o
 GENERATED += $(OBJDIR)/SceneCamera.o
@@ -114,8 +118,10 @@ GENERATED += $(OBJDIR)/SceneSerializer.o
 GENERATED += $(OBJDIR)/ShaderIncluder.o
 GENERATED += $(OBJDIR)/ShaderSystem.o
 GENERATED += $(OBJDIR)/TextureSystem.o
+GENERATED += $(OBJDIR)/Transaction.o
 GENERATED += $(OBJDIR)/TypeRegistry.o
 GENERATED += $(OBJDIR)/UUID.o
+GENERATED += $(OBJDIR)/UndoHistory.o
 GENERATED += $(OBJDIR)/VulkanBindingSet.o
 GENERATED += $(OBJDIR)/VulkanBuffer.o
 GENERATED += $(OBJDIR)/VulkanCommandBuffer.o
@@ -139,6 +145,9 @@ GENERATED += $(OBJDIR)/ethpch.o
 GENERATED += $(OBJDIR)/stb_image.o
 OBJECTS += $(OBJDIR)/Application.o
 OBJECTS += $(OBJDIR)/AssetManager.o
+OBJECTS += $(OBJDIR)/Brick.o
+OBJECTS += $(OBJDIR)/BrickSnapshot.o
+OBJECTS += $(OBJDIR)/ComponentValue.o
 OBJECTS += $(OBJDIR)/EditorCamera.o
 OBJECTS += $(OBJDIR)/Entity.o
 OBJECTS += $(OBJDIR)/FieldAccess.o
@@ -156,6 +165,7 @@ OBJECTS += $(OBJDIR)/MacosWindow.o
 OBJECTS += $(OBJDIR)/Material.o
 OBJECTS += $(OBJDIR)/Math.o
 OBJECTS += $(OBJDIR)/Mesh.o
+OBJECTS += $(OBJDIR)/OrderKey.o
 OBJECTS += $(OBJDIR)/ResourceSystem.o
 OBJECTS += $(OBJDIR)/Scene.o
 OBJECTS += $(OBJDIR)/SceneCamera.o
@@ -163,8 +173,10 @@ OBJECTS += $(OBJDIR)/SceneSerializer.o
 OBJECTS += $(OBJDIR)/ShaderIncluder.o
 OBJECTS += $(OBJDIR)/ShaderSystem.o
 OBJECTS += $(OBJDIR)/TextureSystem.o
+OBJECTS += $(OBJDIR)/Transaction.o
 OBJECTS += $(OBJDIR)/TypeRegistry.o
 OBJECTS += $(OBJDIR)/UUID.o
+OBJECTS += $(OBJDIR)/UndoHistory.o
 OBJECTS += $(OBJDIR)/VulkanBindingSet.o
 OBJECTS += $(OBJDIR)/VulkanBuffer.o
 OBJECTS += $(OBJDIR)/VulkanCommandBuffer.o
@@ -253,6 +265,24 @@ $(OBJDIR)/AssetManager.o: src/Ethane/Asset/AssetManager.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ImageLoader.o: src/Ethane/Asset/ImageLoader.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Brick.o: src/Ethane/Brick/Brick.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/BrickSnapshot.o: src/Ethane/Brick/BrickSnapshot.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/ComponentValue.o: src/Ethane/Brick/ComponentValue.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/OrderKey.o: src/Ethane/Brick/OrderKey.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Transaction.o: src/Ethane/Brick/Transaction.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/UndoHistory.o: src/Ethane/Brick/UndoHistory.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Application.o: src/Ethane/Core/Application.cpp

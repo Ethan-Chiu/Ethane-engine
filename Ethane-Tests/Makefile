@@ -83,8 +83,10 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/BrickTests.o
 GENERATED += $(OBJDIR)/SchemaTests.o
 GENERATED += $(OBJDIR)/TestMain.o
+OBJECTS += $(OBJDIR)/BrickTests.o
 OBJECTS += $(OBJDIR)/SchemaTests.o
 OBJECTS += $(OBJDIR)/TestMain.o
 
@@ -150,6 +152,9 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/BrickTests.o: src/BrickTests.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/SchemaTests.o: src/SchemaTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"

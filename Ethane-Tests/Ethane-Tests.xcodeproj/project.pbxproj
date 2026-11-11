@@ -10,6 +10,7 @@
 		A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51029A7499737EA6DE1250B4 /* TestMain.cpp */; };
 		B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
+		EE93CD9E32E273107509ABDE /* BrickTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE96CBE6F06279182D17A226 /* BrickTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 		51029A7499737EA6DE1250B4 /* TestMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TestMain.cpp; path = src/TestMain.cpp; sourceTree = "<group>"; };
 		A5B725344902AE6663D37B74 /* Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Test.h; path = src/Test.h; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
+		CE96CBE6F06279182D17A226 /* BrickTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = BrickTests.cpp; path = src/BrickTests.cpp; sourceTree = "<group>"; };
 		DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -73,6 +75,7 @@
 		870CC795336F87C7F1F7FDD5 /* Ethane-Tests */ = {
 			isa = PBXGroup;
 			children = (
+				CE96CBE6F06279182D17A226 /* BrickTests.cpp */,
 				DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */,
 				A5B725344902AE6663D37B74 /* Test.h */,
 				51029A7499737EA6DE1250B4 /* TestMain.cpp */,
@@ -169,6 +172,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE93CD9E32E273107509ABDE /* BrickTests.cpp in Sources */,
 				B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */,
 				A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */,
 			);

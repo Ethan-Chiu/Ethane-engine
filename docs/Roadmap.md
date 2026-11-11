@@ -3,19 +3,19 @@
 Steps toward the design in [Architecture.md](Architecture.md). Each step is usable on its own and lands
 as its own commits.
 
-## 1. Schema / type registry
+## 1. Schema / type registry ✅
 
-- [ ] `TypeId`, `FieldType`, `FieldInfo`, `TypeInfo`, `TypeRegistry`
-- [ ] Registration API for plain structs, including nested structs
-- [ ] Type-erased field access (`FieldValue`, field paths) and generic copy / compare
-- [ ] Unit tests (new `Ethane-Tests` project)
+- [x] `TypeId`, `FieldType`, `FieldInfo`, `TypeInfo`, `TypeRegistry`
+- [x] Registration API for plain structs, including nested structs
+- [x] Type-erased field access (`FieldValue`, field paths) and generic copy / compare
+- [x] Unit tests (new `Ethane-Tests` project)
 
 ## 2. Brick
 
-- [ ] `ObjectId`, objects with name / parent / order key / components
-- [ ] Immutable snapshots with structural sharing
-- [ ] Transactions, ops, `Commit`, ChangeSets and subscriptions
-- [ ] Undo / redo from inverse ops; transactions that stay open while dragging
+- [x] `ObjectId`, objects with name / parent / order key / components
+- [x] Immutable snapshots with structural sharing
+- [x] Transactions, ops, `Commit`, ChangeSets and subscriptions
+- [x] Undo / redo from inverse ops; transactions that stay open while dragging
 - [ ] YAML serializer driven by the schema, with schema versions in the file
 
 ## 3. Frame packet and renderer API
