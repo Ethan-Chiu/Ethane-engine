@@ -27,8 +27,9 @@ namespace Ethane {
 		std::optional<FieldValue> DrawField(EditorContext& context, const SteleSnapshot& snapshot, const FieldInfo& field, const void* data);
 		void DrawAddComponent(EditorContext& context, const SteleElement& element);
 
-		// The merge key for a change made by the last widget: one key per press-and-drag of a widget
-		uint64_t GestureKey();
+		// Call right after each field widget, every frame: the merge key for a change made by it, one key
+		// per press-and-drag (0 when the widget isn't held)
+		uint64_t TrackGesture();
 
 		uint64_t m_Gestures = 0;
 		uint64_t m_CurrentGesture = 0;

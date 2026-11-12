@@ -44,10 +44,12 @@ namespace Ethane {
 
 	}
 
-	uint64_t InspectorPanel::GestureKey()
+	uint64_t InspectorPanel::TrackGesture()
 	{
-		// A widget becoming active starts a gesture; changes while it stays active share its key, so a
-		// drag is one undo step. A change from a click (no longer active) is a step of its own.
+		// Called for every widget every frame, changed or not: a widget usually becomes active (mouse
+		// press) a frame before its value first changes, and that's where the gesture must start.
+		// Changes while the widget stays active share the gesture's key, so a drag is one undo step;
+		// a change from a click (no longer active) is a step of its own.
 		if (ImGui::IsItemActivated())
 			m_CurrentGesture = ++m_Gestures;
 		return ImGui::IsItemActive() ? m_CurrentGesture : 0;
@@ -150,10 +152,12 @@ namespace Ethane {
 			else
 			{
 				ImGui::BeginDisabled(HasFlag(field.Flags, FieldFlags::ReadOnly));
-				if (auto value = DrawField(context, snapshot, field, fieldData))
+				std::optional<FieldValue> value = DrawField(context, snapshot, field, fieldData);
+				const uint64_t gesture = TrackGesture();
+				if (value)
 				{
 					Transaction tx("Edit " + component.Name + "." + FormatFieldPath(component, path));
-					tx.MergeKey = GestureKey();
+					tx.MergeKey = gesture;
 					tx.SetField(id, component.Id, path, std::move(*value));
 					context.Commit(std::move(tx));
 				}
