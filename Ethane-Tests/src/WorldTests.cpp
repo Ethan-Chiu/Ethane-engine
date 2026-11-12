@@ -4,6 +4,7 @@
 #include "Ethane/Stele/Stele.h"
 #include "Ethane/World/Components.h"
 #include "Ethane/World/Entt/EnttWorld.h"
+#include "Ethane/World/Script.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -179,4 +180,164 @@ TEST_CASE("EnttWorld: component types it doesn't know are ignored")
 	f.Commit(std::move(edit));
 	CHECK(world.RebuildCount() == 0);
 	CHECK(world.Version() == 2);
+}
+
+// --- Play mode: scripts and cameras ------------------------------------------------------------------------
+
+namespace {
+
+	// A game component the engine doesn't know: stored generically, reachable from scripts
+	struct Speed
+	{
+		float Value = 1.0f;
+	};
+
+	std::vector<std::string> g_Events;
+
+	// Moves its element along +x by Speed per second; records its lifecycle
+	class Mover : public Script
+	{
+	public:
+		void OnCreate() override { g_Events.push_back("create"); }
+		void OnUpdate(float dt) override
+		{
+			const Speed* speed = Get<Speed>();
+			Get<TransformComponent>()->Position.x += (speed ? speed->Value : 1.0f) * dt;
+		}
+		void OnDestroy() override { g_Events.push_back("destroy"); }
+	};
+
+	class Other : public Script
+	{
+	public:
+		void OnCreate() override { g_Events.push_back("other"); }
+	};
+
+	struct PlayFixture : Fixture
+	{
+		ScriptRegistry Scripts;
+		ElementId Box;
+
+		PlayFixture()
+		{
+			Types.Register<Speed>("Test.Speed").Field("Value", &Speed::Value);
+			Scripts.Register<Mover>("Mover");
+			Scripts.Register<Other>("Other");
+			g_Events.clear();
+
+			Transaction tx("Build", Types);
+			Box = tx.CreateElement("Box");
+			tx.AddComponent(Box, TransformComponent{});
+			tx.AddComponent(Box, MeshComponent{ .Mesh = AssetId{ 1 } });
+			tx.AddComponent(Box, Speed{ .Value = 2.0f });
+			tx.AddComponent(Box, NativeScriptComponent{ .Class = "Mover" });
+			Commit(std::move(tx));
+		}
+
+		float BoxX(const EnttWorld& world) const
+		{
+			FramePacket packet;
+			world.Extract(packet);
+			return ItemFor(packet, Box)->Transform[3].x;
+		}
+	};
+
+}
+
+TEST_CASE("EnttWorld: only play worlds run scripts, and their changes stay in the world")
+{
+	PlayFixture f;
+	EnttWorld edit(f.Source.Read(), WorldMode::Edit, &f.Scripts);
+	EnttWorld play(f.Source.Read(), WorldMode::Play, &f.Scripts);
+
+	edit.Update({ .DeltaTime = 1.0f });
+	CHECK(edit.ScriptCount() == 0);
+	CHECK(g_Events.empty());
+
+	play.Update({ .DeltaTime = 0.5f }); // created, then updated: x = 2 * 0.5
+	play.Update({ .DeltaTime = 0.5f });
+	CHECK(play.ScriptCount() == 1);
+	CHECK(g_Events == std::vector<std::string>{ "create" });
+	CHECK(Near(glm::vec3(f.BoxX(play)), glm::vec3(2.0f)));
+	CHECK(f.BoxX(edit) == 0.0f);
+	CHECK(f.Source.Read().Get<TransformComponent>(f.Box)->Position.x == 0.0f); // the stele is untouched
+}
+
+TEST_CASE("EnttWorld: scripts follow their component, class and element")
+{
+	PlayFixture f;
+	EnttWorld play(f.Source.Read(), WorldMode::Play, &f.Scripts);
+	SteleSubscription follow = f.Source.Subscribe([&](const ChangeSet& c) { play.Apply(c); });
+	play.Update({ .DeltaTime = 0.0f });
+
+	// Live tweak of a game component while playing
+	Transaction faster("Faster", f.Types);
+	faster.SetField<Speed>(f.Box, "Value", 10.0f);
+	f.Commit(std::move(faster));
+	play.Update({ .DeltaTime = 1.0f });
+	CHECK(Near(glm::vec3(f.BoxX(play)), glm::vec3(10.0f)));
+
+	// Another class: the old script is destroyed, the new one created
+	Transaction swap("Swap", f.Types);
+	swap.SetField<NativeScriptComponent>(f.Box, "Class", std::string("Other"));
+	f.Commit(std::move(swap));
+	play.Update({ .DeltaTime = 1.0f });
+	CHECK(g_Events == std::vector<std::string>{ "create", "destroy", "other" });
+
+	// An unknown class makes no script (and doesn't fail every frame)
+	Transaction unknown("Unknown", f.Types);
+	unknown.SetField<NativeScriptComponent>(f.Box, "Class", std::string("Missing"));
+	f.Commit(std::move(unknown));
+	play.Update({ .DeltaTime = 1.0f });
+	play.Update({ .DeltaTime = 1.0f });
+	CHECK(play.ScriptCount() == 0);
+
+	Transaction back("Back", f.Types);
+	back.SetField<NativeScriptComponent>(f.Box, "Class", std::string("Mover"));
+	f.Commit(std::move(back));
+	play.Update({ .DeltaTime = 0.0f });
+	CHECK(play.ScriptCount() == 1);
+
+	// Deleting the element destroys its script
+	g_Events.clear();
+	Transaction destroy("Delete", f.Types);
+	destroy.DestroyElement(f.Box);
+	f.Commit(std::move(destroy));
+	CHECK(g_Events == std::vector<std::string>{ "destroy" });
+	CHECK(play.ScriptCount() == 0);
+}
+
+TEST_CASE("EnttWorld: destroying a play world destroys its scripts")
+{
+	PlayFixture f;
+	{
+		EnttWorld play(f.Source.Read(), WorldMode::Play, &f.Scripts);
+		play.Update({ .DeltaTime = 0.0f });
+	}
+	CHECK(g_Events == std::vector<std::string>{ "create", "destroy" });
+}
+
+TEST_CASE("EnttWorld: the view comes from the primary camera")
+{
+	Fixture f;
+	EnttWorld empty(f.Source.Read());
+	PacketView view;
+	CHECK(!empty.ExtractView(1.5f, view));
+
+	Transaction tx("Camera", f.Types);
+	ElementId camera = tx.CreateElement("Camera");
+	// At (0, 2, 10), looking at the origin, scaled (scale must not distort the view)
+	tx.AddComponent(camera, TransformComponent{ .Position = { 0.0f, 2.0f, 10.0f }, .Rotation = RotationTowards({ 0.0f, -2.0f, -10.0f }), .Scale = glm::vec3(3.0f) });
+	tx.AddComponent(camera, CameraComponent{ .FieldOfView = glm::radians(60.0f) });
+	ElementId secondary = tx.CreateElement("Secondary");
+	tx.AddComponent(secondary, CameraComponent{ .Primary = false });
+	f.Commit(std::move(tx));
+
+	EnttWorld world(f.Source.Read());
+	REQUIRE(world.ExtractView(1.5f, view));
+	CHECK(Near(view.Position, glm::vec3(0.0f, 2.0f, 10.0f)));
+	// The origin is straight ahead: in view space it's on the -Z axis, 10.2 units away
+	const glm::vec3 origin = glm::vec3(view.View * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	CHECK(Near(origin, glm::vec3(0.0f, 0.0f, -glm::length(glm::vec3(0.0f, 2.0f, 10.0f)))));
+	CHECK(Near(glm::vec3(view.Projection[1][1]), glm::vec3(1.0f / std::tan(glm::radians(30.0f)))));
 }

@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <string>
+
 namespace Ethane {
 
 	class TypeRegistry;
@@ -42,6 +44,22 @@ namespace Ethane {
 	{
 		glm::vec3 Color{ 1.0f };
 		float Intensity = 1.0f;
+	};
+
+	// Where a play world is seen from: looks along the element's forward axis (-Z), up is +Y
+	struct CameraComponent
+	{
+		float FieldOfView = glm::radians(45.0f); // vertical, radians
+		float Near = 0.1f;
+		float Far = 100.0f;
+		bool Primary = true; // the camera a play world is shown through (the first primary one)
+	};
+
+	// Runs a C++ script on the element while it's in a play world. `Class` is a name registered in a
+	// ScriptRegistry (World/Script.h).
+	struct NativeScriptComponent
+	{
+		std::string Class;
 	};
 
 	// Adds the types above to `registry`; registering them again is a no-op

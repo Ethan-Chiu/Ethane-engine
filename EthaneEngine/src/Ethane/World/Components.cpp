@@ -35,6 +35,15 @@ namespace Ethane {
 		registry.Register<DirectionalLightComponent>("DirectionalLight")
 			.Field("Color", &DirectionalLightComponent::Color, FieldFlags::Color)
 			.Field("Intensity", &DirectionalLightComponent::Intensity, FieldFlags::None, { .Min = 0.0f, .Max = 10.0f });
+
+		registry.Register<CameraComponent>("Camera")
+			.Field("FieldOfView", &CameraComponent::FieldOfView, FieldFlags::Angle)
+			.Field("Near", &CameraComponent::Near, FieldFlags::None, { .Speed = 0.01f })
+			.Field("Far", &CameraComponent::Far, FieldFlags::None, { .Speed = 1.0f })
+			.Field("Primary", &CameraComponent::Primary);
+
+		registry.Register<NativeScriptComponent>("NativeScript")
+			.Field("Class", &NativeScriptComponent::Class);
 	}
 
 	glm::vec3 RotationTowards(const glm::vec3& direction)

@@ -4,6 +4,9 @@
 #include "Ethane/Renderer/FramePacket.h"
 #include "Ethane/Stele/Stele.h"
 #include "Ethane/World/Components.h"
+#include "Ethane/World/Script.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <entt.hpp>
 
@@ -18,40 +21,108 @@ namespace Ethane {
 			entt::entity Parent = entt::null;
 		};
 
-		// How to store one schema type in the registry: the typed EnTT calls behind type-erased ops
+		// A component type the world has no C++ type for: a private copy of its value
+		struct GenericComponent
+		{
+			std::shared_ptr<ComponentValue> Value;
+		};
+
+		// The script running on an entity (Play mode only)
+		struct ScriptInstance
+		{
+			std::string Class;               // the class it was created for
+			std::unique_ptr<Script> Instance; // null if the class isn't registered
+		};
+
+		// How one schema type is stored: the EnTT calls behind type-erased ops. Engine components are
+		// stored as themselves; other types in a GenericComponent pool of their own (`pool`).
 		struct Storage
 		{
 			const TypeInfo* Type = nullptr;
-			void (*Emplace)(entt::registry&, entt::entity, const void* value) = nullptr;
-			void (*Remove)(entt::registry&, entt::entity) = nullptr;
-			void* (*Get)(entt::registry&, entt::entity) = nullptr;
+			entt::id_type Pool = 0;
+			void (*Emplace)(entt::registry&, entt::id_type pool, entt::entity, const ComponentValue& value) = nullptr;
+			void (*Remove)(entt::registry&, entt::id_type pool, entt::entity) = nullptr;
+			void* (*Get)(entt::registry&, entt::id_type pool, entt::entity) = nullptr;
 		};
+
+		template<typename T>
+		Storage TypedStorage(const TypeInfo& type)
+		{
+			return Storage{
+				.Type = &type,
+				.Emplace = [](entt::registry& r, entt::id_type, entt::entity e, const ComponentValue& value) { r.emplace_or_replace<T>(e, value.As<T>()); },
+				.Remove = [](entt::registry& r, entt::id_type, entt::entity e) { r.remove<T>(e); },
+				.Get = [](entt::registry& r, entt::id_type, entt::entity e) -> void* { return r.try_get<T>(e); },
+			};
+		}
+
+		Storage GenericStorage(const TypeInfo& type, entt::id_type pool)
+		{
+			return Storage{
+				.Type = &type,
+				.Pool = pool,
+				.Emplace = [](entt::registry& r, entt::id_type pool, entt::entity e, const ComponentValue& value) {
+					r.storage<GenericComponent>(pool).emplace(e, GenericComponent{ value.Clone() });
+				},
+				.Remove = [](entt::registry& r, entt::id_type pool, entt::entity e) { r.storage<GenericComponent>(pool).remove(e); },
+				.Get = [](entt::registry& r, entt::id_type pool, entt::entity e) -> void* {
+					auto& storage = r.storage<GenericComponent>(pool);
+					return storage.contains(e) ? storage.get(e).Value->MutableData() : nullptr;
+				},
+			};
+		}
 
 	}
 
-	struct EnttWorld::Impl
+	struct EnttWorld::Impl final : ScriptHost
 	{
-		const TypeRegistry* Types = nullptr;
+		const TypeRegistry* Schema = nullptr;
+		const ScriptRegistry* Scripts = nullptr;
+		WorldMode Mode = WorldMode::Edit;
 		entt::registry Registry;
 		std::unordered_map<ElementId, entt::entity> Entities;
 		std::unordered_map<TypeId, Storage> Storages;
+		std::unordered_set<std::string> MissingScripts; // classes already warned about
 		uint64_t Version = 0;
 		uint32_t Rebuilds = 0;
+
+		~Impl() override { DestroyAllScripts(); }
 
 		template<typename T>
 		void Bind()
 		{
-			const TypeInfo* type = Types->Find<T>();
+			const TypeInfo* type = Schema->Find<T>();
 			ETH_CORE_ASSERT(type, "EnttWorld: engine components aren't registered in the stele's type registry");
-			if (!type)
-				return;
-			Storages[type->Id] = Storage{
-				.Type = type,
-				.Emplace = [](entt::registry& r, entt::entity e, const void* value) { r.emplace_or_replace<T>(e, *static_cast<const T*>(value)); },
-				.Remove = [](entt::registry& r, entt::entity e) { r.remove<T>(e); },
-				.Get = [](entt::registry& r, entt::entity e) -> void* { return r.try_get<T>(e); },
-			};
+			if (type)
+				Storages[type->Id] = TypedStorage<T>(*type);
 		}
+
+		// How to store `type`: bound engine types, else a generic pool (created on first use)
+		const Storage* StorageFor(TypeId type)
+		{
+			if (auto it = Storages.find(type); it != Storages.end())
+				return &it->second;
+			const TypeInfo* info = Schema->Find(type);
+			if (!info)
+				return nullptr;
+			// EnTT pool ids are 32-bit: fold the 64-bit TypeId, and make sure two types never share a pool
+			entt::id_type pool = static_cast<entt::id_type>(type.Value ^ (type.Value >> 32));
+			auto taken = [&](entt::id_type id) {
+				return std::any_of(Storages.begin(), Storages.end(), [&](const auto& entry) { return entry.second.Pool == id; });
+			};
+			while (pool == 0 || taken(pool))
+				pool++;
+			return &(Storages[type] = GenericStorage(*info, pool));
+		}
+
+		// ScriptHost
+		void* GetComponent(uint64_t entity, TypeId type) override
+		{
+			const entt::entity e = static_cast<entt::entity>(entity);
+			const Storage* storage = Registry.valid(e) ? StorageFor(type) : nullptr;
+			return storage ? storage->Get(Registry, storage->Pool, e) : nullptr;
+		}
+		const TypeRegistry& Types() const override { return *Schema; }
 
 		entt::entity EntityOf(ElementId id) const
 		{
@@ -68,12 +139,31 @@ namespace Ethane {
 
 		void AddComponent(entt::entity entity, TypeId type, const ComponentValue& value)
 		{
-			if (auto storage = Storages.find(type); storage != Storages.end())
-				storage->second.Emplace(Registry, entity, value.Data());
+			if (const Storage* storage = StorageFor(type))
+				storage->Emplace(Registry, storage->Pool, entity, value);
+		}
+
+		void DestroyScript(entt::entity entity)
+		{
+			if (ScriptInstance* script = Registry.try_get<ScriptInstance>(entity))
+			{
+				if (script->Instance)
+					script->Instance->OnDestroy();
+				Registry.remove<ScriptInstance>(entity);
+			}
+		}
+
+		void DestroyAllScripts()
+		{
+			for (auto [entity, script] : Registry.view<ScriptInstance>().each())
+				if (script.Instance)
+					script.Instance->OnDestroy();
+			Registry.clear<ScriptInstance>();
 		}
 
 		void Rebuild(const SteleSnapshot& snapshot)
 		{
+			DestroyAllScripts(); // recreated by the next Update
 			Registry.clear();
 			Entities.clear();
 			snapshot.ForEachDepthFirst([&](const SteleElement& element) {
@@ -104,6 +194,7 @@ namespace Ethane {
 
 					if constexpr (std::is_same_v<Op, SteleOp::DestroyElement>)
 					{
+						DestroyScript(entity);
 						Registry.destroy(entity);
 						Entities.erase(op.Id);
 					}
@@ -123,20 +214,55 @@ namespace Ethane {
 					}
 					else if constexpr (std::is_same_v<Op, SteleOp::RemoveComponent>)
 					{
-						if (auto storage = Storages.find(op.Type); storage != Storages.end())
-							storage->second.Remove(Registry, entity);
+						if (const Storage* storage = StorageFor(op.Type))
+							storage->Remove(Registry, storage->Pool, entity);
 					}
 					else if constexpr (std::is_same_v<Op, SteleOp::SetField>)
 					{
-						auto storage = Storages.find(op.Type);
-						if (storage == Storages.end())
-							return true; // a type this world doesn't store
-						void* component = storage->second.Get(Registry, entity);
-						return component && SetField(*storage->second.Type, component, op.Path, op.Value);
+						const Storage* storage = StorageFor(op.Type);
+						void* component = storage ? storage->Get(Registry, storage->Pool, entity) : nullptr;
+						return component && SetField(*storage->Type, component, op.Path, op.Value);
 					}
 					return true;
 				}
 			}, operation);
+		}
+
+		void UpdateScripts(float deltaTime)
+		{
+			// Scripts whose component went away
+			std::vector<entt::entity> stale;
+			for (auto [entity, script] : Registry.view<ScriptInstance>().each())
+			{
+				const NativeScriptComponent* component = Registry.try_get<NativeScriptComponent>(entity);
+				if (!component || component->Class != script.Class)
+					stale.push_back(entity);
+			}
+			for (entt::entity entity : stale)
+				DestroyScript(entity);
+
+			// New ones: attached and created before anything updates
+			std::vector<Script*> created;
+			for (auto [entity, component, node] : Registry.view<NativeScriptComponent, Node>().each())
+			{
+				if (Registry.all_of<ScriptInstance>(entity) || component.Class.empty())
+					continue;
+				ScriptInstance& script = Registry.emplace<ScriptInstance>(entity, ScriptInstance{ component.Class, Scripts->Create(component.Class) });
+				if (!script.Instance)
+				{
+					if (MissingScripts.insert(component.Class).second)
+						ETH_CORE_WARN("No script class '{}' is registered", component.Class);
+					continue;
+				}
+				script.Instance->Attach(ScriptEntity(*this, static_cast<uint64_t>(entity), node.Id));
+				created.push_back(script.Instance.get());
+			}
+			for (Script* script : created)
+				script->OnCreate();
+
+			for (auto [entity, script] : Registry.view<ScriptInstance>().each())
+				if (script.Instance)
+					script.Instance->OnUpdate(deltaTime);
 		}
 
 		// World matrices of all entities, parents applied
@@ -160,14 +286,18 @@ namespace Ethane {
 		}
 	};
 
-	EnttWorld::EnttWorld(const SteleSnapshot& snapshot)
+	EnttWorld::EnttWorld(const SteleSnapshot& snapshot, WorldMode mode, const ScriptRegistry* scripts)
 		: m_Impl(std::make_unique<Impl>())
 	{
-		m_Impl->Types = &snapshot.Registry();
+		m_Impl->Schema = &snapshot.Registry();
+		m_Impl->Scripts = scripts ? scripts : &ScriptRegistry::Global();
+		m_Impl->Mode = mode;
 		m_Impl->Bind<TransformComponent>();
 		m_Impl->Bind<MeshComponent>();
 		m_Impl->Bind<MaterialComponent>();
 		m_Impl->Bind<DirectionalLightComponent>();
+		m_Impl->Bind<CameraComponent>();
+		m_Impl->Bind<NativeScriptComponent>();
 		m_Impl->Rebuild(snapshot);
 	}
 
@@ -193,9 +323,10 @@ namespace Ethane {
 		m_Impl->Rebuild(changes.After);
 	}
 
-	void EnttWorld::Update(const UpdateContext&)
+	void EnttWorld::Update(const UpdateContext& context)
 	{
-		// No systems yet: transforms are combined when extracting
+		if (m_Impl->Mode == WorldMode::Play)
+			m_Impl->UpdateScripts(context.DeltaTime);
 	}
 
 	void EnttWorld::Extract(FramePacket& packet) const
@@ -222,14 +353,59 @@ namespace Ethane {
 		}
 	}
 
+	bool EnttWorld::ExtractView(float aspectRatio, PacketView& view) const
+	{
+		const entt::registry& registry = m_Impl->Registry;
+		entt::entity chosen = entt::null;
+		for (auto [entity, camera] : registry.view<const CameraComponent>().each())
+		{
+			if (camera.Primary)
+			{
+				chosen = entity;
+				break;
+			}
+		}
+		if (chosen == entt::null)
+			return false;
+
+		// The camera's placement without scale: position and orthonormal axes of its world matrix
+		const glm::mat4 world = m_Impl->WorldMatrices().at(chosen);
+		glm::mat4 placement(1.0f);
+		for (int axis = 0; axis < 3; axis++)
+		{
+			const glm::vec3 column(world[axis]);
+			placement[axis] = glm::vec4(glm::length(column) > 1e-6f ? glm::normalize(column) : glm::vec3(0.0f), 0.0f);
+		}
+		placement[3] = world[3];
+
+		const CameraComponent& camera = registry.get<CameraComponent>(chosen);
+		view.View = glm::inverse(placement);
+		view.Projection = glm::perspective(camera.FieldOfView, std::max(aspectRatio, 1e-4f), std::max(camera.Near, 1e-4f), std::max(camera.Far, camera.Near + 1e-3f));
+		view.Position = glm::vec3(world[3]);
+		return true;
+	}
+
 	uint64_t EnttWorld::Version() const
 	{
 		return m_Impl->Version;
 	}
 
+	WorldMode EnttWorld::Mode() const
+	{
+		return m_Impl->Mode;
+	}
+
 	size_t EnttWorld::EntityCount() const
 	{
 		return m_Impl->Entities.size();
+	}
+
+	size_t EnttWorld::ScriptCount() const
+	{
+		size_t count = 0;
+		for (auto [entity, script] : m_Impl->Registry.view<const ScriptInstance>().each())
+			count += script.Instance ? 1 : 0;
+		return count;
 	}
 
 	uint32_t EnttWorld::RebuildCount() const
