@@ -18,11 +18,11 @@ as its own commits.
 - [x] Undo / redo from inverse ops; transactions that stay open while dragging
 - [x] YAML serializer driven by the schema, with schema versions in the file
 
-## 3. Frame packet and renderer API
+## 3. Frame packet and renderer API ✅
 
-- [ ] `FramePacket`: draw items, lights, views
-- [ ] `Renderer::Render(packet, target)`
-- [ ] Port `DemoScene` to produce packets
+- [x] `FramePacket`: draw items, lights, views
+- [x] `Renderer::Render(packet, target)`
+- [x] Port `DemoScene` to produce packets
 
 ## 4. World
 

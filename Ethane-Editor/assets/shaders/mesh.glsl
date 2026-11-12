@@ -1,11 +1,13 @@
 #type vertex
 #version 450 core
 
-// set 0, per frame
-layout(set = 0, binding = 0) uniform Camera {
+// set 0, per frame: Ethane::Renderer
+layout(set = 0, binding = 0) uniform Frame {
 	mat4 viewproj;
-	vec4 position; // xyz: world-space camera position
-} u_Camera;
+	vec4 cameraPosition; // xyz: world space
+	vec4 lightDirection; // xyz: towards the directional light
+	vec4 lightRadiance;  // rgb: its color * intensity (0: no light)
+} u_Frame;
 
 // per draw, written by Mesh::Draw()
 layout(push_constant) uniform Draw {
@@ -27,7 +29,7 @@ layout(location = 4) out vec2 v_TexCoord;
 
 void main() {
 	vec4 world = u_Draw.model * vec4(a_Position, 1.0);
-	gl_Position = u_Camera.viewproj * world;
+	gl_Position = u_Frame.viewproj * world;
 	v_WorldPosition = world.xyz;
 	// inverse-transpose for the normal (correct under non-uniform scale); tangents follow the surface
 	v_Normal = transpose(inverse(mat3(u_Draw.model))) * a_Normal;
@@ -40,10 +42,12 @@ void main() {
 #type fragment
 #version 450 core
 
-layout(set = 0, binding = 0) uniform Camera {
+layout(set = 0, binding = 0) uniform Frame {
 	mat4 viewproj;
-	vec4 position;
-} u_Camera;
+	vec4 cameraPosition; // xyz: world space
+	vec4 lightDirection; // xyz: towards the directional light
+	vec4 lightRadiance;  // rgb: its color * intensity (0: no light)
+} u_Frame;
 
 // set 1: Ethane::Material
 layout(set = 1, binding = 0) uniform MaterialUniforms {
@@ -83,8 +87,8 @@ void main() {
 	float metallic = clamp(u_Material.Metallic * mr.b, 0.0, 1.0);
 
 	vec3 n = SurfaceNormal();
-	vec3 l = normalize(vec3(0.4, 0.8, 0.6));
-	vec3 v = normalize(u_Camera.position.xyz - v_WorldPosition);
+	vec3 l = u_Frame.lightDirection.xyz;
+	vec3 v = normalize(u_Frame.cameraPosition.xyz - v_WorldPosition);
 	vec3 h = normalize(l + v);
 	float nDotL = max(dot(n, l), 0.0);
 
@@ -99,6 +103,6 @@ void main() {
 	// hemisphere ambient: lighter from above
 	vec3 ambient = mix(vec3(0.10, 0.09, 0.08), vec3(0.22, 0.24, 0.28), 0.5 + 0.5 * n.y);
 	vec3 color = ambient * (diffuseColor + specularColor * 0.5)
-	           + (diffuseColor + specularColor * specular) * nDotL * 0.9;
+	           + (diffuseColor + specularColor * specular) * nDotL * u_Frame.lightRadiance.rgb;
 	outColor = vec4(color, 1.0);
 }

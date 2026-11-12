@@ -15,15 +15,6 @@ namespace Ethane {
 		constexpr const char* kSceneWindow = "Scene";
 		constexpr const char* kPropertiesWindow = "Properties";
 		constexpr const char* kStatsWindow = "Stats";
-
-		uint32_t CountTriangles(const Mesh& mesh)
-		{
-			uint32_t indices = 0;
-			for (const Submesh& submesh : mesh.GetSubmeshes()) {
-				indices += submesh.IndexCount;
-			}
-			return indices / 3;
-		}
 	}
 
 	EditorLayer::EditorLayer()
@@ -56,13 +47,16 @@ namespace Ethane {
 		viewportSpec.ClearColor = { 0.08f, 0.085f, 0.09f, 1.0f };
 		m_ViewportTarget = backend.CreateRenderTarget(viewportSpec);
 
-		m_Scene = CreateScope<DemoScene>(backend, m_ViewportTarget->GetRenderPass());
+		m_Renderer = CreateScope<Renderer>(backend, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl");
+		m_Scene = CreateScope<DemoScene>(backend, m_Renderer->GetMeshShader());
 		ResetCamera();
 	}
 
 	void EditorLayer::OnDetach()
 	{
+		m_Packet.Clear();
 		m_Scene.reset();
+		m_Renderer.reset();
 		m_ViewportTarget.reset();
 	}
 
@@ -84,9 +78,10 @@ namespace Ethane {
 
 	void EditorLayer::OnRenderOffscreen(ICommandList& commandList)
 	{
-		commandList.BeginRenderPass(*m_ViewportTarget);
-		m_Scene->Render(commandList, m_Camera);
-		commandList.EndRenderPass();
+		m_Packet.Clear();
+		m_Packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition() };
+		m_Scene->Extract(m_Packet);
+		m_Renderer->Render(commandList, m_Packet, *m_ViewportTarget);
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -268,14 +263,8 @@ namespace Ethane {
 		const RenderTargetSpecification& spec = m_ViewportTarget->GetSpecification();
 		ImGui::Text("Viewport: %u x %u px", spec.Width, spec.Height);
 
-		uint32_t triangles = 0, visible = 0;
-		for (const DemoScene::Model& model : m_Scene->GetModels()) {
-			if (model.Visible) {
-				visible++;
-				triangles += CountTriangles(*model.MeshData);
-			}
-		}
-		ImGui::Text("Models: %u visible, %u triangles", visible, triangles);
+		const RendererStats& stats = m_Renderer->GetStats();
+		ImGui::Text("Meshes: %u, draw calls: %u, triangles: %u", stats.DrawItems, stats.DrawCalls, stats.Triangles);
 
 		ImGui::SeparatorText("Camera");
 		ImGui::Text("Distance %.2f, pitch %.2f, yaw %.2f", m_Camera.GetDistance(), m_Camera.GetPitch(), m_Camera.GetYaw());
@@ -283,6 +272,14 @@ namespace Ethane {
 			ResetCamera();
 		}
 		ImGui::SliderFloat("Spin speed", &m_Scene->SpinSpeed, 0.0f, 3.0f, "%.2f rad/s");
+
+		ImGui::SeparatorText("Light");
+		DirectionalLight& sun = m_Scene->Sun;
+		if (ImGui::DragFloat3("Direction", glm::value_ptr(sun.Direction), 0.01f, -1.0f, 1.0f) && glm::length(sun.Direction) < 1e-4f) {
+			sun.Direction = { 0.0f, -1.0f, 0.0f };
+		}
+		ImGui::ColorEdit3("Color", glm::value_ptr(sun.Color));
+		ImGui::SliderFloat("Intensity", &sun.Intensity, 0.0f, 3.0f);
 
 		ImGui::SeparatorText("About");
 		ImGui::Text("Dear ImGui %s", ImGui::GetVersion());

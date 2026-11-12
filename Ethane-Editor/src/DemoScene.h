@@ -2,14 +2,14 @@
 
 #include "Ethane.h"
 #include "Ethane/GfxBackend/GfxObject.h"
-#include "Ethane/Renderer/EditorCamera.h"
+#include "Ethane/Renderer/FramePacket.h"
 #include "Ethane/Renderer/Mesh.h"
 
 namespace Ethane {
 
 	// The default meshes (res/meshes/default/*.fbx) lined up on a textured, normal-mapped floor
-	// (assets/models/CobblestoneFloor), drawn with assets/shaders/mesh.glsl (set 0: camera, set 1: Material).
-	// A stand-in for a real Scene until entities carry meshes.
+	// (assets/models/CobblestoneFloor), lit by one directional light. Produces frame packets for the
+	// Renderer. A stand-in until steles and worlds carry meshes.
 	class DemoScene
 	{
 	public:
@@ -25,22 +25,19 @@ namespace Ethane {
 			bool Visible = true;
 		};
 
-		// `renderPass`: what the scene will be drawn in (its pipeline is created for it)
-		DemoScene(GfxBackendAPI& backend, const RefCountPtr<IRenderPass>& renderPass);
+		// `materialShader`: the shader its materials are created for (Renderer::GetMeshShader)
+		DemoScene(GfxBackendAPI& backend, const RefCountPtr<IShader>& materialShader);
 
 		void OnUpdate(Timestep ts);
-		// Inside a render pass compatible with the one given at creation
-		void Render(ICommandList& commandList, const EditorCamera& camera);
+		// Adds the visible models and the light (the view is the caller's)
+		void Extract(FramePacket& packet) const;
 
 		std::vector<Model>& GetModels() { return m_Models; }
 		float SpinSpeed = 0.5f; // radians per second
+		DirectionalLight Sun{ .Direction = -glm::normalize(glm::vec3(0.4f, 0.8f, 0.6f)), .Color = glm::vec3(1.0f), .Intensity = 0.9f };
 
 	private:
 		std::vector<Model> m_Models;
-		RefCountPtr<IShader> m_Shader;
-		RefCountPtr<IPipeline> m_Pipeline;
-		RefCountPtr<IUniformBuffer> m_CameraBuffer;
-		RefCountPtr<IBindingSet> m_BindingSet;
 		float m_Time = 0.0f;
 	};
 

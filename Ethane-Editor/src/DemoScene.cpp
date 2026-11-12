@@ -6,13 +6,6 @@
 namespace Ethane {
 
 	namespace {
-		// layout(set = 0, binding = 0) uniform Camera { mat4 viewproj; vec4 position; }
-		struct CameraData
-		{
-			glm::mat4 ViewProj;
-			glm::vec4 Position;
-		};
-
 		// Scales the mesh's bounding box to fit a `size` cube, resting on y = 0, centered on x / z
 		glm::mat4 FitToBox(const AABB& bounds, float size)
 		{
@@ -23,17 +16,8 @@ namespace Ethane {
 		}
 	}
 
-	DemoScene::DemoScene(GfxBackendAPI& backend, const RefCountPtr<IRenderPass>& renderPass)
+	DemoScene::DemoScene(GfxBackendAPI& backend, const RefCountPtr<IShader>& materialShader)
 	{
-		m_Shader = backend.CreateShader("assets/shaders/mesh.glsl");
-
-		PipelineSpecification spec;
-		spec.Shader = m_Shader;
-		spec.RenderPass = renderPass;
-		spec.Layout = Mesh::GetVertexLayout();
-		spec.CullMode = CullMode::BACK;
-		m_Pipeline = backend.CreatePipeline(spec);
-
 		// The fbx files' own materials, recolored; the cube's base color is a texture instead
 		struct Entry { const char* Name; glm::vec4 Color; float Metallic; float Roughness; const char* Texture; };
 		const Entry entries[] = {
@@ -68,7 +52,7 @@ namespace Ethane {
 				.MeshData  = mesh,
 				.Normalize = FitToBox(mesh->GetBoundingBox(), 1.0f),
 				.Position  = { firstX + spacing * static_cast<float>(i), 0.0f, 0.0f },
-				.Materials = Material::CreateAll(backend, m_Shader, materials),
+				.Materials = Material::CreateAll(backend, materialShader, materials),
 				.Spin      = true});
 		}
 
@@ -82,13 +66,9 @@ namespace Ethane {
 				.Name      = "Floor",
 				.MeshData  = floor,
 				.Normalize = fit,
-				.Materials = Material::CreateAll(backend, m_Shader, floor->GetMaterials()),
+				.Materials = Material::CreateAll(backend, materialShader, floor->GetMaterials()),
 				.Spin      = false});
 		}
-
-		m_CameraBuffer = backend.CreateUniformBuffer(sizeof(CameraData));
-		m_BindingSet = backend.CreateBindingSet(m_Shader, 0);
-		m_BindingSet->SetUniformBuffer(0, m_CameraBuffer);
 	}
 
 	void DemoScene::OnUpdate(Timestep ts)
@@ -96,14 +76,9 @@ namespace Ethane {
 		m_Time += ts * SpinSpeed;
 	}
 
-	void DemoScene::Render(ICommandList& commandList, const EditorCamera& camera)
+	void DemoScene::Extract(FramePacket& packet) const
 	{
-		const CameraData cameraData{ camera.GetViewProjection(), glm::vec4(camera.GetPosition(), 1.0f) };
-		m_CameraBuffer->SetData(&cameraData, sizeof(cameraData));
-
-		commandList.BindPipeline(*m_Pipeline);
-		commandList.BindBindingSet(*m_BindingSet);
-
+		packet.DirectionalLights.push_back(Sun);
 		for (const Model& model : m_Models)
 		{
 			if (!model.Visible) {
@@ -114,7 +89,7 @@ namespace Ethane {
 				transform = glm::rotate(transform, m_Time, glm::vec3(0.0f, 1.0f, 0.0f));
 			}
 			transform = glm::scale(transform, glm::vec3(model.Scale));
-			model.MeshData->Draw(commandList, transform * model.Normalize, model.Materials);
+			packet.AddMesh(model.MeshData, transform * model.Normalize, model.Materials);
 		}
 	}
 

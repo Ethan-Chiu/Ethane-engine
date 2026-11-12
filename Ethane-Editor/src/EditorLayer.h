@@ -2,6 +2,8 @@
 
 #include "Ethane.h"
 #include "Ethane/Renderer/EditorCamera.h"
+#include "Ethane/Renderer/FramePacket.h"
+#include "Ethane/Renderer/Renderer.h"
 
 #include "DemoScene.h"
 
@@ -38,7 +40,9 @@ namespace Ethane {
 		void ResetCamera();
 
 	private:
+		Scope<Renderer> m_Renderer;
 		Scope<DemoScene> m_Scene;
+		FramePacket m_Packet; // rebuilt every frame (keeps its capacity)
 		EditorCamera m_Camera{ 45.0f, 1.778f, 0.1f, 100.0f };
 
 		RefCountPtr<IRenderTarget> m_ViewportTarget;
