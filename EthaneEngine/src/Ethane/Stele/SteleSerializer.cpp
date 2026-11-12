@@ -6,7 +6,6 @@
 
 #include <charconv>
 #include <fstream>
-#include <limits>
 
 namespace Ethane::SteleSerializer {
 
@@ -25,12 +24,16 @@ namespace Ethane::SteleSerializer {
 
 		// --- writing ---------------------------------------------------------------------------------
 
+		// The shortest text that reads back as exactly the same value (0.9f is "0.9", not "0.899999976")
+		template<typename T>
+		std::string Number(T value) { return fmt::format("{}", value); }
+
 		template<int N>
 		void EmitVector(YAML::Emitter& out, const glm::vec<N, float>& v)
 		{
 			out << YAML::Flow << YAML::BeginSeq;
 			for (int i = 0; i < N; i++)
-				out << v[i];
+				out << Number(v[i]);
 			out << YAML::EndSeq;
 		}
 
@@ -42,9 +45,11 @@ namespace Ethane::SteleSerializer {
 				if constexpr (std::is_same_v<T, glm::vec2> || std::is_same_v<T, glm::vec3> || std::is_same_v<T, glm::vec4>)
 					EmitVector(out, v);
 				else if constexpr (std::is_same_v<T, glm::quat>)
-					out << YAML::Flow << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq; // x y z w
+					out << YAML::Flow << YAML::BeginSeq << Number(v.x) << Number(v.y) << Number(v.z) << Number(v.w) << YAML::EndSeq; // x y z w
 				else if constexpr (std::is_same_v<T, AssetId> || std::is_same_v<T, ElementId>)
 					out << Hex(v.Value);
+				else if constexpr (std::is_floating_point_v<T>)
+					out << Number(v);
 				else
 					out << v;
 			}, value);
@@ -164,8 +169,6 @@ namespace Ethane::SteleSerializer {
 		});
 
 		YAML::Emitter out;
-		out.SetFloatPrecision(std::numeric_limits<float>::max_digits10);
-		out.SetDoublePrecision(std::numeric_limits<double>::max_digits10);
 
 		out << YAML::BeginMap;
 		out << YAML::Key << "Stele" << YAML::Value << kFormatVersion;
