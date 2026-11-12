@@ -101,21 +101,11 @@ namespace Ethane {
 
 	void EditorCamera::MouseZoom(float delta)
 	{
-		// Each step scales the distance by the same factor (one scroll notch: about 18%), so zooming
-		// feels the same near and far and zooming out undoes zooming in
-		constexpr float kMinDistance = 0.5f, kMaxDistance = 500.0f;
-		const float factor = std::exp(-2.0f * delta);
-		const float distance = m_Distance * factor;
-		if (distance < kMinDistance)
-		{
-			// Closest zoom reached: keep moving forward, the focal point along with the camera
-			m_FocalPoint += GetForwardDirection() * (kMinDistance - distance) * (1.0f / kMinDistance);
-			m_Distance = kMinDistance;
-		}
-		else
-		{
-			m_Distance = std::min(distance, kMaxDistance);
-		}
+		// Each step moves a fixed fraction of the remaining distance (one scroll notch: about 18%), so the
+		// camera slows down as it approaches the focal point and never passes it. The focal point stays
+		// put: at the closest distance zooming in just stops (pan with Alt + middle drag to move on).
+		constexpr float kMinDistance = 0.05f, kMaxDistance = 500.0f;
+		m_Distance = std::clamp(m_Distance * std::exp(-2.0f * delta), kMinDistance, kMaxDistance);
 	}
 
 	glm::vec3 EditorCamera::GetUpDirection() const
