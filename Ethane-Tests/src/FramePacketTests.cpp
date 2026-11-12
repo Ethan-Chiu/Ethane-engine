@@ -4,25 +4,24 @@
 
 using namespace Ethane;
 
-// Meshes and materials are GPU objects; the packet only stores references, so null ones do here
-
-TEST_CASE("FramePacket: each draw item gets its own material range")
+TEST_CASE("FramePacket: overrides are stored per draw item and need an element")
 {
 	FramePacket packet;
-	const std::vector<Ref<Material>> two(2), three(3);
+	const MaterialOverride red{ .BaseColor = { 1.0f, 0.0f, 0.0f, 1.0f } };
 
-	packet.AddMesh(nullptr, glm::mat4(2.0f), two, ElementId{ 7 });
-	packet.AddMesh(nullptr, glm::mat4(1.0f), {});
-	packet.AddMesh(nullptr, glm::mat4(1.0f), three);
+	packet.AddMesh(AssetId{ 1 }, glm::mat4(2.0f), ElementId{ 7 }, &red);
+	packet.AddMesh(AssetId{ 2 }, glm::mat4(1.0f));
+	packet.AddMesh(AssetId{ 3 }, glm::mat4(1.0f), {}, &red); // no element: override ignored
 
 	auto items = packet.DrawItems();
 	REQUIRE(items.size() == 3);
-	CHECK(packet.MaterialsOf(items[0]).size() == 2);
-	CHECK(packet.MaterialsOf(items[1]).empty());
-	CHECK(packet.MaterialsOf(items[2]).size() == 3);
-	CHECK(items[2].FirstMaterial == 2);
+	REQUIRE(packet.OverrideOf(items[0]));
+	CHECK(*packet.OverrideOf(items[0]) == red);
 	CHECK(items[0].Element == ElementId{ 7 });
+	CHECK(items[0].Mesh == AssetId{ 1 });
 	CHECK(items[0].Transform == glm::mat4(2.0f));
+	CHECK(packet.OverrideOf(items[1]) == nullptr);
+	CHECK(packet.OverrideOf(items[2]) == nullptr);
 }
 
 TEST_CASE("FramePacket: Clear empties it but keeps the capacity")
@@ -31,7 +30,7 @@ TEST_CASE("FramePacket: Clear empties it but keeps the capacity")
 	packet.View.Position = { 1.0f, 2.0f, 3.0f };
 	packet.DirectionalLights.push_back({});
 	for (int i = 0; i < 100; i++)
-		packet.AddMesh(nullptr, glm::mat4(1.0f), {});
+		packet.AddMesh(AssetId{ 1 }, glm::mat4(1.0f));
 	const size_t capacity = packet.DirectionalLights.capacity();
 
 	packet.Clear();
