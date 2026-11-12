@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 //#include "Ethane/Renderer/Renderer.h"
 #include "Ethane/Asset/AssetManager.h"
+#include "Ethane/Schema/TypeRegistry.h"
+#include "Ethane/World/Components.h"
 #include "Ethane/Systems/ResourceSystem.h"
 #include "Ethane/GfxBackend/GfxSmokeTest.h"
 //#include "Ethane/Systems/TextureSystem.h"
@@ -54,6 +56,7 @@ namespace Ethane
 //		ShaderSystem::Init();
 
 		AssetManager::Init();
+		RegisterEngineComponents(TypeRegistry::Global()); // Transform, Mesh, Material, DirectionalLight
 
 		m_ImGuiLayer = ImGuiLayer::Create(*m_RendererBackend, *m_WindowTarget, m_Window->GetNativeWindow());
 		PushOverlay(m_ImGuiLayer);

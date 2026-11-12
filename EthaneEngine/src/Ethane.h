@@ -31,11 +31,10 @@
 //#include "Ethane/Renderer/Mesh.h"
 //#include "Ethane/Renderer/RenderPass.h"
 //#include "Ethane/Renderer/RenderCommandBuffer.h"
-//-------Scene--------
-#include "Ethane/Scene/Scene.h"
-#include "Ethane/Scene/Entity.h"
-#include "Ethane/Scene/ScriptableEntity.h"
-#include "Ethane/Scene/Components.h"
+//-------Steles and worlds--------
+#include "Ethane/Stele/Stele.h"
+#include "Ethane/World/Components.h"
+#include "Ethane/World/World.h"
 //-----Time Step-----
 #include "Ethane/Core/Timestep.h"
 //-------Asset-------
