@@ -90,6 +90,7 @@ GENERATED += $(OBJDIR)/EditorLayer.o
 GENERATED += $(OBJDIR)/EthaneEditorApp.o
 GENERATED += $(OBJDIR)/HierarchyPanel.o
 GENERATED += $(OBJDIR)/InspectorPanel.o
+GENERATED += $(OBJDIR)/Spin.o
 GENERATED += $(OBJDIR)/TexturedQuadLayer.o
 GENERATED += $(OBJDIR)/TriangleLayer.o
 OBJECTS += $(OBJDIR)/CubeLayer.o
@@ -99,6 +100,7 @@ OBJECTS += $(OBJDIR)/EditorLayer.o
 OBJECTS += $(OBJDIR)/EthaneEditorApp.o
 OBJECTS += $(OBJDIR)/HierarchyPanel.o
 OBJECTS += $(OBJDIR)/InspectorPanel.o
+OBJECTS += $(OBJDIR)/Spin.o
 OBJECTS += $(OBJDIR)/TexturedQuadLayer.o
 OBJECTS += $(OBJDIR)/TriangleLayer.o
 
@@ -177,6 +179,9 @@ $(OBJDIR)/EditorLayer.o: src/EditorLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EthaneEditorApp.o: src/EthaneEditorApp.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Spin.o: src/Game/Spin.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/HierarchyPanel.o: src/Panels/HierarchyPanel.cpp

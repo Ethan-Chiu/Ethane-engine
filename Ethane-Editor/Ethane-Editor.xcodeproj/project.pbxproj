@@ -12,6 +12,7 @@
 		74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */; };
 		7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */; };
 		79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */; };
+		9B34779F5EA039519D43DDDF /* Spin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F698B167EFFEB2D9E39A0FA7 /* Spin.cpp */; };
 		AB564F861C78F078D23F9DC6 /* DemoStele.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
 		C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAE78FA0313EBECB522073A /* HierarchyPanel.cpp */; };
@@ -38,6 +39,7 @@
 
 /* Begin PBXFileReference section */
 		0B3EEE149DCCB80606A55C54 /* InspectorPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = InspectorPanel.h; path = src/Panels/InspectorPanel.h; sourceTree = "<group>"; };
+		0DE9C1917F74DA032E75FFD1 /* Spin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Spin.h; path = src/Game/Spin.h; sourceTree = "<group>"; };
 		128ABEA4A51888960DF12CE4 /* HierarchyPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HierarchyPanel.h; path = src/Panels/HierarchyPanel.h; sourceTree = "<group>"; };
 		17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EthaneEditorApp.cpp; path = src/EthaneEditorApp.cpp; sourceTree = "<group>"; };
 		1C4E48BADFBA0A6C1E5DAEFA /* TriangleLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TriangleLayer.h; path = src/TriangleLayer.h; sourceTree = "<group>"; };
@@ -56,6 +58,7 @@
 		BE6354B8E489846A4B907AF8 /* DemoStele.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DemoStele.h; path = src/DemoStele.h; sourceTree = "<group>"; };
 		E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DemoStele.cpp; path = src/DemoStele.cpp; sourceTree = "<group>"; };
 		F352F86C1979281E80801EAC /* CubeLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CubeLayer.h; path = src/CubeLayer.h; sourceTree = "<group>"; };
+		F698B167EFFEB2D9E39A0FA7 /* Spin.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Spin.cpp; path = src/Game/Spin.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +98,7 @@
 				1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */,
 				989FA13CC0DA59EEA875E77C /* EditorLayer.h */,
 				17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */,
+				D6B9B77C831C77AE41A4EDBC /* Game */,
 				F8C6F20E9C127B40B6E3484E /* Panels */,
 				9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */,
 				6600948E3423E840BB323ACE /* TexturedQuadLayer.h */,
@@ -128,6 +132,15 @@
 				514DCF5268606A84587C6592 /* Ethane-Editor */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D6B9B77C831C77AE41A4EDBC /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				F698B167EFFEB2D9E39A0FA7 /* Spin.cpp */,
+				0DE9C1917F74DA032E75FFD1 /* Spin.h */,
+			);
+			name = Game;
 			sourceTree = "<group>";
 		};
 		F8C6F20E9C127B40B6E3484E /* Panels */ = {
@@ -217,6 +230,7 @@
 				2216BF5A797C324C2B8A4D9A /* EditorContext.cpp in Sources */,
 				7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */,
 				1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */,
+				9B34779F5EA039519D43DDDF /* Spin.cpp in Sources */,
 				C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */,
 				F50A4342F4AD26742F01D982 /* InspectorPanel.cpp in Sources */,
 				79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */,

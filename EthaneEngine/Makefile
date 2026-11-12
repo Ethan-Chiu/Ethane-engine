@@ -115,6 +115,7 @@ GENERATED += $(OBJDIR)/Mesh.o
 GENERATED += $(OBJDIR)/OrderKey.o
 GENERATED += $(OBJDIR)/Renderer.o
 GENERATED += $(OBJDIR)/ResourceSystem.o
+GENERATED += $(OBJDIR)/Script.o
 GENERATED += $(OBJDIR)/ShaderIncluder.o
 GENERATED += $(OBJDIR)/ShaderSystem.o
 GENERATED += $(OBJDIR)/Stele.o
@@ -173,6 +174,7 @@ OBJECTS += $(OBJDIR)/Mesh.o
 OBJECTS += $(OBJDIR)/OrderKey.o
 OBJECTS += $(OBJDIR)/Renderer.o
 OBJECTS += $(OBJDIR)/ResourceSystem.o
+OBJECTS += $(OBJDIR)/Script.o
 OBJECTS += $(OBJDIR)/ShaderIncluder.o
 OBJECTS += $(OBJDIR)/ShaderSystem.o
 OBJECTS += $(OBJDIR)/Stele.o
@@ -433,6 +435,9 @@ $(OBJDIR)/Components.o: src/Ethane/World/Components.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EnttWorld.o: src/Ethane/World/Entt/EnttWorld.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Script.o: src/Ethane/World/Script.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ethpch.o: src/ethpch.cpp

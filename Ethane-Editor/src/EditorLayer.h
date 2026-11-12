@@ -21,6 +21,10 @@ namespace Ethane {
 	//
 	// Steles open in an EditorContext; panels read their snapshots and change them only through the
 	// context's transactions, so every edit can be undone (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z).
+	//
+	// Play (Ctrl+P) builds a play world from the active stele's current snapshot: it runs the scripts and
+	// is seen through the stele's primary camera. Stop throws it away; the stele was never changed by it.
+	// Edits made while playing go to the stele as usual (they reach the play world too, and are kept).
 	class EditorLayer : public Layer
 	{
 	public:
@@ -43,6 +47,11 @@ namespace Ethane {
 		void DrawFileDialogs();
 		void HandleShortcuts();
 
+		void Play();
+		void Stop();
+		bool IsPlaying() const { return m_PlayWorld != nullptr; }
+		void DrawViewportToolbar();
+
 		void NewStele();
 		void NewDemoStele();
 		void Save(bool chooseFile);
@@ -54,6 +63,12 @@ namespace Ethane {
 		Scope<Renderer> m_Renderer;
 		Scope<EditorContext> m_Context;
 		FramePacket m_Packet; // rebuilt every frame (keeps its capacity)
+
+		// Play mode: the world built from the stele when Play was pressed
+		Scope<EnttWorld> m_PlayWorld;
+		SteleSubscription m_PlayFollow;
+		const OpenStele* m_Playing = nullptr; // the stele it was built from
+		bool m_PlayHasCamera = false;
 
 		HierarchyPanel m_Hierarchy;
 		InspectorPanel m_Inspector;

@@ -121,6 +121,21 @@ data however it likes.
 - **Play world:** instantiated from a stele snapshot (on a background thread if needed), runs gameplay
   systems, and is thrown away on Stop. The stele never changed, so nothing needs restoring.
 
+### Play mode and scripts
+
+Play builds a play world (`WorldMode::Play`) from the stele's current snapshot; Stop destroys it. Only
+play worlds run gameplay: a `NativeScript` component names a C++ class registered in a
+`ScriptRegistry`, and the world creates it (`OnCreate`), updates it every frame (`OnUpdate`) and destroys
+it (`OnDestroy`) when the element, the component or the class name goes away, or with the world.
+Scripts change components in the play world only; the stele is untouched. The editor shows a play world
+through its primary `Camera` (`World::ExtractView`).
+
+Scripts reach components through a `ScriptEntity` handle (component access by type id, typed
+`Get<T>()` on top), so script code has no EnTT types in it. This is the minimal world-independent API
+that gameplay code needs; the larger `Query` / `Commands` API is still deferred (see below). Worlds
+store every registered component type, not only the engine's, so game components (registered by the
+game, like the editor's `Spin`) are available to its scripts.
+
 ### The default world uses EnTT, contained
 
 `EnttWorld` stores components in an EnTT registry. EnTT stays an implementation detail:

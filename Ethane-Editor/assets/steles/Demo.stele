@@ -1,13 +1,29 @@
 Stele: 1
 Types:
+  Camera: 1
   DirectionalLight: 1
   Material: 1
   Mesh: 1
+  NativeScript: 1
+  Spin: 1
   Transform: 1
 Elements:
-  - Id: 6156287503210389
-    Name: Sun
+  - Id: 2f01034a618c1424
+    Name: Camera
     Order: V
+    Components:
+      Camera:
+        FieldOfView: 0.7853982
+        Near: 0.1
+        Far: 100
+        Primary: true
+      Transform:
+        Position: [0, 3.9, 8.1]
+        Rotation: [-0.40786794, -0, 0]
+        Scale: [1, 1, 1]
+  - Id: 625b73b3f4fd2e7a
+    Name: Sun
+    Order: l
     Components:
       DirectionalLight:
         Color: [1, 1, 1]
@@ -16,9 +32,9 @@ Elements:
         Position: [0, 0, 0]
         Rotation: [-0.837215, 0.5880026, 0]
         Scale: [1, 1, 1]
-  - Id: 46b81f46fe395bf7
+  - Id: 5feca706564058fb
     Name: Floor
-    Order: l
+    Order: t
     Components:
       Mesh:
         Mesh: 8a17cf4727f3f1af
@@ -27,17 +43,17 @@ Elements:
         Position: [-0, -0, -0]
         Rotation: [0, 0, 0]
         Scale: [12, 12, 12]
-  - Id: 6379be5a9cd483d7
+  - Id: 5877641510db700e
     Name: Shapes
-    Order: t
+    Order: x
     Components:
       Transform:
         Position: [0, 0, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-  - Id: 4630f49eb8c307c4
+  - Id: d6f8974d4527abee
     Name: Cube
-    Parent: 6379be5a9cd483d7
+    Parent: 5877641510db700e
     Order: V
     Components:
       Material:
@@ -48,13 +64,17 @@ Elements:
       Mesh:
         Mesh: 996a91a996c74ea5
         Visible: true
+      NativeScript:
+        Class: Spin
+      Spin:
+        Speed: 0.5
       Transform:
         Position: [-4, 0.5, 0]
         Rotation: [0, 0, 0]
         Scale: [0.9999999, 0.9999999, 0.9999999]
-  - Id: 4bab82bce115685c
+  - Id: 18480857d708f5e9
     Name: Sphere
-    Parent: 6379be5a9cd483d7
+    Parent: 5877641510db700e
     Order: l
     Components:
       Material:
@@ -65,13 +85,17 @@ Elements:
       Mesh:
         Mesh: 622b97ac2cc4dfd0
         Visible: true
+      NativeScript:
+        Class: Spin
+      Spin:
+        Speed: 0.5
       Transform:
         Position: [-2.3999999, 0.5, 1.4901161e-08]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-  - Id: beb02b8dce02c81b
+  - Id: 24be89687ea5134d
     Name: Cylinder
-    Parent: 6379be5a9cd483d7
+    Parent: 5877641510db700e
     Order: t
     Components:
       Material:
@@ -82,13 +106,17 @@ Elements:
       Mesh:
         Mesh: f21d2a4b2d06e829
         Visible: true
+      NativeScript:
+        Class: Spin
+      Spin:
+        Speed: 0.5
       Transform:
         Position: [-0.79999995, 0.5, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-  - Id: 0660ceb4b6bb7816
+  - Id: ac799c59bd28e5e6
     Name: Cone
-    Parent: 6379be5a9cd483d7
+    Parent: 5877641510db700e
     Order: x
     Components:
       Material:
@@ -99,13 +127,17 @@ Elements:
       Mesh:
         Mesh: 15766e703aaf6ed3
         Visible: true
+      NativeScript:
+        Class: Spin
+      Spin:
+        Speed: 0.5
       Transform:
         Position: [0.8000001, 0.5, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-  - Id: a6ebcc474fe6acd5
+  - Id: 95d2744db26d900b
     Name: Torus
-    Parent: 6379be5a9cd483d7
+    Parent: 5877641510db700e
     Order: z
     Components:
       Material:
@@ -116,13 +148,17 @@ Elements:
       Mesh:
         Mesh: a89078f8ff0f4572
         Visible: true
+      NativeScript:
+        Class: Spin
+      Spin:
+        Speed: 0.5
       Transform:
         Position: [2.4, 0.1, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-  - Id: f894150d7b649eb1
+  - Id: bc1bc54140a18750
     Name: Capsule
-    Parent: 6379be5a9cd483d7
+    Parent: 5877641510db700e
     Order: zV
     Components:
       Material:
@@ -133,6 +169,10 @@ Elements:
       Mesh:
         Mesh: 3ec21114106fec21
         Visible: true
+      NativeScript:
+        Class: Spin
+      Spin:
+        Speed: 0.5
       Transform:
         Position: [4.0000973, 0.4999121, 5.2370782e-05]
         Rotation: [0, 0, 0]

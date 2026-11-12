@@ -22,6 +22,7 @@
 		2903465DEF913DCF5D93649D /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */; };
 		2AE10AFBD256A6AD7B1BB13B /* VulkanDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CF24CCE3ADC7685562A96B23 /* VulkanDevice.cpp */; };
 		2C2349C30AC5E535BFA7E803 /* EditorCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 478665CB472948FD817DFC0B /* EditorCamera.cpp */; };
+		2FD725DEC8240B90F66B0C1E /* Script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1FDBF46F64C64B838739D86 /* Script.cpp */; };
 		32724596C26820487F5CCBD6 /* VulkanShaderCompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B709393EDCB133B0FAE1B77E /* VulkanShaderCompiler.cpp */; };
 		33F19BC9DB67377B842C4209 /* VulkanShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54C709D13369A543E84BA811 /* VulkanShader.cpp */; };
 		35BEAE69D925DC1BF05B94A9 /* VulkanBindingSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11806671A9F853E3D5DF44B1 /* VulkanBindingSet.cpp */; };
@@ -348,6 +349,7 @@
 		6C45AB730E2F4765055659B3 /* quaternion.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion.inl; path = vendor/glm/glm/gtx/quaternion.inl; sourceTree = "<group>"; };
 		6C9A47F57E5187E7F3BF7635 /* vector_uint3_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_uint3_sized.hpp; path = vendor/glm/glm/ext/vector_uint3_sized.hpp; sourceTree = "<group>"; };
 		6CBA59375DB1C729C9B54777 /* matrix_uint4x4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint4x4.hpp; path = vendor/glm/glm/ext/matrix_uint4x4.hpp; sourceTree = "<group>"; };
+		6D20ADB066E26A22A0E16BF0 /* Script.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Script.h; path = src/Ethane/World/Script.h; sourceTree = "<group>"; };
 		6D38B9CF7D1DE6016991700F /* GfxBackendAPI.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = GfxBackendAPI.cpp; path = src/Ethane/GfxBackend/GfxBackendAPI.cpp; sourceTree = "<group>"; };
 		6D8CC82C4CA9E25E28B33E6C /* EnttWorld.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EnttWorld.cpp; path = src/Ethane/World/Entt/EnttWorld.cpp; sourceTree = "<group>"; };
 		6D903A974CAD54C928B6B0D7 /* type_vec4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_vec4.hpp; path = vendor/glm/glm/detail/type_vec4.hpp; sourceTree = "<group>"; };
@@ -525,6 +527,7 @@
 		AFE3A93B4A3D922D8675F77B /* matrix_factorisation.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_factorisation.inl; path = vendor/glm/glm/gtx/matrix_factorisation.inl; sourceTree = "<group>"; };
 		B000EC1DC04DD00FBE3A9A5D /* matrix_double3x2_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double3x2_precision.hpp; path = vendor/glm/glm/ext/matrix_double3x2_precision.hpp; sourceTree = "<group>"; };
 		B06B5E13E3EA9D85FBE47C53 /* matrix_float2x3_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_float2x3_precision.hpp; path = vendor/glm/glm/ext/matrix_float2x3_precision.hpp; sourceTree = "<group>"; };
+		B1FDBF46F64C64B838739D86 /* Script.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Script.cpp; path = src/Ethane/World/Script.cpp; sourceTree = "<group>"; };
 		B2458915E5C4C887FDBEA755 /* matrix_float2x4_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_float2x4_precision.hpp; path = vendor/glm/glm/ext/matrix_float2x4_precision.hpp; sourceTree = "<group>"; };
 		B2BE65277A23201904DAF367 /* vector_double4_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_double4_precision.hpp; path = vendor/glm/glm/ext/vector_double4_precision.hpp; sourceTree = "<group>"; };
 		B363C2E1C3B0A6D3C19D7121 /* matrix_double4x3_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double4x3_precision.hpp; path = vendor/glm/glm/ext/matrix_double4x3_precision.hpp; sourceTree = "<group>"; };
@@ -1076,6 +1079,8 @@
 				0ADBC648D169BDBA3F6BE488 /* Components.cpp */,
 				6F815672DCA964E4DE3C54B2 /* Components.h */,
 				2CA5135083327DC25BAB9190 /* Entt */,
+				B1FDBF46F64C64B838739D86 /* Script.cpp */,
+				6D20ADB066E26A22A0E16BF0 /* Script.h */,
 				142D62B645115AA8582990F6 /* World.h */,
 			);
 			name = World;
@@ -1794,6 +1799,7 @@
 				F155C73FF0F8AA712B4D5D7F /* FileUtils.cpp in Sources */,
 				96ED50000AD5C7B22D237640 /* Components.cpp in Sources */,
 				200812842C92C4F6A77790C4 /* EnttWorld.cpp in Sources */,
+				2FD725DEC8240B90F66B0C1E /* Script.cpp in Sources */,
 				35CF1DD12F90DA43698FDC11 /* ethpch.cpp in Sources */,
 				1AD781EF1A7A652154CF182F /* stb_image.cpp in Sources */,
 			);

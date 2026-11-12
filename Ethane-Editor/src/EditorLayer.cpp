@@ -1,5 +1,6 @@
 #include "EditorLayer.h"
 #include "DemoStele.h"
+#include "Game/Spin.h"
 
 #include <imgui.h>
 #include <imgui_internal.h> // DockBuilder
@@ -71,6 +72,9 @@ namespace Ethane {
 		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl");
 		m_Context = CreateScope<EditorContext>(*m_Assets, kAssetRegistryFile);
 
+		// Game types first: steles that use them load only once they're registered
+		RegisterGameTypes();
+
 		// The demo stele, created and saved the first time
 		if (!m_Context->Open(kDemoStele, error)) {
 			ETH_WARN("Couldn't open {} ({}): building it", kDemoStele, error);
@@ -84,6 +88,7 @@ namespace Ethane {
 
 	void EditorLayer::OnDetach()
 	{
+		Stop();
 		m_Context.reset();
 		m_Packet.Clear();
 		m_Renderer.reset();
@@ -104,7 +109,9 @@ namespace Ethane {
 		if (m_ViewportHovered) {
 			m_Camera.OnUpdate(ts);
 		}
-		if (OpenStele* stele = m_Context->Active()) {
+		if (IsPlaying()) {
+			m_PlayWorld->Update({ .DeltaTime = ts });
+		} else if (OpenStele* stele = m_Context->Active()) {
 			stele->EditWorld->Update({ .DeltaTime = ts });
 		}
 	}
@@ -113,8 +120,13 @@ namespace Ethane {
 	{
 		m_Packet.Clear();
 		m_Packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition() };
-		if (OpenStele* stele = m_Context->Active()) {
-			stele->EditWorld->Extract(m_Packet);
+		const World* world = IsPlaying() ? static_cast<const World*>(m_PlayWorld.get())
+		                   : m_Context->Active() ? m_Context->Active()->EditWorld.get() : nullptr;
+		if (world) {
+			// Playing: through the stele's camera if it has one, else the editor camera
+			const RenderTargetSpecification& spec = m_ViewportTarget->GetSpecification();
+			m_PlayHasCamera = IsPlaying() && world->ExtractView(static_cast<float>(spec.Width) / std::max(1.0f, static_cast<float>(spec.Height)), m_Packet.View);
+			world->Extract(m_Packet);
 		}
 		m_Renderer->Render(commandList, m_Packet, *m_ViewportTarget);
 	}
@@ -136,6 +148,11 @@ namespace Ethane {
 		if (m_ShowStats) DrawStatsPanel();
 		if (m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
 		DrawFileDialogs();
+
+		// Play mode belongs to one stele: switching to another tab or closing it stops it
+		if (IsPlaying() && m_Context->Active() != m_Playing) {
+			Stop();
+		}
 
 		// Mouse / keyboard over the viewport go to the camera, everything else to ImGui
 		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHovered);
@@ -162,6 +179,9 @@ namespace Ethane {
 		}
 		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_N, global)) {
 			NewStele();
+		}
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_P, global)) {
+			IsPlaying() ? Stop() : Play();
 		}
 	}
 
@@ -205,6 +225,15 @@ namespace Ethane {
 			}
 			if (ImGui::MenuItem(redo.c_str(), "Shift+Ctrl+Z", false, active && active->History.CanRedo())) {
 				m_Context->Redo();
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Play")) {
+			if (ImGui::MenuItem("Play", "Ctrl+P", false, !IsPlaying() && active)) {
+				Play();
+			}
+			if (ImGui::MenuItem("Stop", "Ctrl+P", false, IsPlaying())) {
+				Stop();
 			}
 			ImGui::EndMenu();
 		}
@@ -261,6 +290,7 @@ namespace Ethane {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin(kViewportWindow);
 
+		DrawViewportToolbar();
 		m_ViewportHovered = ImGui::IsWindowHovered();
 		m_ViewportFocused = ImGui::IsWindowFocused();
 
@@ -270,11 +300,68 @@ namespace Ethane {
 		m_ViewportSize = { static_cast<uint32_t>(std::max(size.x * scale.x, 0.0f)), static_cast<uint32_t>(std::max(size.y * scale.y, 0.0f)) };
 
 		if (size.x > 0.0f && size.y > 0.0f) {
+			const ImVec2 min = ImGui::GetCursorScreenPos();
 			ImGui::Image(Application::Get().GetImGuiLayer()->GetTextureID(*m_ViewportTarget), size);
+			if (IsPlaying()) {
+				// A frame around the image, so play mode can't be mistaken for editing
+				ImGui::GetWindowDrawList()->AddRect(min, ImVec2(min.x + size.x, min.y + size.y), IM_COL32(90, 200, 120, 255), 0.0f, 0, 3.0f);
+			}
 		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
+	}
+
+	void EditorLayer::DrawViewportToolbar()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 3.0f));
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 6.0f, ImGui::GetCursorPosY() + 4.0f));
+		if (!IsPlaying()) {
+			ImGui::BeginDisabled(m_Context->Active() == nullptr);
+			if (ImGui::Button("Play")) {
+				Play();
+			}
+			ImGui::EndDisabled();
+		} else {
+			if (ImGui::Button("Stop")) {
+				Stop();
+			}
+			ImGui::SameLine();
+			ImGui::AlignTextToFramePadding();
+			if (m_PlayHasCamera) {
+				ImGui::TextColored(ImVec4(0.45f, 0.85f, 0.55f, 1.0f), "Playing");
+			} else {
+				ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.35f, 1.0f), "Playing (no primary camera: editor view)");
+			}
+		}
+		ImGui::PopStyleVar();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4.0f);
+	}
+
+	void EditorLayer::Play()
+	{
+		OpenStele* stele = m_Context->Active();
+		if (!stele || IsPlaying()) {
+			return;
+		}
+		// From the snapshot as it is now; then following the stele, so edits made while playing show up
+		m_PlayWorld = CreateScope<EnttWorld>(stele->Source->Read(), WorldMode::Play);
+		EnttWorld* world = m_PlayWorld.get();
+		m_PlayFollow = stele->Source->Subscribe([world](const ChangeSet& changes) { world->Apply(changes); });
+		m_Playing = stele;
+		ETH_INFO("Play: {}", stele->Name);
+	}
+
+	void EditorLayer::Stop()
+	{
+		if (!IsPlaying()) {
+			return;
+		}
+		m_PlayFollow.Reset();
+		m_PlayWorld.reset(); // scripts get OnDestroy
+		m_Playing = nullptr;
+		m_PlayHasCamera = false;
+		ETH_INFO("Stop");
 	}
 
 	void EditorLayer::DrawStatsPanel()
@@ -298,6 +385,9 @@ namespace Ethane {
 			ImGui::Text("%s%s", stele->Path.empty() ? "(not saved)" : stele->Path.generic_string().c_str(), stele->IsDirty() ? " *" : "");
 			ImGui::Text("Version %llu, %zu elements", static_cast<unsigned long long>(snapshot.Version()), snapshot.ElementCount());
 			ImGui::Text("Edit world: %zu entities, version %llu", stele->EditWorld->EntityCount(), static_cast<unsigned long long>(stele->EditWorld->Version()));
+			if (IsPlaying()) {
+				ImGui::Text("Play world: %zu entities, %zu scripts", m_PlayWorld->EntityCount(), m_PlayWorld->ScriptCount());
+			}
 		}
 
 		ImGui::SeparatorText("Camera");

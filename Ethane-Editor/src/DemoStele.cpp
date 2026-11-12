@@ -5,6 +5,7 @@
 #include "Ethane/Renderer/Mesh.h"
 #include "Ethane/Stele/Stele.h"
 #include "Ethane/World/Components.h"
+#include "Game/Spin.h"
 
 namespace Ethane {
 
@@ -26,6 +27,12 @@ namespace Ethane {
 	{
 		AssetRegistry& registry = assets.Registry();
 		Transaction tx("Demo scene", stele.Registry());
+
+		// Where play mode looks from: about where the editor camera starts
+		const glm::vec3 eye{ 0.0f, 3.9f, 8.1f };
+		const ElementId camera = tx.CreateElement("Camera");
+		tx.AddComponent(camera, TransformComponent{ .Position = eye, .Rotation = RotationTowards(glm::vec3(0.0f, 0.4f, 0.0f) - eye) });
+		tx.AddComponent(camera, CameraComponent{});
 
 		const ElementId sun = tx.CreateElement("Sun");
 		tx.AddComponent(sun, TransformComponent{ .Rotation = RotationTowards({ -0.4f, -0.8f, -0.6f }) });
@@ -71,6 +78,9 @@ namespace Ethane {
 				.Metallic = shape.Metallic,
 				.Roughness = shape.Roughness,
 				.BaseColorTexture = shape.Texture ? registry.Import(shape.Texture) : AssetId{} });
+			// Turns while playing (game code: Game/Spin.h)
+			tx.AddComponent(element, SpinComponent{ .Speed = 0.5f });
+			tx.AddComponent(element, NativeScriptComponent{ .Class = "Spin" });
 		}
 
 		CommitResult result = stele.Commit(std::move(tx));

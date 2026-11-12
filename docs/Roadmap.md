@@ -40,11 +40,12 @@ as its own commits.
 - [x] Inspector panel driven by the schema (add / remove components; a drag is one undo step)
 - [x] Save / open steles (`assets/steles/`, the editor opens `Demo.stele` at startup)
 
-## 6. Play mode
+## 6. Play mode ✅
 
-- [ ] Instantiate a play world from a snapshot; discard on Stop
-- [ ] Camera component (the view in play mode)
-- [ ] Native script components
+- [x] Instantiate a play world from a snapshot; discard on Stop
+- [x] Camera component (the view in play mode)
+- [x] Native script components (`Script`, `ScriptRegistry`, a `ScriptEntity` handle with no EnTT types)
+- [x] Worlds store every registered component type, so scripts can use game components
 
 ## 7. Threads
 
