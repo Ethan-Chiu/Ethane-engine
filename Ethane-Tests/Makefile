@@ -83,10 +83,12 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/FramePacketTests.o
 GENERATED += $(OBJDIR)/SchemaTests.o
 GENERATED += $(OBJDIR)/SteleSerializerTests.o
 GENERATED += $(OBJDIR)/SteleTests.o
 GENERATED += $(OBJDIR)/TestMain.o
+OBJECTS += $(OBJDIR)/FramePacketTests.o
 OBJECTS += $(OBJDIR)/SchemaTests.o
 OBJECTS += $(OBJDIR)/SteleSerializerTests.o
 OBJECTS += $(OBJDIR)/SteleTests.o
@@ -154,6 +156,9 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/FramePacketTests.o: src/FramePacketTests.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/SchemaTests.o: src/SchemaTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"

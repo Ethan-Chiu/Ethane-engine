@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DB5260D6BF99690843869716 /* FramePacketTests.cpp */; };
 		7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */; };
 		80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */; };
 		A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51029A7499737EA6DE1250B4 /* TestMain.cpp */; };
@@ -38,6 +39,7 @@
 		51029A7499737EA6DE1250B4 /* TestMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TestMain.cpp; path = src/TestMain.cpp; sourceTree = "<group>"; };
 		A5B725344902AE6663D37B74 /* Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Test.h; path = src/Test.h; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
+		DB5260D6BF99690843869716 /* FramePacketTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = FramePacketTests.cpp; path = src/FramePacketTests.cpp; sourceTree = "<group>"; };
 		DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,6 +79,7 @@
 		870CC795336F87C7F1F7FDD5 /* Ethane-Tests */ = {
 			isa = PBXGroup;
 			children = (
+				DB5260D6BF99690843869716 /* FramePacketTests.cpp */,
 				DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */,
 				2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */,
 				1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */,
@@ -175,6 +178,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */,
 				B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */,
 				80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */,
 				7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */,

@@ -95,6 +95,7 @@ GENERATED += $(OBJDIR)/EditorCamera.o
 GENERATED += $(OBJDIR)/Entity.o
 GENERATED += $(OBJDIR)/FieldAccess.o
 GENERATED += $(OBJDIR)/FileUtils.o
+GENERATED += $(OBJDIR)/FramePacket.o
 GENERATED += $(OBJDIR)/GfxBackendAPI.o
 GENERATED += $(OBJDIR)/GfxSmokeTest.o
 GENERATED += $(OBJDIR)/ImGuiBuild.o
@@ -109,6 +110,7 @@ GENERATED += $(OBJDIR)/Material.o
 GENERATED += $(OBJDIR)/Math.o
 GENERATED += $(OBJDIR)/Mesh.o
 GENERATED += $(OBJDIR)/OrderKey.o
+GENERATED += $(OBJDIR)/Renderer.o
 GENERATED += $(OBJDIR)/ResourceSystem.o
 GENERATED += $(OBJDIR)/Scene.o
 GENERATED += $(OBJDIR)/SceneCamera.o
@@ -151,6 +153,7 @@ OBJECTS += $(OBJDIR)/EditorCamera.o
 OBJECTS += $(OBJDIR)/Entity.o
 OBJECTS += $(OBJDIR)/FieldAccess.o
 OBJECTS += $(OBJDIR)/FileUtils.o
+OBJECTS += $(OBJDIR)/FramePacket.o
 OBJECTS += $(OBJDIR)/GfxBackendAPI.o
 OBJECTS += $(OBJDIR)/GfxSmokeTest.o
 OBJECTS += $(OBJDIR)/ImGuiBuild.o
@@ -165,6 +168,7 @@ OBJECTS += $(OBJDIR)/Material.o
 OBJECTS += $(OBJDIR)/Math.o
 OBJECTS += $(OBJDIR)/Mesh.o
 OBJECTS += $(OBJDIR)/OrderKey.o
+OBJECTS += $(OBJDIR)/Renderer.o
 OBJECTS += $(OBJDIR)/ResourceSystem.o
 OBJECTS += $(OBJDIR)/Scene.o
 OBJECTS += $(OBJDIR)/SceneCamera.o
@@ -368,10 +372,16 @@ $(OBJDIR)/WindowsWindow.o: src/Ethane/Platform/Windows/WindowsWindow.cpp
 $(OBJDIR)/EditorCamera.o: src/Ethane/Renderer/EditorCamera.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/FramePacket.o: src/Ethane/Renderer/FramePacket.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Material.o: src/Ethane/Renderer/Material.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Mesh.o: src/Ethane/Renderer/Mesh.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Renderer.o: src/Ethane/Renderer/Renderer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Entity.o: src/Ethane/Scene/Entity.cpp
