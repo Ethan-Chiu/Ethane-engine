@@ -138,15 +138,41 @@ Replacing EnTT later means rewriting that one folder. A storage-independent syst
 happens: gameplay C++ outside the engine, the parallel scheduler (which needs read/write declarations),
 or more than about 10–15 engine systems.
 
+## Assets
+
+Steles reference files by `AssetId`, never by path. An `AssetRegistry` maps ids to paths and is saved
+as YAML (the editor's is `Ethane-Editor/assets/AssetRegistry.yaml`, committed so ids stay stable), so
+moving or renaming a file only changes its registry entry. `AssetRegistry::Import(path)` gives a
+file's id, registering it the first time. An `AssetLibrary` loads meshes and textures by id and keeps
+them loaded; ids that are unknown or fail to load give null, logged once.
+
 ## Frame packet and renderer
 
-A frame packet is plain, immutable data: draw items (mesh, material, world transform, sort key,
-`ElementId` for picking), lights and views. The renderer turns a packet into GPU work for a render
-target and knows nothing about steles, worlds or ECS.
+A frame packet is plain data with no GPU objects, so any thread can build it:
 
-With a render thread, the simulation builds packet N+1 while the renderer records packet N.
-Picking draws each item's `ElementId` into an ID buffer. GPU objects are destroyed a few frames late
-(keyed by frame index) instead of waiting for the device to go idle.
+- the view and the directional lights;
+- draw items: a mesh `AssetId`, the world transform, an optional material override (base color,
+  metallic, roughness, base color texture `AssetId`) and the `ElementId` it came from.
+
+The renderer turns a packet into GPU work for a render target and knows nothing about steles, worlds
+or ECS. It resolves asset ids through the `AssetLibrary` and owns the GPU materials: each mesh file's
+own, and per-element ones for draw items with an override, which it releases a few frames after the
+element stops being drawn (so the frames still in flight can finish with them).
+
+Later: with a render thread, the simulation builds packet N+1 while the renderer records packet N.
+Picking draws each item's `ElementId` into an ID buffer. GPU objects in general are destroyed a few
+frames late (keyed by frame index) instead of waiting for the device to go idle.
+
+## Engine components
+
+Registered by `RegisterEngineComponents` (the application does it at startup):
+
+| Type name | Fields | Meaning |
+|---|---|---|
+| `Transform` | Position, Rotation (Euler radians), Scale | Placement relative to the parent element |
+| `Mesh` | Mesh (`AssetId`), Visible | Draw this mesh file with its own materials |
+| `Material` | BaseColor, Metallic, Roughness, BaseColorTexture | Override the mesh's material factors |
+| `DirectionalLight` | Color, Intensity | Shines along the element's forward axis (-Z after its world rotation) |
 
 ## Editor
 

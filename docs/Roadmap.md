@@ -24,12 +24,14 @@ as its own commits.
 - [x] `Renderer::Render(packet, target)`
 - [x] Port `DemoScene` to produce packets
 
-## 4. World
+## 4. World ✅
 
-- [ ] `World` interface: `Apply` / `Update` / `Extract`
-- [ ] `EnttWorld` (EnTT contained in `Ethane/World/Entt/`)
-- [ ] Engine components: transform, mesh, light, camera; transform propagation
-- [ ] Edit world following a stele; `DemoScene` replaced by a stele
+- [x] `World` interface: `Apply` / `Update` / `Extract`
+- [x] `EnttWorld` (EnTT contained in `Ethane/World/Entt/`)
+- [x] Engine components: transform, mesh, material, directional light; transform hierarchy
+- [x] Edit world following a stele; `DemoScene` replaced by a stele
+- [x] Asset registry (`AssetId` → path, YAML) and asset library; packets reference assets by id
+- [x] Old `Ethane/Scene` code removed
 
 ## 5. Editor context and panels
 
@@ -41,6 +43,7 @@ as its own commits.
 ## 6. Play mode
 
 - [ ] Instantiate a play world from a snapshot; discard on Stop
+- [ ] Camera component (the view in play mode)
 - [ ] Native script components
 
 ## 7. Threads
@@ -61,8 +64,6 @@ as its own commits.
 
 - Schema migrations: a per-type hook to convert data saved with an older type version
 - Persistent hash map for the stele's element index (only if commits show up in profiles)
-
 - Prefab steles (reference plus overrides)
 - Array fields in the schema
 - Picking via an ID buffer, gizmos
-- Removing the old `Ethane/Scene` code and the vendored EnTT outside `World/Entt`

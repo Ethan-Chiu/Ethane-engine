@@ -1,4 +1,5 @@
 #include "EditorLayer.h"
+#include "DemoStele.h"
 
 #include <imgui.h>
 #include <imgui_internal.h> // DockBuilder
@@ -15,6 +16,18 @@ namespace Ethane {
 		constexpr const char* kSceneWindow = "Scene";
 		constexpr const char* kPropertiesWindow = "Properties";
 		constexpr const char* kStatsWindow = "Stats";
+
+		// Where the asset ids used by the editor's steles are kept (relative to the working directory)
+		constexpr const char* kAssetRegistryFile = "assets/AssetRegistry.yaml";
+
+		// A field edit as one transaction (undo, and merging a drag into one undo step, come with step 5)
+		template<typename T>
+		Transaction FieldEdit(ElementId id, std::string_view field, FieldValue value)
+		{
+			Transaction tx(fmt::format("Edit {}.{}", TypeRegistry::Global().Find<T>()->Name, field));
+			tx.SetField<T>(id, field, std::move(value));
+			return tx;
+		}
 	}
 
 	EditorLayer::EditorLayer()
@@ -47,16 +60,33 @@ namespace Ethane {
 		viewportSpec.ClearColor = { 0.08f, 0.085f, 0.09f, 1.0f };
 		m_ViewportTarget = backend.CreateRenderTarget(viewportSpec);
 
-		m_Renderer = CreateScope<Renderer>(backend, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl");
-		m_Scene = CreateScope<DemoScene>(backend, m_Renderer->GetMeshShader());
+		std::string error;
+		if (std::filesystem::exists(kAssetRegistryFile) && !m_AssetRegistry.Load(kAssetRegistryFile, &error)) {
+			ETH_WARN("Couldn't read {}: {}", kAssetRegistryFile, error);
+		}
+		m_Assets = CreateScope<AssetLibrary>(backend, m_AssetRegistry);
+		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl");
+
+		m_Stele = CreateScope<Stele>();
+		BuildDemoStele(*m_Stele, *m_Assets);
+		if (m_AssetRegistry.IsDirty() && !m_AssetRegistry.Save(kAssetRegistryFile)) {
+			ETH_WARN("Couldn't save {}", kAssetRegistryFile);
+		}
+
+		// The edit world mirrors the stele: built from its snapshot, then kept up to date by its change sets
+		m_EditWorld = CreateScope<EnttWorld>(m_Stele->Read());
+		m_EditWorldFollow = m_Stele->Subscribe([this](const ChangeSet& changes) { m_EditWorld->Apply(changes); });
 		ResetCamera();
 	}
 
 	void EditorLayer::OnDetach()
 	{
+		m_EditWorldFollow.Reset();
+		m_EditWorld.reset();
+		m_Stele.reset();
 		m_Packet.Clear();
-		m_Scene.reset();
 		m_Renderer.reset();
+		m_Assets.reset();
 		m_ViewportTarget.reset();
 	}
 
@@ -73,14 +103,14 @@ namespace Ethane {
 		if (m_ViewportHovered) {
 			m_Camera.OnUpdate(ts);
 		}
-		m_Scene->OnUpdate(ts);
+		m_EditWorld->Update({ .DeltaTime = ts });
 	}
 
 	void EditorLayer::OnRenderOffscreen(ICommandList& commandList)
 	{
 		m_Packet.Clear();
 		m_Packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition() };
-		m_Scene->Extract(m_Packet);
+		m_EditWorld->Extract(m_Packet);
 		m_Renderer->Render(commandList, m_Packet, *m_ViewportTarget);
 	}
 
@@ -187,71 +217,135 @@ namespace Ethane {
 	void EditorLayer::DrawScenePanel()
 	{
 		ImGui::Begin(kSceneWindow, &m_ShowScene);
-		std::vector<DemoScene::Model>& models = m_Scene->GetModels();
-		for (int i = 0; i < static_cast<int>(models.size()); i++) {
-			DemoScene::Model& model = models[i];
-			ImGui::PushID(i);
-			ImGui::Checkbox("##visible", &model.Visible);
-			ImGui::SameLine();
-			if (ImGui::Selectable(model.Name.c_str(), m_SelectedModel == i)) {
-				m_SelectedModel = i;
-			}
-			ImGui::PopID();
+		const SteleSnapshot snapshot = m_Stele->Read();
+		if (m_Selected.IsValid() && !snapshot.Contains(m_Selected)) {
+			m_Selected = {};
+		}
+		for (ElementId id : snapshot.Children()) {
+			DrawElementNode(snapshot, id);
 		}
 		// Clicking empty space clears the selection
 		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
-			m_SelectedModel = -1;
+			m_Selected = {};
 		}
 		ImGui::End();
+	}
+
+	void EditorLayer::DrawElementNode(const SteleSnapshot& snapshot, ElementId id)
+	{
+		const SteleElement& element = *snapshot.Find(id);
+		const auto children = snapshot.Children(id);
+
+		ImGui::PushID(static_cast<int>(id.Value ^ (id.Value >> 32)));
+		if (const MeshComponent* mesh = snapshot.Get<MeshComponent>(id)) {
+			bool visible = mesh->Visible;
+			if (ImGui::Checkbox("##visible", &visible)) {
+				Commit(FieldEdit<MeshComponent>(id, "Visible", visible));
+			}
+			ImGui::SameLine();
+		}
+
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+		if (children.empty()) {
+			flags |= ImGuiTreeNodeFlags_Leaf;
+		}
+		if (m_Selected == id) {
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+		const bool open = ImGui::TreeNodeEx(element.Name.empty() ? "(unnamed)" : element.Name.c_str(), flags);
+		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+			m_Selected = id;
+		}
+		if (open) {
+			for (ElementId child : children) {
+				DrawElementNode(snapshot, child);
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
 	}
 
 	void EditorLayer::DrawPropertiesPanel()
 	{
 		ImGui::Begin(kPropertiesWindow, &m_ShowProperties);
-		std::vector<DemoScene::Model>& models = m_Scene->GetModels();
-		if (m_SelectedModel < 0 || m_SelectedModel >= static_cast<int>(models.size())) {
-			ImGui::TextDisabled("Select a model in the Scene panel");
+		const SteleSnapshot snapshot = m_Stele->Read();
+		const SteleElement* element = snapshot.Find(m_Selected);
+		if (!element) {
+			ImGui::TextDisabled("Select an element in the Scene panel");
 			ImGui::End();
 			return;
 		}
+		const ElementId id = element->Id;
+		ImGui::SeparatorText(element->Name.c_str());
 
-		DemoScene::Model& model = models[m_SelectedModel];
-		ImGui::SeparatorText(model.Name.c_str());
-		ImGui::DragFloat3("Position", glm::value_ptr(model.Position), 0.05f);
-		ImGui::DragFloat("Scale", &model.Scale, 0.01f, 0.01f, 100.0f);
-		ImGui::Checkbox("Spin", &model.Spin);
-		ImGui::SameLine();
-		ImGui::Checkbox("Visible", &model.Visible);
-
-		ImGui::SeparatorText("Materials");
-		for (size_t i = 0; i < model.Materials.size(); i++) {
-			Material& material = *model.Materials[i];
-			MaterialData data = material.GetData();
-			ImGui::PushID(static_cast<int>(i));
-			const std::string label = data.Name.empty() ? "Material " + std::to_string(i) : data.Name;
-			if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
-				bool changed = false;
-				changed |= ImGui::ColorEdit4("Base color", glm::value_ptr(data.BaseColor));
-				changed |= ImGui::SliderFloat("Metallic", &data.Metallic, 0.0f, 1.0f);
-				changed |= ImGui::SliderFloat("Roughness", &data.Roughness, 0.05f, 1.0f);
-				if (changed) {
-					material.SetData(data);
+		// Hand-written widgets for the engine components for now; a schema-driven inspector replaces
+		// them (roadmap step 5). Every change is a transaction: the edit world picks it up from the stele.
+		if (const TransformComponent* transform = snapshot.Get<TransformComponent>(id)) {
+			if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+				glm::vec3 position = transform->Position;
+				glm::vec3 degrees = glm::degrees(transform->Rotation);
+				glm::vec3 scale = transform->Scale;
+				if (ImGui::DragFloat3("Position", glm::value_ptr(position), 0.05f)) {
+					Commit(FieldEdit<TransformComponent>(id, "Position", position));
 				}
-				auto textureRow = [](const char* name, const RefCountPtr<ITexture2D>& texture) {
-					if (texture) {
-						const TextureSpecification& spec = texture->GetSpecification();
-						ImGui::Text("%s: %u x %u", name, spec.Width, spec.Height);
-					} else {
-						ImGui::TextDisabled("%s: none", name);
-					}
-				};
-				textureRow("Base color map", data.BaseColorTexture);
-				textureRow("Normal map", data.NormalTexture);
-				textureRow("Metallic-roughness map", data.MetallicRoughnessTexture);
+				if (ImGui::DragFloat3("Rotation", glm::value_ptr(degrees), 0.5f)) {
+					Commit(FieldEdit<TransformComponent>(id, "Rotation", glm::radians(degrees)));
+				}
+				if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f)) {
+					Commit(FieldEdit<TransformComponent>(id, "Scale", scale));
+				}
 			}
-			ImGui::PopID();
+		}
+		if (const MeshComponent* mesh = snapshot.Get<MeshComponent>(id)) {
+			if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
+				auto path = m_AssetRegistry.GetPath(mesh->Mesh);
+				ImGui::TextWrapped("%s", path ? path->generic_string().c_str() : "(no mesh)");
+				bool visible = mesh->Visible;
+				if (ImGui::Checkbox("Visible", &visible)) {
+					Commit(FieldEdit<MeshComponent>(id, "Visible", visible));
+				}
+			}
+		}
+		if (const MaterialComponent* material = snapshot.Get<MaterialComponent>(id)) {
+			if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
+				glm::vec4 color = material->BaseColor;
+				float metallic = material->Metallic;
+				float roughness = material->Roughness;
+				if (ImGui::ColorEdit4("Base color", glm::value_ptr(color))) {
+					Commit(FieldEdit<MaterialComponent>(id, "BaseColor", color));
+				}
+				if (ImGui::SliderFloat("Metallic", &metallic, 0.0f, 1.0f)) {
+					Commit(FieldEdit<MaterialComponent>(id, "Metallic", metallic));
+				}
+				if (ImGui::SliderFloat("Roughness", &roughness, 0.05f, 1.0f)) {
+					Commit(FieldEdit<MaterialComponent>(id, "Roughness", roughness));
+				}
+				auto texture = m_AssetRegistry.GetPath(material->BaseColorTexture);
+				ImGui::TextDisabled("Base color map: %s", texture ? texture->generic_string().c_str() : "the mesh's own");
+			}
+		}
+		if (const DirectionalLightComponent* light = snapshot.Get<DirectionalLightComponent>(id)) {
+			if (ImGui::CollapsingHeader("Directional light", ImGuiTreeNodeFlags_DefaultOpen)) {
+				glm::vec3 color = light->Color;
+				float intensity = light->Intensity;
+				if (ImGui::ColorEdit3("Color", glm::value_ptr(color))) {
+					Commit(FieldEdit<DirectionalLightComponent>(id, "Color", color));
+				}
+				if (ImGui::SliderFloat("Intensity", &intensity, 0.0f, 3.0f)) {
+					Commit(FieldEdit<DirectionalLightComponent>(id, "Intensity", intensity));
+				}
+				ImGui::TextDisabled("Aim it with the transform's rotation");
+			}
 		}
 		ImGui::End();
+	}
+
+	void EditorLayer::Commit(Transaction transaction)
+	{
+		CommitResult result = m_Stele->Commit(std::move(transaction));
+		if (!result) {
+			ETH_WARN("Edit refused: {}", result.Error);
+		}
 	}
 
 	void EditorLayer::DrawStatsPanel()
@@ -265,21 +359,20 @@ namespace Ethane {
 
 		const RendererStats& stats = m_Renderer->GetStats();
 		ImGui::Text("Meshes: %u, draw calls: %u, triangles: %u", stats.DrawItems, stats.DrawCalls, stats.Triangles);
+		if (stats.MissingMeshes > 0) {
+			ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "%u meshes couldn't be loaded", stats.MissingMeshes);
+		}
+
+		ImGui::SeparatorText("Stele");
+		const SteleSnapshot snapshot = m_Stele->Read();
+		ImGui::Text("Version %llu, %zu elements", static_cast<unsigned long long>(snapshot.Version()), snapshot.ElementCount());
+		ImGui::Text("Edit world: %zu entities, version %llu", m_EditWorld->EntityCount(), static_cast<unsigned long long>(m_EditWorld->Version()));
 
 		ImGui::SeparatorText("Camera");
 		ImGui::Text("Distance %.2f, pitch %.2f, yaw %.2f", m_Camera.GetDistance(), m_Camera.GetPitch(), m_Camera.GetYaw());
 		if (ImGui::Button("Reset camera")) {
 			ResetCamera();
 		}
-		ImGui::SliderFloat("Spin speed", &m_Scene->SpinSpeed, 0.0f, 3.0f, "%.2f rad/s");
-
-		ImGui::SeparatorText("Light");
-		DirectionalLight& sun = m_Scene->Sun;
-		if (ImGui::DragFloat3("Direction", glm::value_ptr(sun.Direction), 0.01f, -1.0f, 1.0f) && glm::length(sun.Direction) < 1e-4f) {
-			sun.Direction = { 0.0f, -1.0f, 0.0f };
-		}
-		ImGui::ColorEdit3("Color", glm::value_ptr(sun.Color));
-		ImGui::SliderFloat("Intensity", &sun.Intensity, 0.0f, 3.0f);
 
 		ImGui::SeparatorText("About");
 		ImGui::Text("Dear ImGui %s", ImGui::GetVersion());

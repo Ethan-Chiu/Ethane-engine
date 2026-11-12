@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DB5260D6BF99690843869716 /* FramePacketTests.cpp */; };
+		20CAD77865197CEAA740B5B8 /* WorldTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE962120D061CE520D16F760 /* WorldTests.cpp */; };
 		7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */; };
 		80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */; };
+		9BFA20FA8FF96A6C14E47F3A /* AssetRegistryTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C235782603728B45408ADC2 /* AssetRegistryTests.cpp */; };
 		A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51029A7499737EA6DE1250B4 /* TestMain.cpp */; };
 		B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
@@ -33,11 +35,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1C235782603728B45408ADC2 /* AssetRegistryTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AssetRegistryTests.cpp; path = src/AssetRegistryTests.cpp; sourceTree = "<group>"; };
 		1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleTests.cpp; path = src/SteleTests.cpp; sourceTree = "<group>"; };
 		2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleSerializerTests.cpp; path = src/SteleSerializerTests.cpp; sourceTree = "<group>"; };
 		414F29FE420226F0B5E3F83E /* Ethane-Tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Tests"; path = "Ethane-Tests"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51029A7499737EA6DE1250B4 /* TestMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TestMain.cpp; path = src/TestMain.cpp; sourceTree = "<group>"; };
 		A5B725344902AE6663D37B74 /* Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Test.h; path = src/Test.h; sourceTree = "<group>"; };
+		AE962120D061CE520D16F760 /* WorldTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WorldTests.cpp; path = src/WorldTests.cpp; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
 		DB5260D6BF99690843869716 /* FramePacketTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = FramePacketTests.cpp; path = src/FramePacketTests.cpp; sourceTree = "<group>"; };
 		DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
@@ -79,12 +83,14 @@
 		870CC795336F87C7F1F7FDD5 /* Ethane-Tests */ = {
 			isa = PBXGroup;
 			children = (
+				1C235782603728B45408ADC2 /* AssetRegistryTests.cpp */,
 				DB5260D6BF99690843869716 /* FramePacketTests.cpp */,
 				DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */,
 				2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */,
 				1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */,
 				A5B725344902AE6663D37B74 /* Test.h */,
 				51029A7499737EA6DE1250B4 /* TestMain.cpp */,
+				AE962120D061CE520D16F760 /* WorldTests.cpp */,
 				A6C936B49B3FADE6EA134CF4 /* Products */,
 				9D968EAA920D05DCE0E0A4EA /* Projects */,
 			);
@@ -178,11 +184,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BFA20FA8FF96A6C14E47F3A /* AssetRegistryTests.cpp in Sources */,
 				161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */,
 				B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */,
 				80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */,
 				7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */,
 				A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */,
+				20CAD77865197CEAA740B5B8 /* WorldTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

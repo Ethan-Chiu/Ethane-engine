@@ -83,16 +83,20 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/AssetRegistryTests.o
 GENERATED += $(OBJDIR)/FramePacketTests.o
 GENERATED += $(OBJDIR)/SchemaTests.o
 GENERATED += $(OBJDIR)/SteleSerializerTests.o
 GENERATED += $(OBJDIR)/SteleTests.o
 GENERATED += $(OBJDIR)/TestMain.o
+GENERATED += $(OBJDIR)/WorldTests.o
+OBJECTS += $(OBJDIR)/AssetRegistryTests.o
 OBJECTS += $(OBJDIR)/FramePacketTests.o
 OBJECTS += $(OBJDIR)/SchemaTests.o
 OBJECTS += $(OBJDIR)/SteleSerializerTests.o
 OBJECTS += $(OBJDIR)/SteleTests.o
 OBJECTS += $(OBJDIR)/TestMain.o
+OBJECTS += $(OBJDIR)/WorldTests.o
 
 # Rules
 # #############################################
@@ -156,6 +160,9 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/AssetRegistryTests.o: src/AssetRegistryTests.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/FramePacketTests.o: src/FramePacketTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -169,6 +176,9 @@ $(OBJDIR)/SteleTests.o: src/SteleTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/TestMain.o: src/TestMain.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/WorldTests.o: src/WorldTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

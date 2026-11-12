@@ -1,0 +1,17 @@
+Assets:
+  - Id: 8a17cf4727f3f1af
+    Path: assets/models/CobblestoneFloor/CobblestoneFloor.obj
+  - Id: 16e953727619c702
+    Path: assets/textures/test.png
+  - Id: 3ec21114106fec21
+    Path: res/meshes/default/Capsule.fbx
+  - Id: 15766e703aaf6ed3
+    Path: res/meshes/default/Cone.fbx
+  - Id: 996a91a996c74ea5
+    Path: res/meshes/default/Cube.fbx
+  - Id: f21d2a4b2d06e829
+    Path: res/meshes/default/Cylinder.fbx
+  - Id: 622b97ac2cc4dfd0
+    Path: res/meshes/default/Sphere.fbx
+  - Id: a89078f8ff0f4572
+    Path: res/meshes/default/Torus.fbx
