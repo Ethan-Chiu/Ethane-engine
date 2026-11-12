@@ -29,14 +29,14 @@ namespace Ethane {
 
 	// Replaces the factors (and optionally the base color texture) of every material of a mesh; the
 	// file's other textures (normal, metallic-roughness) stay
-	struct MaterialOverride
+	struct MaterialParams
 	{
 		glm::vec4 BaseColor{ 1.0f };
 		float Metallic = 0.0f;
 		float Roughness = 0.8f;
 		AssetId BaseColorTexture; // null: keep the file's
 
-		bool operator==(const MaterialOverride&) const = default;
+		bool operator==(const MaterialParams&) const = default;
 	};
 
 	// One mesh to draw: every node and submesh of it, placed by Transform
@@ -44,8 +44,8 @@ namespace Ethane {
 	{
 		AssetId Mesh;
 		glm::mat4 Transform{ 1.0f };
-		int32_t Override = -1; // index into the packet's overrides, -1: the mesh file's own materials
-		ElementId Element;     // what it was extracted from (picking, per-element GPU state); may be null
+		int32_t ParamsIndex = -1; // into the packet's material params, -1: the mesh file's own materials
+		ElementId Element;        // what it was extracted from (picking, per-element GPU state); may be null
 	};
 
 	// Everything the renderer needs for one view of one frame, as plain data (assets by id): it knows
@@ -58,21 +58,21 @@ namespace Ethane {
 		PacketView View;
 		std::vector<DirectionalLight> DirectionalLights; // the renderer currently uses the first one
 
-		// A material override needs an element id: the renderer keeps that element's materials between
-		// frames. Without one the override is ignored.
-		void AddMesh(AssetId mesh, const glm::mat4& transform, ElementId element = {}, const MaterialOverride* override = nullptr);
+		// Material params need an element id: the renderer keeps that element's materials between
+		// frames. Without one the params are ignored.
+		void AddMesh(AssetId mesh, const glm::mat4& transform, ElementId element = {}, const MaterialParams* params = nullptr);
 
 		std::span<const DrawItem> DrawItems() const { return m_DrawItems; }
-		const MaterialOverride* OverrideOf(const DrawItem& item) const
+		const MaterialParams* ParamsOf(const DrawItem& item) const
 		{
-			return item.Override >= 0 ? &m_Overrides[item.Override] : nullptr;
+			return item.ParamsIndex >= 0 ? &m_Params[item.ParamsIndex] : nullptr;
 		}
 
 		void Clear();
 
 	private:
 		std::vector<DrawItem> m_DrawItems;
-		std::vector<MaterialOverride> m_Overrides;
+		std::vector<MaterialParams> m_Params;
 	};
 
 }

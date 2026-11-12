@@ -214,11 +214,11 @@ namespace Ethane {
 		{
 			if (!mesh.Visible || !mesh.Mesh.IsValid())
 				continue;
-			MaterialOverride override;
+			MaterialParams params;
 			const MaterialComponent* material = registry.try_get<MaterialComponent>(entity);
 			if (material)
-				override = { material->BaseColor, material->Metallic, material->Roughness, material->BaseColorTexture };
-			packet.AddMesh(mesh.Mesh, world.at(entity), node.Id, material ? &override : nullptr);
+				params = { material->BaseColor, material->Metallic, material->Roughness, material->BaseColorTexture };
+			packet.AddMesh(mesh.Mesh, world.at(entity), node.Id, material ? &params : nullptr);
 		}
 	}
 

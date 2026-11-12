@@ -3,16 +3,16 @@
 
 namespace Ethane {
 
-	void FramePacket::AddMesh(AssetId mesh, const glm::mat4& transform, ElementId element, const MaterialOverride* override)
+	void FramePacket::AddMesh(AssetId mesh, const glm::mat4& transform, ElementId element, const MaterialParams* params)
 	{
 		DrawItem& item = m_DrawItems.emplace_back();
 		item.Mesh = mesh;
 		item.Transform = transform;
 		item.Element = element;
-		if (override && element.IsValid())
+		if (params && element.IsValid())
 		{
-			item.Override = static_cast<int32_t>(m_Overrides.size());
-			m_Overrides.push_back(*override);
+			item.ParamsIndex = static_cast<int32_t>(m_Params.size());
+			m_Params.push_back(*params);
 		}
 	}
 
@@ -21,7 +21,7 @@ namespace Ethane {
 		View = {};
 		DirectionalLights.clear();
 		m_DrawItems.clear();
-		m_Overrides.clear();
+		m_Params.clear();
 	}
 
 }

@@ -24,7 +24,7 @@ namespace Ethane {
 	};
 
 	// Turns frame packets into GPU work. Owns the mesh shader and pipeline, the per-frame uniforms and
-	// the GPU materials: each mesh's own, and those of elements with a material override (kept while the
+	// the GPU materials: each mesh's own, and those of elements with material params (kept while the
 	// element keeps being drawn, released a few frames after it stops).
 	//
 	// The pipeline is made for one render pass: Render into targets whose passes are compatible with it
@@ -44,16 +44,16 @@ namespace Ethane {
 		const RendererStats& GetStats() const { return m_Stats; } // of the last Render
 
 	private:
-		struct OverrideMaterials
+		struct ElementMaterialSet
 		{
 			AssetId Mesh;
-			MaterialOverride Values;
+			MaterialParams Values;
 			std::vector<Ref<Material>> Materials;
 			uint64_t LastUsed = 0;
 		};
 
 		const std::vector<Ref<Material>>& MeshMaterials(AssetId id, const Mesh& mesh);
-		const std::vector<Ref<Material>>& ElementMaterials(ElementId element, AssetId meshId, const Mesh& mesh, const MaterialOverride& values);
+		const std::vector<Ref<Material>>& ElementMaterials(ElementId element, AssetId meshId, const Mesh& mesh, const MaterialParams& values);
 		void ReleaseUnused();
 
 		GfxBackendAPI* m_Backend;
@@ -64,7 +64,7 @@ namespace Ethane {
 		RefCountPtr<IBindingSet> m_FrameBindings;
 
 		std::unordered_map<AssetId, std::vector<Ref<Material>>> m_MeshMaterials;
-		std::unordered_map<ElementId, OverrideMaterials> m_ElementMaterials;
+		std::unordered_map<ElementId, ElementMaterialSet> m_ElementMaterials;
 		uint64_t m_Frame = 0;
 		RendererStats m_Stats;
 	};

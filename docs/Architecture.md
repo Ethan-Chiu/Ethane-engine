@@ -151,12 +151,12 @@ them loaded; ids that are unknown or fail to load give null, logged once.
 A frame packet is plain data with no GPU objects, so any thread can build it:
 
 - the view and the directional lights;
-- draw items: a mesh `AssetId`, the world transform, an optional material override (base color,
+- draw items: a mesh `AssetId`, the world transform, optional material params (base color,
   metallic, roughness, base color texture `AssetId`) and the `ElementId` it came from.
 
 The renderer turns a packet into GPU work for a render target and knows nothing about steles, worlds
 or ECS. It resolves asset ids through the `AssetLibrary` and owns the GPU materials: each mesh file's
-own, and per-element ones for draw items with an override, which it releases a few frames after the
+own, and per-element ones for draw items with material params, which it releases a few frames after the
 element stops being drawn (so the frames still in flight can finish with them).
 
 Later: with a render thread, the simulation builds packet N+1 while the renderer records packet N.
@@ -171,7 +171,7 @@ Registered by `RegisterEngineComponents` (the application does it at startup):
 |---|---|---|
 | `Transform` | Position, Rotation (Euler radians), Scale | Placement relative to the parent element |
 | `Mesh` | Mesh (`AssetId`), Visible | Draw this mesh file with its own materials |
-| `Material` | BaseColor, Metallic, Roughness, BaseColorTexture | Override the mesh's material factors |
+| `Material` | BaseColor, Metallic, Roughness, BaseColorTexture | Replace the mesh's material factors |
 | `DirectionalLight` | Color, Intensity | Shines along the element's forward axis (-Z after its world rotation) |
 
 ## Editor

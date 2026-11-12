@@ -80,7 +80,7 @@ TEST_CASE("EnttWorld: builds from a snapshot and follows change sets")
 	CHECK(item->Mesh == AssetId{ 5 });
 	// child at x = 1 inside a parent at x = 10 scaled by 2: world x = 12
 	CHECK(Near(glm::vec3(item->Transform[3]), glm::vec3(12.0f, 0.0f, 0.0f)));
-	CHECK(packet.OverrideOf(*item) == nullptr);
+	CHECK(packet.ParamsOf(*item) == nullptr);
 
 	// Edits arrive through change sets
 	Transaction edit("Edit", f.Types);
@@ -94,8 +94,8 @@ TEST_CASE("EnttWorld: builds from a snapshot and follows change sets")
 	item = ItemFor(packet, child);
 	REQUIRE(item);
 	CHECK(Near(glm::vec3(item->Transform[3]), glm::vec3(2.0f, 0.0f, 0.0f)));
-	REQUIRE(packet.OverrideOf(*item));
-	CHECK(packet.OverrideOf(*item)->BaseColor == glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+	REQUIRE(packet.ParamsOf(*item));
+	CHECK(packet.ParamsOf(*item)->BaseColor == glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 
 	// Moving to the top level drops the parent's transform; hiding removes the draw item
 	Transaction move("Move", f.Types);

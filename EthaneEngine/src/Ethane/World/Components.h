@@ -28,7 +28,7 @@ namespace Ethane {
 		bool Visible = true;
 	};
 
-	// Replaces the mesh's material factors (see MaterialOverride); without it the file's materials are used
+	// Replaces the mesh's material factors (see MaterialParams); without it the file's materials are used
 	struct MaterialComponent
 	{
 		glm::vec4 BaseColor{ 1.0f };

@@ -73,9 +73,9 @@ namespace Ethane {
 				continue;
 			}
 
-			const MaterialOverride* override = packet.OverrideOf(item);
-			const auto& materials = override
-				? ElementMaterials(item.Element, item.Mesh, *mesh, *override)
+			const MaterialParams* params = packet.ParamsOf(item);
+			const auto& materials = params
+				? ElementMaterials(item.Element, item.Mesh, *mesh, *params)
 				: MeshMaterials(item.Mesh, *mesh);
 			mesh->Draw(commandList, item.Transform, materials);
 
@@ -98,7 +98,7 @@ namespace Ethane {
 		return it->second;
 	}
 
-	const std::vector<Ref<Material>>& Renderer::ElementMaterials(ElementId element, AssetId meshId, const Mesh& mesh, const MaterialOverride& values)
+	const std::vector<Ref<Material>>& Renderer::ElementMaterials(ElementId element, AssetId meshId, const Mesh& mesh, const MaterialParams& values)
 	{
 		auto apply = [&](MaterialData data) {
 			data.BaseColor = values.BaseColor;
@@ -110,7 +110,7 @@ namespace Ethane {
 			return data;
 		};
 
-		OverrideMaterials& entry = m_ElementMaterials[element];
+		ElementMaterialSet& entry = m_ElementMaterials[element];
 		if (entry.Materials.empty() || entry.Mesh != meshId)
 		{
 			std::vector<MaterialData> data;
