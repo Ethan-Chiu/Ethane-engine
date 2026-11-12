@@ -3,8 +3,7 @@
 
 #include <imgui.h>
 #include <imgui_internal.h> // DockBuilder
-
-#include <glm/gtc/type_ptr.hpp>
+#include <misc/cpp/imgui_stdlib.h>
 
 #include "Ethane/GfxBackend/Resource.h"
 
@@ -13,20 +12,24 @@ namespace Ethane {
 	namespace {
 		// Window names: ImGui identifies windows (and their docking state in imgui.ini) by them
 		constexpr const char* kViewportWindow = "Viewport";
-		constexpr const char* kSceneWindow = "Scene";
-		constexpr const char* kPropertiesWindow = "Properties";
 		constexpr const char* kStatsWindow = "Stats";
+		constexpr const char* kOpenPopup = "Open stele";
+		constexpr const char* kSaveAsPopup = "Save stele as";
 
-		// Where the asset ids used by the editor's steles are kept (relative to the working directory)
+		// Paths relative to the working directory (the editor runs in Ethane-Editor/)
 		constexpr const char* kAssetRegistryFile = "assets/AssetRegistry.yaml";
+		constexpr const char* kSteleFolder = "assets/steles";
+		constexpr const char* kDemoStele = "assets/steles/Demo.stele";
 
-		// A field edit as one transaction (undo, and merging a drag into one undo step, come with step 5)
-		template<typename T>
-		Transaction FieldEdit(ElementId id, std::string_view field, FieldValue value)
+		std::vector<std::string> SteleFiles()
 		{
-			Transaction tx(fmt::format("Edit {}.{}", TypeRegistry::Global().Find<T>()->Name, field));
-			tx.SetField<T>(id, field, std::move(value));
-			return tx;
+			std::vector<std::string> files;
+			std::error_code ec;
+			for (const auto& entry : std::filesystem::recursive_directory_iterator(kSteleFolder, ec))
+				if (entry.is_regular_file() && entry.path().extension() == ".stele")
+					files.push_back(entry.path().generic_string());
+			std::sort(files.begin(), files.end());
+			return files;
 		}
 	}
 
@@ -66,24 +69,22 @@ namespace Ethane {
 		}
 		m_Assets = CreateScope<AssetLibrary>(backend, m_AssetRegistry);
 		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl");
+		m_Context = CreateScope<EditorContext>(*m_Assets, kAssetRegistryFile);
 
-		m_Stele = CreateScope<Stele>();
-		BuildDemoStele(*m_Stele, *m_Assets);
-		if (m_AssetRegistry.IsDirty() && !m_AssetRegistry.Save(kAssetRegistryFile)) {
-			ETH_WARN("Couldn't save {}", kAssetRegistryFile);
+		// The demo stele, created and saved the first time
+		if (!m_Context->Open(kDemoStele, error)) {
+			ETH_WARN("Couldn't open {} ({}): building it", kDemoStele, error);
+			NewDemoStele();
+			if (!m_Context->Save(*m_Context->Active(), kDemoStele, error)) {
+				ETH_WARN("Couldn't save {}: {}", kDemoStele, error);
+			}
 		}
-
-		// The edit world mirrors the stele: built from its snapshot, then kept up to date by its change sets
-		m_EditWorld = CreateScope<EnttWorld>(m_Stele->Read());
-		m_EditWorldFollow = m_Stele->Subscribe([this](const ChangeSet& changes) { m_EditWorld->Apply(changes); });
 		ResetCamera();
 	}
 
 	void EditorLayer::OnDetach()
 	{
-		m_EditWorldFollow.Reset();
-		m_EditWorld.reset();
-		m_Stele.reset();
+		m_Context.reset();
 		m_Packet.Clear();
 		m_Renderer.reset();
 		m_Assets.reset();
@@ -103,14 +104,18 @@ namespace Ethane {
 		if (m_ViewportHovered) {
 			m_Camera.OnUpdate(ts);
 		}
-		m_EditWorld->Update({ .DeltaTime = ts });
+		if (OpenStele* stele = m_Context->Active()) {
+			stele->EditWorld->Update({ .DeltaTime = ts });
+		}
 	}
 
 	void EditorLayer::OnRenderOffscreen(ICommandList& commandList)
 	{
 		m_Packet.Clear();
 		m_Packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition() };
-		m_EditWorld->Extract(m_Packet);
+		if (OpenStele* stele = m_Context->Active()) {
+			stele->EditWorld->Extract(m_Packet);
+		}
 		m_Renderer->Render(commandList, m_Packet, *m_ViewportTarget);
 	}
 
@@ -122,16 +127,42 @@ namespace Ethane {
 
 	void EditorLayer::OnImGuiRender()
 	{
+		HandleShortcuts();
 		DrawMenuBar();
 		DrawDockspace();
 		DrawViewport();
-		if (m_ShowScene) DrawScenePanel();
-		if (m_ShowProperties) DrawPropertiesPanel();
+		if (m_ShowHierarchy) m_Hierarchy.Draw(*m_Context, &m_ShowHierarchy);
+		if (m_ShowInspector) m_Inspector.Draw(*m_Context, &m_ShowInspector);
 		if (m_ShowStats) DrawStatsPanel();
 		if (m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
+		DrawFileDialogs();
 
 		// Mouse / keyboard over the viewport go to the camera, everything else to ImGui
 		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHovered);
+	}
+
+	void EditorLayer::HandleShortcuts()
+	{
+		// ImGuiMod_Ctrl is Cmd on macOS. Global routes: a focused text field keeps its own Ctrl+Z.
+		const ImGuiInputFlags global = ImGuiInputFlags_RouteGlobal;
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_Z, global)) {
+			m_Context->Undo();
+		}
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_Z, global) || ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_Y, global)) {
+			m_Context->Redo();
+		}
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_S, global)) {
+			Save(false);
+		}
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiMod_Shift | ImGuiKey_S, global)) {
+			Save(true);
+		}
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_O, global)) {
+			m_OpenRequested = true;
+		}
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_N, global)) {
+			NewStele();
+		}
 	}
 
 	void EditorLayer::DrawMenuBar()
@@ -139,15 +170,47 @@ namespace Ethane {
 		if (!ImGui::BeginMainMenuBar()) {
 			return;
 		}
+		OpenStele* active = m_Context->Active();
 		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("New", "Ctrl+N")) {
+				NewStele();
+			}
+			if (ImGui::MenuItem("New demo stele")) {
+				NewDemoStele();
+			}
+			if (ImGui::MenuItem("Open...", "Ctrl+O")) {
+				m_OpenRequested = true;
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Save", "Ctrl+S", false, active != nullptr)) {
+				Save(false);
+			}
+			if (ImGui::MenuItem("Save as...", "Shift+Ctrl+S", false, active != nullptr)) {
+				Save(true);
+			}
+			if (ImGui::MenuItem("Close", nullptr, false, active != nullptr)) {
+				m_Context->Close(m_Context->ActiveIndex());
+			}
+			ImGui::Separator();
 			if (ImGui::MenuItem("Exit")) {
 				Application::Get().Close();
 			}
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("Edit")) {
+			const std::string undo = active && active->History.CanUndo() ? "Undo " + active->History.UndoLabel() : "Undo";
+			const std::string redo = active && active->History.CanRedo() ? "Redo " + active->History.RedoLabel() : "Redo";
+			if (ImGui::MenuItem(undo.c_str(), "Ctrl+Z", false, active && active->History.CanUndo())) {
+				m_Context->Undo();
+			}
+			if (ImGui::MenuItem(redo.c_str(), "Shift+Ctrl+Z", false, active && active->History.CanRedo())) {
+				m_Context->Redo();
+			}
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("View")) {
-			ImGui::MenuItem(kSceneWindow, nullptr, &m_ShowScene);
-			ImGui::MenuItem(kPropertiesWindow, nullptr, &m_ShowProperties);
+			ImGui::MenuItem(HierarchyPanel::kWindowName, nullptr, &m_ShowHierarchy);
+			ImGui::MenuItem(InspectorPanel::kWindowName, nullptr, &m_ShowInspector);
 			ImGui::MenuItem(kStatsWindow, nullptr, &m_ShowStats);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Reset camera")) {
@@ -155,7 +218,7 @@ namespace Ethane {
 			}
 			if (ImGui::MenuItem("Reset layout")) {
 				m_ResetLayout = true;
-				m_ShowScene = m_ShowProperties = m_ShowStats = true;
+				m_ShowHierarchy = m_ShowInspector = m_ShowStats = true;
 			}
 			ImGui::EndMenu();
 		}
@@ -185,9 +248,9 @@ namespace Ethane {
 			const ImGuiID leftBottom = ImGui::DockBuilderSplitNode(leftTop, ImGuiDir_Down, 0.4f, nullptr, &leftTop);
 
 			ImGui::DockBuilderDockWindow(kViewportWindow, center);
-			ImGui::DockBuilderDockWindow(kSceneWindow, leftTop);
+			ImGui::DockBuilderDockWindow(HierarchyPanel::kWindowName, leftTop);
 			ImGui::DockBuilderDockWindow(kStatsWindow, leftBottom);
-			ImGui::DockBuilderDockWindow(kPropertiesWindow, right);
+			ImGui::DockBuilderDockWindow(InspectorPanel::kWindowName, right);
 			ImGui::DockBuilderFinish(dockspace);
 		}
 		ImGui::DockSpaceOverViewport(dockspace, viewport);
@@ -214,140 +277,6 @@ namespace Ethane {
 		ImGui::PopStyleVar();
 	}
 
-	void EditorLayer::DrawScenePanel()
-	{
-		ImGui::Begin(kSceneWindow, &m_ShowScene);
-		const SteleSnapshot snapshot = m_Stele->Read();
-		if (m_Selected.IsValid() && !snapshot.Contains(m_Selected)) {
-			m_Selected = {};
-		}
-		for (ElementId id : snapshot.Children()) {
-			DrawElementNode(snapshot, id);
-		}
-		// Clicking empty space clears the selection
-		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
-			m_Selected = {};
-		}
-		ImGui::End();
-	}
-
-	void EditorLayer::DrawElementNode(const SteleSnapshot& snapshot, ElementId id)
-	{
-		const SteleElement& element = *snapshot.Find(id);
-		const auto children = snapshot.Children(id);
-
-		ImGui::PushID(static_cast<int>(id.Value ^ (id.Value >> 32)));
-		if (const MeshComponent* mesh = snapshot.Get<MeshComponent>(id)) {
-			bool visible = mesh->Visible;
-			if (ImGui::Checkbox("##visible", &visible)) {
-				Commit(FieldEdit<MeshComponent>(id, "Visible", visible));
-			}
-			ImGui::SameLine();
-		}
-
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
-		if (children.empty()) {
-			flags |= ImGuiTreeNodeFlags_Leaf;
-		}
-		if (m_Selected == id) {
-			flags |= ImGuiTreeNodeFlags_Selected;
-		}
-		const bool open = ImGui::TreeNodeEx(element.Name.empty() ? "(unnamed)" : element.Name.c_str(), flags);
-		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-			m_Selected = id;
-		}
-		if (open) {
-			for (ElementId child : children) {
-				DrawElementNode(snapshot, child);
-			}
-			ImGui::TreePop();
-		}
-		ImGui::PopID();
-	}
-
-	void EditorLayer::DrawPropertiesPanel()
-	{
-		ImGui::Begin(kPropertiesWindow, &m_ShowProperties);
-		const SteleSnapshot snapshot = m_Stele->Read();
-		const SteleElement* element = snapshot.Find(m_Selected);
-		if (!element) {
-			ImGui::TextDisabled("Select an element in the Scene panel");
-			ImGui::End();
-			return;
-		}
-		const ElementId id = element->Id;
-		ImGui::SeparatorText(element->Name.c_str());
-
-		// Hand-written widgets for the engine components for now; a schema-driven inspector replaces
-		// them (roadmap step 5). Every change is a transaction: the edit world picks it up from the stele.
-		if (const TransformComponent* transform = snapshot.Get<TransformComponent>(id)) {
-			if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-				glm::vec3 position = transform->Position;
-				glm::vec3 degrees = glm::degrees(transform->Rotation);
-				glm::vec3 scale = transform->Scale;
-				if (ImGui::DragFloat3("Position", glm::value_ptr(position), 0.05f)) {
-					Commit(FieldEdit<TransformComponent>(id, "Position", position));
-				}
-				if (ImGui::DragFloat3("Rotation", glm::value_ptr(degrees), 0.5f)) {
-					Commit(FieldEdit<TransformComponent>(id, "Rotation", glm::radians(degrees)));
-				}
-				if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f)) {
-					Commit(FieldEdit<TransformComponent>(id, "Scale", scale));
-				}
-			}
-		}
-		if (const MeshComponent* mesh = snapshot.Get<MeshComponent>(id)) {
-			if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
-				auto path = m_AssetRegistry.GetPath(mesh->Mesh);
-				ImGui::TextWrapped("%s", path ? path->generic_string().c_str() : "(no mesh)");
-				bool visible = mesh->Visible;
-				if (ImGui::Checkbox("Visible", &visible)) {
-					Commit(FieldEdit<MeshComponent>(id, "Visible", visible));
-				}
-			}
-		}
-		if (const MaterialComponent* material = snapshot.Get<MaterialComponent>(id)) {
-			if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
-				glm::vec4 color = material->BaseColor;
-				float metallic = material->Metallic;
-				float roughness = material->Roughness;
-				if (ImGui::ColorEdit4("Base color", glm::value_ptr(color))) {
-					Commit(FieldEdit<MaterialComponent>(id, "BaseColor", color));
-				}
-				if (ImGui::SliderFloat("Metallic", &metallic, 0.0f, 1.0f)) {
-					Commit(FieldEdit<MaterialComponent>(id, "Metallic", metallic));
-				}
-				if (ImGui::SliderFloat("Roughness", &roughness, 0.05f, 1.0f)) {
-					Commit(FieldEdit<MaterialComponent>(id, "Roughness", roughness));
-				}
-				auto texture = m_AssetRegistry.GetPath(material->BaseColorTexture);
-				ImGui::TextDisabled("Base color map: %s", texture ? texture->generic_string().c_str() : "the mesh's own");
-			}
-		}
-		if (const DirectionalLightComponent* light = snapshot.Get<DirectionalLightComponent>(id)) {
-			if (ImGui::CollapsingHeader("Directional light", ImGuiTreeNodeFlags_DefaultOpen)) {
-				glm::vec3 color = light->Color;
-				float intensity = light->Intensity;
-				if (ImGui::ColorEdit3("Color", glm::value_ptr(color))) {
-					Commit(FieldEdit<DirectionalLightComponent>(id, "Color", color));
-				}
-				if (ImGui::SliderFloat("Intensity", &intensity, 0.0f, 3.0f)) {
-					Commit(FieldEdit<DirectionalLightComponent>(id, "Intensity", intensity));
-				}
-				ImGui::TextDisabled("Aim it with the transform's rotation");
-			}
-		}
-		ImGui::End();
-	}
-
-	void EditorLayer::Commit(Transaction transaction)
-	{
-		CommitResult result = m_Stele->Commit(std::move(transaction));
-		if (!result) {
-			ETH_WARN("Edit refused: {}", result.Error);
-		}
-	}
-
 	void EditorLayer::DrawStatsPanel()
 	{
 		ImGui::Begin(kStatsWindow, &m_ShowStats);
@@ -363,10 +292,13 @@ namespace Ethane {
 			ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "%u meshes couldn't be loaded", stats.MissingMeshes);
 		}
 
-		ImGui::SeparatorText("Stele");
-		const SteleSnapshot snapshot = m_Stele->Read();
-		ImGui::Text("Version %llu, %zu elements", static_cast<unsigned long long>(snapshot.Version()), snapshot.ElementCount());
-		ImGui::Text("Edit world: %zu entities, version %llu", m_EditWorld->EntityCount(), static_cast<unsigned long long>(m_EditWorld->Version()));
+		if (OpenStele* stele = m_Context->Active()) {
+			ImGui::SeparatorText("Stele");
+			const SteleSnapshot snapshot = stele->Source->Read();
+			ImGui::Text("%s%s", stele->Path.empty() ? "(not saved)" : stele->Path.generic_string().c_str(), stele->IsDirty() ? " *" : "");
+			ImGui::Text("Version %llu, %zu elements", static_cast<unsigned long long>(snapshot.Version()), snapshot.ElementCount());
+			ImGui::Text("Edit world: %zu entities, version %llu", stele->EditWorld->EntityCount(), static_cast<unsigned long long>(stele->EditWorld->Version()));
+		}
 
 		ImGui::SeparatorText("Camera");
 		ImGui::Text("Distance %.2f, pitch %.2f, yaw %.2f", m_Camera.GetDistance(), m_Camera.GetPitch(), m_Camera.GetYaw());
@@ -377,6 +309,111 @@ namespace Ethane {
 		ImGui::SeparatorText("About");
 		ImGui::Text("Dear ImGui %s", ImGui::GetVersion());
 		ImGui::End();
+	}
+
+	void EditorLayer::DrawFileDialogs()
+	{
+		// Path popups (there is no native file dialog yet)
+		if (m_OpenRequested) {
+			m_OpenRequested = false;
+			m_DialogPath = kSteleFolder + std::string("/");
+			m_DialogError.clear();
+			ImGui::OpenPopup(kOpenPopup);
+		}
+		if (m_SaveAsRequested) {
+			m_SaveAsRequested = false;
+			const OpenStele* active = m_Context->Active();
+			m_DialogPath = active && !active->Path.empty() ? active->Path.generic_string() : std::string(kSteleFolder) + "/" + (active ? active->Name : "Untitled") + ".stele";
+			m_DialogError.clear();
+			ImGui::OpenPopup(kSaveAsPopup);
+		}
+
+		const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		if (ImGui::BeginPopupModal(kOpenPopup, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			std::optional<std::string> open;
+			for (const std::string& file : SteleFiles()) {
+				if (ImGui::Selectable(file.c_str(), false, ImGuiSelectableFlags_DontClosePopups)) {
+					open = file;
+				}
+			}
+			ImGui::Separator();
+			ImGui::SetNextItemWidth(420.0f);
+			if (ImGui::InputText("Path", &m_DialogPath, ImGuiInputTextFlags_EnterReturnsTrue)) {
+				open = m_DialogPath;
+			}
+			if (ImGui::Button("Open")) {
+				open = m_DialogPath;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+				ImGui::CloseCurrentPopup();
+			}
+			if (open) {
+				if (m_Context->Open(*open, m_DialogError)) {
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!m_DialogError.empty()) {
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), "%s", m_DialogError.c_str());
+			}
+			ImGui::EndPopup();
+		}
+
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		if (ImGui::BeginPopupModal(kSaveAsPopup, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			ImGui::SetNextItemWidth(420.0f);
+			bool save = ImGui::InputText("Path", &m_DialogPath, ImGuiInputTextFlags_EnterReturnsTrue);
+			save |= ImGui::Button("Save");
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+				ImGui::CloseCurrentPopup();
+			}
+			if (save) {
+				OpenStele* active = m_Context->Active();
+				if (active && m_Context->Save(*active, m_DialogPath, m_DialogError)) {
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!m_DialogError.empty()) {
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), "%s", m_DialogError.c_str());
+			}
+			ImGui::EndPopup();
+		}
+	}
+
+	void EditorLayer::NewStele()
+	{
+		OpenStele& stele = m_Context->New("Untitled");
+		Transaction tx("Create sun");
+		const ElementId sun = tx.CreateElement("Sun");
+		tx.AddComponent(sun, TransformComponent{ .Rotation = RotationTowards({ -0.4f, -0.8f, -0.6f }) });
+		tx.AddComponent(sun, DirectionalLightComponent{});
+		stele.Source->Commit(std::move(tx)); // part of the new stele, not an undoable edit
+		stele.SavedVersion = stele.Source->Read().Version();
+	}
+
+	void EditorLayer::NewDemoStele()
+	{
+		OpenStele& stele = m_Context->New("Demo");
+		BuildDemoStele(*stele.Source, *m_Assets);
+		stele.SavedVersion = stele.Source->Read().Version();
+	}
+
+	void EditorLayer::Save(bool chooseFile)
+	{
+		OpenStele* active = m_Context->Active();
+		if (!active) {
+			return;
+		}
+		if (chooseFile || active->Path.empty()) {
+			m_SaveAsRequested = true;
+			return;
+		}
+		std::string error;
+		if (!m_Context->Save(*active, {}, error)) {
+			ETH_ERROR("Save failed: {}", error);
+		}
 	}
 
 	void EditorLayer::ResetCamera()

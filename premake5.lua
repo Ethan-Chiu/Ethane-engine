@@ -296,6 +296,7 @@ project "Ethane-Editor"
     includedirs
     {
         "%{wks.location}/EthaneEngine/src",
+        "%{prj.location}/src", -- editor headers from subfolders (Panels/...)
     }
 
     links

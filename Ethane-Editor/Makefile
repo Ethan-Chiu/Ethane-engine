@@ -28,7 +28,7 @@ ifeq ($(origin AR), default)
   AR = ar
 endif
 RESCOMP = windres
-INCLUDES += -I../EthaneEngine/src -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem ../../../../VulkanSDK/1.4.309.0/macOS/Include -isystem ../EthaneEngine/vendor/build/Release/include -isystem ../EthaneEngine/vendor/imgui
+INCLUDES += -I../EthaneEngine/src -Isrc -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem ../../../../VulkanSDK/1.4.309.0/macOS/Include -isystem ../EthaneEngine/vendor/build/Release/include -isystem ../EthaneEngine/vendor/imgui
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
@@ -85,14 +85,20 @@ OBJECTS :=
 
 GENERATED += $(OBJDIR)/CubeLayer.o
 GENERATED += $(OBJDIR)/DemoStele.o
+GENERATED += $(OBJDIR)/EditorContext.o
 GENERATED += $(OBJDIR)/EditorLayer.o
 GENERATED += $(OBJDIR)/EthaneEditorApp.o
+GENERATED += $(OBJDIR)/HierarchyPanel.o
+GENERATED += $(OBJDIR)/InspectorPanel.o
 GENERATED += $(OBJDIR)/TexturedQuadLayer.o
 GENERATED += $(OBJDIR)/TriangleLayer.o
 OBJECTS += $(OBJDIR)/CubeLayer.o
 OBJECTS += $(OBJDIR)/DemoStele.o
+OBJECTS += $(OBJDIR)/EditorContext.o
 OBJECTS += $(OBJDIR)/EditorLayer.o
 OBJECTS += $(OBJDIR)/EthaneEditorApp.o
+OBJECTS += $(OBJDIR)/HierarchyPanel.o
+OBJECTS += $(OBJDIR)/InspectorPanel.o
 OBJECTS += $(OBJDIR)/TexturedQuadLayer.o
 OBJECTS += $(OBJDIR)/TriangleLayer.o
 
@@ -164,10 +170,19 @@ $(OBJDIR)/CubeLayer.o: src/CubeLayer.cpp
 $(OBJDIR)/DemoStele.o: src/DemoStele.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/EditorContext.o: src/EditorContext.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EditorLayer.o: src/EditorLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EthaneEditorApp.o: src/EthaneEditorApp.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/HierarchyPanel.o: src/Panels/HierarchyPanel.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/InspectorPanel.o: src/Panels/InspectorPanel.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/TexturedQuadLayer.o: src/TexturedQuadLayer.cpp

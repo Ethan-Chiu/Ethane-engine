@@ -6,20 +6,21 @@
 #include "Ethane/Renderer/EditorCamera.h"
 #include "Ethane/Renderer/FramePacket.h"
 #include "Ethane/Renderer/Renderer.h"
-#include "Ethane/Stele/Stele.h"
-#include "Ethane/World/Entt/EnttWorld.h"
+
+#include "EditorContext.h"
+#include "Panels/HierarchyPanel.h"
+#include "Panels/InspectorPanel.h"
 
 #include <glm/glm.hpp>
 
 namespace Ethane {
 
-	// The editor UI: a dockspace with a menu bar, the stele's edit world rendered into a Viewport panel
-	// (EditorCamera: Alt + left drag orbit, Alt + middle drag pan, Alt + right drag / scroll zoom, while
-	// the cursor is over the viewport), a Scene tree of the stele's elements, a Properties panel for the
-	// selected element's components, and Stats.
+	// The editor UI: a dockspace with a menu bar, the active stele's edit world rendered into a Viewport
+	// panel (EditorCamera: Alt + left drag orbit, Alt + middle drag pan, Alt + right drag / scroll zoom,
+	// while the cursor is over the viewport), the Hierarchy and Inspector panels, and Stats.
 	//
-	// The panels read stele snapshots and change the stele only by committing transactions; the edit
-	// world follows the stele's change sets.
+	// Steles open in an EditorContext; panels read their snapshots and change them only through the
+	// context's transactions, so every edit can be undone (Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z).
 	class EditorLayer : public Layer
 	{
 	public:
@@ -38,33 +39,39 @@ namespace Ethane {
 		void DrawMenuBar();
 		void DrawDockspace();
 		void DrawViewport();
-		void DrawScenePanel();
-		void DrawPropertiesPanel();
 		void DrawStatsPanel();
+		void DrawFileDialogs();
+		void HandleShortcuts();
 
+		void NewStele();
+		void NewDemoStele();
+		void Save(bool chooseFile);
 		void ResetCamera();
-		void DrawElementNode(const SteleSnapshot& snapshot, ElementId id);
-		void Commit(Transaction transaction);
 
 	private:
 		AssetRegistry m_AssetRegistry;
 		Scope<AssetLibrary> m_Assets;
 		Scope<Renderer> m_Renderer;
-		Scope<Stele> m_Stele;
-		Scope<EnttWorld> m_EditWorld;
-		SteleSubscription m_EditWorldFollow;
+		Scope<EditorContext> m_Context;
 		FramePacket m_Packet; // rebuilt every frame (keeps its capacity)
-		EditorCamera m_Camera{ 45.0f, 1.778f, 0.1f, 100.0f };
 
+		HierarchyPanel m_Hierarchy;
+		InspectorPanel m_Inspector;
+
+		EditorCamera m_Camera{ 45.0f, 1.778f, 0.1f, 100.0f };
 		RefCountPtr<IRenderTarget> m_ViewportTarget;
 		glm::uvec2 m_ViewportSize{ 0 }; // in pixels, as the panel last laid out; applied in OnUpdate
 		bool m_ViewportHovered = false;
 		bool m_ViewportFocused = false;
 
-		ElementId m_Selected;
+		// File > Open / Save as: a path typed or picked in a popup
+		bool m_OpenRequested = false;
+		bool m_SaveAsRequested = false;
+		std::string m_DialogPath;
+		std::string m_DialogError;
 
-		bool m_ShowScene = true;
-		bool m_ShowProperties = true;
+		bool m_ShowHierarchy = true;
+		bool m_ShowInspector = true;
 		bool m_ShowStats = true;
 		bool m_ShowImGuiDemo = false;
 		bool m_ResetLayout = false;

@@ -1,0 +1,139 @@
+Stele: 1
+Types:
+  DirectionalLight: 1
+  Material: 1
+  Mesh: 1
+  Transform: 1
+Elements:
+  - Id: 6156287503210389
+    Name: Sun
+    Order: V
+    Components:
+      DirectionalLight:
+        Color: [1, 1, 1]
+        Intensity: 0.9
+      Transform:
+        Position: [0, 0, 0]
+        Rotation: [-0.837215, 0.5880026, 0]
+        Scale: [1, 1, 1]
+  - Id: 46b81f46fe395bf7
+    Name: Floor
+    Order: l
+    Components:
+      Mesh:
+        Mesh: 8a17cf4727f3f1af
+        Visible: true
+      Transform:
+        Position: [-0, -0, -0]
+        Rotation: [0, 0, 0]
+        Scale: [12, 12, 12]
+  - Id: 6379be5a9cd483d7
+    Name: Shapes
+    Order: t
+    Components:
+      Transform:
+        Position: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+  - Id: 4630f49eb8c307c4
+    Name: Cube
+    Parent: 6379be5a9cd483d7
+    Order: V
+    Components:
+      Material:
+        BaseColor: [1, 1, 1, 1]
+        Metallic: 0
+        Roughness: 0.6
+        BaseColorTexture: 16e953727619c702
+      Mesh:
+        Mesh: 996a91a996c74ea5
+        Visible: true
+      Transform:
+        Position: [-4, 0.5, 0]
+        Rotation: [0, 0, 0]
+        Scale: [0.9999999, 0.9999999, 0.9999999]
+  - Id: 4bab82bce115685c
+    Name: Sphere
+    Parent: 6379be5a9cd483d7
+    Order: l
+    Components:
+      Material:
+        BaseColor: [0.95, 0.7, 0.25, 1]
+        Metallic: 1
+        Roughness: 0.3
+        BaseColorTexture: 0000000000000000
+      Mesh:
+        Mesh: 622b97ac2cc4dfd0
+        Visible: true
+      Transform:
+        Position: [-2.3999999, 0.5, 1.4901161e-08]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+  - Id: beb02b8dce02c81b
+    Name: Cylinder
+    Parent: 6379be5a9cd483d7
+    Order: t
+    Components:
+      Material:
+        BaseColor: [0.45, 0.75, 0.35, 1]
+        Metallic: 0
+        Roughness: 0.9
+        BaseColorTexture: 0000000000000000
+      Mesh:
+        Mesh: f21d2a4b2d06e829
+        Visible: true
+      Transform:
+        Position: [-0.79999995, 0.5, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+  - Id: 0660ceb4b6bb7816
+    Name: Cone
+    Parent: 6379be5a9cd483d7
+    Order: x
+    Components:
+      Material:
+        BaseColor: [0.3, 0.65, 0.8, 1]
+        Metallic: 0
+        Roughness: 0.2
+        BaseColorTexture: 0000000000000000
+      Mesh:
+        Mesh: 15766e703aaf6ed3
+        Visible: true
+      Transform:
+        Position: [0.8000001, 0.5, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+  - Id: a6ebcc474fe6acd5
+    Name: Torus
+    Parent: 6379be5a9cd483d7
+    Order: z
+    Components:
+      Material:
+        BaseColor: [0.55, 0.45, 0.85, 1]
+        Metallic: 1
+        Roughness: 0.5
+        BaseColorTexture: 0000000000000000
+      Mesh:
+        Mesh: a89078f8ff0f4572
+        Visible: true
+      Transform:
+        Position: [2.4, 0.1, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+  - Id: f894150d7b649eb1
+    Name: Capsule
+    Parent: 6379be5a9cd483d7
+    Order: zV
+    Components:
+      Material:
+        BaseColor: [0.85, 0.45, 0.7, 1]
+        Metallic: 0
+        Roughness: 0.4
+        BaseColorTexture: 0000000000000000
+      Mesh:
+        Mesh: 3ec21114106fec21
+        Visible: true
+      Transform:
+        Position: [4.0000973, 0.4999121, 5.2370782e-05]
+        Rotation: [0, 0, 0]
+        Scale: [0.50007737, 0.50007737, 0.50007737]

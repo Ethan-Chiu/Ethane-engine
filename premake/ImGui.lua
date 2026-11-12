@@ -22,6 +22,8 @@ project "ImGui"
         "../EthaneEngine/vendor/imgui/imgui_tables.cpp",
         "../EthaneEngine/vendor/imgui/imgui_widgets.cpp",
         "../EthaneEngine/vendor/imgui/imgui_demo.cpp",
+        "../EthaneEngine/vendor/imgui/misc/cpp/imgui_stdlib.h",
+        "../EthaneEngine/vendor/imgui/misc/cpp/imgui_stdlib.cpp", -- InputText for std::string
         "../EthaneEngine/vendor/imgui/imstb_rectpack.h",
         "../EthaneEngine/vendor/imgui/imstb_textedit.h",
         "../EthaneEngine/vendor/imgui/imstb_truetype.h",

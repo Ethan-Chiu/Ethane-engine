@@ -188,6 +188,10 @@ Panels bind to an `EditorContext`, not to a scene:
 | Viewport | A world + a camera + a render target | Selection (picking) |
 | Stats | Renderer and world statistics | Nothing |
 
+Steles are saved as `.stele` files (the editor keeps its own in `Ethane-Editor/assets/steles/`).
+Each open stele has its own undo history; the inspector gives every press-and-drag of a widget its own
+`MergeKey`, so a drag is one undo step.
+
 Because the inspector works through the schema, it handles any registered type, including materials
 and asset settings, with no per-component UI code.
 

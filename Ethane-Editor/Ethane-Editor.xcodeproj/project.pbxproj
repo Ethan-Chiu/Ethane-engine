@@ -8,12 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */; };
+		2216BF5A797C324C2B8A4D9A /* EditorContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B458F8E2E652439460317F22 /* EditorContext.cpp */; };
 		74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */; };
 		7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */; };
 		79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */; };
 		AB564F861C78F078D23F9DC6 /* DemoStele.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
+		C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAE78FA0313EBECB522073A /* HierarchyPanel.cpp */; };
 		DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */; };
+		F50A4342F4AD26742F01D982 /* InspectorPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,16 +37,22 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0B3EEE149DCCB80606A55C54 /* InspectorPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = InspectorPanel.h; path = src/Panels/InspectorPanel.h; sourceTree = "<group>"; };
+		128ABEA4A51888960DF12CE4 /* HierarchyPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HierarchyPanel.h; path = src/Panels/HierarchyPanel.h; sourceTree = "<group>"; };
 		17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EthaneEditorApp.cpp; path = src/EthaneEditorApp.cpp; sourceTree = "<group>"; };
 		1C4E48BADFBA0A6C1E5DAEFA /* TriangleLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TriangleLayer.h; path = src/TriangleLayer.h; sourceTree = "<group>"; };
 		1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorLayer.cpp; path = src/EditorLayer.cpp; sourceTree = "<group>"; };
+		2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = InspectorPanel.cpp; path = src/Panels/InspectorPanel.cpp; sourceTree = "<group>"; };
+		45849C4C08F05DFE4794028C /* EditorContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorContext.h; path = src/EditorContext.h; sourceTree = "<group>"; };
 		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor"; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6600948E3423E840BB323ACE /* TexturedQuadLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TexturedQuadLayer.h; path = src/TexturedQuadLayer.h; sourceTree = "<group>"; };
 		9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TexturedQuadLayer.cpp; path = src/TexturedQuadLayer.cpp; sourceTree = "<group>"; };
 		91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TriangleLayer.cpp; path = src/TriangleLayer.cpp; sourceTree = "<group>"; };
 		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
 		AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = CubeLayer.cpp; path = src/CubeLayer.cpp; sourceTree = "<group>"; };
+		ABAE78FA0313EBECB522073A /* HierarchyPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = HierarchyPanel.cpp; path = src/Panels/HierarchyPanel.cpp; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
+		B458F8E2E652439460317F22 /* EditorContext.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorContext.cpp; path = src/EditorContext.cpp; sourceTree = "<group>"; };
 		BE6354B8E489846A4B907AF8 /* DemoStele.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DemoStele.h; path = src/DemoStele.h; sourceTree = "<group>"; };
 		E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DemoStele.cpp; path = src/DemoStele.cpp; sourceTree = "<group>"; };
 		F352F86C1979281E80801EAC /* CubeLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CubeLayer.h; path = src/CubeLayer.h; sourceTree = "<group>"; };
@@ -81,9 +90,12 @@
 				F352F86C1979281E80801EAC /* CubeLayer.h */,
 				E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */,
 				BE6354B8E489846A4B907AF8 /* DemoStele.h */,
+				B458F8E2E652439460317F22 /* EditorContext.cpp */,
+				45849C4C08F05DFE4794028C /* EditorContext.h */,
 				1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */,
 				989FA13CC0DA59EEA875E77C /* EditorLayer.h */,
 				17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */,
+				F8C6F20E9C127B40B6E3484E /* Panels */,
 				9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */,
 				6600948E3423E840BB323ACE /* TexturedQuadLayer.h */,
 				91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */,
@@ -116,6 +128,17 @@
 				514DCF5268606A84587C6592 /* Ethane-Editor */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F8C6F20E9C127B40B6E3484E /* Panels */ = {
+			isa = PBXGroup;
+			children = (
+				ABAE78FA0313EBECB522073A /* HierarchyPanel.cpp */,
+				128ABEA4A51888960DF12CE4 /* HierarchyPanel.h */,
+				2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */,
+				0B3EEE149DCCB80606A55C54 /* InspectorPanel.h */,
+			);
+			name = Panels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -191,8 +214,11 @@
 			files = (
 				74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */,
 				AB564F861C78F078D23F9DC6 /* DemoStele.cpp in Sources */,
+				2216BF5A797C324C2B8A4D9A /* EditorContext.cpp in Sources */,
 				7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */,
 				1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */,
+				C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */,
+				F50A4342F4AD26742F01D982 /* InspectorPanel.cpp in Sources */,
 				79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */,
 				DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */,
 			);
@@ -247,6 +273,7 @@
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
+					src,
 				);
 				VULKAN_SDK = (
 					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
@@ -323,6 +350,7 @@
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
+					src,
 				);
 				VULKAN_SDK = (
 					/Users/ethan/VulkanSDK/1.4.309.0/macOS,
@@ -383,6 +411,7 @@
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
+					src,
 				);
 				VULKAN_SDK = (
 					/Users/ethan/VulkanSDK/1.4.309.0/macOS,

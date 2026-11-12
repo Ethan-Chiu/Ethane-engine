@@ -33,12 +33,12 @@ as its own commits.
 - [x] Asset registry (`AssetId` → path, YAML) and asset library; packets reference assets by id
 - [x] Old `Ethane/Scene` code removed
 
-## 5. Editor context and panels
+## 5. Editor context and panels ✅
 
-- [ ] `EditorContext`: open steles, worlds, selection, undo
-- [ ] Hierarchy panel on stele snapshots
-- [ ] Inspector panel driven by the schema
-- [ ] Save / open steles
+- [x] `EditorContext`: open steles, worlds, selection, undo
+- [x] Hierarchy panel on stele snapshots (tabs, tree, drag to reparent, create / rename / delete)
+- [x] Inspector panel driven by the schema (add / remove components; a drag is one undo step)
+- [x] Save / open steles (`assets/steles/`, the editor opens `Demo.stele` at startup)
 
 ## 6. Play mode
 
@@ -67,3 +67,5 @@ as its own commits.
 - Prefab steles (reference plus overrides)
 - Array fields in the schema
 - Picking via an ID buffer, gizmos
+- Native file dialogs (Open / Save as are path popups for now)
+- Asking before closing a stele with unsaved changes
