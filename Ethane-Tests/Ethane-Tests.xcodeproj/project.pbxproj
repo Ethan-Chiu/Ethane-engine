@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		03912CD2101BDF448B00AB12 /* BrickSerializerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87BB87DA66D8A20C42E1FE1A /* BrickSerializerTests.cpp */; };
+		7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */; };
+		80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */; };
 		A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51029A7499737EA6DE1250B4 /* TestMain.cpp */; };
 		B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
-		EE93CD9E32E273107509ABDE /* BrickTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE96CBE6F06279182D17A226 /* BrickTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,12 +32,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleTests.cpp; path = src/SteleTests.cpp; sourceTree = "<group>"; };
+		2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleSerializerTests.cpp; path = src/SteleSerializerTests.cpp; sourceTree = "<group>"; };
 		414F29FE420226F0B5E3F83E /* Ethane-Tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Tests"; path = "Ethane-Tests"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51029A7499737EA6DE1250B4 /* TestMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TestMain.cpp; path = src/TestMain.cpp; sourceTree = "<group>"; };
-		87BB87DA66D8A20C42E1FE1A /* BrickSerializerTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = BrickSerializerTests.cpp; path = src/BrickSerializerTests.cpp; sourceTree = "<group>"; };
 		A5B725344902AE6663D37B74 /* Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Test.h; path = src/Test.h; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
-		CE96CBE6F06279182D17A226 /* BrickTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = BrickTests.cpp; path = src/BrickTests.cpp; sourceTree = "<group>"; };
 		DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,9 +77,9 @@
 		870CC795336F87C7F1F7FDD5 /* Ethane-Tests */ = {
 			isa = PBXGroup;
 			children = (
-				87BB87DA66D8A20C42E1FE1A /* BrickSerializerTests.cpp */,
-				CE96CBE6F06279182D17A226 /* BrickTests.cpp */,
 				DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */,
+				2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */,
+				1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */,
 				A5B725344902AE6663D37B74 /* Test.h */,
 				51029A7499737EA6DE1250B4 /* TestMain.cpp */,
 				A6C936B49B3FADE6EA134CF4 /* Products */,
@@ -175,9 +175,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03912CD2101BDF448B00AB12 /* BrickSerializerTests.cpp in Sources */,
-				EE93CD9E32E273107509ABDE /* BrickTests.cpp in Sources */,
 				B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */,
+				80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */,
+				7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */,
 				A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

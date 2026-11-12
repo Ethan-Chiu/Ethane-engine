@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ethane/Brick/BrickOps.h"
+#include "Ethane/Stele/SteleOps.h"
 #include "Ethane/Schema/TypeRegistry.h"
 
 #include <string>
@@ -8,14 +8,14 @@
 
 namespace Ethane {
 
-	class BrickSnapshot;
+	class SteleSnapshot;
 
 	// A list of ops committed together: either all apply or none do.
 	//
 	//     Transaction tx("Add lamp");
-	//     ObjectId lamp = tx.CreateObject("Lamp");
+	//     ElementId lamp = tx.CreateElement("Lamp");
 	//     tx.AddComponent(lamp, Transform{ .Position = { 0, 2, 0 } });
-	//     brick.Commit(std::move(tx));
+	//     stele.Commit(std::move(tx));
 	class Transaction
 	{
 	public:
@@ -26,19 +26,19 @@ namespace Ethane {
 		// Consecutive commits with the same non-zero key become one undo step (e.g. a slider drag)
 		uint64_t MergeKey = 0;
 
-		ObjectId CreateObject(std::string name, ObjectId parent = {}, std::string order = {});
-		void CreateObject(ObjectId id, std::string name, ObjectId parent = {}, std::string order = {});
-		void DestroyObject(ObjectId id);
-		void DestroyTree(const BrickSnapshot& snapshot, ObjectId root); // the object and its descendants
-		void Rename(ObjectId id, std::string name);
-		void Move(ObjectId id, ObjectId parent, std::string order = {});
+		ElementId CreateElement(std::string name, ElementId parent = {}, std::string order = {});
+		void CreateElement(ElementId id, std::string name, ElementId parent = {}, std::string order = {});
+		void DestroyElement(ElementId id);
+		void DestroyTree(const SteleSnapshot& snapshot, ElementId root); // the element and its descendants
+		void Rename(ElementId id, std::string name);
+		void Move(ElementId id, ElementId parent, std::string order = {});
 
-		void AddComponent(ObjectId id, TypeId type, ComponentRef value = nullptr);
-		void RemoveComponent(ObjectId id, TypeId type);
-		void SetField(ObjectId id, TypeId type, FieldPath path, FieldValue value);
+		void AddComponent(ElementId id, TypeId type, ComponentRef value = nullptr);
+		void RemoveComponent(ElementId id, TypeId type);
+		void SetField(ElementId id, TypeId type, FieldPath path, FieldValue value);
 
 		template<typename T>
-		void AddComponent(ObjectId id, const T& value = T())
+		void AddComponent(ElementId id, const T& value = T())
 		{
 			const TypeInfo* type = TypeOf<T>();
 			if (type)
@@ -46,7 +46,7 @@ namespace Ethane {
 		}
 
 		template<typename T>
-		void RemoveComponent(ObjectId id)
+		void RemoveComponent(ElementId id)
 		{
 			if (const TypeInfo* type = TypeOf<T>())
 				RemoveComponent(id, type->Id);
@@ -54,7 +54,7 @@ namespace Ethane {
 
 		// `field` is a dotted path such as "Bulb.Color"
 		template<typename T>
-		void SetField(ObjectId id, std::string_view field, FieldValue value)
+		void SetField(ElementId id, std::string_view field, FieldValue value)
 		{
 			const TypeInfo* type = TypeOf<T>();
 			if (!type)
@@ -65,9 +65,9 @@ namespace Ethane {
 			SetField(id, type->Id, std::move(*path), std::move(value));
 		}
 
-		void Append(BrickOperation op) { m_Ops.push_back(std::move(op)); }
+		void Append(SteleOperation op) { m_Ops.push_back(std::move(op)); }
 
-		const std::vector<BrickOperation>& Ops() const { return m_Ops; }
+		const std::vector<SteleOperation>& Ops() const { return m_Ops; }
 		bool Empty() const { return m_Ops.empty(); }
 		// Set when building the transaction went wrong (e.g. an unregistered type); Commit then refuses it
 		const std::string& Error() const { return m_Error; }
@@ -86,7 +86,7 @@ namespace Ethane {
 		void Fail(std::string error);
 
 		const TypeRegistry* m_Registry;
-		std::vector<BrickOperation> m_Ops;
+		std::vector<SteleOperation> m_Ops;
 		std::string m_Error;
 	};
 

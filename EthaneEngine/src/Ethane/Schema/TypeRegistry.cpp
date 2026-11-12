@@ -5,7 +5,7 @@
 
 namespace Ethane {
 
-	ObjectId ObjectId::Generate()
+	ElementId ElementId::Generate()
 	{
 		thread_local std::mt19937_64 engine(std::random_device{}());
 		uint64_t value = 0;
@@ -31,7 +31,7 @@ namespace Ethane {
 			case FieldType::Quat:   return "Quat";
 			case FieldType::String: return "String";
 			case FieldType::Asset:  return "Asset";
-			case FieldType::Object: return "Object";
+			case FieldType::Element: return "Element";
 			case FieldType::Struct: return "Struct";
 		}
 		return "?";

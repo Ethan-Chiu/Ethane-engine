@@ -17,24 +17,25 @@
 		1AD781EF1A7A652154CF182F /* stb_image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F214597E686B8899894D3D7 /* stb_image.cpp */; };
 		1C4A5799AED8218B17B0C5D9 /* Log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FCB3E61D337001311DAA4A1 /* Log.cpp */; };
 		2514604DFC678B7F75D4F68D /* VulkanCommandBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1811CF15DF768A076A2E5D55 /* VulkanCommandBuffer.cpp */; };
+		273AC023C15EB55571849663 /* SteleSnapshot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCE61D8B4140627DBF23EBCB /* SteleSnapshot.cpp */; };
 		28753B166C890C48605A9156 /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1572F5E4279D050F8407D9E /* Scene.cpp */; };
 		2903465DEF913DCF5D93649D /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */; };
 		2AE10AFBD256A6AD7B1BB13B /* VulkanDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CF24CCE3ADC7685562A96B23 /* VulkanDevice.cpp */; };
 		2C2349C30AC5E535BFA7E803 /* EditorCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 478665CB472948FD817DFC0B /* EditorCamera.cpp */; };
-		2FBE848DC9E279BF7A085ACD /* BrickSnapshot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94155235086F972786532075 /* BrickSnapshot.cpp */; };
 		32724596C26820487F5CCBD6 /* VulkanShaderCompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B709393EDCB133B0FAE1B77E /* VulkanShaderCompiler.cpp */; };
 		33F19BC9DB67377B842C4209 /* VulkanShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54C709D13369A543E84BA811 /* VulkanShader.cpp */; };
 		35BEAE69D925DC1BF05B94A9 /* VulkanBindingSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11806671A9F853E3D5DF44B1 /* VulkanBindingSet.cpp */; };
 		35CF1DD12F90DA43698FDC11 /* ethpch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F8CC9A59413D7E8B85DC5099 /* ethpch.cpp */; };
+		4331C703874598357B171D43 /* Stele.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD7B2E6B4E9DCF5D04647CAB /* Stele.cpp */; };
 		494D8CF4E3A775E61FDFDB34 /* libGLFW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ED61E5CECB71F0EC435649C /* libGLFW.a */; };
 		53907229B017769B38BA3069 /* MacosWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75A0C8D18585F50371F97F11 /* MacosWindow.cpp */; };
 		5D75FCD99740B38B4C9C0319 /* VulkanWindowTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42B817E1076D6E53BBDC1621 /* VulkanWindowTarget.cpp */; };
 		614E9EC904B5CC7B1BEB8509 /* VulkanRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A8DA0D1A3058E43CEEC7F11 /* VulkanRenderPass.cpp */; };
-		6426D3A1ACC611D3CFF1C9E1 /* BrickSerializer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 017F2809F27695FB5E7A1649 /* BrickSerializer.cpp */; };
 		65DF459400392E863C7193D4 /* libGlad.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D23A59FC701B5AAE4799A03C /* libGlad.a */; };
 		661CEB61FE94D8D32A7BC9A1 /* WindowsInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 992ECF093352C43BE378A549 /* WindowsInput.cpp */; };
 		6923B6B97ADAF6ABF048E4F9 /* MacosInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33FECD61A7E74513CA34F3A1 /* MacosInput.cpp */; };
 		6ADA7EDDDEC2F68F0110A51D /* ImGuiBuild.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A0BCE785674ADEF7D54D05C5 /* ImGuiBuild.cpp */; };
+		6E9589338961F7E58D328F73 /* OrderKey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8068CA9BED90D90DEF23C8DB /* OrderKey.cpp */; };
 		7106A6EA6AA6F89C5B280D2A /* VulkanShaderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6B2121522CD9B2C4D3F47F92 /* VulkanShaderSystem.cpp */; };
 		713678D803C442CA6C9CE718 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BACC980CF188B320DBC2FC0 /* IOKit.framework */; };
 		80123A10330843C2842AA050 /* TextureSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 82DE235876DD6CCAFBC88198 /* TextureSystem.cpp */; };
@@ -49,26 +50,25 @@
 		A7DC1E7D98D38C6F04D70CBD /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F978450591C52AB7C00C2B45 /* Application.cpp */; };
 		AB61FBE9E52CB29B9A880229 /* VulkanRenderTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90983DF1554D946309BC3C31 /* VulkanRenderTarget.cpp */; };
 		ACB1B4470811D8F94A557A87 /* VulkanPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A7B416FE70245E16FA4FFAF /* VulkanPipeline.cpp */; };
-		B4D5A05767CBAA09B8EE0697 /* ComponentValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ADFCB75FA1FC00D126E7159F /* ComponentValue.cpp */; };
-		BC7E8D81D74AFC33DB1B93C1 /* OrderKey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE51CEE93B79DD5B3D0CCD29 /* OrderKey.cpp */; };
 		BF483ED1557150C316D7AD11 /* WindowsWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8001A27932F7AC2B841A08B9 /* WindowsWindow.cpp */; };
 		C773C7932174DE85E8BBD5D3 /* TypeRegistry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 29D3D13B44A03FED4870D77B /* TypeRegistry.cpp */; };
 		CB629BEAC42D5B9C4EA1C22A /* ShaderIncluder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F6FF25272EF31C48AE91092 /* ShaderIncluder.cpp */; };
 		CD92DD69DA1D8FDB55025BA9 /* FieldAccess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0887B3B1E7A4CDE3C3AE29F1 /* FieldAccess.cpp */; };
-		D00DA783DFF2D3B5CC665DC3 /* Transaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0A30ACB728CA6BD69B3B90B /* Transaction.cpp */; };
+		D0D9013719783F693CA3F777 /* SteleSerializer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C7C55F53BF3351BFC2B39F /* SteleSerializer.cpp */; };
 		D551503C6F75456E1F9B267C /* ShaderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 70B34DC4E50D92B662F11C04 /* ShaderSystem.cpp */; };
 		D69911E9ADEC3D1B2759A829 /* VulkanGfxBackendAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D04434F197A8EFE32260C331 /* VulkanGfxBackendAPI.cpp */; };
+		DC685DF5EC4D8A27D8C11435 /* Transaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFDC13D7EE75D2F760E6F7D /* Transaction.cpp */; };
 		E34098635068A6D551FB96A3 /* UUID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1356348B60B92ABDD6D82ACB /* UUID.cpp */; };
 		E5D97D654124CD972F56B3A5 /* VulkanContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 698AA8AD7B41E89FF0AFD6ED /* VulkanContext.cpp */; };
-		E6500547F6353179E2A8BB87 /* UndoHistory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 394D3E4FDB36DA41D25DEC8F /* UndoHistory.cpp */; };
 		E6F7C808F6DCF43AE3507E48 /* SceneCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BEFB583060E4F422580C0670 /* SceneCamera.cpp */; };
 		EBD8E94289B9E9F461382F82 /* AssetManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CFB71EAEFBBD25C4CF0B02A /* AssetManager.cpp */; };
 		EE15C9CF457B3CC1F789580F /* Layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8160B437B359FEE92D393A77 /* Layer.cpp */; };
 		EF3A5624CDDCF19682BEF464 /* libImGui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD98E42CAD3BC75EE7907A6C /* libImGui.a */; };
 		F155C73FF0F8AA712B4D5D7F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7127FC27C88D6F197A9B8A67 /* FileUtils.cpp */; };
+		F2AABBB9028FE7EBEF0371F9 /* UndoHistory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45A7F4C1E79190B3DEB8A301 /* UndoHistory.cpp */; };
 		F8E8DBA28B76A594F44F49E2 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D6BC6AA50D7885C8F7B2CEA /* Cocoa.framework */; };
-		F961D36D3D75A49F314729AD /* Brick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F3FE2B156520CC071AE77955 /* Brick.cpp */; };
 		F992D3E1ED921D53727D3221 /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7920A109BD34723BB105F749 /* Material.cpp */; };
+		FEFB1989B1F1233B03137FC9 /* ComponentValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F8223091EC217A03710C8ED1 /* ComponentValue.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -117,7 +117,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		017F2809F27695FB5E7A1649 /* BrickSerializer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = BrickSerializer.cpp; path = src/Ethane/Brick/BrickSerializer.cpp; sourceTree = "<group>"; };
 		02BCBE6976A5361B98F2E4A9 /* GfxSmokeTest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = GfxSmokeTest.cpp; path = src/Ethane/GfxBackend/GfxSmokeTest.cpp; sourceTree = "<group>"; };
 		03DA2EB7E27CCA29975ECCF7 /* VulkanBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanBuffer.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanBuffer.cpp; sourceTree = "<group>"; };
 		0561F2897684937B2C4B40C9 /* norm.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = norm.hpp; path = vendor/glm/glm/gtx/norm.hpp; sourceTree = "<group>"; };
@@ -134,6 +133,7 @@
 		08337905A0AB6677CC925745 /* quaternion_relational.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_relational.inl; path = vendor/glm/glm/ext/quaternion_relational.inl; sourceTree = "<group>"; };
 		08668629FC65CF9B8150E469 /* matrix_int2x4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_int2x4.hpp; path = vendor/glm/glm/ext/matrix_int2x4.hpp; sourceTree = "<group>"; };
 		0887B3B1E7A4CDE3C3AE29F1 /* FieldAccess.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = FieldAccess.cpp; path = src/Ethane/Schema/FieldAccess.cpp; sourceTree = "<group>"; };
+		08BC20194D0AC58B8F31FE59 /* SteleOps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SteleOps.h; path = src/Ethane/Stele/SteleOps.h; sourceTree = "<group>"; };
 		09E56DE8ABCF09DAA2F61C28 /* ImageLoader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader.cpp; path = src/Ethane/Asset/ImageLoader.cpp; sourceTree = "<group>"; };
 		0A8DA0D1A3058E43CEEC7F11 /* VulkanRenderPass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanRenderPass.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanRenderPass.cpp; sourceTree = "<group>"; };
 		0B729E2FA5CC8721E204EC6F /* matrix_uint4x2_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint4x2_sized.hpp; path = vendor/glm/glm/ext/matrix_uint4x2_sized.hpp; sourceTree = "<group>"; };
@@ -146,7 +146,6 @@
 		0E8552FD1B10056F95F4D13D /* dual_quaternion.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = dual_quaternion.inl; path = vendor/glm/glm/gtx/dual_quaternion.inl; sourceTree = "<group>"; };
 		0FCB3E61D337001311DAA4A1 /* Log.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Log.cpp; path = src/Ethane/Core/Log.cpp; sourceTree = "<group>"; };
 		1061AD17228B89C9567C7357 /* PMRAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PMRAdapter.h; path = src/Ethane/Memory/PMRAdapter.h; sourceTree = "<group>"; };
-		1078FFBFB2629BB1A989ADFF /* BrickSnapshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BrickSnapshot.h; path = src/Ethane/Brick/BrickSnapshot.h; sourceTree = "<group>"; };
 		111864F910BB482B4B0FFB39 /* GfxBackendAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GfxBackendAPI.h; path = src/Ethane/GfxBackend/GfxBackendAPI.h; sourceTree = "<group>"; };
 		111A04F76B1B1BE932621337 /* VulkanContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanContext.h; path = src/Ethane/GfxBackend/Vulkan/VulkanContext.h; sourceTree = "<group>"; };
 		11762D7985D0726B03B3FBB9 /* vector_uint3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_uint3.hpp; path = vendor/glm/glm/ext/vector_uint3.hpp; sourceTree = "<group>"; };
@@ -181,13 +180,11 @@
 		1E706C4B0F67DA3D7B6B5A8B /* vector_double1.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_double1.hpp; path = vendor/glm/glm/ext/vector_double1.hpp; sourceTree = "<group>"; };
 		1EC04F0BFD62EA7DB244ED4B /* vector_int3_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_int3_sized.hpp; path = vendor/glm/glm/ext/vector_int3_sized.hpp; sourceTree = "<group>"; };
 		1EC3FB7BC0AD976DB7D4A9BB /* type_trait.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_trait.hpp; path = vendor/glm/glm/gtx/type_trait.hpp; sourceTree = "<group>"; };
-		1EEB0BC36339B135A560EA03 /* BrickOps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BrickOps.h; path = src/Ethane/Brick/BrickOps.h; sourceTree = "<group>"; };
 		1F1FFBEB792112DD40680A2B /* matrix_double4x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double4x3.hpp; path = vendor/glm/glm/ext/matrix_double4x3.hpp; sourceTree = "<group>"; };
 		203532D1112CA0C37D302111 /* matrix_uint2x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint2x3.hpp; path = vendor/glm/glm/ext/matrix_uint2x3.hpp; sourceTree = "<group>"; };
 		20475E7BE4FCB4ED996B5CBB /* vector_float3_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_float3_precision.hpp; path = vendor/glm/glm/ext/vector_float3_precision.hpp; sourceTree = "<group>"; };
 		210285B31501CF2599ECE3F3 /* rotate_vector.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = rotate_vector.hpp; path = vendor/glm/glm/gtx/rotate_vector.hpp; sourceTree = "<group>"; };
 		21CD02C315CC4C359AB76103 /* perpendicular.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = perpendicular.inl; path = vendor/glm/glm/gtx/perpendicular.inl; sourceTree = "<group>"; };
-		221759D36665FF45A88D3813 /* OrderKey.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = OrderKey.h; path = src/Ethane/Brick/OrderKey.h; sourceTree = "<group>"; };
 		22E4BA19B572840B1E4B2859 /* normal.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = normal.inl; path = vendor/glm/glm/gtx/normal.inl; sourceTree = "<group>"; };
 		233AB207B8B17139274DC847 /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Camera.h; path = src/Ethane/Renderer/Camera.h; sourceTree = "<group>"; };
 		23E448C5EB4903B77600D705 /* quaternion_trigonometric.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_trigonometric.hpp; path = vendor/glm/glm/ext/quaternion_trigonometric.hpp; sourceTree = "<group>"; };
@@ -198,7 +195,6 @@
 		27FF17FBC5E018AD9D5E5E3B /* func_geometric.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = func_geometric.inl; path = vendor/glm/glm/detail/func_geometric.inl; sourceTree = "<group>"; };
 		287A8A31EB3AEAA3486FC871 /* optimum_pow.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = optimum_pow.hpp; path = vendor/glm/glm/gtx/optimum_pow.hpp; sourceTree = "<group>"; };
 		29D3D13B44A03FED4870D77B /* TypeRegistry.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TypeRegistry.cpp; path = src/Ethane/Schema/TypeRegistry.cpp; sourceTree = "<group>"; };
-		2A6A13539EC458451CA7E193 /* BrickSerializer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BrickSerializer.h; path = src/Ethane/Brick/BrickSerializer.h; sourceTree = "<group>"; };
 		2A788FD881DE02CA33EC1E18 /* bitfield.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = bitfield.inl; path = vendor/glm/glm/gtc/bitfield.inl; sourceTree = "<group>"; };
 		2B44F4B7C3BCE229EFA3D2F7 /* scalar_multiplication.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_multiplication.hpp; path = vendor/glm/glm/gtx/scalar_multiplication.hpp; sourceTree = "<group>"; };
 		2B4AA1C5854BB8B74C92B005 /* matrix_transform.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_transform.inl; path = vendor/glm/glm/ext/matrix_transform.inl; sourceTree = "<group>"; };
@@ -223,12 +219,13 @@
 		34A4158B8EA52C7D55EC23CB /* exterior_product.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = exterior_product.inl; path = vendor/glm/glm/gtx/exterior_product.inl; sourceTree = "<group>"; };
 		354DE1C5501A507753EAE805 /* ShaderConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ShaderConfig.h; path = src/Ethane/GfxBackend/ShaderConfig.h; sourceTree = "<group>"; };
 		36524169F912A1DB56477FA9 /* string_cast.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = string_cast.inl; path = vendor/glm/glm/gtx/string_cast.inl; sourceTree = "<group>"; };
+		377CB915D9665507D08D6755 /* SteleSnapshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SteleSnapshot.h; path = src/Ethane/Stele/SteleSnapshot.h; sourceTree = "<group>"; };
 		37C0864FABA8FE01CDF6AC8F /* PlatformDetection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PlatformDetection.h; path = src/Ethane/Core/PlatformDetection.h; sourceTree = "<group>"; };
 		37DB748F91DC8B81592382CF /* VulkanTexture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanTexture.h; path = src/Ethane/GfxBackend/Vulkan/VulkanTexture.h; sourceTree = "<group>"; };
 		38A7A0AB384A83DD729F36EB /* type_mat4x3.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat4x3.inl; path = vendor/glm/glm/detail/type_mat4x3.inl; sourceTree = "<group>"; };
 		3906931786698949FC888957 /* Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Event.h; path = src/Ethane/Events/Event.h; sourceTree = "<group>"; };
-		394D3E4FDB36DA41D25DEC8F /* UndoHistory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = UndoHistory.cpp; path = src/Ethane/Brick/UndoHistory.cpp; sourceTree = "<group>"; };
 		3A4CB2E6AEA6F7D82C8A8126 /* type_aligned.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_aligned.hpp; path = vendor/glm/glm/gtc/type_aligned.hpp; sourceTree = "<group>"; };
+		3A77C1057EC66677C0ED9F45 /* OrderKey.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = OrderKey.h; path = src/Ethane/Stele/OrderKey.h; sourceTree = "<group>"; };
 		3B4682B5D9278367B0A5C8F5 /* libImGui.a */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "ImGui.xcodeproj"; path = vendor/build/projects/ImGui/ImGui.xcodeproj; sourceTree = SOURCE_ROOT; };
 		3B47EA89096B3E3B907990C9 /* KeyEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = KeyEvent.h; path = src/Ethane/Events/KeyEvent.h; sourceTree = "<group>"; };
 		3BAABBC12CA229B398A5AA01 /* orthonormalize.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = orthonormalize.inl; path = vendor/glm/glm/gtx/orthonormalize.inl; sourceTree = "<group>"; };
@@ -251,11 +248,13 @@
 		4437190DB559B9FF6B20674D /* mat3x2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = mat3x2.hpp; path = vendor/glm/glm/mat3x2.hpp; sourceTree = "<group>"; };
 		44836C9FB86BE451DAB992DF /* ApplicationEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ApplicationEvent.h; path = src/Ethane/Events/ApplicationEvent.h; sourceTree = "<group>"; };
 		456A5BAF3661C9A1A26549EF /* matrix_uint2x2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint2x2.hpp; path = vendor/glm/glm/ext/matrix_uint2x2.hpp; sourceTree = "<group>"; };
+		45A7F4C1E79190B3DEB8A301 /* UndoHistory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = UndoHistory.cpp; path = src/Ethane/Stele/UndoHistory.cpp; sourceTree = "<group>"; };
 		45DA3D940C6835067A6A5BD4 /* AssetManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AssetManager.h; path = src/Ethane/Asset/AssetManager.h; sourceTree = "<group>"; };
 		46484EA93A47981BBF32ACE9 /* matrix_int3x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_int3x3.hpp; path = vendor/glm/glm/ext/matrix_int3x3.hpp; sourceTree = "<group>"; };
 		46DD1A415367CCB3CE4C9881 /* matrix_float4x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_float4x3.hpp; path = vendor/glm/glm/ext/matrix_float4x3.hpp; sourceTree = "<group>"; };
 		478665CB472948FD817DFC0B /* EditorCamera.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorCamera.cpp; path = src/Ethane/Renderer/EditorCamera.cpp; sourceTree = "<group>"; };
 		47C4F1D126678D43DB499011 /* matrix_projection.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_projection.hpp; path = vendor/glm/glm/ext/matrix_projection.hpp; sourceTree = "<group>"; };
+		47F052CB9F55C5BD5163E10B /* UndoHistory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = UndoHistory.h; path = src/Ethane/Stele/UndoHistory.h; sourceTree = "<group>"; };
 		48384439A2395B2B69805279 /* fast_exponential.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = fast_exponential.hpp; path = vendor/glm/glm/gtx/fast_exponential.hpp; sourceTree = "<group>"; };
 		4848941B5895780D5682425B /* quaternion_float_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_float_precision.hpp; path = vendor/glm/glm/ext/quaternion_float_precision.hpp; sourceTree = "<group>"; };
 		4849775FDE7289519FD8E59F /* rotate_normalized_axis.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = rotate_normalized_axis.hpp; path = vendor/glm/glm/gtx/rotate_normalized_axis.hpp; sourceTree = "<group>"; };
@@ -283,9 +282,9 @@
 		50DAF91762923909D8002757 /* vector_uint4_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_uint4_sized.hpp; path = vendor/glm/glm/ext/vector_uint4_sized.hpp; sourceTree = "<group>"; };
 		510BA0E1450AEA53C9F5FF21 /* vector_float1.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_float1.hpp; path = vendor/glm/glm/ext/vector_float1.hpp; sourceTree = "<group>"; };
 		51C6289942BD968BAEC116D9 /* gradient_paint.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = gradient_paint.inl; path = vendor/glm/glm/gtx/gradient_paint.inl; sourceTree = "<group>"; };
+		51F3BA7B14B41AED71E8F8BB /* ComponentValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ComponentValue.h; path = src/Ethane/Stele/ComponentValue.h; sourceTree = "<group>"; };
 		529960D91927584B87297F19 /* functions.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = functions.inl; path = vendor/glm/glm/gtx/functions.inl; sourceTree = "<group>"; };
 		52E5123315A572A572DA5073 /* string_cast.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = string_cast.hpp; path = vendor/glm/glm/gtx/string_cast.hpp; sourceTree = "<group>"; };
-		52F9E0D9AA5F53CB5C6D6F19 /* UndoHistory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = UndoHistory.h; path = src/Ethane/Brick/UndoHistory.h; sourceTree = "<group>"; };
 		5344DE7752E7C1A98D3C74B7 /* type_mat4x4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat4x4.hpp; path = vendor/glm/glm/detail/type_mat4x4.hpp; sourceTree = "<group>"; };
 		5361BAE64D23775887227926 /* Entity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Entity.h; path = src/Ethane/Scene/Entity.h; sourceTree = "<group>"; };
 		53AB71344D6D2DA6876C2F74 /* ulp.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = ulp.inl; path = vendor/glm/glm/gtc/ulp.inl; sourceTree = "<group>"; };
@@ -319,6 +318,8 @@
 		6144F84B897FB0FD711B3E8B /* Log.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Log.h; path = src/Ethane/Core/Log.h; sourceTree = "<group>"; };
 		623B060940DDA17BF5BFA449 /* vector_int2_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_int2_sized.hpp; path = vendor/glm/glm/ext/vector_int2_sized.hpp; sourceTree = "<group>"; };
 		627A01548445AE86C0FAD794 /* AABB.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AABB.h; path = src/Ethane/Math/AABB.h; sourceTree = "<group>"; };
+		62C7C55F53BF3351BFC2B39F /* SteleSerializer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleSerializer.cpp; path = src/Ethane/Stele/SteleSerializer.cpp; sourceTree = "<group>"; };
+		633ADEA9D795239B5578ACE9 /* SteleSerializer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SteleSerializer.h; path = src/Ethane/Stele/SteleSerializer.h; sourceTree = "<group>"; };
 		636D92C5D49033B78A56E105 /* wrap.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = wrap.hpp; path = vendor/glm/glm/gtx/wrap.hpp; sourceTree = "<group>"; };
 		63E17BD542FE96071F07F215 /* qualifier.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = qualifier.hpp; path = vendor/glm/glm/detail/qualifier.hpp; sourceTree = "<group>"; };
 		646071D5437D8C071F86E815 /* EditorCamera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorCamera.h; path = src/Ethane/Renderer/EditorCamera.h; sourceTree = "<group>"; };
@@ -382,6 +383,7 @@
 		7B7227866C699578D86D15C6 /* ResourceSystem.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ResourceSystem.cpp; path = src/Ethane/Systems/ResourceSystem.cpp; sourceTree = "<group>"; };
 		7B7D226B6C74905DD87810AB /* orthonormalize.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = orthonormalize.hpp; path = vendor/glm/glm/gtx/orthonormalize.hpp; sourceTree = "<group>"; };
 		7BEAFD45D300A5B7FF493B85 /* quaternion_double_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_double_precision.hpp; path = vendor/glm/glm/ext/quaternion_double_precision.hpp; sourceTree = "<group>"; };
+		7D4328C7D4A89BB986B6B707 /* Transaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Transaction.h; path = src/Ethane/Stele/Transaction.h; sourceTree = "<group>"; };
 		7ED6775572D5C0C7F7C0D595 /* mixed_product.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = mixed_product.inl; path = vendor/glm/glm/gtx/mixed_product.inl; sourceTree = "<group>"; };
 		7FA3D10D5EC0EB3F3ACA474D /* _features.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = _features.hpp; path = vendor/glm/glm/detail/_features.hpp; sourceTree = "<group>"; };
 		7FCA79097F6D5C3BB9C20F49 /* type_mat3x3.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat3x3.inl; path = vendor/glm/glm/detail/type_mat3x3.inl; sourceTree = "<group>"; };
@@ -389,6 +391,7 @@
 		7FF532BBDC7C372D651EF0FB /* matrix_transform_2d.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_transform_2d.hpp; path = vendor/glm/glm/gtx/matrix_transform_2d.hpp; sourceTree = "<group>"; };
 		8001A27932F7AC2B841A08B9 /* WindowsWindow.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WindowsWindow.cpp; path = src/Ethane/Platform/Windows/WindowsWindow.cpp; sourceTree = "<group>"; };
 		801B46DBC42F180DB8009D1B /* FieldAccess.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FieldAccess.h; path = src/Ethane/Schema/FieldAccess.h; sourceTree = "<group>"; };
+		8068CA9BED90D90DEF23C8DB /* OrderKey.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = OrderKey.cpp; path = src/Ethane/Stele/OrderKey.cpp; sourceTree = "<group>"; };
 		808FC77B16B8D96DD81F35BB /* VulkanGfxBackendAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanGfxBackendAPI.h; path = src/Ethane/GfxBackend/Vulkan/VulkanGfxBackendAPI.h; sourceTree = "<group>"; };
 		814C010F7B0DBD81B50CBF4F /* pca.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = pca.inl; path = vendor/glm/glm/gtx/pca.inl; sourceTree = "<group>"; };
 		8159E75365A0EF85E98E1D93 /* Material.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Material.h; path = src/Ethane/Renderer/Material.h; sourceTree = "<group>"; };
@@ -407,7 +410,6 @@
 		8681BAD3F3A9C945F53CB913 /* texture.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = texture.hpp; path = vendor/glm/glm/gtx/texture.hpp; sourceTree = "<group>"; };
 		869EE57120F8CE635D3133B1 /* quaternion_transform.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_transform.hpp; path = vendor/glm/glm/ext/quaternion_transform.hpp; sourceTree = "<group>"; };
 		876611996608AD0B1AEAAFD9 /* VulkanPipeline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanPipeline.h; path = src/Ethane/GfxBackend/Vulkan/VulkanPipeline.h; sourceTree = "<group>"; };
-		884CB6D5DFB229C791C04515 /* Transaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Transaction.h; path = src/Ethane/Brick/Transaction.h; sourceTree = "<group>"; };
 		885996D39A10D6C50F7EC513 /* vector_uint2_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_uint2_sized.hpp; path = vendor/glm/glm/ext/vector_uint2_sized.hpp; sourceTree = "<group>"; };
 		88F43E73216C2BE54D531CB3 /* VulkanImGuiLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanImGuiLayer.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanImGuiLayer.cpp; sourceTree = "<group>"; };
 		89A4300F7A9B9E01E69F1E4F /* vector_integer.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_integer.hpp; path = vendor/glm/glm/ext/vector_integer.hpp; sourceTree = "<group>"; };
@@ -447,7 +449,6 @@
 		93567C97C6D5BC09DECF9AD7 /* matrix_float3x4_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_float3x4_precision.hpp; path = vendor/glm/glm/ext/matrix_float3x4_precision.hpp; sourceTree = "<group>"; };
 		935AF9B9ED5C10ABB4A307F9 /* extended_min_max.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = extended_min_max.inl; path = vendor/glm/glm/gtx/extended_min_max.inl; sourceTree = "<group>"; };
 		940BF8A7F092FD197935B6E7 /* matrix_int4x3_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_int4x3_sized.hpp; path = vendor/glm/glm/ext/matrix_int4x3_sized.hpp; sourceTree = "<group>"; };
-		94155235086F972786532075 /* BrickSnapshot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = BrickSnapshot.cpp; path = src/Ethane/Brick/BrickSnapshot.cpp; sourceTree = "<group>"; };
 		9566512D2FC03A1F6BF89F6D /* quaternion_geometric.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_geometric.inl; path = vendor/glm/glm/ext/quaternion_geometric.inl; sourceTree = "<group>"; };
 		9578A18B741B3CFD28FD3FCB /* quaternion_common.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_common.hpp; path = vendor/glm/glm/ext/quaternion_common.hpp; sourceTree = "<group>"; };
 		957A20CD583A813FB56F5F0D /* vector_int2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_int2.hpp; path = vendor/glm/glm/ext/vector_int2.hpp; sourceTree = "<group>"; };
@@ -495,7 +496,6 @@
 		A5B5BD0784585879393A5B47 /* vector_int1_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_int1_sized.hpp; path = vendor/glm/glm/ext/vector_int1_sized.hpp; sourceTree = "<group>"; };
 		A61CAA7738AA7469A18318B7 /* extend.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = extend.inl; path = vendor/glm/glm/gtx/extend.inl; sourceTree = "<group>"; };
 		A6E4887539725267A24AF6B5 /* easing.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = easing.inl; path = vendor/glm/glm/gtx/easing.inl; sourceTree = "<group>"; };
-		A72D4F9FD8114791EB297DDF /* Brick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Brick.h; path = src/Ethane/Brick/Brick.h; sourceTree = "<group>"; };
 		A779BDAF41D3A6A17E0C0BEF /* matrix_uint3x3_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint3x3_sized.hpp; path = vendor/glm/glm/ext/matrix_uint3x3_sized.hpp; sourceTree = "<group>"; };
 		A86357D31CBD9CC59AA12613 /* euler_angles.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = euler_angles.inl; path = vendor/glm/glm/gtx/euler_angles.inl; sourceTree = "<group>"; };
 		A973ABE11DCDF0D39BB17A21 /* vector_query.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_query.hpp; path = vendor/glm/glm/gtx/vector_query.hpp; sourceTree = "<group>"; };
@@ -508,7 +508,6 @@
 		AC31A7F9C6FE16ABCACEAE39 /* MemoryResource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MemoryResource.h; path = src/Ethane/Memory/MemoryResource.h; sourceTree = "<group>"; };
 		AC7A7AFDA079C46F2564D93D /* closest_point.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = closest_point.hpp; path = vendor/glm/glm/gtx/closest_point.hpp; sourceTree = "<group>"; };
 		AD0EDD7E4EF87970461F8BBE /* quaternion.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion.inl; path = vendor/glm/glm/gtc/quaternion.inl; sourceTree = "<group>"; };
-		ADFCB75FA1FC00D126E7159F /* ComponentValue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ComponentValue.cpp; path = src/Ethane/Brick/ComponentValue.cpp; sourceTree = "<group>"; };
 		AE25DC339F1D4A250B20CA73 /* scalar_packing.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_packing.hpp; path = vendor/glm/glm/ext/scalar_packing.hpp; sourceTree = "<group>"; };
 		AE3AF91F8D58135169616F5F /* type_half.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_half.inl; path = vendor/glm/glm/detail/type_half.inl; sourceTree = "<group>"; };
 		AE913311E2107283FA0A5151 /* matrix_float2x2_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_float2x2_precision.hpp; path = vendor/glm/glm/ext/matrix_float2x2_precision.hpp; sourceTree = "<group>"; };
@@ -538,7 +537,6 @@
 		B7CDE5E7ABCD2F5930B84427 /* vector_float4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_float4.hpp; path = vendor/glm/glm/ext/vector_float4.hpp; sourceTree = "<group>"; };
 		B85A7E7BCA845B2DFE7544BB /* Resource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resource.h; path = src/Ethane/GfxBackend/Resource.h; sourceTree = "<group>"; };
 		B9577BE8AD56C55A3241DA28 /* matrix_access.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_access.hpp; path = vendor/glm/glm/gtc/matrix_access.hpp; sourceTree = "<group>"; };
-		BA4235C97D02963BDA377409 /* ComponentValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ComponentValue.h; path = src/Ethane/Brick/ComponentValue.h; sourceTree = "<group>"; };
 		BA5757B97F0CAE2B337B55F9 /* vector_float2_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_float2_precision.hpp; path = vendor/glm/glm/ext/vector_float2_precision.hpp; sourceTree = "<group>"; };
 		BB07D3FCFF56796E417DB23C /* Entity.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Entity.cpp; path = src/Ethane/Scene/Entity.cpp; sourceTree = "<group>"; };
 		BB24FEAF99C79A214EA99CEF /* scalar_relational.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_relational.hpp; path = vendor/glm/glm/ext/scalar_relational.hpp; sourceTree = "<group>"; };
@@ -562,6 +560,7 @@
 		C2D2AD635D2C96559964FBA3 /* matrix_cross_product.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_cross_product.inl; path = vendor/glm/glm/gtx/matrix_cross_product.inl; sourceTree = "<group>"; };
 		C2D48F4575CA98F7C6ECF585 /* type_mat4x4_simd.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat4x4_simd.inl; path = vendor/glm/glm/detail/type_mat4x4_simd.inl; sourceTree = "<group>"; };
 		C2E313B989710B2BF77331F9 /* Instrumentor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Instrumentor.h; path = src/Ethane/Debug/Instrumentor.h; sourceTree = "<group>"; };
+		C446116956D3DB5BBFAC7FA9 /* SteleData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SteleData.h; path = src/Ethane/Stele/SteleData.h; sourceTree = "<group>"; };
 		C4BC899031E49802337787D0 /* epsilon.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = epsilon.hpp; path = vendor/glm/glm/gtc/epsilon.hpp; sourceTree = "<group>"; };
 		C5BD5C0B67A6F7FD5ECE0A4B /* vector_ulp.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_ulp.inl; path = vendor/glm/glm/ext/vector_ulp.inl; sourceTree = "<group>"; };
 		C682BEA98D10B61BFB12DCE9 /* transform.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = transform.hpp; path = vendor/glm/glm/gtx/transform.hpp; sourceTree = "<group>"; };
@@ -576,8 +575,8 @@
 		CB6D52973FC79789BDAB20D7 /* vector_uint2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_uint2.hpp; path = vendor/glm/glm/ext/vector_uint2.hpp; sourceTree = "<group>"; };
 		CC6465EFEE3013212AE53C2F /* Ids.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Ids.h; path = src/Ethane/Schema/Ids.h; sourceTree = "<group>"; };
 		CC6DF7436297093523FD6583 /* vector_bool1_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_bool1_precision.hpp; path = vendor/glm/glm/ext/vector_bool1_precision.hpp; sourceTree = "<group>"; };
+		CCE61D8B4140627DBF23EBCB /* SteleSnapshot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleSnapshot.cpp; path = src/Ethane/Stele/SteleSnapshot.cpp; sourceTree = "<group>"; };
 		CCECF9A86ED6959A65FDA7E8 /* quaternion.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion.hpp; path = vendor/glm/glm/gtc/quaternion.hpp; sourceTree = "<group>"; };
-		CE51CEE93B79DD5B3D0CCD29 /* OrderKey.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = OrderKey.cpp; path = src/Ethane/Brick/OrderKey.cpp; sourceTree = "<group>"; };
 		CE5F78CDC25EC23F4749D70D /* perpendicular.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = perpendicular.hpp; path = vendor/glm/glm/gtx/perpendicular.hpp; sourceTree = "<group>"; };
 		CE70D87BDEBDBC6DDCAA86BB /* matrix_double2x2_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double2x2_precision.hpp; path = vendor/glm/glm/ext/matrix_double2x2_precision.hpp; sourceTree = "<group>"; };
 		CEB237A7C2B18119479C95E7 /* matrix_int3x2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_int3x2.hpp; path = vendor/glm/glm/ext/matrix_int3x2.hpp; sourceTree = "<group>"; };
@@ -586,7 +585,6 @@
 		CF24CCE3ADC7685562A96B23 /* VulkanDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanDevice.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanDevice.cpp; sourceTree = "<group>"; };
 		D04434F197A8EFE32260C331 /* VulkanGfxBackendAPI.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = VulkanGfxBackendAPI.cpp; path = src/Ethane/GfxBackend/Vulkan/VulkanGfxBackendAPI.cpp; sourceTree = "<group>"; };
 		D0481C0FA79B47412108B24F /* func_vector_relational_simd.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = func_vector_relational_simd.inl; path = vendor/glm/glm/detail/func_vector_relational_simd.inl; sourceTree = "<group>"; };
-		D0A30ACB728CA6BD69B3B90B /* Transaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Transaction.cpp; path = src/Ethane/Brick/Transaction.cpp; sourceTree = "<group>"; };
 		D1572F5E4279D050F8407D9E /* Scene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Scene.cpp; path = src/Ethane/Scene/Scene.cpp; sourceTree = "<group>"; };
 		D17533ED98032B5F0605522D /* Vulkan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vulkan.h; path = src/Ethane/GfxBackend/Vulkan/Vulkan.h; sourceTree = "<group>"; };
 		D1D3AF3FE2209331E00D5D7F /* matrix_double3x3_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double3x3_precision.hpp; path = vendor/glm/glm/ext/matrix_double3x3_precision.hpp; sourceTree = "<group>"; };
@@ -610,7 +608,10 @@
 		DBE85B0B2037007D625E394B /* range.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = range.hpp; path = vendor/glm/glm/gtx/range.hpp; sourceTree = "<group>"; };
 		DC2AA62D7E14421F753B546D /* transform2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = transform2.hpp; path = vendor/glm/glm/gtx/transform2.hpp; sourceTree = "<group>"; };
 		DC5FD4A73660EB99FDA7E2E7 /* matrix_double3x2.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double3x2.hpp; path = vendor/glm/glm/ext/matrix_double3x2.hpp; sourceTree = "<group>"; };
+		DCFDC13D7EE75D2F760E6F7D /* Transaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Transaction.cpp; path = src/Ethane/Stele/Transaction.cpp; sourceTree = "<group>"; };
 		DD19E12D371AF81FFE61EF6D /* matrix_decompose.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_decompose.inl; path = vendor/glm/glm/gtx/matrix_decompose.inl; sourceTree = "<group>"; };
+		DD6840F50E4C38E721646F35 /* Stele.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Stele.h; path = src/Ethane/Stele/Stele.h; sourceTree = "<group>"; };
+		DD7B2E6B4E9DCF5D04647CAB /* Stele.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Stele.cpp; path = src/Ethane/Stele/Stele.cpp; sourceTree = "<group>"; };
 		DF4A9FA7BDED3B1972CF3DE7 /* fast_trigonometry.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = fast_trigonometry.inl; path = vendor/glm/glm/gtx/fast_trigonometry.inl; sourceTree = "<group>"; };
 		DFACC4D150CF65C306961311 /* mat4x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = mat4x3.hpp; path = vendor/glm/glm/mat4x3.hpp; sourceTree = "<group>"; };
 		DFCFFFB13B1153230E6B9DF1 /* ext.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = ext.hpp; path = vendor/glm/glm/ext.hpp; sourceTree = "<group>"; };
@@ -654,13 +655,13 @@
 		F3118A3DD1B425AF8696287D /* matrix_clip_space.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_clip_space.hpp; path = vendor/glm/glm/ext/matrix_clip_space.hpp; sourceTree = "<group>"; };
 		F3A6726103F3565301E020A1 /* matrix_double3x4_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_double3x4_precision.hpp; path = vendor/glm/glm/ext/matrix_double3x4_precision.hpp; sourceTree = "<group>"; };
 		F3FA78FFA6F082B1F812DF3F /* NewDeleteMemResource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NewDeleteMemResource.h; path = src/Ethane/Memory/NewDeleteMemResource.h; sourceTree = "<group>"; };
-		F3FE2B156520CC071AE77955 /* Brick.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Brick.cpp; path = src/Ethane/Brick/Brick.cpp; sourceTree = "<group>"; };
 		F50632BD0190E52F7C75B0FD /* matrix_float2x3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_float2x3.hpp; path = vendor/glm/glm/ext/matrix_float2x3.hpp; sourceTree = "<group>"; };
 		F530A273665343651C19F0B3 /* mat4x4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = mat4x4.hpp; path = vendor/glm/glm/mat4x4.hpp; sourceTree = "<group>"; };
 		F5DBCD2166FE6E131CC51B61 /* common.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = common.hpp; path = vendor/glm/glm/common.hpp; sourceTree = "<group>"; };
 		F6200B7602AABDE87D8F89B6 /* quaternion_simd.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_simd.inl; path = vendor/glm/glm/gtc/quaternion_simd.inl; sourceTree = "<group>"; };
 		F658004F519953C124F39E8F /* glm.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = glm.hpp; path = vendor/glm/glm/glm.hpp; sourceTree = "<group>"; };
 		F71B997D8D44AB6F4EAB07BD /* quaternion_exponential.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = quaternion_exponential.inl; path = vendor/glm/glm/ext/quaternion_exponential.inl; sourceTree = "<group>"; };
+		F8223091EC217A03710C8ED1 /* ComponentValue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ComponentValue.cpp; path = src/Ethane/Stele/ComponentValue.cpp; sourceTree = "<group>"; };
 		F85297FB04DD4A6D7FC2163B /* VulkanShader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanShader.h; path = src/Ethane/GfxBackend/Vulkan/VulkanShader.h; sourceTree = "<group>"; };
 		F86A989A698D398C1F53E6DA /* vec1.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vec1.hpp; path = vendor/glm/glm/gtc/vec1.hpp; sourceTree = "<group>"; };
 		F8CC9A59413D7E8B85DC5099 /* ethpch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ethpch.cpp; path = src/ethpch.cpp; sourceTree = "<group>"; };
@@ -724,28 +725,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		09A3D0D90309D24BF6A52F19 /* Brick */ = {
-			isa = PBXGroup;
-			children = (
-				F3FE2B156520CC071AE77955 /* Brick.cpp */,
-				A72D4F9FD8114791EB297DDF /* Brick.h */,
-				1EEB0BC36339B135A560EA03 /* BrickOps.h */,
-				017F2809F27695FB5E7A1649 /* BrickSerializer.cpp */,
-				2A6A13539EC458451CA7E193 /* BrickSerializer.h */,
-				94155235086F972786532075 /* BrickSnapshot.cpp */,
-				1078FFBFB2629BB1A989ADFF /* BrickSnapshot.h */,
-				ADFCB75FA1FC00D126E7159F /* ComponentValue.cpp */,
-				BA4235C97D02963BDA377409 /* ComponentValue.h */,
-				CE51CEE93B79DD5B3D0CCD29 /* OrderKey.cpp */,
-				221759D36665FF45A88D3813 /* OrderKey.h */,
-				D0A30ACB728CA6BD69B3B90B /* Transaction.cpp */,
-				884CB6D5DFB229C791C04515 /* Transaction.h */,
-				394D3E4FDB36DA41D25DEC8F /* UndoHistory.cpp */,
-				52F9E0D9AA5F53CB5C6D6F19 /* UndoHistory.h */,
-			);
-			name = Brick;
-			sourceTree = "<group>";
-		};
 		0BD199CD3DCAE47FB7AA200D /* Windows */ = {
 			isa = PBXGroup;
 			children = (
@@ -755,6 +734,29 @@
 				4B069BE3E8E79C95C065E223 /* WindowsWindow.h */,
 			);
 			name = Windows;
+			sourceTree = "<group>";
+		};
+		0DE882BD074E842FFAE9E0FD /* Stele */ = {
+			isa = PBXGroup;
+			children = (
+				F8223091EC217A03710C8ED1 /* ComponentValue.cpp */,
+				51F3BA7B14B41AED71E8F8BB /* ComponentValue.h */,
+				8068CA9BED90D90DEF23C8DB /* OrderKey.cpp */,
+				3A77C1057EC66677C0ED9F45 /* OrderKey.h */,
+				DD7B2E6B4E9DCF5D04647CAB /* Stele.cpp */,
+				DD6840F50E4C38E721646F35 /* Stele.h */,
+				C446116956D3DB5BBFAC7FA9 /* SteleData.h */,
+				08BC20194D0AC58B8F31FE59 /* SteleOps.h */,
+				62C7C55F53BF3351BFC2B39F /* SteleSerializer.cpp */,
+				633ADEA9D795239B5578ACE9 /* SteleSerializer.h */,
+				CCE61D8B4140627DBF23EBCB /* SteleSnapshot.cpp */,
+				377CB915D9665507D08D6755 /* SteleSnapshot.h */,
+				DCFDC13D7EE75D2F760E6F7D /* Transaction.cpp */,
+				7D4328C7D4A89BB986B6B707 /* Transaction.h */,
+				45A7F4C1E79190B3DEB8A301 /* UndoHistory.cpp */,
+				47F052CB9F55C5BD5163E10B /* UndoHistory.h */,
+			);
+			name = Stele;
 			sourceTree = "<group>";
 		};
 		141D21DF0D832351011E801F /* Scene */ = {
@@ -1087,7 +1089,6 @@
 			isa = PBXGroup;
 			children = (
 				62D80FC35C3E11354FD96E03 /* Asset */,
-				09A3D0D90309D24BF6A52F19 /* Brick */,
 				6CA1B3156D54B007E1368155 /* Core */,
 				242D3C111D933D83112E9A51 /* Debug */,
 				2C51052D173D2B1F5F22F36D /* Events */,
@@ -1099,6 +1100,7 @@
 				6CFD66F19C8F35E3779C7531 /* Renderer */,
 				141D21DF0D832351011E801F /* Scene */,
 				9C8134E5876D5AD7CF532325 /* Schema */,
+				0DE882BD074E842FFAE9E0FD /* Stele */,
 				6173A5F3B8011065907A2433 /* Systems */,
 				8F386CE5889E6E577C39CB25 /* Utils */,
 			);
@@ -1722,13 +1724,6 @@
 			files = (
 				EBD8E94289B9E9F461382F82 /* AssetManager.cpp in Sources */,
 				0A575D201A3C895206B01360 /* ImageLoader.cpp in Sources */,
-				F961D36D3D75A49F314729AD /* Brick.cpp in Sources */,
-				6426D3A1ACC611D3CFF1C9E1 /* BrickSerializer.cpp in Sources */,
-				2FBE848DC9E279BF7A085ACD /* BrickSnapshot.cpp in Sources */,
-				B4D5A05767CBAA09B8EE0697 /* ComponentValue.cpp in Sources */,
-				BC7E8D81D74AFC33DB1B93C1 /* OrderKey.cpp in Sources */,
-				D00DA783DFF2D3B5CC665DC3 /* Transaction.cpp in Sources */,
-				E6500547F6353179E2A8BB87 /* UndoHistory.cpp in Sources */,
 				A7DC1E7D98D38C6F04D70CBD /* Application.cpp in Sources */,
 				EE15C9CF457B3CC1F789580F /* Layer.cpp in Sources */,
 				0073B21BF472FB8D795E105B /* LayerStack.cpp in Sources */,
@@ -1770,6 +1765,13 @@
 				86CF0A4ACF6E487CF29A008A /* SceneSerializer.cpp in Sources */,
 				CD92DD69DA1D8FDB55025BA9 /* FieldAccess.cpp in Sources */,
 				C773C7932174DE85E8BBD5D3 /* TypeRegistry.cpp in Sources */,
+				FEFB1989B1F1233B03137FC9 /* ComponentValue.cpp in Sources */,
+				6E9589338961F7E58D328F73 /* OrderKey.cpp in Sources */,
+				4331C703874598357B171D43 /* Stele.cpp in Sources */,
+				D0D9013719783F693CA3F777 /* SteleSerializer.cpp in Sources */,
+				273AC023C15EB55571849663 /* SteleSnapshot.cpp in Sources */,
+				DC685DF5EC4D8A27D8C11435 /* Transaction.cpp in Sources */,
+				F2AABBB9028FE7EBEF0371F9 /* UndoHistory.cpp in Sources */,
 				17737B1E6012B950833E715E /* ResourceSystem.cpp in Sources */,
 				D551503C6F75456E1F9B267C /* ShaderSystem.cpp in Sources */,
 				80123A10330843C2842AA050 /* TextureSystem.cpp in Sources */,

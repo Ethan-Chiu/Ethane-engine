@@ -83,13 +83,13 @@ endif
 GENERATED :=
 OBJECTS :=
 
-GENERATED += $(OBJDIR)/BrickSerializerTests.o
-GENERATED += $(OBJDIR)/BrickTests.o
 GENERATED += $(OBJDIR)/SchemaTests.o
+GENERATED += $(OBJDIR)/SteleSerializerTests.o
+GENERATED += $(OBJDIR)/SteleTests.o
 GENERATED += $(OBJDIR)/TestMain.o
-OBJECTS += $(OBJDIR)/BrickSerializerTests.o
-OBJECTS += $(OBJDIR)/BrickTests.o
 OBJECTS += $(OBJDIR)/SchemaTests.o
+OBJECTS += $(OBJDIR)/SteleSerializerTests.o
+OBJECTS += $(OBJDIR)/SteleTests.o
 OBJECTS += $(OBJDIR)/TestMain.o
 
 # Rules
@@ -154,13 +154,13 @@ endif
 # File Rules
 # #############################################
 
-$(OBJDIR)/BrickSerializerTests.o: src/BrickSerializerTests.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/BrickTests.o: src/BrickTests.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/SchemaTests.o: src/SchemaTests.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/SteleSerializerTests.o: src/SteleSerializerTests.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/SteleTests.o: src/SteleTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/TestMain.o: src/TestMain.cpp

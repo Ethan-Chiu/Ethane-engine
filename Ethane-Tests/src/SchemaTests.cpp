@@ -18,7 +18,7 @@ namespace {
 		std::string Label = "lamp";
 		Light Bulb;
 		AssetId Mesh;
-		ObjectId Target;
+		ElementId Target;
 		int32_t Cached = 0;
 	};
 
@@ -67,7 +67,7 @@ TEST_CASE("Schema: registration records layout, fields and flags")
 	CHECK(bulb.Struct == registry.Find<Light>());
 
 	CHECK(lamp->FindField("Mesh")->Type == FieldType::Asset);
-	CHECK(lamp->FindField("Target")->Type == FieldType::Object);
+	CHECK(lamp->FindField("Target")->Type == FieldType::Element);
 	CHECK(HasFlag(lamp->FindField("Cached")->Flags, FieldFlags::RuntimeOnly));
 	CHECK(lamp->FindField("Missing") == nullptr);
 
@@ -109,26 +109,26 @@ TEST_CASE("Schema: type-erased get and set")
 	RegisterTestTypes(registry);
 	const TypeInfo& lamp = *registry.Find<Lamp>();
 
-	Lamp object;
+	Lamp element;
 	const FieldPath color = *ParseFieldPath(lamp, "Bulb.Color");
 	const FieldPath label = *ParseFieldPath(lamp, "Label");
 	const FieldPath target = *ParseFieldPath(lamp, "Target");
 
-	CHECK(SetField(lamp, &object, color, glm::vec3(0.5f, 0.25f, 0.0f)));
-	CHECK(object.Bulb.Color == glm::vec3(0.5f, 0.25f, 0.0f));
-	CHECK(SetField(lamp, &object, label, std::string("desk lamp")));
-	CHECK(object.Label == "desk lamp");
-	CHECK(SetField(lamp, &object, target, ObjectId{ 42 }));
-	CHECK(object.Target == ObjectId{ 42 });
+	CHECK(SetField(lamp, &element, color, glm::vec3(0.5f, 0.25f, 0.0f)));
+	CHECK(element.Bulb.Color == glm::vec3(0.5f, 0.25f, 0.0f));
+	CHECK(SetField(lamp, &element, label, std::string("desk lamp")));
+	CHECK(element.Label == "desk lamp");
+	CHECK(SetField(lamp, &element, target, ElementId{ 42 }));
+	CHECK(element.Target == ElementId{ 42 });
 
-	CHECK(!SetField(lamp, &object, color, 1.0f));                           // wrong value type
-	CHECK(!SetField(lamp, &object, *ParseFieldPath(lamp, "Bulb"), 1.0f));   // whole struct
-	CHECK(object.Bulb.Color == glm::vec3(0.5f, 0.25f, 0.0f));
+	CHECK(!SetField(lamp, &element, color, 1.0f));                           // wrong value type
+	CHECK(!SetField(lamp, &element, *ParseFieldPath(lamp, "Bulb"), 1.0f));   // whole struct
+	CHECK(element.Bulb.Color == glm::vec3(0.5f, 0.25f, 0.0f));
 
-	auto read = GetField(lamp, &object, label);
+	auto read = GetField(lamp, &element, label);
 	REQUIRE(read);
 	CHECK(std::get<std::string>(*read) == "desk lamp");
-	CHECK(!GetField(lamp, &object, *ParseFieldPath(lamp, "Bulb")));
+	CHECK(!GetField(lamp, &element, *ParseFieldPath(lamp, "Bulb")));
 }
 
 TEST_CASE("Schema: lifetime operations and comparison")
@@ -168,10 +168,10 @@ TEST_CASE("Schema: leaf visitor walks nested fields in order")
 	CHECK(names == std::vector<std::string>{ "Label", "Bulb.Color", "Bulb.Intensity", "Mesh", "Target", "Cached" });
 }
 
-TEST_CASE("Schema: ObjectId::Generate never returns the null id")
+TEST_CASE("Schema: ElementId::Generate never returns the null id")
 {
-	ObjectId a = ObjectId::Generate();
-	ObjectId b = ObjectId::Generate();
+	ElementId a = ElementId::Generate();
+	ElementId b = ElementId::Generate();
 	CHECK(a.IsValid());
 	CHECK(b.IsValid());
 	CHECK(a != b);

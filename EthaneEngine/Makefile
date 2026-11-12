@@ -90,9 +90,6 @@ OBJECTS :=
 
 GENERATED += $(OBJDIR)/Application.o
 GENERATED += $(OBJDIR)/AssetManager.o
-GENERATED += $(OBJDIR)/Brick.o
-GENERATED += $(OBJDIR)/BrickSerializer.o
-GENERATED += $(OBJDIR)/BrickSnapshot.o
 GENERATED += $(OBJDIR)/ComponentValue.o
 GENERATED += $(OBJDIR)/EditorCamera.o
 GENERATED += $(OBJDIR)/Entity.o
@@ -118,6 +115,9 @@ GENERATED += $(OBJDIR)/SceneCamera.o
 GENERATED += $(OBJDIR)/SceneSerializer.o
 GENERATED += $(OBJDIR)/ShaderIncluder.o
 GENERATED += $(OBJDIR)/ShaderSystem.o
+GENERATED += $(OBJDIR)/Stele.o
+GENERATED += $(OBJDIR)/SteleSerializer.o
+GENERATED += $(OBJDIR)/SteleSnapshot.o
 GENERATED += $(OBJDIR)/TextureSystem.o
 GENERATED += $(OBJDIR)/Transaction.o
 GENERATED += $(OBJDIR)/TypeRegistry.o
@@ -146,9 +146,6 @@ GENERATED += $(OBJDIR)/ethpch.o
 GENERATED += $(OBJDIR)/stb_image.o
 OBJECTS += $(OBJDIR)/Application.o
 OBJECTS += $(OBJDIR)/AssetManager.o
-OBJECTS += $(OBJDIR)/Brick.o
-OBJECTS += $(OBJDIR)/BrickSerializer.o
-OBJECTS += $(OBJDIR)/BrickSnapshot.o
 OBJECTS += $(OBJDIR)/ComponentValue.o
 OBJECTS += $(OBJDIR)/EditorCamera.o
 OBJECTS += $(OBJDIR)/Entity.o
@@ -174,6 +171,9 @@ OBJECTS += $(OBJDIR)/SceneCamera.o
 OBJECTS += $(OBJDIR)/SceneSerializer.o
 OBJECTS += $(OBJDIR)/ShaderIncluder.o
 OBJECTS += $(OBJDIR)/ShaderSystem.o
+OBJECTS += $(OBJDIR)/Stele.o
+OBJECTS += $(OBJDIR)/SteleSerializer.o
+OBJECTS += $(OBJDIR)/SteleSnapshot.o
 OBJECTS += $(OBJDIR)/TextureSystem.o
 OBJECTS += $(OBJDIR)/Transaction.o
 OBJECTS += $(OBJDIR)/TypeRegistry.o
@@ -267,27 +267,6 @@ $(OBJDIR)/AssetManager.o: src/Ethane/Asset/AssetManager.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ImageLoader.o: src/Ethane/Asset/ImageLoader.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/Brick.o: src/Ethane/Brick/Brick.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/BrickSerializer.o: src/Ethane/Brick/BrickSerializer.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/BrickSnapshot.o: src/Ethane/Brick/BrickSnapshot.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ComponentValue.o: src/Ethane/Brick/ComponentValue.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/OrderKey.o: src/Ethane/Brick/OrderKey.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/Transaction.o: src/Ethane/Brick/Transaction.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/UndoHistory.o: src/Ethane/Brick/UndoHistory.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Application.o: src/Ethane/Core/Application.cpp
@@ -411,6 +390,27 @@ $(OBJDIR)/FieldAccess.o: src/Ethane/Schema/FieldAccess.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/TypeRegistry.o: src/Ethane/Schema/TypeRegistry.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/ComponentValue.o: src/Ethane/Stele/ComponentValue.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/OrderKey.o: src/Ethane/Stele/OrderKey.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Stele.o: src/Ethane/Stele/Stele.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/SteleSerializer.o: src/Ethane/Stele/SteleSerializer.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/SteleSnapshot.o: src/Ethane/Stele/SteleSnapshot.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Transaction.o: src/Ethane/Stele/Transaction.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/UndoHistory.o: src/Ethane/Stele/UndoHistory.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ResourceSystem.o: src/Ethane/Systems/ResourceSystem.cpp

@@ -1,4 +1,4 @@
-# Roadmap: Bricks, Worlds and Frame Packets
+# Roadmap: Steles, Worlds and Frame Packets
 
 Steps toward the design in [Architecture.md](Architecture.md). Each step is usable on its own and lands
 as its own commits.
@@ -10,9 +10,9 @@ as its own commits.
 - [x] Type-erased field access (`FieldValue`, field paths) and generic copy / compare
 - [x] Unit tests (new `Ethane-Tests` project)
 
-## 2. Brick ✅
+## 2. Stele ✅
 
-- [x] `ObjectId`, objects with name / parent / order key / components
+- [x] `ElementId`, elements with name / parent / order key / components
 - [x] Immutable snapshots with structural sharing
 - [x] Transactions, ops, `Commit`, ChangeSets and subscriptions
 - [x] Undo / redo from inverse ops; transactions that stay open while dragging
@@ -29,14 +29,14 @@ as its own commits.
 - [ ] `World` interface: `Apply` / `Update` / `Extract`
 - [ ] `EnttWorld` (EnTT contained in `Ethane/World/Entt/`)
 - [ ] Engine components: transform, mesh, light, camera; transform propagation
-- [ ] Edit world following a brick; `DemoScene` replaced by a brick
+- [ ] Edit world following a stele; `DemoScene` replaced by a stele
 
 ## 5. Editor context and panels
 
-- [ ] `EditorContext`: open bricks, worlds, selection, undo
-- [ ] Hierarchy panel on brick snapshots
+- [ ] `EditorContext`: open steles, worlds, selection, undo
+- [ ] Hierarchy panel on stele snapshots
 - [ ] Inspector panel driven by the schema
-- [ ] Save / open bricks
+- [ ] Save / open steles
 
 ## 6. Play mode
 
@@ -60,9 +60,9 @@ as its own commits.
 ## Later
 
 - Schema migrations: a per-type hook to convert data saved with an older type version
-- Persistent hash map for the brick's object index (only if commits show up in profiles)
+- Persistent hash map for the stele's element index (only if commits show up in profiles)
 
-- Prefab bricks (reference plus overrides)
+- Prefab steles (reference plus overrides)
 - Array fields in the schema
 - Picking via an ID buffer, gizmos
 - Removing the old `Ethane/Scene` code and the vendored EnTT outside `World/Entt`

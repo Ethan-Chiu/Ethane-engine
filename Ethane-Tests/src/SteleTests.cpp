@@ -1,8 +1,8 @@
 #include "Test.h"
 
-#include "Ethane/Brick/Brick.h"
-#include "Ethane/Brick/OrderKey.h"
-#include "Ethane/Brick/UndoHistory.h"
+#include "Ethane/Stele/Stele.h"
+#include "Ethane/Stele/OrderKey.h"
+#include "Ethane/Stele/UndoHistory.h"
 
 #include <atomic>
 #include <thread>
@@ -32,10 +32,10 @@ namespace {
 		}
 	};
 
-	std::vector<std::string> ChildNames(const BrickSnapshot& snapshot, ObjectId parent = {})
+	std::vector<std::string> ChildNames(const SteleSnapshot& snapshot, ElementId parent = {})
 	{
 		std::vector<std::string> names;
-		for (ObjectId id : snapshot.Children(parent))
+		for (ElementId id : snapshot.Children(parent))
 			names.push_back(snapshot.Find(id)->Name);
 		return names;
 	}
@@ -72,26 +72,26 @@ TEST_CASE("OrderKey: keys between neighbours stay ordered and valid")
 	CHECK(!OrderKey::IsValid("a-b"));
 }
 
-// --- Objects, hierarchy, components ----------------------------------------------------------------------
+// --- Elements, hierarchy, components ----------------------------------------------------------------------
 
-TEST_CASE("Brick: create objects, hierarchy and sibling order")
+TEST_CASE("Stele: create elements, hierarchy and sibling order")
 {
 	Registry reg;
-	Brick brick(reg.Types);
-	CHECK(brick.Read().Version() == 0);
+	Stele stele(reg.Types);
+	CHECK(stele.Read().Version() == 0);
 
 	Transaction tx("Build", reg.Types);
-	ObjectId root = tx.CreateObject("Root");
-	ObjectId b = tx.CreateObject("B", root);
-	ObjectId c = tx.CreateObject("C", root);
-	tx.CreateObject("A", root, OrderKey::Between({}, "1")); // explicitly before everything else
-	CommitResult result = brick.Commit(std::move(tx));
+	ElementId root = tx.CreateElement("Root");
+	ElementId b = tx.CreateElement("B", root);
+	ElementId c = tx.CreateElement("C", root);
+	tx.CreateElement("A", root, OrderKey::Between({}, "1")); // explicitly before everything else
+	CommitResult result = stele.Commit(std::move(tx));
 	REQUIRE(result);
 	CHECK(result.Version == 1);
 
-	BrickSnapshot snap = brick.Read();
+	SteleSnapshot snap = stele.Read();
 	CHECK(snap.Version() == 1);
-	CHECK(snap.ObjectCount() == 4);
+	CHECK(snap.ElementCount() == 4);
 	CHECK(ChildNames(snap) == std::vector<std::string>{ "Root" });
 	CHECK(ChildNames(snap, root) == std::vector<std::string>{ "A", "B", "C" });
 	CHECK(snap.Find(b)->Parent == root);
@@ -99,28 +99,28 @@ TEST_CASE("Brick: create objects, hierarchy and sibling order")
 	// Move C to the top level, before Root
 	Transaction move("Move", reg.Types);
 	move.Move(c, {}, OrderKey::Between({}, snap.Find(root)->Order));
-	REQUIRE(brick.Commit(std::move(move)));
-	snap = brick.Read();
+	REQUIRE(stele.Commit(std::move(move)));
+	snap = stele.Read();
 	CHECK(ChildNames(snap) == std::vector<std::string>{ "C", "Root" });
 	CHECK(ChildNames(snap, root) == std::vector<std::string>{ "A", "B" });
 
 	std::vector<std::string> depthFirst;
-	snap.ForEachDepthFirst([&](const BrickObject& o) { depthFirst.push_back(o.Name); });
+	snap.ForEachDepthFirst([&](const SteleElement& o) { depthFirst.push_back(o.Name); });
 	CHECK(depthFirst == std::vector<std::string>{ "C", "Root", "A", "B" });
 }
 
-TEST_CASE("Brick: components and fields")
+TEST_CASE("Stele: components and fields")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 
 	Transaction tx("Add", reg.Types);
-	ObjectId lamp = tx.CreateObject("Lamp");
+	ElementId lamp = tx.CreateElement("Lamp");
 	tx.AddComponent(lamp, Position{ { 1.0f, 2.0f, 3.0f } });
 	tx.AddComponent<Tint>(lamp);
-	REQUIRE(brick.Commit(std::move(tx)));
+	REQUIRE(stele.Commit(std::move(tx)));
 
-	BrickSnapshot before = brick.Read();
+	SteleSnapshot before = stele.Read();
 	REQUIRE(before.Get<Position>(lamp));
 	CHECK(before.Get<Position>(lamp)->Value == glm::vec3(1.0f, 2.0f, 3.0f));
 	CHECK(before.Get<Tint>(lamp)->Color == glm::vec4(1.0f));
@@ -128,9 +128,9 @@ TEST_CASE("Brick: components and fields")
 	Transaction edit("Edit", reg.Types);
 	edit.SetField<Tint>(lamp, "Color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	edit.SetField<Tint>(lamp, "Note", std::string("red"));
-	REQUIRE(brick.Commit(std::move(edit)));
+	REQUIRE(stele.Commit(std::move(edit)));
 
-	BrickSnapshot after = brick.Read();
+	SteleSnapshot after = stele.Read();
 	CHECK(after.Get<Tint>(lamp)->Color == glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	CHECK(after.Get<Tint>(lamp)->Note == "red");
 
@@ -141,46 +141,46 @@ TEST_CASE("Brick: components and fields")
 
 	Transaction remove("Remove", reg.Types);
 	remove.RemoveComponent<Tint>(lamp);
-	REQUIRE(brick.Commit(std::move(remove)));
-	CHECK(brick.Read().Get<Tint>(lamp) == nullptr);
-	CHECK(brick.Read().Get<Position>(lamp) != nullptr);
+	REQUIRE(stele.Commit(std::move(remove)));
+	CHECK(stele.Read().Get<Tint>(lamp) == nullptr);
+	CHECK(stele.Read().Get<Position>(lamp) != nullptr);
 }
 
-TEST_CASE("Brick: unchanged objects are shared between snapshots")
+TEST_CASE("Stele: unchanged elements are shared between snapshots")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 	Transaction tx("Add", reg.Types);
-	ObjectId a = tx.CreateObject("A");
-	ObjectId b = tx.CreateObject("B");
-	REQUIRE(brick.Commit(std::move(tx)));
-	BrickSnapshot before = brick.Read();
+	ElementId a = tx.CreateElement("A");
+	ElementId b = tx.CreateElement("B");
+	REQUIRE(stele.Commit(std::move(tx)));
+	SteleSnapshot before = stele.Read();
 
 	Transaction rename("Rename", reg.Types);
 	rename.Rename(a, "A2");
-	REQUIRE(brick.Commit(std::move(rename)));
-	BrickSnapshot after = brick.Read();
+	REQUIRE(stele.Commit(std::move(rename)));
+	SteleSnapshot after = stele.Read();
 
 	CHECK(before.Find(a)->Name == "A");
 	CHECK(after.Find(a)->Name == "A2");
 	CHECK(before.Find(b) == after.Find(b));
 }
 
-TEST_CASE("Brick: a failing op refuses the whole transaction")
+TEST_CASE("Stele: a failing op refuses the whole transaction")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 	Transaction tx("Add", reg.Types);
-	ObjectId parent = tx.CreateObject("Parent");
-	ObjectId child = tx.CreateObject("Child", parent);
+	ElementId parent = tx.CreateElement("Parent");
+	ElementId child = tx.CreateElement("Child", parent);
 	tx.AddComponent<Position>(child);
-	REQUIRE(brick.Commit(std::move(tx)));
+	REQUIRE(stele.Commit(std::move(tx)));
 
 	auto refused = [&](auto build) {
 		Transaction bad("Bad", reg.Types);
 		bad.Rename(parent, "renamed first"); // must not survive the failure
 		build(bad);
-		CommitResult result = brick.Commit(std::move(bad));
+		CommitResult result = stele.Commit(std::move(bad));
 		return !result && !result.Error.empty();
 	};
 
@@ -189,74 +189,74 @@ TEST_CASE("Brick: a failing op refuses the whole transaction")
 	CHECK(refused([&](Transaction& t) { t.SetField<Tint>(child, "Note", std::string()); }));      // component missing
 	CHECK(refused([&](Transaction& t) { t.AddComponent<Position>(child); }));                     // already has it
 	CHECK(refused([&](Transaction& t) { t.AddComponent<int>(child); }));                          // unregistered type
-	CHECK(refused([&](Transaction& t) { t.DestroyObject(parent); }));                             // has children
+	CHECK(refused([&](Transaction& t) { t.DestroyElement(parent); }));                             // has children
 	CHECK(refused([&](Transaction& t) { t.Move(parent, child); }));                               // cycle
-	CHECK(refused([&](Transaction& t) { t.CreateObject(child, "Duplicate"); }));                  // id taken
-	CHECK(refused([&](Transaction& t) { t.CreateObject("Orphan", ObjectId{ 12345 }); }));         // no parent
+	CHECK(refused([&](Transaction& t) { t.CreateElement(child, "Duplicate"); }));                  // id taken
+	CHECK(refused([&](Transaction& t) { t.CreateElement("Orphan", ElementId{ 12345 }); }));         // no parent
 	CHECK(refused([&](Transaction& t) { t.Move(child, {}, "10"); }));                             // invalid key
 
-	CHECK(brick.Read().Version() == 1);
-	CHECK(brick.Read().Find(parent)->Name == "Parent");
+	CHECK(stele.Read().Version() == 1);
+	CHECK(stele.Read().Find(parent)->Name == "Parent");
 }
 
-TEST_CASE("Brick: DestroyTree removes descendants")
+TEST_CASE("Stele: DestroyTree removes descendants")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 	Transaction tx("Add", reg.Types);
-	ObjectId root = tx.CreateObject("Root");
-	ObjectId mid = tx.CreateObject("Mid", root);
-	tx.CreateObject("Leaf", mid);
-	ObjectId other = tx.CreateObject("Other");
-	REQUIRE(brick.Commit(std::move(tx)));
+	ElementId root = tx.CreateElement("Root");
+	ElementId mid = tx.CreateElement("Mid", root);
+	tx.CreateElement("Leaf", mid);
+	ElementId other = tx.CreateElement("Other");
+	REQUIRE(stele.Commit(std::move(tx)));
 
 	Transaction destroy("Delete", reg.Types);
-	destroy.DestroyTree(brick.Read(), root);
-	REQUIRE(brick.Commit(std::move(destroy)));
+	destroy.DestroyTree(stele.Read(), root);
+	REQUIRE(stele.Commit(std::move(destroy)));
 
-	BrickSnapshot snap = brick.Read();
-	CHECK(snap.ObjectCount() == 1);
+	SteleSnapshot snap = stele.Read();
+	CHECK(snap.ElementCount() == 1);
 	CHECK(snap.Contains(other));
 	CHECK(snap.Children(root).empty());
 }
 
 // --- Change sets and undo --------------------------------------------------------------------------------
 
-TEST_CASE("Brick: change sets list applied ops and reach subscribers")
+TEST_CASE("Stele: change sets list applied ops and reach subscribers")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 
 	std::vector<std::pair<uint64_t, uint64_t>> seen;
-	BrickSubscription subscription = brick.Subscribe([&](const ChangeSet& c) {
+	SteleSubscription subscription = stele.Subscribe([&](const ChangeSet& c) {
 		seen.emplace_back(c.FromVersion, c.ToVersion);
 		CHECK(c.After.Version() == c.ToVersion);
 	});
 
 	Transaction tx("Add", reg.Types);
-	ObjectId a = tx.CreateObject("A");
+	ElementId a = tx.CreateElement("A");
 	tx.AddComponent<Position>(a, {});
-	CommitResult result = brick.Commit(std::move(tx));
+	CommitResult result = stele.Commit(std::move(tx));
 	REQUIRE(result.Changes);
 
 	// The applied ops carry what the commit filled in: the order key and the default component
-	const auto& create = std::get<BrickOp::CreateObject>(result.Changes->Ops[0]);
+	const auto& create = std::get<SteleOp::CreateElement>(result.Changes->Ops[0]);
 	CHECK(!create.Order.empty());
-	CHECK(create.Order == brick.Read().Find(a)->Order);
-	CHECK(std::get<BrickOp::AddComponent>(result.Changes->Ops[1]).Value != nullptr);
+	CHECK(create.Order == stele.Read().Find(a)->Order);
+	CHECK(std::get<SteleOp::AddComponent>(result.Changes->Ops[1]).Value != nullptr);
 
-	CHECK(brick.Commit(Transaction("Empty", reg.Types)));   // empty: nothing published
+	CHECK(stele.Commit(Transaction("Empty", reg.Types)));   // empty: nothing published
 	subscription.Reset();
 	Transaction later("Later", reg.Types);
 	later.Rename(a, "B");
-	REQUIRE(brick.Commit(std::move(later)));
+	REQUIRE(stele.Commit(std::move(later)));
 
 	CHECK(seen == std::vector<std::pair<uint64_t, uint64_t>>{ { 0, 1 } });
 
-	// A subscription may outlive its brick
-	BrickSubscription orphan;
+	// A subscription may outlive its stele
+	SteleSubscription orphan;
 	{
-		Brick temporary(reg.Types);
+		Stele temporary(reg.Types);
 		orphan = temporary.Subscribe([](const ChangeSet&) {});
 	}
 	orphan.Reset();
@@ -265,45 +265,45 @@ TEST_CASE("Brick: change sets list applied ops and reach subscribers")
 TEST_CASE("UndoHistory: undo and redo restore exact states")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 	UndoHistory history;
 	auto commit = [&](Transaction tx) {
-		CommitResult result = brick.Commit(std::move(tx));
+		CommitResult result = stele.Commit(std::move(tx));
 		REQUIRE(result);
 		history.Record(*result.Changes);
 	};
 
 	Transaction create("Create lamp", reg.Types);
-	ObjectId lamp = create.CreateObject("Lamp");
-	ObjectId bulb = create.CreateObject("Bulb", lamp);
+	ElementId lamp = create.CreateElement("Lamp");
+	ElementId bulb = create.CreateElement("Bulb", lamp);
 	create.AddComponent(bulb, Tint{ { 0.0f, 1.0f, 0.0f, 1.0f }, "green" });
 	commit(std::move(create));
-	const BrickSnapshot created = brick.Read();
+	const SteleSnapshot created = stele.Read();
 
 	Transaction destroy("Delete lamp", reg.Types);
-	destroy.DestroyTree(brick.Read(), lamp);
+	destroy.DestroyTree(stele.Read(), lamp);
 	commit(std::move(destroy));
-	CHECK(brick.Read().ObjectCount() == 0);
+	CHECK(stele.Read().ElementCount() == 0);
 	CHECK(history.UndoLabel() == "Delete lamp");
 
 	// Undo the delete: same ids, names, order keys, hierarchy and component values
-	REQUIRE(history.Undo(brick));
-	BrickSnapshot restored = brick.Read();
-	CHECK(restored.ObjectCount() == 2);
+	REQUIRE(history.Undo(stele));
+	SteleSnapshot restored = stele.Read();
+	CHECK(restored.ElementCount() == 2);
 	CHECK(restored.Find(bulb)->Parent == lamp);
 	CHECK(restored.Find(lamp)->Order == created.Find(lamp)->Order);
 	CHECK(restored.Get<Tint>(bulb)->Note == "green");
 	CHECK(history.RedoLabel() == "Delete lamp");
 
-	REQUIRE(history.Undo(brick));
-	CHECK(brick.Read().ObjectCount() == 0);
+	REQUIRE(history.Undo(stele));
+	CHECK(stele.Read().ElementCount() == 0);
 	CHECK(!history.CanUndo());
 
-	REQUIRE(history.Redo(brick));
-	REQUIRE(history.Redo(brick));
-	CHECK(brick.Read().ObjectCount() == 0);
-	REQUIRE(history.Undo(brick));
-	CHECK(brick.Read().Get<Tint>(bulb)->Note == "green");
+	REQUIRE(history.Redo(stele));
+	REQUIRE(history.Redo(stele));
+	CHECK(stele.Read().ElementCount() == 0);
+	REQUIRE(history.Undo(stele));
+	CHECK(stele.Read().Get<Tint>(bulb)->Note == "green");
 
 	// A new change clears the redo stack
 	Transaction rename("Rename", reg.Types);
@@ -315,13 +315,13 @@ TEST_CASE("UndoHistory: undo and redo restore exact states")
 TEST_CASE("UndoHistory: commits with the same merge key are one step")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 	UndoHistory history;
 
 	Transaction create("Create", reg.Types);
-	ObjectId a = create.CreateObject("A");
+	ElementId a = create.CreateElement("A");
 	create.AddComponent<Position>(a);
-	history.Record(*brick.Commit(std::move(create)).Changes);
+	history.Record(*stele.Commit(std::move(create)).Changes);
 
 	// A slider drag: one commit per frame, all with the gesture's key
 	for (int frame = 1; frame <= 5; frame++)
@@ -329,47 +329,47 @@ TEST_CASE("UndoHistory: commits with the same merge key are one step")
 		Transaction drag("Drag position", reg.Types);
 		drag.MergeKey = 77;
 		drag.SetField<Position>(a, "Value", glm::vec3(float(frame)));
-		history.Record(*brick.Commit(std::move(drag)).Changes);
+		history.Record(*stele.Commit(std::move(drag)).Changes);
 	}
-	CHECK(brick.Read().Get<Position>(a)->Value == glm::vec3(5.0f));
+	CHECK(stele.Read().Get<Position>(a)->Value == glm::vec3(5.0f));
 
-	REQUIRE(history.Undo(brick));
-	CHECK(brick.Read().Get<Position>(a)->Value == glm::vec3(0.0f)); // back to before the drag
+	REQUIRE(history.Undo(stele));
+	CHECK(stele.Read().Get<Position>(a)->Value == glm::vec3(0.0f)); // back to before the drag
 	CHECK(history.UndoLabel() == "Create");
 
-	REQUIRE(history.Redo(brick));
-	CHECK(brick.Read().Get<Position>(a)->Value == glm::vec3(5.0f));
+	REQUIRE(history.Redo(stele));
+	CHECK(stele.Read().Get<Position>(a)->Value == glm::vec3(5.0f));
 }
 
 TEST_CASE("UndoHistory: a step that no longer applies is dropped")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 	UndoHistory mine;
 
 	Transaction create("Create", reg.Types);
-	ObjectId a = create.CreateObject("A");
-	brick.Commit(std::move(create));
+	ElementId a = create.CreateElement("A");
+	stele.Commit(std::move(create));
 
 	Transaction rename("Rename", reg.Types);
 	rename.Rename(a, "Mine");
-	mine.Record(*brick.Commit(std::move(rename)).Changes);
+	mine.Record(*stele.Commit(std::move(rename)).Changes);
 
-	// Someone else deletes the object; my rename can't be undone any more
+	// Someone else deletes the element; my rename can't be undone any more
 	Transaction theirs("Delete", reg.Types);
-	theirs.DestroyObject(a);
-	REQUIRE(brick.Commit(std::move(theirs)));
+	theirs.DestroyElement(a);
+	REQUIRE(stele.Commit(std::move(theirs)));
 
-	CHECK(!mine.Undo(brick));
+	CHECK(!mine.Undo(stele));
 	CHECK(!mine.CanUndo());
 }
 
 // --- Threads ---------------------------------------------------------------------------------------------
 
-TEST_CASE("Brick: readers see consistent snapshots while another thread commits")
+TEST_CASE("Stele: readers see consistent snapshots while another thread commits")
 {
 	Registry reg;
-	Brick brick(reg.Types);
+	Stele stele(reg.Types);
 	constexpr int kCommits = 300;
 
 	std::atomic<bool> done = false;
@@ -377,11 +377,11 @@ TEST_CASE("Brick: readers see consistent snapshots while another thread commits"
 	auto reader = [&] {
 		while (!done)
 		{
-			// Every commit adds one object with a Position whose value is its version
-			BrickSnapshot snap = brick.Read();
-			if (snap.ObjectCount() != snap.Version())
+			// Every commit adds one element with a Position whose value is its version
+			SteleSnapshot snap = stele.Read();
+			if (snap.ElementCount() != snap.Version())
 				inconsistent++;
-			for (ObjectId id : snap.Children())
+			for (ElementId id : snap.Children())
 				if (const Position* p = snap.Get<Position>(id); !p || p->Value.x > float(snap.Version()))
 					inconsistent++;
 		}
@@ -391,14 +391,14 @@ TEST_CASE("Brick: readers see consistent snapshots while another thread commits"
 	for (int i = 1; i <= kCommits; i++)
 	{
 		Transaction tx("Add", reg.Types);
-		ObjectId id = tx.CreateObject("Object");
+		ElementId id = tx.CreateElement("Element");
 		tx.AddComponent(id, Position{ glm::vec3(float(i)) });
-		CHECK(brick.Commit(std::move(tx))); // not REQUIRE: the readers must be joined
+		CHECK(stele.Commit(std::move(tx))); // not REQUIRE: the readers must be joined
 	}
 	done = true;
 	r1.join();
 	r2.join();
 
 	CHECK(inconsistent == 0);
-	CHECK(brick.Read().ObjectCount() == kCommits);
+	CHECK(stele.Read().ElementCount() == kCommits);
 }

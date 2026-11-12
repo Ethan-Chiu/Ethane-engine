@@ -1,5 +1,5 @@
 #include "ethpch.h"
-#include "Ethane/Brick/ComponentValue.h"
+#include "Ethane/Stele/ComponentValue.h"
 
 #include <new>
 

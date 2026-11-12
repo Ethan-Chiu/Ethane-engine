@@ -1,4 +1,4 @@
-# Engine architecture: Bricks, Worlds and Frame Packets
+# Engine architecture: Steles, Worlds and Frame Packets
 
 This is the design for how authored content, the running simulation and rendering fit together.
 [Roadmap.md](Roadmap.md) tracks which parts are built.
@@ -7,7 +7,7 @@ This is the design for how authored content, the running simulation and renderin
 
 ```
             commands                      ChangeSets (ordered ops)
- Panels ──────────────▶ BRICK ────────────────────────────────┬──────────────▶ network / autosave
+ Panels ──────────────▶ STELE ────────────────────────────────┬──────────────▶ network / autosave
  Tools                  immutable snapshots, versions         │
                               │ snapshot (read-only)          ▼
                               └──────▶ panels          WORLD (edit)    WORLD (play)
@@ -22,14 +22,14 @@ Four layers, each knowing only about the ones below it:
 | Layer | Holds | Changes | Knows about |
 |---|---|---|---|
 | **Schema** | Descriptions of component types: fields, types, flags | At startup (registration) | Nothing |
-| **Brick** | Authored data: objects, components, asset references | When someone edits | Schema |
-| **World** | The running simulation built from a brick | Every frame | Schema, Brick (ChangeSets) |
+| **Stele** | Authored data: elements, components, asset references | When someone edits | Schema |
+| **World** | The running simulation built from a stele | Every frame | Schema, Stele (ChangeSets) |
 | **Frame packet** | Plain data describing what to draw | Rebuilt every frame | Nothing (assets by handle) |
 
-The renderer consumes frame packets only. The editor talks to bricks (through commands) and worlds
+The renderer consumes frame packets only. The editor talks to steles (through commands) and worlds
 (through the `World` interface), never to a world's storage.
 
-**Data flows one way.** Only commands change a brick. Worlds never write back to it; the only
+**Data flows one way.** Only commands change a stele. Worlds never write back to it; the only
 exception is an explicit "keep changes from play mode", which itself produces commands.
 
 ## Schema
@@ -46,41 +46,43 @@ Everything generic is written once against the schema: serialization, the inspec
 network sync and version migration. Adding a component type means one struct plus one registration.
 
 Field types are deliberately limited to values: scalars, glm vectors and quaternions, strings,
-`AssetRef`, `ObjectRef` and nested registered structs. Arrays come later.
+`AssetId`, `ElementId` and nested registered structs. Arrays come later.
 
-## Brick
+## Stele
 
-A brick is one unit of authored content: a level, a prefab, a preview setup. It holds:
+A stele (named after the inscribed stone slabs: the record a world is built from) is one unit of
+authored content: a level, a prefab, a preview setup. The things in it are **elements**; a world turns
+each element into an entity. A stele holds:
 
-- objects with stable `ObjectId`s, each with a name, a parent and an order among its siblings;
-- the authored fields of each object's components;
+- elements with stable `ElementId`s, each with a name, a parent and an order among its siblings;
+- the authored fields of each element's components;
 - asset references by `AssetId`;
 - (later) prefab instances as a reference plus overrides;
-- brick-level settings and the schema versions it was saved with.
+- stele-level settings and the schema versions it was saved with.
 
 It does **not** hold GPU resources, runtime state, or editor state such as the camera, the selection
 or the panel layout.
 
 ### Snapshots and commits
 
-A brick's state is an immutable **snapshot**. Reading takes a reference-counted snapshot and needs no
+A stele's state is an immutable **snapshot**. Reading takes a reference-counted snapshot and needs no
 locks: panels, autosave, world instantiation and network sync can all read on any thread and always
 see a consistent version.
 
 Writing goes through a **transaction**, a list of ops:
 
 ```
-CreateObject, DestroyObject, SetField(object, component, fieldPath, value),
-AddComponent, RemoveComponent, MoveObject(object, newParent, orderKey)
+CreateElement, DestroyElement, SetField(element, component, fieldPath, value),
+AddComponent, RemoveComponent, MoveElement(element, newParent, orderKey)
 ```
 
 `Commit` is the single write point. It validates the ops, builds the next snapshot by copying only the
-objects that changed (everything else is shared with the previous snapshot), bumps the version and
+elements that changed (everything else is shared with the previous snapshot), bumps the version and
 publishes a **ChangeSet** (the ops as applied, their inverse and the new snapshot) to subscribers.
 
-Implementation note: objects and components are shared between snapshots, but the index from
-`ObjectId` to object (and the child lists' index) is copied on every commit, which is O(objects) pointer
-copies. That is negligible at editing rates for tens of thousands of objects; if it ever shows up in a
+Implementation note: elements and components are shared between snapshots, but the index from
+`ElementId` to element (and the child lists' index) is copied on every commit, which is O(elements) pointer
+copies. That is negligible at editing rates for tens of thousands of elements; if it ever shows up in a
 profile, the index can become a persistent hash map without changing the API.
 
 Each committed transaction keeps its inverse ops, which is the undo history. A continuous edit such as
@@ -90,8 +92,8 @@ dragging a slider is one transaction that is updated while dragging and committe
 
 Not implemented yet, but the formats follow these rules from the start:
 
-- `ObjectId`s are created without coordination (random 64-bit).
-- Ops are fine-grained and safe to apply twice: they set one field, never replace a whole object.
+- `ElementId`s are created without coordination (random 64-bit).
+- Ops are fine-grained and safe to apply twice: they set one field, never replace a whole element.
 - Sibling order uses fractional order keys, never array indices, so concurrent inserts don't collide.
 - Conflicts: the last write to a field (in server order) wins; a delete beats a concurrent edit;
   a move that would create a cycle is rejected at commit.
@@ -100,12 +102,12 @@ Not implemented yet, but the formats follow these rules from the start:
 
 ## World
 
-A world is a running simulation of one brick:
+A world is a running simulation of one stele:
 
 ```cpp
 class World {
 public:
-    virtual void Apply(const ChangeSet&) = 0;                             // follow the brick
+    virtual void Apply(const ChangeSet&) = 0;                             // follow the stele
     virtual void Update(const UpdateContext&) = 0;                        // run systems
     virtual void Extract(const ViewDesc&, FramePacketWriter&) const = 0;  // produce what to draw
 };
@@ -114,21 +116,21 @@ public:
 The interface is coarse on purpose: no per-component virtual calls, and each implementation stores
 data however it likes.
 
-- **Edit world:** always exists for an open brick, follows its ChangeSets and runs only editor systems
+- **Edit world:** always exists for an open stele, follows its ChangeSets and runs only editor systems
   (transform propagation, bounds). Rendering always goes world → frame packet, in edit and play mode.
-- **Play world:** instantiated from a brick snapshot (on a background thread if needed), runs gameplay
-  systems, and is thrown away on Stop. The brick never changed, so nothing needs restoring.
+- **Play world:** instantiated from a stele snapshot (on a background thread if needed), runs gameplay
+  systems, and is thrown away on Stop. The stele never changed, so nothing needs restoring.
 
 ### The default world uses EnTT, contained
 
 `EnttWorld` stores components in an EnTT registry. EnTT stays an implementation detail:
 
 1. Only `Ethane/World/Entt/` includes `entt.hpp`; no EnTT type appears in any other header.
-2. Components are plain structs registered in the schema; references to other objects are `ObjectRef`s,
+2. Components are plain structs registered in the schema; references to other elements are `ElementId`s,
    never `entt::entity`.
 3. Engine systems (apply, transform propagation, extraction, scripts) are plain functions inside that
    folder that use the registry directly.
-4. Panels, the renderer, the serializer and play mode use the brick, the `World` interface or frame
+4. Panels, the renderer, the serializer and play mode use the stele, the `World` interface or frame
    packets, never world storage.
 
 Replacing EnTT later means rewriting that one folder. A storage-independent system API
@@ -139,23 +141,23 @@ or more than about 10–15 engine systems.
 ## Frame packet and renderer
 
 A frame packet is plain, immutable data: draw items (mesh, material, world transform, sort key,
-`ObjectId` for picking), lights and views. The renderer turns a packet into GPU work for a render
-target and knows nothing about bricks, worlds or ECS.
+`ElementId` for picking), lights and views. The renderer turns a packet into GPU work for a render
+target and knows nothing about steles, worlds or ECS.
 
 With a render thread, the simulation builds packet N+1 while the renderer records packet N.
-Picking draws each item's `ObjectId` into an ID buffer. GPU objects are destroyed a few frames late
+Picking draws each item's `ElementId` into an ID buffer. GPU objects are destroyed a few frames late
 (keyed by frame index) instead of waiting for the device to go idle.
 
 ## Editor
 
 Panels bind to an `EditorContext`, not to a scene:
 
-- the open bricks, each with its edit world and optional play world;
-- the selection (a set of `ObjectId`s) and the undo history.
+- the open steles, each with its edit world and optional play world;
+- the selection (a set of `ElementId`s) and the undo history.
 
 | Panel | Reads | Writes |
 |---|---|---|
-| Hierarchy | A brick snapshot | Commands (create, delete, move) |
+| Hierarchy | A stele snapshot | Commands (create, delete, move) |
 | Inspector | The selection, through the schema | `SetField` / add / remove commands |
 | Viewport | A world + a camera + a render target | Selection (picking) |
 | Stats | Renderer and world statistics | Nothing |
@@ -167,13 +169,13 @@ and asset settings, with no per-component UI code.
 
 | Thread | Does | Shares data through |
 |---|---|---|
-| Main / UI | Input, ImGui, building transactions | Commits to bricks |
+| Main / UI | Input, ImGui, building transactions | Commits to steles |
 | Jobs | World update, extraction, play-world instantiation | Snapshots in, packets out |
 | Render | Recording and submitting GPU work | Immutable frame packets |
 | Background | Asset import, autosave, network sync | Snapshots and ChangeSets |
 
 Every hand-off between threads is an immutable value (snapshot, ChangeSet or packet); the only shared
-write point is a brick's commit.
+write point is a stele's commit.
 
 ## Prior art
 

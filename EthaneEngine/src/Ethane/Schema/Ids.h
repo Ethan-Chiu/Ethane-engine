@@ -27,16 +27,16 @@ namespace Ethane {
 		constexpr auto operator<=>(const TypeId&) const = default;
 	};
 
-	// Stable identifier of an object in a brick; 0 is "no object".
-	// New ids are random 64-bit, so independent editors can create objects without coordinating.
-	struct ObjectId
+	// Stable identifier of an element in a stele; 0 is "no element".
+	// New ids are random 64-bit, so independent editors can create elements without coordinating.
+	struct ElementId
 	{
 		uint64_t Value = 0;
 
-		static ObjectId Generate();
+		static ElementId Generate();
 
 		constexpr bool IsValid() const { return Value != 0; }
-		constexpr auto operator<=>(const ObjectId&) const = default;
+		constexpr auto operator<=>(const ElementId&) const = default;
 	};
 
 	// Reference to an asset by its handle; 0 is "no asset"
@@ -55,9 +55,9 @@ template<> struct std::hash<Ethane::TypeId>
 	size_t operator()(Ethane::TypeId id) const noexcept { return std::hash<uint64_t>()(id.Value); }
 };
 
-template<> struct std::hash<Ethane::ObjectId>
+template<> struct std::hash<Ethane::ElementId>
 {
-	size_t operator()(Ethane::ObjectId id) const noexcept { return std::hash<uint64_t>()(id.Value); }
+	size_t operator()(Ethane::ElementId id) const noexcept { return std::hash<uint64_t>()(id.Value); }
 };
 
 template<> struct std::hash<Ethane::AssetId>

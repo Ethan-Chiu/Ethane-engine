@@ -1,6 +1,6 @@
 #include "Test.h"
 
-#include "Ethane/Brick/BrickSerializer.h"
+#include "Ethane/Stele/SteleSerializer.h"
 
 #include <filesystem>
 
@@ -28,7 +28,7 @@ namespace {
 		glm::quat Q = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		std::string Text;
 		AssetId Asset;
-		ObjectId Target;
+		ElementId Target;
 		Glow Nested;
 		int32_t Scratch = 0; // runtime only: never saved
 	};
@@ -51,10 +51,10 @@ namespace {
 
 }
 
-TEST_CASE("BrickSerializer: round trip keeps ids, hierarchy, order and every field type")
+TEST_CASE("SteleSerializer: round trip keeps ids, hierarchy, order and every field type")
 {
 	Types types;
-	Brick original(types.Registry);
+	Stele original(types.Registry);
 
 	Everything e;
 	e.Flag = true;
@@ -73,30 +73,30 @@ TEST_CASE("BrickSerializer: round trip keeps ids, hierarchy, order and every fie
 	e.Scratch = 99;
 
 	Transaction tx("Build", types.Registry);
-	ObjectId root = tx.CreateObject("Root");
-	ObjectId second = tx.CreateObject("Second", root);
-	ObjectId first = tx.CreateObject("First", root, "0V");
+	ElementId root = tx.CreateElement("Root");
+	ElementId second = tx.CreateElement("Second", root);
+	ElementId first = tx.CreateElement("First", root, "0V");
 	e.Target = second;
 	tx.AddComponent(first, e);
 	tx.AddComponent<Glow>(second);
 	REQUIRE(original.Commit(std::move(tx)));
 
-	const std::string yaml = BrickSerializer::ToYaml(original.Read());
+	const std::string yaml = SteleSerializer::ToYaml(original.Read());
 	CHECK(yaml.find("Scratch") == std::string::npos);
 	CHECK(yaml.find("Test.Everything: 1") != std::string::npos);
 
-	Brick loaded(types.Registry);
-	auto result = BrickSerializer::FromYaml(yaml, loaded);
+	Stele loaded(types.Registry);
+	auto result = SteleSerializer::FromYaml(yaml, loaded);
 	REQUIRE(result);
 	CHECK(result.Warnings.empty());
 
-	BrickSnapshot snap = loaded.Read();
-	CHECK(snap.ObjectCount() == 3);
+	SteleSnapshot snap = loaded.Read();
+	CHECK(snap.ElementCount() == 3);
 	REQUIRE(snap.Find(first));
 	CHECK(snap.Find(first)->Parent == root);
 	CHECK(snap.Find(first)->Order == "0V");
 	auto children = snap.Children(root);
-	CHECK(std::vector<ObjectId>(children.begin(), children.end()) == std::vector<ObjectId>{ first, second });
+	CHECK(std::vector<ElementId>(children.begin(), children.end()) == std::vector<ElementId>{ first, second });
 
 	const Everything* l = snap.Get<Everything>(first);
 	REQUIRE(l);
@@ -117,19 +117,19 @@ TEST_CASE("BrickSerializer: round trip keeps ids, hierarchy, order and every fie
 	CHECK(l->Scratch == 0);
 	CHECK(snap.Get<Glow>(second) != nullptr);
 
-	// Saving the loaded brick gives the same text
-	CHECK(BrickSerializer::ToYaml(snap) == yaml);
+	// Saving the loaded stele gives the same text
+	CHECK(SteleSerializer::ToYaml(snap) == yaml);
 }
 
-TEST_CASE("BrickSerializer: unknown and invalid data is skipped with warnings")
+TEST_CASE("SteleSerializer: unknown and invalid data is skipped with warnings")
 {
 	Types types;
-	Brick brick(types.Registry);
+	Stele stele(types.Registry);
 	const char* yaml = R"(
-Brick: 1
+Stele: 1
 Types:
   Test.Glow: 5
-Objects:
+Elements:
   - Id: 00000000000000b2
     Name: Child
     Parent: 00000000000000a1
@@ -148,53 +148,53 @@ Objects:
     Name: Orphan
     Parent: 00000000000000ff
 )";
-	auto result = BrickSerializer::FromYaml(yaml, brick);
+	auto result = SteleSerializer::FromYaml(yaml, stele);
 	REQUIRE(result);
 	CHECK(result.Warnings.size() == 6); // newer version, Radius, Sparkle, Test.Gone, order key "10", orphan
 	for (const std::string& warning : result.Warnings)
 		std::printf("      warning: %s\n", warning.c_str());
 
-	BrickSnapshot snap = brick.Read();
-	CHECK(snap.ObjectCount() == 3);
-	CHECK(snap.Find(ObjectId{ 0xb2 })->Parent == ObjectId{ 0xa1 });
-	CHECK(snap.Find(ObjectId{ 0xc3 })->Parent == ObjectId{});
-	const Glow* glow = snap.Get<Glow>(ObjectId{ 0xb2 });
+	SteleSnapshot snap = stele.Read();
+	CHECK(snap.ElementCount() == 3);
+	CHECK(snap.Find(ElementId{ 0xb2 })->Parent == ElementId{ 0xa1 });
+	CHECK(snap.Find(ElementId{ 0xc3 })->Parent == ElementId{});
+	const Glow* glow = snap.Get<Glow>(ElementId{ 0xb2 });
 	REQUIRE(glow);
 	CHECK(glow->Radius == 1.0f);
 	CHECK(glow->Color == glm::vec3(0.5f));
 }
 
-TEST_CASE("BrickSerializer: broken files are refused and leave the brick alone")
+TEST_CASE("SteleSerializer: broken files are refused and leave the stele alone")
 {
 	Types types;
-	Brick brick(types.Registry);
-	CHECK(!BrickSerializer::FromYaml("Objects: [", brick));                                // not YAML
-	CHECK(!BrickSerializer::FromYaml("Something: else", brick));                           // not a brick
-	CHECK(!BrickSerializer::FromYaml("Brick: 99", brick));                                 // newer format
-	CHECK(!BrickSerializer::FromYaml("Brick: 1\nObjects:\n  - Name: no id", brick));
-	CHECK(!BrickSerializer::FromYaml("Brick: 1\nObjects:\n  - Id: [1, 2]", brick));         // wrong shape
-	CHECK(!BrickSerializer::FromYaml("Brick: 1\nObjects:\n  - Id: 01\n  - Id: 01", brick));  // duplicate id
-	CHECK(!BrickSerializer::FromYaml(
-		"Brick: 1\nObjects:\n  - Id: 01\n    Parent: 02\n  - Id: 02\n    Parent: 01", brick)); // cycle
-	CHECK(brick.Read().Version() == 0);
+	Stele stele(types.Registry);
+	CHECK(!SteleSerializer::FromYaml("Elements: [", stele));                                // not YAML
+	CHECK(!SteleSerializer::FromYaml("Something: else", stele));                           // not a stele
+	CHECK(!SteleSerializer::FromYaml("Stele: 99", stele));                                 // newer format
+	CHECK(!SteleSerializer::FromYaml("Stele: 1\nElements:\n  - Name: no id", stele));
+	CHECK(!SteleSerializer::FromYaml("Stele: 1\nElements:\n  - Id: [1, 2]", stele));         // wrong shape
+	CHECK(!SteleSerializer::FromYaml("Stele: 1\nElements:\n  - Id: 01\n  - Id: 01", stele));  // duplicate id
+	CHECK(!SteleSerializer::FromYaml(
+		"Stele: 1\nElements:\n  - Id: 01\n    Parent: 02\n  - Id: 02\n    Parent: 01", stele)); // cycle
+	CHECK(stele.Read().Version() == 0);
 }
 
-TEST_CASE("BrickSerializer: save and load files")
+TEST_CASE("SteleSerializer: save and load files")
 {
 	Types types;
-	Brick brick(types.Registry);
+	Stele stele(types.Registry);
 	Transaction tx("Build", types.Registry);
-	ObjectId lamp = tx.CreateObject("Lamp");
+	ElementId lamp = tx.CreateElement("Lamp");
 	tx.AddComponent(lamp, Glow{ { 1.0f, 0.5f, 0.0f }, 2.0f });
-	REQUIRE(brick.Commit(std::move(tx)));
+	REQUIRE(stele.Commit(std::move(tx)));
 
-	const auto path = std::filesystem::temp_directory_path() / "ethane-brick-test.brick";
-	REQUIRE(BrickSerializer::Save(brick.Read(), path));
+	const auto path = std::filesystem::temp_directory_path() / "ethane-stele-test.stele";
+	REQUIRE(SteleSerializer::Save(stele.Read(), path));
 
-	Brick loaded(types.Registry);
-	REQUIRE(BrickSerializer::Load(path, loaded));
+	Stele loaded(types.Registry);
+	REQUIRE(SteleSerializer::Load(path, loaded));
 	CHECK(loaded.Read().Get<Glow>(lamp)->Radius == 2.0f);
 	std::filesystem::remove(path);
 
-	CHECK(!BrickSerializer::Load(path, loaded)); // gone
+	CHECK(!SteleSerializer::Load(path, loaded)); // gone
 }

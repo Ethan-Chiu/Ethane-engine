@@ -18,7 +18,7 @@ namespace Ethane {
 	{
 		Bool, Int32, UInt32, Int64, UInt64, Float, Double,
 		Vec2, Vec3, Vec4, Quat,
-		String, Asset, Object,
+		String, Asset, Element,
 		Struct, // a nested registered type; its own fields hold the values
 	};
 
@@ -26,7 +26,7 @@ namespace Ethane {
 	using FieldValue = std::variant<
 		bool, int32_t, uint32_t, int64_t, uint64_t, float, double,
 		glm::vec2, glm::vec3, glm::vec4, glm::quat,
-		std::string, AssetId, ObjectId>;
+		std::string, AssetId, ElementId>;
 
 	static_assert(std::variant_size_v<FieldValue> == static_cast<size_t>(FieldType::Struct));
 
@@ -49,7 +49,7 @@ namespace Ethane {
 		else if constexpr (std::is_same_v<T, glm::quat>) return FieldType::Quat;
 		else if constexpr (std::is_same_v<T, std::string>) return FieldType::String;
 		else if constexpr (std::is_same_v<T, AssetId>) return FieldType::Asset;
-		else if constexpr (std::is_same_v<T, ObjectId>) return FieldType::Object;
+		else if constexpr (std::is_same_v<T, ElementId>) return FieldType::Element;
 		else
 		{
 			static_assert(std::is_class_v<T>, "unsupported field type: use a value type or a registered struct");

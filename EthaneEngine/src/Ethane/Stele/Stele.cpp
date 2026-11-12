@@ -1,69 +1,70 @@
 #include "ethpch.h"
-#include "Ethane/Brick/Brick.h"
-#include "Ethane/Brick/OrderKey.h"
+#include "Ethane/Stele/Stele.h"
+#include "Ethane/Stele/OrderKey.h"
+#include "Ethane/Stele/SteleData.h"
 
 namespace Ethane {
 
 	namespace {
 
-		std::string Describe(ObjectId id) { return fmt::format("object {:016x}", id.Value); }
+		std::string Describe(ElementId id) { return fmt::format("element {:016x}", id.Value); }
 
-		// Builds the next state from the current one. Objects, child lists and components are copied
-		// the first time this commit changes them; everything else stays shared with the old state.
-		class StateEditor
+		// Builds the next version's data from the current one. Elements, child lists and components are copied
+		// the first time this commit changes them; everything else stays shared with the previous version.
+		class DataBuilder
 		{
 		public:
-			StateEditor(const Detail::BrickState& current, const TypeRegistry& registry)
-				: m_State(std::make_shared<Detail::BrickState>(current)), m_Registry(registry)
+			DataBuilder(const Detail::SteleData& current, const TypeRegistry& registry)
+				: m_Data(std::make_shared<Detail::SteleData>(current)), m_Registry(registry)
 			{
-				m_State->Version = current.Version + 1;
+				m_Data->Version = current.Version + 1;
 			}
 
-			std::shared_ptr<Detail::BrickState> Release() { return std::move(m_State); }
+			std::shared_ptr<Detail::SteleData> Release() { return std::move(m_Data); }
 
 			// Applies one op. On success appends the op as applied and its inverse (in apply order);
 			// on failure returns why and leaves the outputs alone.
-			std::string Apply(const BrickOperation& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Apply(const SteleOperation& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
 				return std::visit([&](const auto& o) { return Do(o, applied, inverse); }, op);
 			}
 
 		private:
-			const BrickObject* Find(ObjectId id) const
+			const SteleElement* Find(ElementId id) const
 			{
-				auto it = m_State->Objects.find(id);
-				return it != m_State->Objects.end() ? it->second.get() : nullptr;
+				auto it = m_Data->Elements.find(id);
+				return it != m_Data->Elements.end() ? it->second.get() : nullptr;
 			}
 
-			BrickObject& Mutable(ObjectId id)
+			SteleElement& Mutable(ElementId id)
 			{
-				auto owned = m_OwnedObjects.find(id);
-				if (owned != m_OwnedObjects.end())
+				auto owned = m_OwnedElements.find(id);
+				if (owned != m_OwnedElements.end())
 					return *owned->second;
-				auto copy = std::make_shared<BrickObject>(*m_State->Objects.at(id));
-				m_State->Objects[id] = copy;
-				m_OwnedObjects[id] = copy;
+				auto copy = std::make_shared<SteleElement>(*m_Data->Elements.at(id));
+				m_Data->Elements[id] = copy;
+				m_OwnedElements[id] = copy;
 				return *copy;
 			}
 
-			std::vector<ObjectId>& MutableChildren(ObjectId parent)
+			std::vector<ElementId>& MutableChildren(ElementId parent)
 			{
 				auto owned = m_OwnedChildren.find(parent);
 				if (owned != m_OwnedChildren.end())
 					return *owned->second;
-				auto existing = m_State->Children.find(parent);
-				auto copy = existing != m_State->Children.end()
-					? std::make_shared<std::vector<ObjectId>>(*existing->second)
-					: std::make_shared<std::vector<ObjectId>>();
-				m_State->Children[parent] = copy;
+				auto existing = m_Data->Children.find(parent);
+				auto copy = existing != m_Data->Children.end()
+					? std::make_shared<std::vector<ElementId>>(*existing->second)
+					: std::make_shared<std::vector<ElementId>>();
+				m_Data->Children[parent] = copy;
 				m_OwnedChildren[parent] = copy;
 				return *copy;
 			}
 
 			// Copy of a component that this commit may change in place
-			ComponentValue& MutableComponent(BrickObject& object, BrickComponent& component)
+			ComponentValue& MutableComponent(SteleElement& element, SteleElement::Component& component)
 			{
-				const std::pair key{ object.Id, component.Type };
+				const std::pair key{ element.Id, component.Type };
 				auto owned = m_OwnedComponents.find(key);
 				if (owned != m_OwnedComponents.end())
 					return *owned->second;
@@ -73,42 +74,42 @@ namespace Ethane {
 				return *copy;
 			}
 
-			std::span<const ObjectId> ChildrenOf(ObjectId parent) const
+			std::span<const ElementId> ChildrenOf(ElementId parent) const
 			{
-				auto it = m_State->Children.find(parent);
-				if (it == m_State->Children.end())
+				auto it = m_Data->Children.find(parent);
+				if (it == m_Data->Children.end())
 					return {};
 				return { it->second->data(), it->second->size() };
 			}
 
-			bool SiblingLess(ObjectId a, ObjectId b) const
+			bool SiblingLess(ElementId a, ElementId b) const
 			{
-				const BrickObject& oa = *Find(a);
-				const BrickObject& ob = *Find(b);
+				const SteleElement& oa = *Find(a);
+				const SteleElement& ob = *Find(b);
 				return oa.Order != ob.Order ? oa.Order < ob.Order : a < b;
 			}
 
-			void InsertChild(ObjectId parent, ObjectId child)
+			void InsertChild(ElementId parent, ElementId child)
 			{
 				auto& children = MutableChildren(parent);
 				auto at = std::lower_bound(children.begin(), children.end(), child,
-					[&](ObjectId a, ObjectId b) { return SiblingLess(a, b); });
+					[&](ElementId a, ElementId b) { return SiblingLess(a, b); });
 				children.insert(at, child);
 			}
 
-			void RemoveChild(ObjectId parent, ObjectId child)
+			void RemoveChild(ElementId parent, ElementId child)
 			{
 				auto& children = MutableChildren(parent);
 				children.erase(std::find(children.begin(), children.end(), child));
 				if (children.empty())
 				{
-					m_State->Children.erase(parent);
+					m_Data->Children.erase(parent);
 					m_OwnedChildren.erase(parent);
 				}
 			}
 
 			// The order key to use: the given one, or one after the last current child of `parent`
-			std::string ResolveOrder(const std::string& requested, ObjectId parent, ObjectId ignore) const
+			std::string ResolveOrder(const std::string& requested, ElementId parent, ElementId ignore) const
 			{
 				if (!requested.empty())
 					return requested;
@@ -119,7 +120,7 @@ namespace Ethane {
 				return OrderKey::Between({}, {});
 			}
 
-			std::string CheckParent(ObjectId parent) const
+			std::string CheckParent(ElementId parent) const
 			{
 				if (parent.IsValid() && !Find(parent))
 					return "parent " + Describe(parent) + " doesn't exist";
@@ -128,10 +129,10 @@ namespace Ethane {
 
 			// --- ops ---------------------------------------------------------------------------------
 
-			std::string Do(const BrickOp::CreateObject& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Do(const SteleOp::CreateElement& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
 				if (!op.Id.IsValid())
-					return "can't create an object with the null id";
+					return "can't create an element with the null id";
 				if (Find(op.Id))
 					return Describe(op.Id) + " already exists";
 				if (auto error = CheckParent(op.Parent); !error.empty())
@@ -139,53 +140,53 @@ namespace Ethane {
 				if (!OrderKey::IsValid(op.Order))
 					return "invalid order key '" + op.Order + "'";
 
-				auto object = std::make_shared<BrickObject>();
-				object->Id = op.Id;
-				object->Name = op.Name;
-				object->Parent = op.Parent;
-				object->Order = ResolveOrder(op.Order, op.Parent, {});
-				m_State->Objects[op.Id] = object;
-				m_OwnedObjects[op.Id] = object;
+				auto element = std::make_shared<SteleElement>();
+				element->Id = op.Id;
+				element->Name = op.Name;
+				element->Parent = op.Parent;
+				element->Order = ResolveOrder(op.Order, op.Parent, {});
+				m_Data->Elements[op.Id] = element;
+				m_OwnedElements[op.Id] = element;
 				InsertChild(op.Parent, op.Id);
 
-				applied.push_back(BrickOp::CreateObject{ op.Id, op.Name, op.Parent, object->Order });
-				inverse.push_back(BrickOp::DestroyObject{ op.Id });
+				applied.push_back(SteleOp::CreateElement{ op.Id, op.Name, op.Parent, element->Order });
+				inverse.push_back(SteleOp::DestroyElement{ op.Id });
 				return {};
 			}
 
-			std::string Do(const BrickOp::DestroyObject& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Do(const SteleOp::DestroyElement& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
-				const BrickObject* object = Find(op.Id);
-				if (!object)
+				const SteleElement* element = Find(op.Id);
+				if (!element)
 					return Describe(op.Id) + " doesn't exist";
 				if (!ChildrenOf(op.Id).empty())
 					return Describe(op.Id) + " still has children";
 
-				// Recreating it: the object first, then its components
-				inverse.push_back(BrickOp::CreateObject{ object->Id, object->Name, object->Parent, object->Order });
-				for (const BrickComponent& component : object->Components)
-					inverse.push_back(BrickOp::AddComponent{ object->Id, component.Type, component.Value });
+				// Recreating it: the element first, then its components
+				inverse.push_back(SteleOp::CreateElement{ element->Id, element->Name, element->Parent, element->Order });
+				for (const SteleElement::Component& component : element->Components)
+					inverse.push_back(SteleOp::AddComponent{ element->Id, component.Type, component.Value });
 
-				RemoveChild(object->Parent, op.Id);
-				m_State->Objects.erase(op.Id);
-				m_OwnedObjects.erase(op.Id);
+				RemoveChild(element->Parent, op.Id);
+				m_Data->Elements.erase(op.Id);
+				m_OwnedElements.erase(op.Id);
 				std::erase_if(m_OwnedComponents, [&](const auto& entry) { return entry.first.first == op.Id; });
 				applied.push_back(op);
 				return {};
 			}
 
-			std::string Do(const BrickOp::RenameObject& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Do(const SteleOp::RenameElement& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
 				if (!Find(op.Id))
 					return Describe(op.Id) + " doesn't exist";
-				BrickObject& object = Mutable(op.Id);
-				inverse.push_back(BrickOp::RenameObject{ op.Id, object.Name });
-				object.Name = op.Name;
+				SteleElement& element = Mutable(op.Id);
+				inverse.push_back(SteleOp::RenameElement{ op.Id, element.Name });
+				element.Name = op.Name;
 				applied.push_back(op);
 				return {};
 			}
 
-			std::string Do(const BrickOp::MoveObject& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Do(const SteleOp::MoveElement& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
 				if (!Find(op.Id))
 					return Describe(op.Id) + " doesn't exist";
@@ -193,24 +194,24 @@ namespace Ethane {
 					return error;
 				if (!OrderKey::IsValid(op.Order))
 					return "invalid order key '" + op.Order + "'";
-				for (ObjectId ancestor = op.Parent; ancestor.IsValid(); ancestor = Find(ancestor)->Parent)
+				for (ElementId ancestor = op.Parent; ancestor.IsValid(); ancestor = Find(ancestor)->Parent)
 					if (ancestor == op.Id)
 						return "moving " + Describe(op.Id) + " there would make it its own ancestor";
 
 				const std::string order = ResolveOrder(op.Order, op.Parent, op.Id);
-				BrickObject& object = Mutable(op.Id);
-				inverse.push_back(BrickOp::MoveObject{ op.Id, object.Parent, object.Order });
+				SteleElement& element = Mutable(op.Id);
+				inverse.push_back(SteleOp::MoveElement{ op.Id, element.Parent, element.Order });
 
-				RemoveChild(object.Parent, op.Id);
-				object.Parent = op.Parent;
-				object.Order = order;
+				RemoveChild(element.Parent, op.Id);
+				element.Parent = op.Parent;
+				element.Order = order;
 				InsertChild(op.Parent, op.Id);
 
-				applied.push_back(BrickOp::MoveObject{ op.Id, op.Parent, order });
+				applied.push_back(SteleOp::MoveElement{ op.Id, op.Parent, order });
 				return {};
 			}
 
-			std::string Do(const BrickOp::AddComponent& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Do(const SteleOp::AddComponent& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
 				if (!Find(op.Id))
 					return Describe(op.Id) + " doesn't exist";
@@ -225,15 +226,15 @@ namespace Ethane {
 				ComponentRef value = op.Value ? op.Value : ComponentRef(ComponentValue::MakeDefault(*type));
 				auto& components = Mutable(op.Id).Components;
 				auto at = std::lower_bound(components.begin(), components.end(), op.Type,
-					[](const BrickComponent& c, TypeId t) { return c.Type < t; });
-				components.insert(at, BrickComponent{ op.Type, value });
+					[](const SteleElement::Component& c, TypeId t) { return c.Type < t; });
+				components.insert(at, SteleElement::Component{ op.Type, value });
 
-				applied.push_back(BrickOp::AddComponent{ op.Id, op.Type, value });
-				inverse.push_back(BrickOp::RemoveComponent{ op.Id, op.Type });
+				applied.push_back(SteleOp::AddComponent{ op.Id, op.Type, value });
+				inverse.push_back(SteleOp::RemoveComponent{ op.Id, op.Type });
 				return {};
 			}
 
-			std::string Do(const BrickOp::RemoveComponent& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Do(const SteleOp::RemoveComponent& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
 				if (!Find(op.Id))
 					return Describe(op.Id) + " doesn't exist";
@@ -241,8 +242,8 @@ namespace Ethane {
 					return Describe(op.Id) + " has no component " + TypeName(op.Type);
 
 				auto& components = Mutable(op.Id).Components;
-				auto it = std::find_if(components.begin(), components.end(), [&](const BrickComponent& c) { return c.Type == op.Type; });
-				inverse.push_back(BrickOp::AddComponent{ op.Id, op.Type, it->Value });
+				auto it = std::find_if(components.begin(), components.end(), [&](const SteleElement::Component& c) { return c.Type == op.Type; });
+				inverse.push_back(SteleOp::AddComponent{ op.Id, op.Type, it->Value });
 				components.erase(it);
 				m_OwnedComponents.erase({ op.Id, op.Type });
 
@@ -250,7 +251,7 @@ namespace Ethane {
 				return {};
 			}
 
-			std::string Do(const BrickOp::SetField& op, std::vector<BrickOperation>& applied, std::vector<BrickOperation>& inverse)
+			std::string Do(const SteleOp::SetField& op, std::vector<SteleOperation>& applied, std::vector<SteleOperation>& inverse)
 			{
 				if (!Find(op.Id))
 					return Describe(op.Id) + " doesn't exist";
@@ -264,13 +265,13 @@ namespace Ethane {
 				if (op.Value.index() != static_cast<size_t>(resolved->Field->Type))
 					return fmt::format("{}.{} is a {}", type.Name, FormatFieldPath(type, op.Path), ToString(resolved->Field->Type));
 
-				BrickObject& object = Mutable(op.Id);
-				BrickComponent& component = *std::find_if(object.Components.begin(), object.Components.end(),
-					[&](const BrickComponent& c) { return c.Type == op.Type; });
-				ComponentValue& value = MutableComponent(object, component);
+				SteleElement& element = Mutable(op.Id);
+				SteleElement::Component& component = *std::find_if(element.Components.begin(), element.Components.end(),
+					[&](const SteleElement::Component& c) { return c.Type == op.Type; });
+				ComponentValue& value = MutableComponent(element, component);
 				std::byte* field = static_cast<std::byte*>(value.MutableData()) + resolved->Offset;
 
-				inverse.push_back(BrickOp::SetField{ op.Id, op.Type, op.Path, ReadField(resolved->Field->Type, field) });
+				inverse.push_back(SteleOp::SetField{ op.Id, op.Type, op.Path, ReadField(resolved->Field->Type, field) });
 				WriteField(resolved->Field->Type, field, op.Value);
 				applied.push_back(op);
 				return {};
@@ -284,41 +285,41 @@ namespace Ethane {
 
 			struct PairHash
 			{
-				size_t operator()(const std::pair<ObjectId, TypeId>& key) const
+				size_t operator()(const std::pair<ElementId, TypeId>& key) const
 				{
-					return std::hash<ObjectId>()(key.first) ^ (std::hash<TypeId>()(key.second) * 0x9e3779b97f4a7c15ull);
+					return std::hash<ElementId>()(key.first) ^ (std::hash<TypeId>()(key.second) * 0x9e3779b97f4a7c15ull);
 				}
 			};
 
-			std::shared_ptr<Detail::BrickState> m_State;
+			std::shared_ptr<Detail::SteleData> m_Data;
 			const TypeRegistry& m_Registry;
-			std::unordered_map<ObjectId, std::shared_ptr<BrickObject>> m_OwnedObjects;
-			std::unordered_map<ObjectId, std::shared_ptr<std::vector<ObjectId>>> m_OwnedChildren;
-			std::unordered_map<std::pair<ObjectId, TypeId>, std::shared_ptr<ComponentValue>, PairHash> m_OwnedComponents;
+			std::unordered_map<ElementId, std::shared_ptr<SteleElement>> m_OwnedElements;
+			std::unordered_map<ElementId, std::shared_ptr<std::vector<ElementId>>> m_OwnedChildren;
+			std::unordered_map<std::pair<ElementId, TypeId>, std::shared_ptr<ComponentValue>, PairHash> m_OwnedComponents;
 		};
 
 	}
 
-	// --- Brick -----------------------------------------------------------------------------------------
+	// --- Stele -----------------------------------------------------------------------------------------
 
-	Brick::Brick(const TypeRegistry& registry)
-		: m_Registry(&registry), m_Listeners(std::make_shared<Detail::BrickListeners>())
+	Stele::Stele(const TypeRegistry& registry)
+		: m_Registry(&registry), m_Listeners(std::make_shared<Detail::SteleListeners>())
 	{
-		auto state = std::make_shared<Detail::BrickState>();
-		state->Registry = &registry;
-		m_Snapshot = BrickSnapshot(std::move(state));
+		auto data = std::make_shared<Detail::SteleData>();
+		data->Registry = &registry;
+		m_Snapshot = SteleSnapshot(std::move(data));
 	}
 
-	BrickSnapshot Brick::Read() const
+	SteleSnapshot Stele::Read() const
 	{
 		std::lock_guard lock(m_SnapshotMutex);
 		return m_Snapshot;
 	}
 
-	CommitResult Brick::Commit(Transaction transaction)
+	CommitResult Stele::Commit(Transaction transaction)
 	{
 		std::lock_guard commitLock(m_CommitMutex);
-		const BrickSnapshot before = Read();
+		const SteleSnapshot before = Read();
 
 		CommitResult result;
 		result.Version = before.Version();
@@ -338,13 +339,13 @@ namespace Ethane {
 			return result;
 		}
 
-		StateEditor editor(*before.State(), *m_Registry);
+		DataBuilder builder(*before.m_Data, *m_Registry);
 		auto changes = std::make_shared<ChangeSet>();
-		std::vector<std::vector<BrickOperation>> inverses; // per op, applied in reverse op order
+		std::vector<std::vector<SteleOperation>> inverses; // per op, applied in reverse op order
 		for (size_t i = 0; i < transaction.Ops().size(); i++)
 		{
-			std::vector<BrickOperation> inverse;
-			std::string error = editor.Apply(transaction.Ops()[i], changes->Ops, inverse);
+			std::vector<SteleOperation> inverse;
+			std::string error = builder.Apply(transaction.Ops()[i], changes->Ops, inverse);
 			if (!error.empty())
 			{
 				result.Error = fmt::format("op {}: {}", i, error);
@@ -355,7 +356,7 @@ namespace Ethane {
 		for (auto it = inverses.rbegin(); it != inverses.rend(); ++it)
 			std::move(it->begin(), it->end(), std::back_inserter(changes->Inverse));
 
-		const BrickSnapshot after(editor.Release());
+		const SteleSnapshot after(builder.Release());
 		{
 			std::lock_guard lock(m_SnapshotMutex);
 			m_Snapshot = after;
@@ -382,15 +383,15 @@ namespace Ethane {
 		return result;
 	}
 
-	BrickSubscription Brick::Subscribe(Listener listener)
+	SteleSubscription Stele::Subscribe(Listener listener)
 	{
 		std::lock_guard lock(m_Listeners->Mutex);
 		const uint64_t id = m_Listeners->NextId++;
 		m_Listeners->List.emplace_back(id, std::move(listener));
-		return BrickSubscription(m_Listeners, id);
+		return SteleSubscription(m_Listeners, id);
 	}
 
-	BrickSubscription& BrickSubscription::operator=(BrickSubscription&& other) noexcept
+	SteleSubscription& SteleSubscription::operator=(SteleSubscription&& other) noexcept
 	{
 		if (this != &other)
 		{
@@ -402,7 +403,7 @@ namespace Ethane {
 		return *this;
 	}
 
-	void BrickSubscription::Reset()
+	void SteleSubscription::Reset()
 	{
 		if (auto listeners = m_Listeners.lock())
 		{
