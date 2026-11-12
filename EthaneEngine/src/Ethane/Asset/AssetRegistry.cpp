@@ -22,6 +22,20 @@ namespace Ethane {
 
 	}
 
+	AssetKind AssetRegistry::KindOf(const std::filesystem::path& path)
+	{
+		std::string extension = path.extension().string();
+		std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+		// What Mesh::Load (assimp) and ImageLoader (stb_image) are used for
+		static const std::unordered_set<std::string> meshes = { ".fbx", ".obj", ".gltf", ".glb", ".dae", ".3ds", ".blend", ".ply", ".stl" };
+		static const std::unordered_set<std::string> textures = { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".hdr", ".psd", ".gif" };
+		if (meshes.contains(extension))
+			return AssetKind::Mesh;
+		if (textures.contains(extension))
+			return AssetKind::Texture;
+		return AssetKind::Any;
+	}
+
 	std::string AssetRegistry::Normalize(const std::filesystem::path& path)
 	{
 		return path.lexically_normal().generic_string();

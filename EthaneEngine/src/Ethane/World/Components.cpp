@@ -23,14 +23,14 @@ namespace Ethane {
 			.Field("Scale", &TransformComponent::Scale, FieldFlags::None, { .Speed = 0.01f });
 
 		registry.Register<MeshComponent>("Mesh")
-			.Field("Mesh", &MeshComponent::Mesh)
+			.Field("Mesh", &MeshComponent::Mesh, FieldFlags::None, { .Asset = AssetKind::Mesh })
 			.Field("Visible", &MeshComponent::Visible);
 
 		registry.Register<MaterialComponent>("Material")
 			.Field("BaseColor", &MaterialComponent::BaseColor, FieldFlags::Color)
 			.Field("Metallic", &MaterialComponent::Metallic, FieldFlags::None, { .Min = 0.0f, .Max = 1.0f })
 			.Field("Roughness", &MaterialComponent::Roughness, FieldFlags::None, { .Min = 0.0f, .Max = 1.0f })
-			.Field("BaseColorTexture", &MaterialComponent::BaseColorTexture);
+			.Field("BaseColorTexture", &MaterialComponent::BaseColorTexture, FieldFlags::None, { .Asset = AssetKind::Texture });
 
 		registry.Register<DirectionalLightComponent>("DirectionalLight")
 			.Field("Color", &DirectionalLightComponent::Color, FieldFlags::Color)

@@ -77,6 +77,7 @@ namespace Ethane {
 		float Min = 0.0f;
 		float Max = 0.0f;
 		float Speed = 0.0f;
+		AssetKind Asset = AssetKind::Any; // Asset fields: which files fit (the inspector lists only those)
 	};
 
 	struct TypeInfo;

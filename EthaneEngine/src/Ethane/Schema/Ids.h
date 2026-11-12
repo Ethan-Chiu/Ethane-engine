@@ -39,6 +39,9 @@ namespace Ethane {
 		constexpr auto operator<=>(const ElementId&) const = default;
 	};
 
+	// What kind of file an asset is, as far as its extension tells (AssetRegistry::KindOf)
+	enum class AssetKind : uint8_t { Any, Mesh, Texture };
+
 	// Reference to an asset by its handle; 0 is "no asset"
 	struct AssetId
 	{

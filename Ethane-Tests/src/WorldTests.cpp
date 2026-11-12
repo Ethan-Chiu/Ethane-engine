@@ -341,3 +341,11 @@ TEST_CASE("EnttWorld: the view comes from the primary camera")
 	CHECK(Near(origin, glm::vec3(0.0f, 0.0f, -glm::length(glm::vec3(0.0f, 2.0f, 10.0f)))));
 	CHECK(Near(glm::vec3(view.Projection[1][1]), glm::vec3(1.0f / std::tan(glm::radians(30.0f)))));
 }
+
+TEST_CASE("Components: asset fields say which kind of file they take")
+{
+	TypeRegistry types;
+	RegisterEngineComponents(types);
+	CHECK(types.Find<MeshComponent>()->FindField("Mesh")->Meta.Asset == AssetKind::Mesh);
+	CHECK(types.Find<MaterialComponent>()->FindField("BaseColorTexture")->Meta.Asset == AssetKind::Texture);
+}

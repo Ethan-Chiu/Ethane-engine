@@ -255,9 +255,11 @@ namespace Ethane {
 				{
 					if (ImGui::Selectable("(none)", !v.IsValid()))
 						chosen = AssetId{};
+					// Only files of the kind the field takes (a texture field lists images)
 					for (const auto& [asset, path] : registry.Entries())
-						if (ImGui::Selectable(path.generic_string().c_str(), asset == v))
-							chosen = asset;
+						if (meta.Asset == AssetKind::Any || AssetRegistry::KindOf(path) == meta.Asset)
+							if (ImGui::Selectable(path.generic_string().c_str(), asset == v))
+								chosen = asset;
 					ImGui::EndCombo();
 				}
 				if (ImGui::IsItemHovered() && v.IsValid())

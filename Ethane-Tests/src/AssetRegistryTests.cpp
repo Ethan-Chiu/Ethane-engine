@@ -72,3 +72,13 @@ TEST_CASE("AssetRegistry: YAML round trip and file save / load")
 	CHECK(!loaded.FromYaml("Assets:\n  - Id: 01\n    Path: x\n  - Id: 02\n    Path: x"));
 	CHECK(loaded.Size() == 2); // failed loads leave it unchanged
 }
+
+TEST_CASE("AssetRegistry: the kind of a file comes from its extension")
+{
+	CHECK(AssetRegistry::KindOf("res/meshes/default/Cube.fbx") == AssetKind::Mesh);
+	CHECK(AssetRegistry::KindOf("models/Floor.OBJ") == AssetKind::Mesh);
+	CHECK(AssetRegistry::KindOf("textures/test.png") == AssetKind::Texture);
+	CHECK(AssetRegistry::KindOf("textures/photo.JPEG") == AssetKind::Texture);
+	CHECK(AssetRegistry::KindOf("steles/Demo.stele") == AssetKind::Any);
+	CHECK(AssetRegistry::KindOf("no_extension") == AssetKind::Any);
+}
