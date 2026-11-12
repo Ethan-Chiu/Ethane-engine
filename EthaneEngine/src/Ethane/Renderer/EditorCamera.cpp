@@ -50,22 +50,15 @@ namespace Ethane {
 		return 0.8f;
 	}
 
-	float EditorCamera::ZoomSpeed() const
+	void EditorCamera::OnUpdate(Timestep ts, bool handleInput)
 	{
-		float distance = m_Distance * 0.2f;
-		distance = std::max(distance, 0.0f);
-		float speed = distance * distance;
-		speed = std::min(speed, 100.0f); // max speed = 100
-		return speed;
-	}
+		// Track the mouse every frame: a delta measured across frames without input would jump the camera
+		const glm::vec2 mouse{ Input::GetMouseX(), Input::GetMouseY() };
+		const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+		m_InitialMousePosition = mouse;
 
-	void EditorCamera::OnUpdate(Timestep ts)
-	{
-		if (Input::IsKeyPressed(Key::LeftAlt))
+		if (handleInput && Input::IsKeyPressed(Key::LeftAlt))
 		{
-			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-			m_InitialMousePosition = mouse;
 
 			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MousePan(delta);
@@ -108,11 +101,20 @@ namespace Ethane {
 
 	void EditorCamera::MouseZoom(float delta)
 	{
-		m_Distance -= delta * ZoomSpeed();
-		if (m_Distance < 1.0f)
+		// Each step scales the distance by the same factor (one scroll notch: about 18%), so zooming
+		// feels the same near and far and zooming out undoes zooming in
+		constexpr float kMinDistance = 0.5f, kMaxDistance = 500.0f;
+		const float factor = std::exp(-2.0f * delta);
+		const float distance = m_Distance * factor;
+		if (distance < kMinDistance)
 		{
-			m_FocalPoint += GetForwardDirection();
-			m_Distance = 1.0f;
+			// Closest zoom reached: keep moving forward, the focal point along with the camera
+			m_FocalPoint += GetForwardDirection() * (kMinDistance - distance) * (1.0f / kMinDistance);
+			m_Distance = kMinDistance;
+		}
+		else
+		{
+			m_Distance = std::min(distance, kMaxDistance);
 		}
 	}
 

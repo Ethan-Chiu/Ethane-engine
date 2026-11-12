@@ -15,8 +15,10 @@ namespace Ethane{
 		EditorCamera() = default;
 		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip);
 
-		void OnUpdate(Timestep ts);
-		void OnEvent(Event & e);
+		// Call every frame. `handleInput`: whether mouse / keyboard may move the camera now (e.g. the cursor
+		// is over the viewport); the mouse is tracked either way, so input resumes without a jump.
+		void OnUpdate(Timestep ts, bool handleInput = true);
+		void OnEvent(Event & e); // scroll to zoom
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
@@ -58,7 +60,6 @@ namespace Ethane{
 
 		std::pair<float, float> PanSpeed() const;
 		float RotationSpeed() const;
-		float ZoomSpeed() const;
 	private:
 		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 
