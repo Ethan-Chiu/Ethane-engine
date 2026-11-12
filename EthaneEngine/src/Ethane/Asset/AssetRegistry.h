@@ -31,6 +31,9 @@ namespace Ethane {
 		// Points an existing id at another file (after moving or renaming it)
 		bool Relocate(AssetId id, const std::filesystem::path& newPath);
 
+		// Every registered asset, sorted by path
+		std::vector<std::pair<AssetId, std::filesystem::path>> Entries() const;
+
 		size_t Size() const;
 		bool IsDirty() const; // changed since the last Load / Save
 

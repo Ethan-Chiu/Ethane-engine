@@ -75,6 +75,21 @@ namespace Ethane {
 		return true;
 	}
 
+	std::vector<std::pair<AssetId, std::filesystem::path>> AssetRegistry::Entries() const
+	{
+		std::vector<std::pair<std::string, AssetId>> sorted;
+		{
+			std::lock_guard lock(m_Mutex);
+			sorted.assign(m_Ids.begin(), m_Ids.end());
+		}
+		std::sort(sorted.begin(), sorted.end());
+		std::vector<std::pair<AssetId, std::filesystem::path>> entries;
+		entries.reserve(sorted.size());
+		for (auto& [path, id] : sorted)
+			entries.emplace_back(id, std::filesystem::path(path));
+		return entries;
+	}
+
 	size_t AssetRegistry::Size() const
 	{
 		std::lock_guard lock(m_Mutex);

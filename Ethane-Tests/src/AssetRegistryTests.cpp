@@ -22,6 +22,10 @@ TEST_CASE("AssetRegistry: import gives one stable id per path")
 	AssetId sphere = registry.Import("res/meshes/default/Sphere.fbx");
 	CHECK(sphere != cube);
 	CHECK(registry.Size() == 2);
+	auto entries = registry.Entries();
+	REQUIRE(entries.size() == 2);
+	CHECK(entries[0].first == cube); // sorted by path: Cube before Sphere
+	CHECK(entries[1].second.generic_string() == "res/meshes/default/Sphere.fbx");
 	CHECK(!registry.Find("missing.fbx").IsValid());
 	CHECK(!registry.GetPath(AssetId{ 1 }));
 }
