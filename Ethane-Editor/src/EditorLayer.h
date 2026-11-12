@@ -50,6 +50,8 @@ namespace Ethane {
 		void Play();
 		void Stop();
 		bool IsPlaying() const { return m_PlayWorld != nullptr; }
+		// The editor camera takes input only while it's what the viewport shows (not through a play camera)
+		bool EditorCameraInControl() const { return !IsPlaying() || !m_PlayHasCamera; }
 		void DrawViewportToolbar();
 
 		void NewStele();

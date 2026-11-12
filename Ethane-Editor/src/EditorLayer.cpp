@@ -106,9 +106,7 @@ namespace Ethane {
 		}
 		m_Camera.SetViewportSize(static_cast<float>(spec.Width), static_cast<float>(spec.Height));
 
-		if (m_ViewportHovered) {
-			m_Camera.OnUpdate(ts);
-		}
+		m_Camera.OnUpdate(ts, m_ViewportHovered && EditorCameraInControl());
 		if (IsPlaying()) {
 			m_PlayWorld->Update({ .DeltaTime = ts });
 		} else if (OpenStele* stele = m_Context->Active()) {
@@ -134,7 +132,9 @@ namespace Ethane {
 	void EditorLayer::OnEvent(Event& e)
 	{
 		// Reaches here only when ImGui doesn't want the event, or the cursor is over the viewport
-		m_Camera.OnEvent(e);
+		if (EditorCameraInControl()) {
+			m_Camera.OnEvent(e);
+		}
 	}
 
 	void EditorLayer::OnImGuiRender()
