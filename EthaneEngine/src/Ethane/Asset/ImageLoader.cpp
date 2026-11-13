@@ -49,4 +49,37 @@ namespace Ethane {
         stbi_image_free(resource.Data);
     }
 
+    namespace {
+        std::optional<DecodedImage> Own(ImageLoader& loader, ImageResource& image)
+        {
+            DecodedImage decoded{ .Width = image.Width, .Height = image.Height };
+            const uint8_t* pixels = static_cast<const uint8_t*>(image.Data);
+            decoded.Pixels.assign(pixels, pixels + size_t(image.Width) * image.Height * 4);
+            loader.UnloadImage(image);
+            return decoded;
+        }
+    }
+
+    std::optional<DecodedImage> DecodeImage(const std::string& filepath)
+    {
+        ImageLoader loader;
+        ImageResource image{};
+        if (!loader.LoadImage(filepath, image)) {
+            ETH_CORE_WARN("Couldn't decode image {0}", filepath);
+            return std::nullopt;
+        }
+        return Own(loader, image);
+    }
+
+    std::optional<DecodedImage> DecodeImage(const void* encoded, size_t size)
+    {
+        ImageLoader loader;
+        ImageResource image{};
+        if (!loader.LoadImageFromMemory(encoded, size, image)) {
+            ETH_CORE_WARN("Couldn't decode an in-memory image ({0} bytes)", size);
+            return std::nullopt;
+        }
+        return Own(loader, image);
+    }
+
 }

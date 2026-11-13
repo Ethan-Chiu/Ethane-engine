@@ -28,42 +28,36 @@ GfxBackendAPI::API GfxBackendAPI::s_API = GfxBackendAPI::API::Vulkan;
         return nullptr;
     }
 
-    namespace {
-        RefCountPtr<ITexture2D> CreateFromImage(GfxBackendAPI& backend, ImageLoader& loader, ImageResource& image, TextureFilter filter, TextureWrap wrap)
-        {
-            const TextureSpecification spec{
-                .Width  = image.Width,
-                .Height = image.Height,
-                .Format = ImageFormat::RGBA, // ImageLoader always expands to 4 channels
-                .Filter = filter,
-                .Wrap   = wrap,
-            };
-            RefCountPtr<ITexture2D> texture = backend.CreateTexture2D(spec, image.Data); // copies the pixels
-            loader.UnloadImage(image);
-            return texture;
-        }
+    RefCountPtr<ITexture2D> GfxBackendAPI::CreateTexture2DFromImage(const DecodedImage& image, TextureFilter filter, TextureWrap wrap)
+    {
+        const TextureSpecification spec{
+            .Width  = image.Width,
+            .Height = image.Height,
+            .Format = ImageFormat::RGBA, // decoded images are always RGBA8
+            .Filter = filter,
+            .Wrap   = wrap,
+        };
+        return CreateTexture2D(spec, image.Pixels.data()); // copies the pixels
     }
 
     RefCountPtr<ITexture2D> GfxBackendAPI::LoadTexture2D(const std::string& filepath, TextureFilter filter, TextureWrap wrap)
     {
-        ImageLoader loader;
-        ImageResource image{};
-        if (!loader.LoadImage(filepath, image)) {
+        const std::optional<DecodedImage> image = DecodeImage(filepath);
+        if (!image) {
             ETH_CORE_ERROR("Failed to load texture {0}", filepath);
             return {};
         }
-        return CreateFromImage(*this, loader, image, filter, wrap);
+        return CreateTexture2DFromImage(*image, filter, wrap);
     }
 
     RefCountPtr<ITexture2D> GfxBackendAPI::LoadTexture2DFromMemory(const void* encoded, size_t size, TextureFilter filter, TextureWrap wrap)
     {
-        ImageLoader loader;
-        ImageResource image{};
-        if (!loader.LoadImageFromMemory(encoded, size, image)) {
+        const std::optional<DecodedImage> image = DecodeImage(encoded, size);
+        if (!image) {
             ETH_CORE_ERROR("Failed to decode an in-memory texture ({0} bytes)", size);
             return {};
         }
-        return CreateFromImage(*this, loader, image, filter, wrap);
+        return CreateTexture2DFromImage(*image, filter, wrap);
     }
 
     const RefCountPtr<ITexture2D>& GfxBackendAPI::GetDefaultTexture(DefaultTexture which)

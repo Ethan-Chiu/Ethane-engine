@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0D45E778AF2F836AA65695B8 /* MeshImportTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FD253220CB4885D25256D860 /* MeshImportTests.cpp */; };
 		161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DB5260D6BF99690843869716 /* FramePacketTests.cpp */; };
 		20CAD77865197CEAA740B5B8 /* WorldTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE962120D061CE520D16F760 /* WorldTests.cpp */; };
 		7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */; };
@@ -49,6 +50,7 @@
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
 		DB5260D6BF99690843869716 /* FramePacketTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = FramePacketTests.cpp; path = src/FramePacketTests.cpp; sourceTree = "<group>"; };
 		DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
+		FD253220CB4885D25256D860 /* MeshImportTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MeshImportTests.cpp; path = src/MeshImportTests.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +93,7 @@
 				6D662302B179F434A54B7942 /* DeletionQueueTests.cpp */,
 				DB5260D6BF99690843869716 /* FramePacketTests.cpp */,
 				6B79639000F022C26F8C79D0 /* JobSystemTests.cpp */,
+				FD253220CB4885D25256D860 /* MeshImportTests.cpp */,
 				DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */,
 				2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */,
 				1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */,
@@ -194,6 +197,7 @@
 				ACDE647AA0DDADEC25C8C2BA /* DeletionQueueTests.cpp in Sources */,
 				161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */,
 				FAEC64E8C17A5C5A2F7C8328 /* JobSystemTests.cpp in Sources */,
+				0D45E778AF2F836AA65695B8 /* MeshImportTests.cpp in Sources */,
 				B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */,
 				80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */,
 				7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */,

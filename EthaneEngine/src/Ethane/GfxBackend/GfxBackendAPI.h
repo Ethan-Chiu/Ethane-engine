@@ -11,6 +11,8 @@
 
 namespace Ethane {
 
+struct DecodedImage;
+
 class GfxBackendAPI
 {
 public:
@@ -31,6 +33,8 @@ public:
 
     // `pixels`: Width * Height texels of spec.Format, tightly packed, top row first
     virtual RefCountPtr<ITexture2D> CreateTexture2D(const TextureSpecification& spec, const void* pixels) = 0;
+    // Uploads decoded pixels (DecodeImage, on any thread); the image itself can go afterwards
+    RefCountPtr<ITexture2D> CreateTexture2DFromImage(const DecodedImage& image, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
     // Loads an image file as RGBA8 (null if the file can't be read)
     RefCountPtr<ITexture2D> LoadTexture2D(const std::string& filepath, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
     // Same, from an encoded image (png, jpg, ...) in memory

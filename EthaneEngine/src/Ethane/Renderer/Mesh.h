@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Ethane/Asset/ImageLoader.h"
 #include "Ethane/Core/Base.h"
 #include "Ethane/GfxBackend/GfxObject.h"
 #include "Ethane/Math/AABB.h"
@@ -43,13 +44,40 @@ namespace Ethane {
         std::string Name;
     };
 
+    // A model file read into memory, its textures decoded: everything Mesh::Create needs, made without the
+    // GPU, so on any thread (Mesh::Import)
+    struct MeshImport
+    {
+        struct Material
+        {
+            MaterialData Factors; // its texture members are left empty: the images below become them
+            std::shared_ptr<const DecodedImage> BaseColor;
+            std::shared_ptr<const DecodedImage> Normal;
+            std::shared_ptr<const DecodedImage> MetallicRoughness;
+        };
+
+        std::string Path;
+        std::vector<MeshVertex> Vertices;
+        std::vector<uint32_t> Indices;
+        std::vector<Submesh> Submeshes;
+        std::vector<MeshNode> Nodes;
+        std::vector<Material> Materials; // by Submesh::MaterialIndex; at least one
+        AABB BoundingBox;
+    };
+
     // A model file (anything assimp reads: fbx, obj, gltf, ...) uploaded to GPU buffers, with the file's
     // materials (factors + textures, loaded relative to the file or from embedded data).
     // The CPU copy of the vertices is dropped after the upload.
     class Mesh
     {
     public:
-        // Returns nullptr (and logs why) if the file can't be read or has no triangles
+        // Reads the file and decodes its textures; no GPU work, safe on any thread. nullopt (and logs why) if
+        // the file can't be read or has no triangles.
+        static std::optional<MeshImport> Import(const std::string& path);
+        // Uploads an import (on the thread that creates GPU resources); images shared by several materials
+        // become one texture
+        static Ref<Mesh> Create(GfxBackendAPI& backend, const MeshImport& import);
+        // Import, then Create; nullptr if the import fails
         static Ref<Mesh> Load(GfxBackendAPI& backend, const std::string& path);
 
         // Vertex input of MeshVertex, in order: a_Position, a_Normal, a_Tangent, a_Binormal, a_TexCoord
