@@ -51,7 +51,7 @@ as its own commits.
 
 - [ ] Job system and a parallel system scheduler
 - [ ] Render thread with pipelined frame packets
-- [ ] Deferred GPU resource deletion (also removes the viewport-resize stall)
+- [x] Deferred GPU resource deletion (also removes the viewport-resize stall)
 
 ## 8. Collaborative editing
 

@@ -32,11 +32,14 @@ namespace Ethane {
         void Reset();
 
         void AllocateAndBeginSingleUse(const vk::raii::CommandPool& pool);
-        // Ends, submits to `queue`, waits for the queue to be idle, then frees the buffer
+        // Ends, submits to `queue`, waits for this command buffer to finish, then frees it
         void EndSingleUse(const vk::raii::Queue& queue);
 
         void AllocateAndBeginSingleUse(QueueFamilyTypes type);
         void EndSingleUse(QueueFamilyTypes type);
+        // Submits without waiting: for work nothing on the CPU waits for (later submissions on the queue are
+        // ordered after its barriers). The command buffer is freed through the device's deletion queue.
+        void EndSingleUseAsync(QueueFamilyTypes type);
 
         // Begins `renderPass` on `framebuffer` and sets the viewport (y up) and scissor to cover `extent`
         void BeginRenderPass(const VulkanRenderPass& renderPass, vk::Framebuffer framebuffer, vk::Extent2D extent,

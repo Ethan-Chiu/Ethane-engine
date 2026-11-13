@@ -80,12 +80,13 @@ namespace Ethane {
     {
         End();
 
-        // Submit the queue
+        // Submit, and wait for this command buffer only: queue.waitIdle() would also wait for every frame in
+        // flight on the queue, a full stall (e.g. on each viewport resize)
+        const vk::raii::Fence done(m_Device->Get(), vk::FenceCreateInfo{});
         const vk::CommandBuffer handle = *m_CommandBuffer;
-        queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle });
-
-        // Wait for it to finish
-        queue.waitIdle();
+        queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
+        [[maybe_unused]] const vk::Result result = m_Device->Get().waitForFences(*done, vk::True, UINT64_MAX);
+        ETH_CORE_ASSERT(result == vk::Result::eSuccess, "Waiting for a single-use command buffer failed");
 
         // Free the command buffer.
         Free();
@@ -99,6 +100,23 @@ namespace Ethane {
     void VulkanCommandBuffer::EndSingleUse(QueueFamilyTypes type)
     {
         EndSingleUse(m_Device->GetQueue(type));
+    }
+
+    void VulkanCommandBuffer::EndSingleUseAsync(QueueFamilyTypes type)
+    {
+        End();
+        vk::raii::Fence done(m_Device->Get(), vk::FenceCreateInfo{});
+        const vk::CommandBuffer handle = *m_CommandBuffer;
+        m_Device->GetQueue(type).submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
+
+        // Retired with the frame being recorded: by the time that's collected the work is long done, but the
+        // fence is checked before the command buffer is freed, to be sure
+        const vk::Device device = *m_Device->Get();
+        const vk::Fence fence = *done;
+        m_Device->Retire(VulkanDeletionQueue::Call([device, fence] { (void)device.waitForFences(fence, vk::True, UINT64_MAX); }),
+                         std::move(m_CommandBuffer), std::move(done));
+        m_CommandBuffer = nullptr;
+        m_State = CommandBufferState::NOT_ALLOCATED;
     }
 
 

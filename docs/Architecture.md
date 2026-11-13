@@ -174,9 +174,13 @@ or ECS. It resolves asset ids through the `AssetLibrary` and owns the GPU materi
 own, and per-element ones for draw items with material params, which it releases a few frames after the
 element stops being drawn (so the frames still in flight can finish with them).
 
+GPU objects are never destroyed while a frame in flight may use them, and never by waiting for the GPU:
+a released Vulkan resource hands its handles to the device's deletion queue, tagged with the frame
+being recorded, and they're destroyed when that frame is known to have finished (when the frame that
+reuses its slot starts). Resizing a render target therefore costs no stall.
+
 Later: with a render thread, the simulation builds packet N+1 while the renderer records packet N.
-Picking draws each item's `ElementId` into an ID buffer. GPU objects in general are destroyed a few
-frames late (keyed by frame index) instead of waiting for the device to go idle.
+Picking draws each item's `ElementId` into an ID buffer.
 
 ## Engine components
 

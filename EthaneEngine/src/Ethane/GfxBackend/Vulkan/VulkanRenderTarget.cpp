@@ -38,9 +38,6 @@ namespace Ethane {
             return;
         }
         ETH_CORE_ASSERT(!m_Device->IsFrameInProgress(), "Resize a render target outside of frame recording");
-        // Frames in flight may still draw into / sample the old images
-        // TODO: deferred deletion instead of a full stall
-        m_Device->Get().waitIdle();
         m_Spec.Width = width;
         m_Spec.Height = height;
         CreateImages();
@@ -82,12 +79,21 @@ namespace Ethane {
         return attachment;
     }
 
-    void VulkanRenderTarget::CreateImages()
+    void VulkanRenderTarget::RetireImages()
     {
-        // replaced in reverse creation order
+        // in reverse creation order: framebuffer -> views -> images -> memory
+        m_Device->Retire(std::move(m_Framebuffer),
+                         std::move(m_Depth.View), std::move(m_Depth.Image), std::move(m_Depth.Memory),
+                         std::move(m_Color.View), std::move(m_Color.Image), std::move(m_Color.Memory));
         m_Framebuffer = nullptr;
         m_Depth.Reset();
         m_Color.Reset();
+    }
+
+    void VulkanRenderTarget::CreateImages()
+    {
+        // Frames in flight may still use the old ones (no waiting for the GPU)
+        RetireImages();
 
         using Usage = vk::ImageUsageFlagBits;
         m_Color = CreateAttachment(m_ColorFormat, Usage::eColorAttachment | Usage::eSampled, vk::ImageAspectFlagBits::eColor);
@@ -120,7 +126,8 @@ namespace Ethane {
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .image               = *m_Color.Image,
                 .subresourceRange    = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }});
-        cmd.EndSingleUse(QueueFamilyTypes::Graphics);
+        // No waiting: the frames that use the image are submitted after this, so they see the new layout
+        cmd.EndSingleUseAsync(QueueFamilyTypes::Graphics);
     }
 
 }

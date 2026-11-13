@@ -10,6 +10,7 @@ namespace Ethane {
     {
     public:
         VulkanRenderTarget(const VulkanDevice* device, const RenderTargetSpecification& spec);
+        ~VulkanRenderTarget() override { RetireImages(); }
 
         virtual const RenderTargetSpecification& GetSpecification() const override { return m_Spec; }
         virtual void Resize(uint32_t width, uint32_t height) override;
@@ -25,8 +26,11 @@ namespace Ethane {
         uint64_t GetImageId() const { return m_ImageId; }
 
     private:
-        // (Re)creates the images, views and framebuffer at m_Spec's size; the GPU must not be using the old ones
+        // (Re)creates the images, views and framebuffer at m_Spec's size, retiring the old ones
         void CreateImages();
+        // Hands the framebuffer, views, images and memory to the device's deletion queue: frames in flight
+        // may still draw into / sample them
+        void RetireImages();
 
         struct Attachment
         {
