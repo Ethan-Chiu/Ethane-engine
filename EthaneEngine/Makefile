@@ -104,6 +104,7 @@ GENERATED += $(OBJDIR)/GfxSmokeTest.o
 GENERATED += $(OBJDIR)/ImGuiBuild.o
 GENERATED += $(OBJDIR)/ImGuiLayer.o
 GENERATED += $(OBJDIR)/ImageLoader.o
+GENERATED += $(OBJDIR)/JobSystem.o
 GENERATED += $(OBJDIR)/Layer.o
 GENERATED += $(OBJDIR)/LayerStack.o
 GENERATED += $(OBJDIR)/Log.o
@@ -163,6 +164,7 @@ OBJECTS += $(OBJDIR)/GfxSmokeTest.o
 OBJECTS += $(OBJDIR)/ImGuiBuild.o
 OBJECTS += $(OBJDIR)/ImGuiLayer.o
 OBJECTS += $(OBJDIR)/ImageLoader.o
+OBJECTS += $(OBJDIR)/JobSystem.o
 OBJECTS += $(OBJDIR)/Layer.o
 OBJECTS += $(OBJDIR)/LayerStack.o
 OBJECTS += $(OBJDIR)/Log.o
@@ -282,6 +284,9 @@ $(OBJDIR)/ImageLoader.o: src/Ethane/Asset/ImageLoader.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Application.o: src/Ethane/Core/Application.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/JobSystem.o: src/Ethane/Core/JobSystem.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Layer.o: src/Ethane/Core/Layer.cpp

@@ -22,6 +22,7 @@
 		2903465DEF913DCF5D93649D /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */; };
 		2AE10AFBD256A6AD7B1BB13B /* VulkanDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CF24CCE3ADC7685562A96B23 /* VulkanDevice.cpp */; };
 		2C2349C30AC5E535BFA7E803 /* EditorCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 478665CB472948FD817DFC0B /* EditorCamera.cpp */; };
+		2FB2F055A40D354721F0BE95 /* JobSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 527FEB5D64A9C80F989AB19D /* JobSystem.cpp */; };
 		2FD725DEC8240B90F66B0C1E /* Script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1FDBF46F64C64B838739D86 /* Script.cpp */; };
 		32724596C26820487F5CCBD6 /* VulkanShaderCompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B709393EDCB133B0FAE1B77E /* VulkanShaderCompiler.cpp */; };
 		33F19BC9DB67377B842C4209 /* VulkanShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54C709D13369A543E84BA811 /* VulkanShader.cpp */; };
@@ -201,6 +202,7 @@
 		27875FB506A479E7E2ADD5F5 /* type_vec3.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_vec3.hpp; path = vendor/glm/glm/detail/type_vec3.hpp; sourceTree = "<group>"; };
 		27FF17FBC5E018AD9D5E5E3B /* func_geometric.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = func_geometric.inl; path = vendor/glm/glm/detail/func_geometric.inl; sourceTree = "<group>"; };
 		287A8A31EB3AEAA3486FC871 /* optimum_pow.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = optimum_pow.hpp; path = vendor/glm/glm/gtx/optimum_pow.hpp; sourceTree = "<group>"; };
+		29614687F7849A397E92ECC7 /* JobSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JobSystem.h; path = src/Ethane/Core/JobSystem.h; sourceTree = "<group>"; };
 		29D3D13B44A03FED4870D77B /* TypeRegistry.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TypeRegistry.cpp; path = src/Ethane/Schema/TypeRegistry.cpp; sourceTree = "<group>"; };
 		2A788FD881DE02CA33EC1E18 /* bitfield.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = bitfield.inl; path = vendor/glm/glm/gtc/bitfield.inl; sourceTree = "<group>"; };
 		2B44F4B7C3BCE229EFA3D2F7 /* scalar_multiplication.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_multiplication.hpp; path = vendor/glm/glm/gtx/scalar_multiplication.hpp; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 		510BA0E1450AEA53C9F5FF21 /* vector_float1.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_float1.hpp; path = vendor/glm/glm/ext/vector_float1.hpp; sourceTree = "<group>"; };
 		51C6289942BD968BAEC116D9 /* gradient_paint.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = gradient_paint.inl; path = vendor/glm/glm/gtx/gradient_paint.inl; sourceTree = "<group>"; };
 		51F3BA7B14B41AED71E8F8BB /* ComponentValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ComponentValue.h; path = src/Ethane/Stele/ComponentValue.h; sourceTree = "<group>"; };
+		527FEB5D64A9C80F989AB19D /* JobSystem.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = JobSystem.cpp; path = src/Ethane/Core/JobSystem.cpp; sourceTree = "<group>"; };
 		529960D91927584B87297F19 /* functions.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = functions.inl; path = vendor/glm/glm/gtx/functions.inl; sourceTree = "<group>"; };
 		52E5123315A572A572DA5073 /* string_cast.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = string_cast.hpp; path = vendor/glm/glm/gtx/string_cast.hpp; sourceTree = "<group>"; };
 		5344DE7752E7C1A98D3C74B7 /* type_mat4x4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat4x4.hpp; path = vendor/glm/glm/detail/type_mat4x4.hpp; sourceTree = "<group>"; };
@@ -1200,6 +1203,8 @@
 				484B211D6A16CE4FA6CBF75D /* Base.h */,
 				A0C821DF850F2A1108FC581F /* EntryPoint.h */,
 				9B40D6275EAC97D99D503C67 /* Input.h */,
+				527FEB5D64A9C80F989AB19D /* JobSystem.cpp */,
+				29614687F7849A397E92ECC7 /* JobSystem.h */,
 				1D499215B2C05147215CA855 /* KeyCodes.h */,
 				8160B437B359FEE92D393A77 /* Layer.cpp */,
 				860B23214976E4D3881A8961 /* Layer.h */,
@@ -1750,6 +1755,7 @@
 				B278A0BE4C9C95F0FCC276FE /* AssetRegistry.cpp in Sources */,
 				0A575D201A3C895206B01360 /* ImageLoader.cpp in Sources */,
 				A7DC1E7D98D38C6F04D70CBD /* Application.cpp in Sources */,
+				2FB2F055A40D354721F0BE95 /* JobSystem.cpp in Sources */,
 				EE15C9CF457B3CC1F789580F /* Layer.cpp in Sources */,
 				0073B21BF472FB8D795E105B /* LayerStack.cpp in Sources */,
 				1C4A5799AED8218B17B0C5D9 /* Log.cpp in Sources */,
