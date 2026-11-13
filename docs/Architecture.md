@@ -157,7 +157,10 @@ or more than about 10–15 engine systems.
 
 Steles reference files by `AssetId`, never by path. An `AssetRegistry` maps ids to paths and is saved
 as YAML (the editor's is `Ethane-Editor/assets/AssetRegistry.yaml`, committed so ids stay stable), so
-moving or renaming a file only changes its registry entry. `AssetRegistry::Import(path)` gives a
+moving or renaming a file only changes its registry entry. Loading is in the background: the
+`AssetLibrary` reads and decodes files on the application's `JobSystem` (`Mesh::Import`,
+`DecodeImage`: no GPU), and uploads the results on the main thread in `Update()` each frame; until
+then `GetMesh` returns null and the item isn't drawn. Uploads don't wait for the GPU either. `AssetRegistry::Import(path)` gives a
 file's id, registering it the first time. An `AssetLibrary` loads meshes and textures by id and keeps
 them loaded; ids that are unknown or fail to load give null, logged once.
 

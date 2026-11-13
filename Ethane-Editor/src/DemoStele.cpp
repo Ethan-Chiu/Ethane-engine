@@ -40,7 +40,7 @@ namespace Ethane {
 
 		// Textures and factors straight from the file's .mtl: no material component
 		const AssetId floorMesh = registry.Import("assets/models/CobblestoneFloor/CobblestoneFloor.obj");
-		if (Ref<Mesh> floor = assets.GetMesh(floorMesh)) {
+		if (Ref<Mesh> floor = assets.LoadMesh(floorMesh)) { // needed now: its bounds place it
 			const AABB& bounds = floor->GetBoundingBox();
 			const float scale = 12.0f / std::max({ bounds.Max.x - bounds.Min.x, bounds.Max.z - bounds.Min.z, 1e-6f });
 			const ElementId element = tx.CreateElement("Floor");
@@ -66,7 +66,7 @@ namespace Ethane {
 		{
 			const Shape& shape = shapes[i];
 			const AssetId meshId = registry.Import(std::string("res/meshes/default/") + shape.Name + ".fbx");
-			Ref<Mesh> mesh = assets.GetMesh(meshId);
+			Ref<Mesh> mesh = assets.LoadMesh(meshId);
 			if (!mesh) {
 				continue; // logged by the library
 			}

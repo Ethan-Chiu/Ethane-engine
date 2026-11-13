@@ -6,6 +6,7 @@
 #include "Window.h"
 #include "LayerStack.h"
 #include "Ethane/GfxBackend/GfxBackendAPI.h"
+#include "Ethane/Core/JobSystem.h"
 #include "Ethane/Core/Timestep.h"
 #include "Ethane/ImGui/ImGuiLayer.h"
 
@@ -48,11 +49,15 @@ namespace Ethane
 		void Close();
 
 		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
+		// Worker threads for background work (asset loading, ...)
+		JobSystem& GetJobSystem() { return *m_Jobs; }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:
 		ApplicationCommandLineArgs m_CommandLineArgs;
+		// First member: destroyed last, after the layers whose jobs may still be queued
+		Scope<JobSystem> m_Jobs = CreateScope<JobSystem>();
 		Scope<Window> m_Window;
         Scope<GfxBackendAPI> m_RendererBackend;
         RefCountPtr<IWindowTarget> m_WindowTarget;

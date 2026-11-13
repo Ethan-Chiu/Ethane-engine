@@ -68,7 +68,8 @@ namespace Ethane {
 		if (std::filesystem::exists(kAssetRegistryFile) && !m_AssetRegistry.Load(kAssetRegistryFile, &error)) {
 			ETH_WARN("Couldn't read {}: {}", kAssetRegistryFile, error);
 		}
-		m_Assets = CreateScope<AssetLibrary>(backend, m_AssetRegistry);
+		// Meshes and textures load on worker threads; the library uploads them as they finish (OnUpdate)
+		m_Assets = CreateScope<AssetLibrary>(backend, m_AssetRegistry, &Application::Get().GetJobSystem());
 		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl");
 		m_Context = CreateScope<EditorContext>(*m_Assets, kAssetRegistryFile);
 
@@ -98,6 +99,8 @@ namespace Ethane {
 
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
+		m_Assets->Update();
+
 		// The viewport panel's size from the last UI frame. Applied here, before the UI asks for the image
 		// (resizing replaces it): the panel shows the new size from this frame on.
 		const RenderTargetSpecification& spec = m_ViewportTarget->GetSpecification();
@@ -375,7 +378,9 @@ namespace Ethane {
 
 		const RendererStats& stats = m_Renderer->GetStats();
 		ImGui::Text("Meshes: %u, draw calls: %u, triangles: %u", stats.DrawItems, stats.DrawCalls, stats.Triangles);
-		if (stats.MissingMeshes > 0) {
+		if (const size_t loading = m_Assets->PendingCount(); loading > 0) {
+			ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Loading %zu assets...", loading);
+		} else if (stats.MissingMeshes > 0) {
 			ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "%u meshes couldn't be loaded", stats.MissingMeshes);
 		}
 

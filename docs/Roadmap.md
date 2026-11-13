@@ -49,7 +49,8 @@ as its own commits.
 
 ## 7. Threads
 
-- [ ] Job system and a parallel system scheduler
+- [x] Job system (`JobSystem`: Submit / Wait / ParallelFor) and background asset loading
+- [ ] Parallel system scheduler (once there are enough systems to profile)
 - [ ] Render thread with pipelined frame packets
 - [x] Deferred GPU resource deletion (also removes the viewport-resize stall)
 

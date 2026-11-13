@@ -20,7 +20,7 @@ namespace Ethane {
 		uint32_t DrawItems = 0;
 		uint32_t DrawCalls = 0;     // one per placed submesh
 		uint32_t Triangles = 0;
-		uint32_t MissingMeshes = 0; // draw items whose mesh couldn't be loaded
+		uint32_t MissingMeshes = 0; // draw items whose mesh isn't available: still loading, or failed
 	};
 
 	// Turns frame packets into GPU work. Owns the mesh shader and pipeline, the per-frame uniforms and
