@@ -457,19 +457,28 @@ VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
         .queueFamilyIndex = indices.Compute.value()});
 }
 
+void VulkanDevice::WaitIdle() const
+{
+    if (!IsInitialized()) {
+        return;
+    }
+    m_LogicalDevice.waitIdle();
+    m_DeletionQueue->Flush();
+}
+
 void VulkanDevice::Destroy()
 {
     if (!IsInitialized()) {
         return;
     }
 
+    // Retired objects belong to resources already released: destroy them while the device is still alive
+    WaitIdle();
+
     if (const int live = VulkanLiveResource::Count(); live != 0) {
         ETH_CORE_ERROR("{0} Vulkan resource(s) still alive at device destruction! Release every buffer/shader/pipeline/window target before GfxBackendAPI::Shutdown().", live);
         ETH_CORE_ASSERT(false, "Vulkan resources outlive the logical device");
     }
-
-    // make sure nothing is still in flight before releasing anything
-    m_LogicalDevice.waitIdle();
 
     m_GraphicsCommandPool = nullptr;
     m_ComputeCommandPool  = nullptr;

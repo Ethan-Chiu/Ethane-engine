@@ -19,9 +19,6 @@ namespace Ethane {
 			glm::vec4 LightRadiance;  // rgb: color * intensity (0 when there's no light)
 		};
 
-		// GPU objects can still be in use by the frames in flight (2) after the last frame that drew
-		// them was recorded: keep unused per-element materials this many Render calls before releasing
-		constexpr uint64_t kFramesBeforeRelease = 3;
 
 	}
 
@@ -133,7 +130,9 @@ namespace Ethane {
 
 	void Renderer::ReleaseUnused()
 	{
-		std::erase_if(m_ElementMaterials, [&](const auto& entry) { return m_Frame - entry.second.LastUsed > kFramesBeforeRelease; });
+		// Materials of elements this frame didn't draw. Safe right away: the backend keeps GPU objects alive
+		// until the frames that used them have finished.
+		std::erase_if(m_ElementMaterials, [&](const auto& entry) { return entry.second.LastUsed != m_Frame; });
 	}
 
 }

@@ -134,7 +134,7 @@ bool VulkanWindowTarget::CreateSwapchain() {
     if (*m_Swapchain)
     {
         ETH_CORE_INFO("Recreating swapchain ({0}x{1})", m_Extent.width, m_Extent.height);
-        device.waitIdle();
+        m_Context->GetDevice().WaitIdle(); // also destroys what was retired
         // everything referencing the old images goes first...
         m_RenderFinished.clear();
         m_Framebuffers.clear();
@@ -367,7 +367,7 @@ void VulkanWindowTarget::EndFrame() {
 void VulkanWindowTarget::Destroy() {
     if (*m_Swapchain || !m_Frames.empty()) {
         // frame slots may still be executing / being presented
-        m_Context->GetDevice().Get().waitIdle();
+        m_Context->GetDevice().WaitIdle();
         m_Frames.clear();
         m_RenderFinished.clear();
         m_Framebuffers.clear();

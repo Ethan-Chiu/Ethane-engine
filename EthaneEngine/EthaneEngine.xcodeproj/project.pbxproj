@@ -505,6 +505,7 @@
 		A61CAA7738AA7469A18318B7 /* extend.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = extend.inl; path = vendor/glm/glm/gtx/extend.inl; sourceTree = "<group>"; };
 		A6E4887539725267A24AF6B5 /* easing.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = easing.inl; path = vendor/glm/glm/gtx/easing.inl; sourceTree = "<group>"; };
 		A779BDAF41D3A6A17E0C0BEF /* matrix_uint3x3_sized.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_uint3x3_sized.hpp; path = vendor/glm/glm/ext/matrix_uint3x3_sized.hpp; sourceTree = "<group>"; };
+		A7E6CEDF3E0FE0D1FF763D1F /* VulkanDeletionQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VulkanDeletionQueue.h; path = src/Ethane/GfxBackend/Vulkan/VulkanDeletionQueue.h; sourceTree = "<group>"; };
 		A86357D31CBD9CC59AA12613 /* euler_angles.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = euler_angles.inl; path = vendor/glm/glm/gtx/euler_angles.inl; sourceTree = "<group>"; };
 		A973ABE11DCDF0D39BB17A21 /* vector_query.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_query.hpp; path = vendor/glm/glm/gtx/vector_query.hpp; sourceTree = "<group>"; };
 		AA1A4E45717F0937FC36DC85 /* vector_double3_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_double3_precision.hpp; path = vendor/glm/glm/ext/vector_double3_precision.hpp; sourceTree = "<group>"; };
@@ -1278,6 +1279,7 @@
 				56437C1FEC6C8E11ADD2EA5F /* VulkanCommandBuffer.h */,
 				698AA8AD7B41E89FF0AFD6ED /* VulkanContext.cpp */,
 				111A04F76B1B1BE932621337 /* VulkanContext.h */,
+				A7E6CEDF3E0FE0D1FF763D1F /* VulkanDeletionQueue.h */,
 				CF24CCE3ADC7685562A96B23 /* VulkanDevice.cpp */,
 				D04434F197A8EFE32260C331 /* VulkanGfxBackendAPI.cpp */,
 				808FC77B16B8D96DD81F35BB /* VulkanGfxBackendAPI.h */,

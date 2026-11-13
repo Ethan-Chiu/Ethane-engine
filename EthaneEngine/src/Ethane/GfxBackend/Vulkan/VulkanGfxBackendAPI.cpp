@@ -60,7 +60,7 @@ RefCountPtr<IBindingSet> VulkanGfxBackendAPI::CreateBindingSet(const RefCountPtr
 
 void VulkanGfxBackendAPI::WaitIdle() {
     if (m_Context.GetDevice().IsInitialized()) {
-        m_Context.GetDevice().Get().waitIdle();
+        m_Context.GetDevice().WaitIdle(); // also destroys everything retired
     }
 }
 

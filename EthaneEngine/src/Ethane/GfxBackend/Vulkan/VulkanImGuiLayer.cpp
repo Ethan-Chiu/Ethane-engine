@@ -78,8 +78,9 @@ namespace Ethane {
 
     void VulkanImGuiLayer::OnDetach()
     {
-        // Application waits for the GPU to go idle before detaching layers
         ReleaseUnusedTextures(true);
+        // The descriptor sets are freed through the deletion queue: run it before the backend's pool goes
+        m_Context.GetDevice().WaitIdle();
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -122,11 +123,12 @@ namespace Ethane {
 
     void VulkanImGuiLayer::ReleaseUnusedTextures(bool all)
     {
-        // A set last used in UI frame N is recorded into GPU frame N; once kMaxFramesInFlight more frames
-        // have started, frame N's fence has been waited on. (Resizing a target waits for the GPU anyway.)
+        // Sets the last UI frame didn't use (e.g. of an image replaced by a resize). Frames in flight may
+        // still draw with them, so they're freed through the device's deletion queue.
         for (auto it = m_Textures.begin(); it != m_Textures.end();) {
-            if (all || it->second.LastUsedFrame + VulkanDevice::kMaxFramesInFlight + 1 < m_FrameCounter) {
-                ImGui_ImplVulkan_RemoveTexture(it->second.Set);
+            if (all || it->second.LastUsedFrame + 1 < m_FrameCounter) {
+                const VkDescriptorSet set = it->second.Set;
+                m_Context.GetDevice().Retire(VulkanDeletionQueue::Call([set] { ImGui_ImplVulkan_RemoveTexture(set); }));
                 it = m_Textures.erase(it);
             } else {
                 ++it;

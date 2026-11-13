@@ -51,7 +51,8 @@ namespace Ethane {
 		if (!*m_GraphicsPipeline && !*m_PipelineLayout) {
 			return;
 		}
-        m_Device->Get().waitIdle();
+        // Frames in flight may still use it: destroyed (pipeline, then layout) once they've finished
+        m_Device->Retire(std::move(m_GraphicsPipeline), std::move(m_PipelineLayout));
 		m_GraphicsPipeline = nullptr;
 		m_PipelineLayout = nullptr;
 	}

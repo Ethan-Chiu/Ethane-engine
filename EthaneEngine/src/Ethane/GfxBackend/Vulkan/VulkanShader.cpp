@@ -52,9 +52,9 @@ namespace Ethane {
         if (m_DescriptorSetLayouts.empty() && m_ShaderModules.empty()) {
             return;
         }
-        m_Device->Get().waitIdle();
-
-		m_PipelineShaderStageCreateInfos.clear();
+		// Pipelines and descriptor sets of frames in flight may still use them: destroyed once they've finished
+		m_PipelineShaderStageCreateInfos.clear(); // points at the modules
+		m_Device->Retire(std::move(m_ShaderModules), std::move(m_DescriptorSetLayouts));
 		m_DescriptorSetLayouts.clear();
 		m_ShaderModules.clear();
 	}

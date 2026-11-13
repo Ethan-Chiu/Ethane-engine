@@ -18,7 +18,8 @@ namespace Ethane {
     {
     public:
         VulkanBindingSet(const VulkanDevice* device, const RefCountPtr<VulkanShader>& shader, uint32_t set);
-        virtual ~VulkanBindingSet() = default;
+        // Frames in flight may still have its sets bound: freed (sets, then pool) once they've finished
+        virtual ~VulkanBindingSet() { m_Device->Retire(std::move(m_Sets), std::move(m_Pool)); }
 
         virtual void SetUniformBuffer(uint32_t binding, const RefCountPtr<IUniformBuffer>& buffer) override;
         virtual void SetTexture(uint32_t binding, const RefCountPtr<ITexture2D>& texture) override;

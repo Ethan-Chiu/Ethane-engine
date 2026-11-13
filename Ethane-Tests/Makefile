@@ -84,6 +84,7 @@ GENERATED :=
 OBJECTS :=
 
 GENERATED += $(OBJDIR)/AssetRegistryTests.o
+GENERATED += $(OBJDIR)/DeletionQueueTests.o
 GENERATED += $(OBJDIR)/FramePacketTests.o
 GENERATED += $(OBJDIR)/SchemaTests.o
 GENERATED += $(OBJDIR)/SteleSerializerTests.o
@@ -91,6 +92,7 @@ GENERATED += $(OBJDIR)/SteleTests.o
 GENERATED += $(OBJDIR)/TestMain.o
 GENERATED += $(OBJDIR)/WorldTests.o
 OBJECTS += $(OBJDIR)/AssetRegistryTests.o
+OBJECTS += $(OBJDIR)/DeletionQueueTests.o
 OBJECTS += $(OBJDIR)/FramePacketTests.o
 OBJECTS += $(OBJDIR)/SchemaTests.o
 OBJECTS += $(OBJDIR)/SteleSerializerTests.o
@@ -161,6 +163,9 @@ endif
 # #############################################
 
 $(OBJDIR)/AssetRegistryTests.o: src/AssetRegistryTests.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/DeletionQueueTests.o: src/DeletionQueueTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/FramePacketTests.o: src/FramePacketTests.cpp

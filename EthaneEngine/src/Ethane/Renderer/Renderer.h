@@ -25,7 +25,7 @@ namespace Ethane {
 
 	// Turns frame packets into GPU work. Owns the mesh shader and pipeline, the per-frame uniforms and
 	// the GPU materials: each mesh's own, and those of elements with material params (kept while the
-	// element keeps being drawn, released a few frames after it stops).
+	// element keeps being drawn, released when a frame doesn't draw it).
 	//
 	// The pipeline is made for one render pass: Render into targets whose passes are compatible with it
 	// (same formats), such as the target the renderer was created for, even after it's resized.
@@ -38,7 +38,7 @@ namespace Ethane {
 
 		// Records the packet into `target`: begins and ends the target's render pass.
 		// Call once per frame: the frame uniforms have one copy per frame in flight, and per-element
-		// materials are released by counting calls.
+		// materials not drawn by this call are released.
 		void Render(ICommandList& commandList, const FramePacket& packet, IRenderTarget& target);
 
 		const RendererStats& GetStats() const { return m_Stats; } // of the last Render

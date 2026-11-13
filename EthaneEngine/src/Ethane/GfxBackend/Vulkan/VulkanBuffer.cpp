@@ -56,6 +56,10 @@ namespace Ethane {
     }
 
     void VulkanBuffer::Destroy() {
+        // Frames in flight may still read it: destroyed (buffer, then memory) once they've finished
+        if (*m_Buffer || *m_Memory) {
+            m_Device->Retire(std::move(m_Buffer), std::move(m_Memory));
+        }
         m_Buffer = nullptr;
         m_Memory = nullptr;
         m_Size = 0;
@@ -96,11 +100,8 @@ namespace Ethane {
         // Copy over the old contents (only the old size exists in the old buffer)
         CopyTo(m_Device, m_Device->GetGraphicsCommandPool(), m_Device->GetGraphicsQueue(), *m_Buffer, 0, *newBuffer, 0, oldSize);
 
-        // Make sure anything potentially using the old buffer is finished.
-        device.waitIdle();
-
-        // Replace (old buffer destroyed before its memory, see member order)
-        m_Buffer = nullptr;
+        // Frames in flight may still read the old buffer: retired, destroyed once they've finished
+        m_Device->Retire(std::move(m_Buffer), std::move(m_Memory));
         m_Memory = std::move(newMemory);
         m_Buffer = std::move(newBuffer);
         m_Size = newSize;

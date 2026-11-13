@@ -15,7 +15,8 @@ namespace Ethane {
     public:
         // `pixels`: spec.Width * spec.Height tightly packed texels of spec.Format, uploaded through a staging buffer
         VulkanTexture2D(const VulkanDevice* device, const TextureSpecification& spec, const void* pixels);
-        virtual ~VulkanTexture2D() = default;
+        // Frames in flight may still sample it: destroyed once they've finished
+        virtual ~VulkanTexture2D() { m_Device->Retire(std::move(m_Sampler), std::move(m_ImageView), std::move(m_Image), std::move(m_Memory)); }
 
         virtual const TextureSpecification& GetSpecification() const override { return m_Specification; }
         uint32_t GetMipLevels() const { return m_MipLevels; }

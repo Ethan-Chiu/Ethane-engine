@@ -11,6 +11,7 @@
 #include <atomic>
 
 #include "Vulkan.h"
+#include "VulkanDeletionQueue.h"
 
 namespace Ethane {
 
@@ -213,9 +214,18 @@ public:
     VulkanDevice(const VulkanDevice&) = delete;
     VulkanDevice& operator=(const VulkanDevice&) = delete;
 
-    // Waits for the GPU, then releases pools -> queues -> device. Safe to call on a null device.
-    // All resources created from this device must be released first (see VulkanLiveResource).
+    // Waits for the GPU, then releases retired objects -> pools -> queues -> device. Safe to call on a null
+    // device. All resources created from this device must be released first (see VulkanLiveResource).
     void Destroy();
+
+    // Hands objects the GPU may still be using to the deletion queue (destroyed in argument order once the
+    // frames that could use them have finished). Use instead of destroying in-use objects or waiting idle.
+    template<typename... T>
+    void Retire(T&&... objects) const { m_DeletionQueue->Retire(m_FrameSerial, std::forward<T>(objects)...); }
+    size_t RetiredCount() const { return m_DeletionQueue->Size(); }
+
+    // Waits until the GPU is idle and destroys everything retired (shutdown, swapchain recreation)
+    void WaitIdle() const;
     bool IsInitialized() const { return static_cast<bool>(*m_LogicalDevice); }
 
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
@@ -240,12 +250,17 @@ public:
     bool IsFrameInProgress() const { return m_FrameInProgress; }
     // Increases with every frame started: tells "earlier in this frame" apart from "in an older frame"
     uint64_t GetFrameSerial() const { return m_FrameSerial; }
+    // Called when a frame starts (after waiting for its slot's fence) and when it's submitted
     void SetFrameState(uint32_t frameIndex, bool inProgress)
     {
         m_FrameIndex = frameIndex;
         m_FrameInProgress = inProgress;
         if (inProgress) {
             m_FrameSerial++;
+            // This slot's previous frame has finished, and so has every frame before it
+            if (m_FrameSerial > kMaxFramesInFlight) {
+                m_DeletionQueue->Collect(m_FrameSerial - kMaxFramesInFlight);
+            }
         }
     }
 
@@ -266,6 +281,9 @@ private:
     uint32_t m_FrameIndex = 0;
     uint64_t m_FrameSerial = 0;
     bool m_FrameInProgress = false;
+
+    // Behind a pointer: the device is movable, the queue (its mutex) isn't
+    std::unique_ptr<VulkanDeletionQueue> m_DeletionQueue = std::make_unique<VulkanDeletionQueue>();
 };
 
 

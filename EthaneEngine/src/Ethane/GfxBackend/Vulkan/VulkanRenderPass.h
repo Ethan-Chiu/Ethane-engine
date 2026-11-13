@@ -10,7 +10,8 @@ namespace Ethane {
 	public:
         VulkanRenderPass() = delete;
 		VulkanRenderPass(const VulkanDevice* device, const std::vector<ImageFormat>& colorAttachmentFormats, ImageFormat depthAttachmentFormat, bool clearOnLoad, bool finalPresent = false);
-		virtual ~VulkanRenderPass() = default;
+		// Frames in flight may still use it: destroyed once they've finished
+		virtual ~VulkanRenderPass() { m_Device->Retire(std::move(m_RenderPass)); }
 
 		// Clears the color attachments to `clearColor` and the depth attachment to 1.0
 		void Begin(const vk::raii::CommandBuffer& cmdBuffer, uint32_t width, uint32_t height, vk::Framebuffer frameBuffer,

@@ -27,7 +27,7 @@ namespace Ethane {
         virtual ImTextureID GetTextureID(const IRenderTarget& target) override;
 
     private:
-        // Frees the descriptors of render target images that no frame in flight can still use
+        // Releases the descriptor sets of render target images the last UI frame didn't show (all: every one)
         void ReleaseUnusedTextures(bool all);
 
     private:

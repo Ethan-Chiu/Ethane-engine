@@ -16,7 +16,7 @@ namespace Ethane {
     {
     public:
         explicit VulkanBuffer(const VulkanDevice* device);
-        ~VulkanBuffer() = default;
+        ~VulkanBuffer() { Destroy(); }
 
         bool CreateVulkanBuffer(uint32_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, bool bindOnCreate);
 
