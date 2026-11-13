@@ -188,7 +188,9 @@ namespace Ethane {
         barrier(cb, m_MipLevels - 1, 1, Layout::eTransferDstOptimal, Layout::eShaderReadOnlyOptimal,
                 Access::eTransferWrite, Access::eShaderRead, Stage::eTransfer, shaderStages);
 
-        cmd.EndSingleUse(QueueFamilyTypes::Graphics); // waits, so the staging buffer can go at the end of this scope
+        // No waiting: frames that sample the texture are submitted later. The staging buffer is retired at the
+        // end of this scope, after the command buffer, so it's destroyed only once the upload has finished.
+        cmd.EndSingleUseAsync(QueueFamilyTypes::Graphics);
     }
 
     vk::DescriptorImageInfo VulkanTexture2D::GetDescriptorInfo() const

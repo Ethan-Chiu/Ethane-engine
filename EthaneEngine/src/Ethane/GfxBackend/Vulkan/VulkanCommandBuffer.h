@@ -39,6 +39,7 @@ namespace Ethane {
         void EndSingleUse(QueueFamilyTypes type);
         // Submits without waiting: for work nothing on the CPU waits for (later submissions on the queue are
         // ordered after its barriers). The command buffer is freed through the device's deletion queue.
+        void EndSingleUseAsync(const vk::raii::Queue& queue);
         void EndSingleUseAsync(QueueFamilyTypes type);
 
         // Begins `renderPass` on `framebuffer` and sets the viewport (y up) and scissor to cover `extent`

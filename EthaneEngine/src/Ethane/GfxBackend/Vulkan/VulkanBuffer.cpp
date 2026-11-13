@@ -134,7 +134,7 @@ namespace Ethane {
         ETH_CORE_ASSERT(m_Usage & vk::BufferUsageFlagBits::eTransferDst, "TransferData needs TransferDst usage");
         ETH_CORE_ASSERT(dstOffset + size <= m_Size, "TransferData writes past the end of the buffer");
 
-        // create staging buffer (destroyed at the end of this scope)
+        // create staging buffer (retired at the end of this scope: destroyed once the copy is done)
         VulkanBuffer stagingBuffer{m_Device};
         stagingBuffer.CreateVulkanBuffer(size, vk::BufferUsageFlagBits::eTransferSrc,
                                          vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
@@ -160,14 +160,26 @@ namespace Ethane {
         VulkanCommandBuffer tempCommandBuf{device};
         tempCommandBuf.AllocateAndBeginSingleUse(pool);
 
-        // record command
-        tempCommandBuf.Get().copyBuffer(source, dest, vk::BufferCopy{
+        // Nothing waits for these copies on the CPU, so the GPU must order them: before the copy, earlier work
+        // that reads or writes the buffers (draws of frames in flight, earlier uploads) must be done with them;
+        // after it, the write is made visible to whatever uses the buffer next (vertex input, index fetch,
+        // uniform reads, another copy). Uploads are rare: whole-pipeline barriers keep it simple.
+        const vk::raii::CommandBuffer& cb = tempCommandBuf.Get();
+        using Stage = vk::PipelineStageFlagBits;
+        using Access = vk::AccessFlagBits;
+        cb.pipelineBarrier(Stage::eAllCommands, Stage::eTransfer, {},
+            vk::MemoryBarrier{ .srcAccessMask = Access::eMemoryWrite, .dstAccessMask = Access::eTransferRead | Access::eTransferWrite }, {}, {});
+        cb.copyBuffer(source, dest, vk::BufferCopy{
             .srcOffset = sourceOffset,
             .dstOffset = destOffset,
             .size      = size});
+        cb.pipelineBarrier(Stage::eTransfer, Stage::eAllCommands, {},
+            vk::MemoryBarrier{ .srcAccessMask = Access::eTransferWrite, .dstAccessMask = Access::eMemoryRead | Access::eMemoryWrite }, {}, {});
 
-        // submit command buffer and wait for complete
-        tempCommandBuf.EndSingleUse(queue);
+        // Submitted without waiting: later submissions are ordered after it, and the source (a staging buffer
+        // or the old buffer of a resize) is retired after this command buffer, so the deletion queue checks
+        // the copy's fence before destroying it
+        tempCommandBuf.EndSingleUseAsync(queue);
     }
 
 

@@ -104,10 +104,15 @@ namespace Ethane {
 
     void VulkanCommandBuffer::EndSingleUseAsync(QueueFamilyTypes type)
     {
+        EndSingleUseAsync(m_Device->GetQueue(type));
+    }
+
+    void VulkanCommandBuffer::EndSingleUseAsync(const vk::raii::Queue& queue)
+    {
         End();
         vk::raii::Fence done(m_Device->Get(), vk::FenceCreateInfo{});
         const vk::CommandBuffer handle = *m_CommandBuffer;
-        m_Device->GetQueue(type).submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
+        queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
 
         // Retired with the frame being recorded: by the time that's collected the work is long done, but the
         // fence is checked before the command buffer is freed, to be sure
