@@ -47,6 +47,10 @@ namespace Ethane {
         std::shared_ptr<DrawDataCopy> m_DrawData;
 
         std::unordered_map<uint64_t, TextureEntry> m_Textures;
+        // The backend allocates and frees descriptor sets from one pool: AddTexture / UpdateTexture here, and
+        // RemoveTexture from the deletion queue, wherever that's collected. Shared, so a deferred removal
+        // keeps it alive.
+        std::shared_ptr<std::mutex> m_DescriptorPoolMutex = std::make_shared<std::mutex>();
         uint64_t m_FrameCounter = 0; // UI frames built (Begin() calls)
     };
 

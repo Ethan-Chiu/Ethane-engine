@@ -12,6 +12,7 @@ namespace Ethane {
 
 	AssetLibrary::~AssetLibrary()
 	{
+		std::lock_guard lock(m_Mutex);
 		// The jobs only write their own results, but let them finish rather than run on unobserved
 		for (auto& [id, pending] : m_PendingMeshes)
 			m_Jobs->Wait(pending.Job);
@@ -56,6 +57,7 @@ namespace Ethane {
 
 	Ref<Mesh> AssetLibrary::GetMesh(AssetId id)
 	{
+		std::lock_guard lock(m_Mutex);
 		if (auto it = m_Meshes.find(id); it != m_Meshes.end())
 			return it->second;
 		if (!id.IsValid() || m_FailedMeshes.contains(id) || m_PendingMeshes.contains(id))
@@ -75,6 +77,7 @@ namespace Ethane {
 
 	Ref<Mesh> AssetLibrary::LoadMesh(AssetId id)
 	{
+		std::lock_guard lock(m_Mutex);
 		if (auto pending = m_PendingMeshes.find(id); pending != m_PendingMeshes.end())
 		{
 			m_Jobs->Wait(pending->second.Job); // helps run queued jobs meanwhile
@@ -118,6 +121,7 @@ namespace Ethane {
 
 	RefCountPtr<ITexture2D> AssetLibrary::GetTexture(AssetId id)
 	{
+		std::lock_guard lock(m_Mutex);
 		if (auto it = m_Textures.find(id); it != m_Textures.end())
 			return it->second;
 		if (!id.IsValid() || m_FailedTextures.contains(id) || m_PendingTextures.contains(id))
@@ -137,6 +141,7 @@ namespace Ethane {
 
 	RefCountPtr<ITexture2D> AssetLibrary::LoadTexture(AssetId id)
 	{
+		std::lock_guard lock(m_Mutex);
 		if (auto pending = m_PendingTextures.find(id); pending != m_PendingTextures.end())
 		{
 			m_Jobs->Wait(pending->second.Job);
@@ -159,6 +164,7 @@ namespace Ethane {
 
 	void AssetLibrary::Update()
 	{
+		std::lock_guard lock(m_Mutex);
 		for (auto it = m_PendingMeshes.begin(); it != m_PendingMeshes.end();)
 		{
 			if (!it->second.Job.IsDone())

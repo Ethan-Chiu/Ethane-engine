@@ -51,7 +51,12 @@ as its own commits.
 
 - [x] Job system (`JobSystem`: Submit / Wait / ParallelFor) and background asset loading
 - [ ] Parallel system scheduler (once there are enough systems to profile)
-- [ ] Render thread with pipelined frame packets
+- [x] Render-thread groundwork: frames hand their GPU work over as owned data (`RenderWork`), ImGui draw
+      data is copied, queue / upload-pool / ImGui-descriptor-pool locks, atomic frame serial, thread-safe
+      `AssetLibrary`, viewport resized at record time
+- [ ] Render thread itself: run `Application::RecordFrame` on its own thread, one frame behind; resolve
+      render-target images for ImGui at record time (`GetTextureID` reads a target recording resizes);
+      hand window resizes over; drain it before shutdown
 - [x] Deferred GPU resource deletion (also removes the viewport-resize stall)
 
 ## 8. Collaborative editing

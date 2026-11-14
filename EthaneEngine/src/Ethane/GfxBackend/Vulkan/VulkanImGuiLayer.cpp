@@ -121,6 +121,7 @@ namespace Ethane {
         if (drawData->Textures) {
             for (ImTextureData* texture : *drawData->Textures) {
                 if (texture->Status != ImTextureStatus_OK) {
+                    std::lock_guard pool(*m_DescriptorPoolMutex);
                     std::unique_lock queue = m_Context.GetDevice().LockQueue();
                     ImGui_ImplVulkan_UpdateTexture(texture);
                 }
@@ -153,6 +154,7 @@ namespace Ethane {
         const auto& vulkanTarget = static_cast<const VulkanRenderTarget&>(target);
         auto [it, inserted] = m_Textures.try_emplace(vulkanTarget.GetImageId());
         if (inserted) {
+            std::lock_guard pool(*m_DescriptorPoolMutex);
             it->second.Set = ImGui_ImplVulkan_AddTexture(vulkanTarget.GetColorView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
         it->second.LastUsedFrame = m_FrameCounter;
@@ -166,7 +168,10 @@ namespace Ethane {
         for (auto it = m_Textures.begin(); it != m_Textures.end();) {
             if (all || it->second.LastUsedFrame + 1 < m_FrameCounter) {
                 const VkDescriptorSet set = it->second.Set;
-                m_Context.GetDevice().Retire(VulkanDeletionQueue::Call([set] { ImGui_ImplVulkan_RemoveTexture(set); }));
+                m_Context.GetDevice().Retire(VulkanDeletionQueue::Call([set, mutex = m_DescriptorPoolMutex] {
+                    std::lock_guard pool(*mutex);
+                    ImGui_ImplVulkan_RemoveTexture(set);
+                }));
                 it = m_Textures.erase(it);
             } else {
                 ++it;

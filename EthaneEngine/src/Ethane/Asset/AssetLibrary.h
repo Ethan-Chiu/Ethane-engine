@@ -7,6 +7,7 @@
 #include "Ethane/GfxBackend/GfxObject.h"
 #include "Ethane/Renderer/Mesh.h"
 
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -25,7 +26,9 @@ namespace Ethane {
 	// gives null, logged once. Failures are remembered per kind: a file that isn't a texture still loads
 	// as the mesh it is.
 	//
-	// Not thread-safe: use it from the thread that creates GPU resources. Waits for its jobs when destroyed.
+	// Thread-safe: e.g. recording asks for meshes while the update thread calls Update(). Uploads happen on
+	// the calling thread (they lock the device's upload pool and queue; lock order: this, then those).
+	// Waits for its jobs when destroyed.
 	class AssetLibrary
 	{
 	public:
@@ -42,7 +45,11 @@ namespace Ethane {
 
 		// Uploads the assets whose background loading finished
 		void Update();
-		size_t PendingCount() const { return m_PendingMeshes.size() + m_PendingTextures.size(); }
+		size_t PendingCount() const
+		{
+			std::lock_guard lock(m_Mutex);
+			return m_PendingMeshes.size() + m_PendingTextures.size();
+		}
 
 		AssetRegistry& Registry() { return *m_Registry; }
 
@@ -63,8 +70,11 @@ namespace Ethane {
 		RefCountPtr<ITexture2D> FinishTexture(AssetId id, std::optional<DecodedImage>& image);
 
 		GfxBackendAPI* m_Backend;
-		AssetRegistry* m_Registry;
+		AssetRegistry* m_Registry; // thread-safe itself
 		JobSystem* m_Jobs;
+		// Guards everything below. The jobs never take it (they only fill their own results), so waiting
+		// for one while holding it can't deadlock.
+		mutable std::mutex m_Mutex;
 		std::unordered_map<AssetId, Ref<Mesh>> m_Meshes;
 		std::unordered_map<AssetId, RefCountPtr<ITexture2D>> m_Textures;
 		std::unordered_map<AssetId, Pending<MeshImport>> m_PendingMeshes;

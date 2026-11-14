@@ -226,6 +226,12 @@ and asset settings, with no per-component UI code.
 | Render | Recording and submitting GPU work | Immutable frame packets |
 | Background | Asset import, autosave, network sync | Snapshots and ChangeSets |
 
+Today one thread updates and records. Recording is already separable: layers hand each frame's GPU work
+over as `RenderWork` passes that own their data, the UI hands over a copy of its draw data, and
+`Application::RecordFrame` uses nothing else. The shared Vulkan objects are guarded (queue, upload
+command pool, ImGui's descriptor pool), the asset library is thread-safe, and anything can be retired
+from any thread. What's left to move recording onto a render thread is in the roadmap (step 7).
+
 Every hand-off between threads is an immutable value (snapshot, ChangeSet or packet); the only shared
 write point is a stele's commit.
 
