@@ -97,13 +97,15 @@ namespace Ethane {
 
 	const std::vector<Ref<Material>>& Renderer::ElementMaterials(ElementId element, AssetId meshId, const Mesh& mesh, const MaterialParams& values)
 	{
+		// The texture params ask for, if it's available yet: textures load in the background, so it may
+		// arrive a few frames after the materials were made
+		const RefCountPtr<ITexture2D> texture = values.BaseColorTexture.IsValid() ? m_Assets->GetTexture(values.BaseColorTexture) : RefCountPtr<ITexture2D>();
 		auto apply = [&](MaterialData data) {
 			data.BaseColor = values.BaseColor;
 			data.Metallic = values.Metallic;
 			data.Roughness = values.Roughness;
-			if (values.BaseColorTexture.IsValid())
-				if (RefCountPtr<ITexture2D> texture = m_Assets->GetTexture(values.BaseColorTexture))
-					data.BaseColorTexture = texture;
+			if (texture)
+				data.BaseColorTexture = texture; // else the mesh file's own, until it has loaded
 			return data;
 		};
 
@@ -114,16 +116,17 @@ namespace Ethane {
 			for (const MaterialData& base : mesh.GetMaterials())
 				data.push_back(apply(base));
 			entry.Mesh = meshId;
-			entry.Values = values;
 			entry.Materials = Material::CreateAll(*m_Backend, m_MeshShader, data);
 		}
-		else if (entry.Values != values)
+		else if (entry.Values != values || entry.Texture.get() != texture.get())
 		{
+			// New values, or the texture finished loading since the materials were last set
 			const auto& bases = mesh.GetMaterials();
 			for (size_t i = 0; i < entry.Materials.size() && i < bases.size(); i++)
 				entry.Materials[i]->SetData(apply(bases[i]));
-			entry.Values = values;
 		}
+		entry.Values = values;
+		entry.Texture = texture;
 		entry.LastUsed = m_Frame;
 		return entry.Materials;
 	}

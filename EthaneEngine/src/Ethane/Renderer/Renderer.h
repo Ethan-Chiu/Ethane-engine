@@ -48,6 +48,7 @@ namespace Ethane {
 		{
 			AssetId Mesh;
 			MaterialParams Values;
+			RefCountPtr<ITexture2D> Texture; // the base color texture applied (null: not loaded yet, or none)
 			std::vector<Ref<Material>> Materials;
 			uint64_t LastUsed = 0;
 		};
