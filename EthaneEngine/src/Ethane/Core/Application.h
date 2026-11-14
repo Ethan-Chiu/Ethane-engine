@@ -14,6 +14,8 @@ int main(int argc, char** argv);
 
 namespace Ethane
 {
+	class RenderWork;
+
 	struct ApplicationCommandLineArgs
 	{
 		int Count = 0;
@@ -52,6 +54,10 @@ namespace Ethane
 		// Worker threads for background work (asset loading, ...)
 		JobSystem& GetJobSystem() { return *m_Jobs; }
 	private:
+		// Records and submits one frame's work into the window. Uses nothing but `work` and the window
+		// target: the step that could move to a render thread.
+		void RecordFrame(RenderWork& work);
+
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:

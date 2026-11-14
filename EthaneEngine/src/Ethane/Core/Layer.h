@@ -6,7 +6,7 @@
 
 namespace Ethane {
 
-	class ICommandList;
+	class RenderWork;
 
 	class Layer
 	{
@@ -17,11 +17,10 @@ namespace Ethane {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate(Timestep ts) {}
-		// Called after OnUpdate (and the ImGui UI is built), only when a frame is being rendered. First every
-		// layer's OnRenderOffscreen, outside any render pass: draw into IRenderTargets here. Then every
-		// layer's OnRender, inside the window's render pass.
-		virtual void OnRenderOffscreen(ICommandList& commandList) {}
-		virtual void OnRender(ICommandList& commandList) {}
+		// Called every frame after OnUpdate and the UI: hand this frame's GPU work over as passes that own
+		// what they draw (see RenderWork). Recording happens afterwards, possibly elsewhere: passes must not
+		// read the layer's state.
+		virtual void OnSubmitRender(RenderWork& work) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

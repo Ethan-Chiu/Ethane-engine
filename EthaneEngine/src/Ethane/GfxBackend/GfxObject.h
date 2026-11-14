@@ -151,8 +151,9 @@ public:
     virtual ~IRenderTarget() = default;
     virtual const RenderTargetSpecification& GetSpecification() const = 0;
 
-    // Recreates the images at the new size (no-op if unchanged; 0 is clamped to 1). Waits for the GPU to go
-    // idle first, so call it outside of recording (e.g. in OnUpdate), not every frame.
+    // Recreates the images at the new size (no-op if unchanged; 0 is clamped to 1), without waiting for the
+    // GPU: frames in flight keep the old images until they finish. Call it where the target is recorded
+    // into (e.g. at the start of the pass that draws into it), before drawing into it this frame.
     virtual void Resize(uint32_t width, uint32_t height) = 0;
 
     // What pipelines drawing into this target must be created with (stays the same across resizes)

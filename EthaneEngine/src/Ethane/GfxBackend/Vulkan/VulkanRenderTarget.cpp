@@ -37,7 +37,6 @@ namespace Ethane {
         if (width == m_Spec.Width && height == m_Spec.Height) {
             return;
         }
-        ETH_CORE_ASSERT(!m_Device->IsFrameInProgress(), "Resize a render target outside of frame recording");
         m_Spec.Width = width;
         m_Spec.Height = height;
         CreateImages();

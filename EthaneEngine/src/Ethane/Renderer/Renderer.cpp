@@ -85,6 +85,8 @@ namespace Ethane {
 		commandList.EndRenderPass();
 
 		ReleaseUnused();
+		std::lock_guard lock(m_StatsMutex);
+		m_PublishedStats = m_Stats;
 	}
 
 	const std::vector<Ref<Material>>& Renderer::MeshMaterials(AssetId id, const Mesh& mesh)

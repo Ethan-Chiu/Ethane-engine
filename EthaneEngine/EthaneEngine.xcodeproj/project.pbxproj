@@ -318,6 +318,7 @@
 		5BFB71E5F22483D7B38AE025 /* vector_bool2_precision.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = vector_bool2_precision.hpp; path = vendor/glm/glm/ext/vector_bool2_precision.hpp; sourceTree = "<group>"; };
 		5C33F0BF0F29FA71604C56FF /* func_matrix_simd.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = func_matrix_simd.inl; path = vendor/glm/glm/detail/func_matrix_simd.inl; sourceTree = "<group>"; };
 		5CFC3C573B9ED7C9F080DA97 /* scalar_reciprocal.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = scalar_reciprocal.inl; path = vendor/glm/glm/ext/scalar_reciprocal.inl; sourceTree = "<group>"; };
+		5D8FF67BA1A3C7AD95754CBB /* RenderWork.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RenderWork.h; path = src/Ethane/Renderer/RenderWork.h; sourceTree = "<group>"; };
 		5DDCC9895D7FACBB97D45FC9 /* type_mat4x2.inl */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_mat4x2.inl; path = vendor/glm/glm/detail/type_mat4x2.inl; sourceTree = "<group>"; };
 		5E1912893D362CBB193F88C9 /* type_half.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = type_half.hpp; path = vendor/glm/glm/detail/type_half.hpp; sourceTree = "<group>"; };
 		5F5F623CB960792E80A7707C /* matrix_transform.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = matrix_transform.hpp; path = vendor/glm/glm/gtc/matrix_transform.hpp; sourceTree = "<group>"; };
@@ -1236,6 +1237,7 @@
 				8159E75365A0EF85E98E1D93 /* Material.h */,
 				BBD72DC5514DECF7BFEA4405 /* Mesh.cpp */,
 				4B498B0F98AC81410ECB814F /* Mesh.h */,
+				5D8FF67BA1A3C7AD95754CBB /* RenderWork.h */,
 				C13F3F190553104BF9249559 /* Renderer.cpp */,
 				F9F65F63DE3D6795622A95A3 /* Renderer.h */,
 			);

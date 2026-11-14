@@ -35,7 +35,7 @@ namespace Ethane {
 		virtual void OnDetach() override;
 
 		virtual void OnUpdate(Timestep ts) override;
-		virtual void OnRenderOffscreen(ICommandList& commandList) override;
+		virtual void OnSubmitRender(RenderWork& work) override;
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& e) override;
 
@@ -64,7 +64,6 @@ namespace Ethane {
 		Scope<AssetLibrary> m_Assets;
 		Scope<Renderer> m_Renderer;
 		Scope<EditorContext> m_Context;
-		FramePacket m_Packet; // rebuilt every frame (keeps its capacity)
 
 		// Play mode: the world built from the stele when Play was pressed
 		Scope<EnttWorld> m_PlayWorld;
@@ -77,7 +76,9 @@ namespace Ethane {
 
 		EditorCamera m_Camera{ 45.0f, 1.778f, 0.1f, 100.0f };
 		RefCountPtr<IRenderTarget> m_ViewportTarget;
-		glm::uvec2 m_ViewportSize{ 0 }; // in pixels, as the panel last laid out; applied in OnUpdate
+		// In pixels, as the panel last laid out. The UI side only ever uses this; the render target belongs to
+		// recording, which resizes it to this (see OnSubmitRender).
+		glm::uvec2 m_ViewportSize{ 1280, 720 };
 		bool m_ViewportHovered = false;
 		bool m_ViewportFocused = false;
 

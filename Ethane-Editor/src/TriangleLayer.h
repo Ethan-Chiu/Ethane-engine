@@ -14,7 +14,7 @@ namespace Ethane {
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnRender(ICommandList& commandList) override;
+		virtual void OnSubmitRender(RenderWork& work) override;
 
 	private:
 		RefCountPtr<IVertexBuffer> m_VertexBuffer;

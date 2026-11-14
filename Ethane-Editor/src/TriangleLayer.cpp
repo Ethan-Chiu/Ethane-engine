@@ -1,4 +1,5 @@
 #include "TriangleLayer.h"
+#include "Ethane/Renderer/RenderWork.h"
 
 namespace Ethane {
 
@@ -49,12 +50,14 @@ namespace Ethane {
 		m_VertexBuffer.reset();
 	}
 
-	void TriangleLayer::OnRender(ICommandList& commandList)
+	void TriangleLayer::OnSubmitRender(RenderWork& work)
 	{
-		commandList.BindPipeline(*m_Pipeline);
-		commandList.BindVertexBuffer(*m_VertexBuffer);
-		commandList.BindIndexBuffer(*m_IndexBuffer);
-		commandList.DrawIndexed(m_IndexBuffer->GetCount());
+		work.Window([pipeline = m_Pipeline, vertices = m_VertexBuffer, indices = m_IndexBuffer](ICommandList& commandList) {
+			commandList.BindPipeline(*pipeline);
+			commandList.BindVertexBuffer(*vertices);
+			commandList.BindIndexBuffer(*indices);
+			commandList.DrawIndexed(indices->GetCount());
+		});
 	}
 
 }

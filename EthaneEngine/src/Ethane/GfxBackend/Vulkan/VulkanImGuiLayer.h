@@ -23,7 +23,7 @@ namespace Ethane {
 
         virtual void Begin() override;
         virtual void End() override;
-        virtual void Render(ICommandList& commandList) override;
+        virtual void SubmitRender(RenderWork& work) override;
         virtual ImTextureID GetTextureID(const IRenderTarget& target) override;
 
     private:
@@ -41,6 +41,11 @@ namespace Ethane {
             VkDescriptorSet Set = VK_NULL_HANDLE;
             uint64_t LastUsedFrame = 0;
         };
+        // This frame's draw data, copied by End() so recording doesn't depend on ImGui's state (the next
+        // NewFrame reuses its draw lists)
+        struct DrawDataCopy;
+        std::shared_ptr<DrawDataCopy> m_DrawData;
+
         std::unordered_map<uint64_t, TextureEntry> m_Textures;
         uint64_t m_FrameCounter = 0; // UI frames built (Begin() calls)
     };

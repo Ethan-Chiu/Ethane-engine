@@ -1,4 +1,5 @@
 #include "CubeLayer.h"
+#include "Ethane/Renderer/RenderWork.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -110,28 +111,30 @@ namespace Ethane {
 		m_Camera.OnEvent(e);
 	}
 
-	void CubeLayer::OnRender(ICommandList& commandList)
+	void CubeLayer::OnSubmitRender(RenderWork& work)
 	{
-		// per-frame data: written during OnRender, into the copy this frame reads
+		// Everything the pass needs, computed now and captured by value
 		const CameraData camera{ m_Camera.GetViewProjection() };
-		m_CameraBuffer->SetData(&camera, sizeof(camera));
-
-		commandList.BindPipeline(*m_Pipeline);
-		commandList.BindBindingSet(*m_BindingSet);
-		commandList.BindVertexBuffer(*m_VertexBuffer);
-		commandList.BindIndexBuffer(*m_IndexBuffer);
-
 		// The two cubes intersect: the depth buffer decides which faces show where they cross
-		const glm::mat4 models[] = {
+		const std::array<glm::mat4, 2> models = {
 			glm::rotate(glm::mat4(1.0f), m_Time * 0.6f, glm::normalize(glm::vec3(0.3f, 1.0f, 0.2f))),
 			glm::translate(glm::mat4(1.0f), glm::vec3(0.55f, 0.25f, 0.35f))
 				* glm::rotate(glm::mat4(1.0f), -m_Time, glm::vec3(0.0f, 1.0f, 0.0f))
 				* glm::scale(glm::mat4(1.0f), glm::vec3(0.6f)),
 		};
-		for (const glm::mat4& model : models) {
-			commandList.PushConstants(&model, sizeof(model));
-			commandList.DrawIndexed(m_IndexBuffer->GetCount());
-		}
+		work.Window([camera, models, pipeline = m_Pipeline, bindings = m_BindingSet, cameraBuffer = m_CameraBuffer,
+		             vertices = m_VertexBuffer, indices = m_IndexBuffer](ICommandList& commandList) {
+			// per-frame data: written while recording, into the copy this frame reads
+			cameraBuffer->SetData(&camera, sizeof(camera));
+			commandList.BindPipeline(*pipeline);
+			commandList.BindBindingSet(*bindings);
+			commandList.BindVertexBuffer(*vertices);
+			commandList.BindIndexBuffer(*indices);
+			for (const glm::mat4& model : models) {
+				commandList.PushConstants(&model, sizeof(model));
+				commandList.DrawIndexed(indices->GetCount());
+			}
+		});
 	}
 
 }

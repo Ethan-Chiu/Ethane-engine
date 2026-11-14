@@ -18,7 +18,7 @@ namespace Ethane {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& e) override;
-		virtual void OnRender(ICommandList& commandList) override;
+		virtual void OnSubmitRender(RenderWork& work) override;
 
 	private:
 		EditorCamera m_Camera{ 45.0f, 1.778f, 0.1f, 100.0f };

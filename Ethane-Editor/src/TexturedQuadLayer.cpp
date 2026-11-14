@@ -1,4 +1,5 @@
 #include "TexturedQuadLayer.h"
+#include "Ethane/Renderer/RenderWork.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -77,7 +78,7 @@ namespace Ethane {
 		m_Time += ts;
 	}
 
-	void TexturedQuadLayer::OnRender(ICommandList& commandList)
+	void TexturedQuadLayer::OnSubmitRender(RenderWork& work)
 	{
 		const Window& window = Application::Get().GetWindow();
 		const float aspect = window.GetHeight() > 0 ? static_cast<float>(window.GetWidth()) / static_cast<float>(window.GetHeight()) : 1.0f;
@@ -88,14 +89,17 @@ namespace Ethane {
 		                      * glm::rotate(glm::mat4(1.0f), m_Time, glm::vec3(0.0f, 0.0f, 1.0f))
 		                      * glm::scale(glm::mat4(1.0f), glm::vec3(0.7f));
 		const CameraData camera{ projection * model };
-		// per-frame data: written during OnRender, into the copy this frame reads
-		m_CameraBuffer->SetData(&camera, sizeof(camera));
 
-		commandList.BindPipeline(*m_Pipeline);
-		commandList.BindBindingSet(*m_BindingSet);
-		commandList.BindVertexBuffer(*m_VertexBuffer);
-		commandList.BindIndexBuffer(*m_IndexBuffer);
-		commandList.DrawIndexed(m_IndexBuffer->GetCount());
+		work.Window([camera, pipeline = m_Pipeline, bindings = m_BindingSet, cameraBuffer = m_CameraBuffer,
+		             vertices = m_VertexBuffer, indices = m_IndexBuffer](ICommandList& commandList) {
+			// per-frame data: written while recording, into the copy this frame reads
+			cameraBuffer->SetData(&camera, sizeof(camera));
+			commandList.BindPipeline(*pipeline);
+			commandList.BindBindingSet(*bindings);
+			commandList.BindVertexBuffer(*vertices);
+			commandList.BindIndexBuffer(*indices);
+			commandList.DrawIndexed(indices->GetCount());
+		});
 	}
 
 }

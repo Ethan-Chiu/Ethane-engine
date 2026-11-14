@@ -1,5 +1,6 @@
 #include "ethpch.h"
 #include "VulkanImGuiLayer.h"
+#include "Ethane/Renderer/RenderWork.h"
 
 #include "VulkanGfxBackendAPI.h"
 #include "VulkanWindowTarget.h"
@@ -95,19 +96,56 @@ namespace Ethane {
         ImGui::NewFrame();
     }
 
+    struct VulkanImGuiLayer::DrawDataCopy
+    {
+        ImDrawData Data;
+        ~DrawDataCopy()
+        {
+            for (ImDrawList* list : Data.CmdLists) {
+                IM_DELETE(list);
+            }
+        }
+    };
+
     void VulkanImGuiLayer::End()
     {
         ImGui::Render();
-    }
-
-    void VulkanImGuiLayer::Render(ICommandList& commandList)
-    {
         ImDrawData* drawData = ImGui::GetDrawData();
         if (!drawData) {
+            m_DrawData.reset();
             return;
         }
-        // Also uploads new / changed textures (font glyphs); sets its own pipeline, viewport and scissor
-        ImGui_ImplVulkan_RenderDrawData(drawData, static_cast<VulkanCommandBuffer&>(commandList).GetHandle());
+
+        // Texture updates (font glyphs, new / destroyed textures) change ImGui's own texture records, so they
+        // happen here, on the UI thread, not when recording. They submit to the graphics queue.
+        if (drawData->Textures) {
+            for (ImTextureData* texture : *drawData->Textures) {
+                if (texture->Status != ImTextureStatus_OK) {
+                    std::unique_lock queue = m_Context.GetDevice().LockQueue();
+                    ImGui_ImplVulkan_UpdateTexture(texture);
+                }
+            }
+        }
+
+        // A copy that owns its draw lists: recording draws it, whenever and wherever that happens
+        auto copy = std::make_shared<DrawDataCopy>();
+        copy->Data = *drawData;
+        for (ImDrawList*& list : copy->Data.CmdLists) {
+            list = list->CloneOutput();
+        }
+        copy->Data.Textures = nullptr; // updated above
+        m_DrawData = std::move(copy);
+    }
+
+    void VulkanImGuiLayer::SubmitRender(RenderWork& work)
+    {
+        if (!m_DrawData) {
+            return;
+        }
+        work.Window([drawData = std::move(m_DrawData)](ICommandList& commandList) {
+            // Sets its own pipeline, viewport and scissor
+            ImGui_ImplVulkan_RenderDrawData(&drawData->Data, static_cast<VulkanCommandBuffer&>(commandList).GetHandle());
+        });
     }
 
     ImTextureID VulkanImGuiLayer::GetTextureID(const IRenderTarget& target)

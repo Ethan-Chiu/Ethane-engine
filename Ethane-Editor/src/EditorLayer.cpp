@@ -7,6 +7,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include "Ethane/GfxBackend/Resource.h"
+#include "Ethane/Renderer/RenderWork.h"
 
 namespace Ethane {
 
@@ -59,8 +60,8 @@ namespace Ethane {
 		GfxBackendAPI& backend = Application::Get().GetGfxBackend();
 
 		RenderTargetSpecification viewportSpec;
-		viewportSpec.Width = 1280;
-		viewportSpec.Height = 720;
+		viewportSpec.Width = m_ViewportSize.x;
+		viewportSpec.Height = m_ViewportSize.y;
 		viewportSpec.ClearColor = { 0.08f, 0.085f, 0.09f, 1.0f };
 		m_ViewportTarget = backend.CreateRenderTarget(viewportSpec);
 
@@ -91,7 +92,6 @@ namespace Ethane {
 	{
 		Stop();
 		m_Context.reset();
-		m_Packet.Clear();
 		m_Renderer.reset();
 		m_Assets.reset();
 		m_ViewportTarget.reset();
@@ -101,13 +101,7 @@ namespace Ethane {
 	{
 		m_Assets->Update();
 
-		// The viewport panel's size from the last UI frame. Applied here, before the UI asks for the image
-		// (resizing replaces it): the panel shows the new size from this frame on.
-		const RenderTargetSpecification& spec = m_ViewportTarget->GetSpecification();
-		if (m_ViewportSize.x > 0 && m_ViewportSize.y > 0 && (m_ViewportSize.x != spec.Width || m_ViewportSize.y != spec.Height)) {
-			m_ViewportTarget->Resize(m_ViewportSize.x, m_ViewportSize.y);
-		}
-		m_Camera.SetViewportSize(static_cast<float>(spec.Width), static_cast<float>(spec.Height));
+		m_Camera.SetViewportSize(static_cast<float>(m_ViewportSize.x), static_cast<float>(m_ViewportSize.y));
 
 		m_Camera.OnUpdate(ts, m_ViewportHovered && EditorCameraInControl());
 		if (IsPlaying()) {
@@ -117,19 +111,29 @@ namespace Ethane {
 		}
 	}
 
-	void EditorLayer::OnRenderOffscreen(ICommandList& commandList)
+	void EditorLayer::OnSubmitRender(RenderWork& work)
 	{
-		m_Packet.Clear();
-		m_Packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition() };
+		// The packet is built here, from the world and camera (state of this side), then moved into the pass
+		FramePacket packet;
+		packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition() };
 		const World* world = IsPlaying() ? static_cast<const World*>(m_PlayWorld.get())
 		                   : m_Context->Active() ? m_Context->Active()->EditWorld.get() : nullptr;
 		if (world) {
 			// Playing: through the stele's camera if it has one, else the editor camera
-			const RenderTargetSpecification& spec = m_ViewportTarget->GetSpecification();
-			m_PlayHasCamera = IsPlaying() && world->ExtractView(static_cast<float>(spec.Width) / std::max(1.0f, static_cast<float>(spec.Height)), m_Packet.View);
-			world->Extract(m_Packet);
+			const float aspect = static_cast<float>(m_ViewportSize.x) / std::max(1.0f, static_cast<float>(m_ViewportSize.y));
+			m_PlayHasCamera = IsPlaying() && world->ExtractView(aspect, packet.View);
+			world->Extract(packet);
 		}
-		m_Renderer->Render(commandList, m_Packet, *m_ViewportTarget);
+
+		// Recording owns the renderer and the target: the pass resizes the target to the panel's size (a no-op
+		// when unchanged), then draws the packet into it
+		work.Offscreen([renderer = m_Renderer.get(), target = m_ViewportTarget, size = m_ViewportSize,
+		                packet = std::make_shared<FramePacket>(std::move(packet))](ICommandList& commandList) {
+			if (size.x > 0 && size.y > 0) {
+				target->Resize(size.x, size.y);
+			}
+			renderer->Render(commandList, *packet, *target);
+		});
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -373,10 +377,9 @@ namespace Ethane {
 		const ImGuiIO& io = ImGui::GetIO();
 		ImGui::Text("%.1f FPS (%.2f ms)", io.Framerate, 1000.0f / std::max(io.Framerate, 1e-3f));
 
-		const RenderTargetSpecification& spec = m_ViewportTarget->GetSpecification();
-		ImGui::Text("Viewport: %u x %u px", spec.Width, spec.Height);
+		ImGui::Text("Viewport: %u x %u px", m_ViewportSize.x, m_ViewportSize.y);
 
-		const RendererStats& stats = m_Renderer->GetStats();
+		const RendererStats stats = m_Renderer->GetStats();
 		ImGui::Text("Meshes: %u, draw calls: %u, triangles: %u", stats.DrawItems, stats.DrawCalls, stats.Triangles);
 		if (const size_t loading = m_Assets->PendingCount(); loading > 0) {
 			ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Loading %zu assets...", loading);
@@ -516,8 +519,7 @@ namespace Ethane {
 		m_Camera = EditorCamera(45.0f, 1.778f, 0.1f, 100.0f);
 		m_Camera.SetDistance(9.0f);
 		m_Camera.SetPitchYaw(0.45f, 0.0f);
-		const RenderTargetSpecification& spec = m_ViewportTarget->GetSpecification();
-		m_Camera.SetViewportSize(static_cast<float>(spec.Width), static_cast<float>(spec.Height));
+		m_Camera.SetViewportSize(static_cast<float>(m_ViewportSize.x), static_cast<float>(m_ViewportSize.y));
 	}
 
 }

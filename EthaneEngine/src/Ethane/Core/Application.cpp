@@ -7,6 +7,7 @@
 #include "Ethane/Asset/AssetManager.h"
 #include "Ethane/Schema/TypeRegistry.h"
 #include "Ethane/World/Components.h"
+#include "Ethane/Renderer/RenderWork.h"
 #include "Ethane/Systems/ResourceSystem.h"
 #include "Ethane/GfxBackend/GfxSmokeTest.h"
 //#include "Ethane/Systems/TextureSystem.h"
@@ -104,6 +105,20 @@ namespace Ethane
 		}
 	}
 
+	void Application::RecordFrame(RenderWork& work)
+	{
+		// false: nothing to present this iteration (e.g. 0-sized window); the work is dropped
+		if (!m_WindowTarget->BeginFrame())
+			return;
+
+		ETH_PROFILE_SCOPE("RecordFrame");
+		ICommandList& commandList = m_WindowTarget->GetCommandList();
+		work.RecordOffscreen(commandList);
+		m_WindowTarget->BeginRenderPass();
+		work.RecordWindow(commandList);
+		m_WindowTarget->EndFrame();
+	}
+
 	void Application::Run()
 	{
 		ETH_PROFILE_FUNCTION();
@@ -158,23 +173,16 @@ namespace Ethane
 					m_ImGuiLayer->End();
 				}
 
-				// false: nothing to present this iteration (e.g. 0-sized window), skip recording
-				if (m_WindowTarget->BeginFrame())
+				// The frame's GPU work, handed over as passes that own their data (the UI last, on top)
+				RenderWork work;
 				{
-					ETH_PROFILE_SCOPE("LayerStack OnRender");
-
-					ICommandList& commandList = m_WindowTarget->GetCommandList();
+					ETH_PROFILE_SCOPE("LayerStack OnSubmitRender");
 					for (Layer* layer : m_LayerStack)
-						layer->OnRenderOffscreen(commandList);
-
-					m_WindowTarget->BeginRenderPass();
-					for (Layer* layer : m_LayerStack)
-						layer->OnRender(commandList);
+						layer->OnSubmitRender(work);
 					if (m_ImGuiLayer)
-						m_ImGuiLayer->Render(commandList); // on top of everything
-
-					m_WindowTarget->EndFrame();
+						m_ImGuiLayer->SubmitRender(work);
 				}
+				RecordFrame(work);
 
 			}
 		}

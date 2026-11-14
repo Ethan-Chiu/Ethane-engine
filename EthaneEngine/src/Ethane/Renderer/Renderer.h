@@ -4,6 +4,7 @@
 #include "Ethane/GfxBackend/GfxObject.h"
 #include "Ethane/Renderer/FramePacket.h"
 
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -23,7 +24,8 @@ namespace Ethane {
 		uint32_t MissingMeshes = 0; // draw items whose mesh isn't available: still loading, or failed
 	};
 
-	// Turns frame packets into GPU work. Owns the mesh shader and pipeline, the per-frame uniforms and
+	// Turns frame packets into GPU work. Render and the GPU objects it owns belong to the recording thread;
+	// GetStats can be called from anywhere. Owns the mesh shader and pipeline, the per-frame uniforms and
 	// the GPU materials: each mesh's own, and those of elements with material params (kept while the
 	// element keeps being drawn, released when a frame doesn't draw it).
 	//
@@ -41,7 +43,12 @@ namespace Ethane {
 		// materials not drawn by this call are released.
 		void Render(ICommandList& commandList, const FramePacket& packet, IRenderTarget& target);
 
-		const RendererStats& GetStats() const { return m_Stats; } // of the last Render
+		// Of the last Render: a copy, safe to read from another thread than the one recording
+		RendererStats GetStats() const
+		{
+			std::lock_guard lock(m_StatsMutex);
+			return m_PublishedStats;
+		}
 
 	private:
 		struct ElementMaterialSet
@@ -67,7 +74,9 @@ namespace Ethane {
 		std::unordered_map<AssetId, std::vector<Ref<Material>>> m_MeshMaterials;
 		std::unordered_map<ElementId, ElementMaterialSet> m_ElementMaterials;
 		uint64_t m_Frame = 0;
-		RendererStats m_Stats;
+		RendererStats m_Stats;           // being counted by Render
+		RendererStats m_PublishedStats;  // the last complete count
+		mutable std::mutex m_StatsMutex;
 	};
 
 }
