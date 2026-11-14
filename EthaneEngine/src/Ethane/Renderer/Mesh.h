@@ -76,7 +76,7 @@ namespace Ethane {
         static std::optional<MeshImport> Import(const std::string& path);
         // Uploads an import (on the thread that creates GPU resources); images shared by several materials
         // become one texture
-        static Ref<Mesh> Create(GfxBackendAPI& backend, const MeshImport& import);
+        static Ref<Mesh> Create(GfxBackendAPI& backend, const MeshImport& meshImport);
         // Import, then Create; nullptr if the import fails
         static Ref<Mesh> Load(GfxBackendAPI& backend, const std::string& path);
 

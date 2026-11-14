@@ -59,7 +59,7 @@ namespace Ethane {
 
 		void StartMesh(AssetId id, const std::filesystem::path& path);
 		void StartTexture(AssetId id, const std::filesystem::path& path);
-		Ref<Mesh> FinishMesh(AssetId id, std::optional<MeshImport>& import);
+		Ref<Mesh> FinishMesh(AssetId id, std::optional<MeshImport>& meshImport);
 		RefCountPtr<ITexture2D> FinishTexture(AssetId id, std::optional<DecodedImage>& image);
 
 		GfxBackendAPI* m_Backend;

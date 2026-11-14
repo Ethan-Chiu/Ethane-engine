@@ -42,9 +42,9 @@ namespace Ethane {
 		m_PendingMeshes[id] = { std::move(job), std::move(result) };
 	}
 
-	Ref<Mesh> AssetLibrary::FinishMesh(AssetId id, std::optional<MeshImport>& import)
+	Ref<Mesh> AssetLibrary::FinishMesh(AssetId id, std::optional<MeshImport>& meshImport)
 	{
-		Ref<Mesh> mesh = import ? Mesh::Create(*m_Backend, *import) : nullptr;
+		Ref<Mesh> mesh = meshImport ? Mesh::Create(*m_Backend, *meshImport) : nullptr;
 		if (!mesh)
 		{
 			m_FailedMeshes.insert(id); // Import logged why
@@ -66,8 +66,8 @@ namespace Ethane {
 			return nullptr;
 		if (!m_Jobs)
 		{
-			std::optional<MeshImport> import = Mesh::Import(path->string());
-			return FinishMesh(id, import);
+			std::optional<MeshImport> meshImport = Mesh::Import(path->string());
+			return FinishMesh(id, meshImport);
 		}
 		StartMesh(id, *path);
 		return nullptr;
@@ -89,8 +89,8 @@ namespace Ethane {
 		auto path = PathFor(id, AssetKind::Mesh, m_FailedMeshes);
 		if (!path)
 			return nullptr;
-		std::optional<MeshImport> import = Mesh::Import(path->string());
-		return FinishMesh(id, import);
+		std::optional<MeshImport> meshImport = Mesh::Import(path->string());
+		return FinishMesh(id, meshImport);
 	}
 
 	// --- textures ----------------------------------------------------------------------------------------

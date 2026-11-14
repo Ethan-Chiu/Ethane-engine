@@ -168,8 +168,8 @@ namespace Ethane {
 
     Ref<Mesh> Mesh::Load(GfxBackendAPI& backend, const std::string& path)
     {
-        std::optional<MeshImport> import = Import(path);
-        return import ? Create(backend, *import) : nullptr;
+        std::optional<MeshImport> meshImport = Import(path);
+        return meshImport ? Create(backend, *meshImport) : nullptr;
     }
 
     std::optional<MeshImport> Mesh::Import(const std::string& path)
@@ -263,13 +263,13 @@ namespace Ethane {
         return result;
     }
 
-    Ref<Mesh> Mesh::Create(GfxBackendAPI& backend, const MeshImport& import)
+    Ref<Mesh> Mesh::Create(GfxBackendAPI& backend, const MeshImport& meshImport)
     {
         auto mesh = CreateRef<Mesh>();
-        mesh->m_Path = import.Path;
-        mesh->m_Submeshes = import.Submeshes;
-        mesh->m_Nodes = import.Nodes;
-        mesh->m_BoundingBox = import.BoundingBox;
+        mesh->m_Path = meshImport.Path;
+        mesh->m_Submeshes = meshImport.Submeshes;
+        mesh->m_Nodes = meshImport.Nodes;
+        mesh->m_BoundingBox = meshImport.BoundingBox;
 
         // One texture per decoded image, however many materials use it
         std::unordered_map<const DecodedImage*, RefCountPtr<ITexture2D>> textures;
@@ -283,27 +283,27 @@ namespace Ethane {
             }
             return it->second;
         };
-        mesh->m_Materials.reserve(import.Materials.size());
-        for (const MeshImport::Material& imported : import.Materials) {
+        mesh->m_Materials.reserve(meshImport.Materials.size());
+        for (const MeshImport::Material& imported : meshImport.Materials) {
             MaterialData& material = mesh->m_Materials.emplace_back(imported.Factors);
             material.BaseColorTexture = texture(imported.BaseColor);
             material.NormalTexture = texture(imported.Normal);
             material.MetallicRoughnessTexture = texture(imported.MetallicRoughness);
         }
 
-        mesh->m_VertexCount = static_cast<uint32_t>(import.Vertices.size());
-        mesh->m_IndexCount = static_cast<uint32_t>(import.Indices.size());
+        mesh->m_VertexCount = static_cast<uint32_t>(meshImport.Vertices.size());
+        mesh->m_IndexCount = static_cast<uint32_t>(meshImport.Indices.size());
 
-        const uint32_t vertexBytes = static_cast<uint32_t>(import.Vertices.size() * sizeof(MeshVertex));
-        const uint32_t indexBytes = static_cast<uint32_t>(import.Indices.size() * sizeof(uint32_t));
+        const uint32_t vertexBytes = static_cast<uint32_t>(meshImport.Vertices.size() * sizeof(MeshVertex));
+        const uint32_t indexBytes = static_cast<uint32_t>(meshImport.Indices.size() * sizeof(uint32_t));
         mesh->m_VertexBuffer = backend.CreateVertexBuffer(vertexBytes);
-        mesh->m_VertexBuffer->SetData(import.Vertices.data(), vertexBytes);
+        mesh->m_VertexBuffer->SetData(meshImport.Vertices.data(), vertexBytes);
         mesh->m_IndexBuffer = backend.CreateIndexBuffer(indexBytes);
-        mesh->m_IndexBuffer->SetData(import.Indices.data(), indexBytes);
+        mesh->m_IndexBuffer->SetData(meshImport.Indices.data(), indexBytes);
 
         const AABB& bounds = mesh->m_BoundingBox;
         ETH_CORE_INFO("Mesh {0}: {1} submeshes, {2} nodes, {3} materials, {4} vertices, {5} triangles, bounds ({6}, {7}, {8}) - ({9}, {10}, {11})",
-                      import.Path, mesh->m_Submeshes.size(), mesh->m_Nodes.size(), mesh->m_Materials.size(), mesh->m_VertexCount, mesh->m_IndexCount / 3,
+                      meshImport.Path, mesh->m_Submeshes.size(), mesh->m_Nodes.size(), mesh->m_Materials.size(), mesh->m_VertexCount, mesh->m_IndexCount / 3,
                       bounds.Min.x, bounds.Min.y, bounds.Min.z, bounds.Max.x, bounds.Max.y, bounds.Max.z);
         return mesh;
     }
