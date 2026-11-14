@@ -335,6 +335,8 @@ void VulkanWindowTarget::EndFrame() {
     const vk::CommandBuffer commandBuffer = frame.CommandBuffer.GetHandle();
     const vk::Semaphore renderFinished = *m_RenderFinished[m_ImageIndex];
 
+    // Queues are used from more than one thread (one-off uploads): submit and present under the queue lock
+    std::unique_lock queue = device.LockQueue();
     device.GetGraphicsQueue().submit(vk::SubmitInfo{
         .waitSemaphoreCount   = 1,
         .pWaitSemaphores      = &waitSemaphore,
@@ -360,6 +362,7 @@ void VulkanWindowTarget::EndFrame() {
     } catch (const vk::OutOfDateKHRError&) {
         m_NeedsRecreate = true; // rebuilt at the start of the next frame
     }
+    queue.unlock();
 
     m_CurrentFrame = (m_CurrentFrame + 1) % kMaxFramesInFlight;
 }

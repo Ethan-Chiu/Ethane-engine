@@ -70,13 +70,15 @@ namespace Ethane {
         m_State = CommandBufferState::READY;
     }
 
-    void VulkanCommandBuffer::AllocateAndBeginSingleUse(const vk::raii::CommandPool& pool)
+    void VulkanCommandBuffer::AllocateAndBeginSingleUse(QueueFamilyTypes type)
     {
-        Allocate(pool, true);
+        ETH_CORE_ASSERT(type == QueueFamilyTypes::Graphics, "One-off command buffers are graphics-queue only");
+        m_UploadPoolLock = m_Device->LockUploadPool(); // until submitted: the pool is used by one thread at a time
+        Allocate(m_Device->GetUploadCommandPool(), true);
         Begin(true, false, false);
     }
 
-    void VulkanCommandBuffer::EndSingleUse(const vk::raii::Queue& queue)
+    void VulkanCommandBuffer::EndSingleUse(QueueFamilyTypes type)
     {
         End();
 
@@ -84,44 +86,43 @@ namespace Ethane {
         // flight on the queue, a full stall (e.g. on each viewport resize)
         const vk::raii::Fence done(m_Device->Get(), vk::FenceCreateInfo{});
         const vk::CommandBuffer handle = *m_CommandBuffer;
-        queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
+        {
+            std::unique_lock queue = m_Device->LockQueue();
+            m_Device->GetQueue(type).submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
+        }
         [[maybe_unused]] const vk::Result result = m_Device->Get().waitForFences(*done, vk::True, UINT64_MAX);
         ETH_CORE_ASSERT(result == vk::Result::eSuccess, "Waiting for a single-use command buffer failed");
 
-        // Free the command buffer.
-        Free();
-    }
-
-    void VulkanCommandBuffer::AllocateAndBeginSingleUse(QueueFamilyTypes type)
-    {
-        AllocateAndBeginSingleUse(m_Device->GetCommandPool(type));
-    }
-
-    void VulkanCommandBuffer::EndSingleUse(QueueFamilyTypes type)
-    {
-        EndSingleUse(m_Device->GetQueue(type));
+        Free(); // back to the upload pool, still locked
+        m_UploadPoolLock.unlock();
     }
 
     void VulkanCommandBuffer::EndSingleUseAsync(QueueFamilyTypes type)
     {
-        EndSingleUseAsync(m_Device->GetQueue(type));
-    }
-
-    void VulkanCommandBuffer::EndSingleUseAsync(const vk::raii::Queue& queue)
-    {
         End();
         vk::raii::Fence done(m_Device->Get(), vk::FenceCreateInfo{});
         const vk::CommandBuffer handle = *m_CommandBuffer;
-        queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
+        {
+            std::unique_lock queue = m_Device->LockQueue();
+            m_Device->GetQueue(type).submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &handle }, *done);
+        }
 
         // Retired with the frame being recorded: by the time that's collected the work is long done, but the
-        // fence is checked before the command buffer is freed, to be sure
+        // fence is checked before the command buffer is freed, to be sure. Freeing it uses the upload pool,
+        // so it happens under the pool's lock, on whichever thread collects the deletion queue.
+        const VulkanDevice* owner = m_Device;
         const vk::Device device = *m_Device->Get();
         const vk::Fence fence = *done;
-        m_Device->Retire(VulkanDeletionQueue::Call([device, fence] { (void)device.waitForFences(fence, vk::True, UINT64_MAX); }),
-                         std::move(m_CommandBuffer), std::move(done));
+        auto buffer = std::make_shared<vk::raii::CommandBuffer>(std::move(m_CommandBuffer));
+        m_Device->Retire(VulkanDeletionQueue::Call([owner, device, fence, buffer] {
+                             (void)device.waitForFences(fence, vk::True, UINT64_MAX);
+                             std::unique_lock pool = owner->LockUploadPool();
+                             *buffer = nullptr;
+                         }),
+                         std::move(done));
         m_CommandBuffer = nullptr;
         m_State = CommandBufferState::NOT_ALLOCATED;
+        m_UploadPoolLock.unlock();
     }
 
 

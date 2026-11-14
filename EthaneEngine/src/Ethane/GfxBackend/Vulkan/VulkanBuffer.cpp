@@ -98,7 +98,7 @@ namespace Ethane {
         newBuffer.bindMemory(*newMemory, 0);
 
         // Copy over the old contents (only the old size exists in the old buffer)
-        CopyTo(m_Device, m_Device->GetGraphicsCommandPool(), m_Device->GetGraphicsQueue(), *m_Buffer, 0, *newBuffer, 0, oldSize);
+        CopyTo(m_Device, *m_Buffer, 0, *newBuffer, 0, oldSize);
 
         // Frames in flight may still read the old buffer: retired, destroyed once they've finished
         m_Device->Retire(std::move(m_Buffer), std::move(m_Memory));
@@ -143,13 +143,11 @@ namespace Ethane {
         stagingBuffer.SetData(data, 0, size, 0);
 
         // copy from staging buffer to `dstOffset` in this buffer
-        VulkanBuffer::CopyTo(m_Device, m_Device->GetGraphicsCommandPool(), m_Device->GetGraphicsQueue(), stagingBuffer.GetHandle(), 0, *m_Buffer, dstOffset, size);
+        VulkanBuffer::CopyTo(m_Device, stagingBuffer.GetHandle(), 0, *m_Buffer, dstOffset, size);
     }
 
     void VulkanBuffer::CopyTo(
         const VulkanDevice* device,
-        const vk::raii::CommandPool& pool,
-        const vk::raii::Queue& queue,
         vk::Buffer source,
         uint32_t sourceOffset,
         vk::Buffer dest,
@@ -158,7 +156,7 @@ namespace Ethane {
 
         // create command buffer
         VulkanCommandBuffer tempCommandBuf{device};
-        tempCommandBuf.AllocateAndBeginSingleUse(pool);
+        tempCommandBuf.AllocateAndBeginSingleUse(QueueFamilyTypes::Graphics);
 
         // Nothing waits for these copies on the CPU, so the GPU must order them: before the copy, earlier work
         // that reads or writes the buffers (draws of frames in flight, earlier uploads) must be done with them;
@@ -179,7 +177,7 @@ namespace Ethane {
         // Submitted without waiting: later submissions are ordered after it, and the source (a staging buffer
         // or the old buffer of a resize) is retired after this command buffer, so the deletion queue checks
         // the copy's fence before destroying it
-        tempCommandBuf.EndSingleUseAsync(queue);
+        tempCommandBuf.EndSingleUseAsync(QueueFamilyTypes::Graphics);
     }
 
 

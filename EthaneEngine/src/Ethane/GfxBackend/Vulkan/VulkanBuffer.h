@@ -38,10 +38,9 @@ namespace Ethane {
         void TransferData(const void* data, uint32_t size, uint32_t dstOffset);
 
         // Records, submits and waits for a single buffer-to-buffer copy
+        // A one-off copy on the graphics queue, not waited for (see the .cpp)
         static void CopyTo(
             const VulkanDevice* device,
-            const vk::raii::CommandPool& pool,
-            const vk::raii::Queue& queue,
             vk::Buffer source,
             uint32_t sourceOffset,
             vk::Buffer dest,

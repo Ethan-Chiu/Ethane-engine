@@ -455,6 +455,9 @@ VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
     m_ComputeCommandPool = m_LogicalDevice.createCommandPool(vk::CommandPoolCreateInfo{
         .flags            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
         .queueFamilyIndex = indices.Compute.value()});
+    m_UploadCommandPool = m_LogicalDevice.createCommandPool(vk::CommandPoolCreateInfo{
+        .flags            = vk::CommandPoolCreateFlagBits::eTransient,
+        .queueFamilyIndex = indices.Graphics.value()});
 }
 
 void VulkanDevice::WaitIdle() const
@@ -462,8 +465,12 @@ void VulkanDevice::WaitIdle() const
     if (!IsInitialized()) {
         return;
     }
-    m_LogicalDevice.waitIdle();
-    m_DeletionQueue->Flush();
+    {
+        // waitIdle uses every queue: they must not be in use by another thread meanwhile
+        std::unique_lock queue = LockQueue();
+        m_LogicalDevice.waitIdle();
+    }
+    m_DeletionQueue->Flush(); // outside the lock: freeing upload command buffers takes the pool lock
 }
 
 void VulkanDevice::Destroy()
@@ -480,6 +487,7 @@ void VulkanDevice::Destroy()
         ETH_CORE_ASSERT(false, "Vulkan resources outlive the logical device");
     }
 
+    m_UploadCommandPool   = nullptr;
     m_GraphicsCommandPool = nullptr;
     m_ComputeCommandPool  = nullptr;
 

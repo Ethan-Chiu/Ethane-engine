@@ -31,16 +31,14 @@ namespace Ethane {
 
         void Reset();
 
-        void AllocateAndBeginSingleUse(const vk::raii::CommandPool& pool);
-        // Ends, submits to `queue`, waits for this command buffer to finish, then frees it
-        void EndSingleUse(const vk::raii::Queue& queue);
-
-        void AllocateAndBeginSingleUse(QueueFamilyTypes type);
-        void EndSingleUse(QueueFamilyTypes type);
+        // One-off work (uploads, layout transitions), from any thread: a command buffer from the device's
+        // upload pool, whose lock is held until the buffer is submitted. Graphics queue only.
+        void AllocateAndBeginSingleUse(QueueFamilyTypes type = QueueFamilyTypes::Graphics);
+        // Ends, submits, waits for this command buffer to finish, then frees it
+        void EndSingleUse(QueueFamilyTypes type = QueueFamilyTypes::Graphics);
         // Submits without waiting: for work nothing on the CPU waits for (later submissions on the queue are
         // ordered after its barriers). The command buffer is freed through the device's deletion queue.
-        void EndSingleUseAsync(const vk::raii::Queue& queue);
-        void EndSingleUseAsync(QueueFamilyTypes type);
+        void EndSingleUseAsync(QueueFamilyTypes type = QueueFamilyTypes::Graphics);
 
         // Begins `renderPass` on `framebuffer` and sets the viewport (y up) and scissor to cover `extent`
         void BeginRenderPass(const VulkanRenderPass& renderPass, vk::Framebuffer framebuffer, vk::Extent2D extent,
@@ -67,6 +65,7 @@ namespace Ethane {
 
         vk::raii::CommandBuffer m_CommandBuffer = nullptr;
         CommandBufferState m_State = CommandBufferState::NOT_ALLOCATED;
+        std::unique_lock<std::mutex> m_UploadPoolLock; // held during one-off recording
         const VulkanRenderPass* m_RenderPass = nullptr; // the render pass being recorded, if any
 
         // Last pipeline bound while recording: descriptor sets and push constants use its layout

@@ -221,7 +221,7 @@ public:
     // Hands objects the GPU may still be using to the deletion queue (destroyed in argument order once the
     // frames that could use them have finished). Use instead of destroying in-use objects or waiting idle.
     template<typename... T>
-    void Retire(T&&... objects) const { m_DeletionQueue->Retire(m_FrameSerial, std::forward<T>(objects)...); }
+    void Retire(T&&... objects) const { m_DeletionQueue->Retire(GetFrameSerial(), std::forward<T>(objects)...); }
     size_t RetiredCount() const { return m_DeletionQueue->Size(); }
 
     // Waits until the GPU is idle and destroys everything retired (shutdown, swapchain recreation)
@@ -237,6 +237,7 @@ public:
     const vk::raii::Queue& GetGraphicsQueue() const { return m_GraphicsQueue; }
     const vk::raii::Queue& GetPresentQueue() const { return m_PresentQueue; }  // may be the same queue as graphics
     const vk::raii::Queue& GetComputeQueue() const { return m_ComputeQueue; }
+    // The frame command buffers' pools: used only by the thread recording frames
     const vk::raii::CommandPool& GetGraphicsCommandPool() const { return m_GraphicsCommandPool; }
     const vk::raii::CommandPool& GetComputeCommandPool() const { return m_ComputeCommandPool; }
 
@@ -244,22 +245,32 @@ public:
     const vk::raii::Queue& GetQueue(QueueFamilyTypes type) const;
     const vk::raii::CommandPool& GetCommandPool(QueueFamilyTypes type) const;
 
+    // Thread safety. Vulkan requires queues and command pools to be used by one thread at a time:
+    // - hold LockQueue() around every submit / present / waitIdle on a queue (all share one lock);
+    // - one-off work (uploads, transitions) records into command buffers from the upload pool, holding
+    //   LockUploadPool() from allocating a buffer until it's submitted, and again when freeing it.
+    // Lock order: upload pool, then queue.
+    [[nodiscard]] std::unique_lock<std::mutex> LockQueue() const { return std::unique_lock(m_Sync->Queue); }
+    [[nodiscard]] std::unique_lock<std::mutex> LockUploadPool() const { return std::unique_lock(m_Sync->UploadPool); }
+    const vk::raii::CommandPool& GetUploadCommandPool() const { return m_UploadCommandPool; }
+
     // Frame slot being recorded (0..kMaxFramesInFlight-1). Only meaningful while IsFrameInProgress():
     // the window target sets it after waiting for that slot's fence, so the slot's copies are free to write.
     uint32_t GetFrameIndex() const { return m_FrameIndex; }
     bool IsFrameInProgress() const { return m_FrameInProgress; }
-    // Increases with every frame started: tells "earlier in this frame" apart from "in an older frame"
-    uint64_t GetFrameSerial() const { return m_FrameSerial; }
+    // Increases with every frame started: tells "earlier in this frame" apart from "in an older frame".
+    // Readable from any thread (objects retired anywhere are tagged with it).
+    uint64_t GetFrameSerial() const { return m_Sync->FrameSerial.load(std::memory_order_acquire); }
     // Called when a frame starts (after waiting for its slot's fence) and when it's submitted
     void SetFrameState(uint32_t frameIndex, bool inProgress)
     {
         m_FrameIndex = frameIndex;
         m_FrameInProgress = inProgress;
         if (inProgress) {
-            m_FrameSerial++;
+            const uint64_t serial = m_Sync->FrameSerial.fetch_add(1, std::memory_order_acq_rel) + 1;
             // This slot's previous frame has finished, and so has every frame before it
-            if (m_FrameSerial > kMaxFramesInFlight) {
-                m_DeletionQueue->Collect(m_FrameSerial - kMaxFramesInFlight);
+            if (serial > kMaxFramesInFlight) {
+                m_DeletionQueue->Collect(serial - kMaxFramesInFlight);
             }
         }
     }
@@ -277,10 +288,20 @@ private:
 
     vk::raii::CommandPool m_GraphicsCommandPool = nullptr;
     vk::raii::CommandPool m_ComputeCommandPool  = nullptr;
+    vk::raii::CommandPool m_UploadCommandPool   = nullptr; // graphics family, transient: one-off work
 
+    // Written by the recording thread
     uint32_t m_FrameIndex = 0;
-    uint64_t m_FrameSerial = 0;
     bool m_FrameInProgress = false;
+
+    // Behind a pointer, like the deletion queue: the device is movable, mutexes and atomics aren't
+    struct Sync
+    {
+        std::mutex Queue;
+        std::mutex UploadPool;
+        std::atomic<uint64_t> FrameSerial{ 0 };
+    };
+    std::unique_ptr<Sync> m_Sync = std::make_unique<Sync>();
 
     // Behind a pointer: the device is movable, the queue (its mutex) isn't
     std::unique_ptr<VulkanDeletionQueue> m_DeletionQueue = std::make_unique<VulkanDeletionQueue>();
