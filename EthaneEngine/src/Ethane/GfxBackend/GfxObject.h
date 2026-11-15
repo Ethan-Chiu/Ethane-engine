@@ -152,8 +152,13 @@ public:
     virtual const RenderTargetSpecification& GetSpecification() const = 0;
 
     // Recreates the images at the new size (no-op if unchanged; 0 is clamped to 1), without waiting for the
-    // GPU: frames in flight keep the old images until they finish. Call it where the target is recorded
-    // into (e.g. at the start of the pass that draws into it), before drawing into it this frame.
+    // GPU. Rules:
+    // - Thread: call it on the thread that records frames (runs Application::RecordFrame: today the main
+    //   thread), e.g. from a RenderWork pass. The target isn't locked, and recording reads its framebuffer
+    //   and views (ICommandList::BeginRenderPass).
+    // - Point in the frame: not while a render pass on this target is open, and before this frame's
+    //   commands that draw into it. Commands already recorded or submitted keep the old images (they're
+    //   destroyed once those frames finish); the new images start with undefined contents.
     virtual void Resize(uint32_t width, uint32_t height) = 0;
 
     // What pipelines drawing into this target must be created with (stays the same across resizes)
