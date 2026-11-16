@@ -55,6 +55,7 @@ namespace Ethane {
         virtual void PushConstants(const void* data, uint32_t size, uint32_t offset) override;
         virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
         virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override;
+        virtual void CopyPixelToReadback(IRenderTarget& target, uint32_t x, uint32_t y, IReadbackBuffer& buffer) override;
 
         const vk::raii::CommandBuffer& Get() const { return m_CommandBuffer; }
         vk::CommandBuffer GetHandle() const { return *m_CommandBuffer; }

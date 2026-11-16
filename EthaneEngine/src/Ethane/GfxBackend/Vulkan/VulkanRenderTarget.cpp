@@ -95,7 +95,8 @@ namespace Ethane {
         RetireImages();
 
         using Usage = vk::ImageUsageFlagBits;
-        m_Color = CreateAttachment(m_ColorFormat, Usage::eColorAttachment | Usage::eSampled, vk::ImageAspectFlagBits::eColor);
+        // TransferSrc: pixels can be read back (picking)
+        m_Color = CreateAttachment(m_ColorFormat, Usage::eColorAttachment | Usage::eSampled | Usage::eTransferSrc, vk::ImageAspectFlagBits::eColor);
         std::vector<vk::ImageView> views{ *m_Color.View };
         if (m_DepthFormat != vk::Format::eUndefined) {
             m_Depth = CreateAttachment(m_DepthFormat, Usage::eDepthStencilAttachment, ImageUtils::DepthAttachmentAspect(m_DepthFormat));

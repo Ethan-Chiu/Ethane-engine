@@ -20,6 +20,7 @@ namespace ImageUtils {
         switch (format)
         {
         case ImageFormat::RED32F:          return VK_FORMAT_R32_SFLOAT;
+        case ImageFormat::R32UI:           return VK_FORMAT_R32_UINT;
         case ImageFormat::RG16F:           return VK_FORMAT_R16G16_SFLOAT;
         case ImageFormat::RG32F:           return VK_FORMAT_R32G32_SFLOAT;
         case ImageFormat::SRGB:            return VK_FORMAT_R8G8B8_SRGB;
@@ -47,6 +48,7 @@ namespace ImageUtils {
         switch (format)
         {
             case VK_FORMAT_R32_SFLOAT:              return ImageFormat::RED32F;
+            case VK_FORMAT_R32_UINT:                return ImageFormat::R32UI;
             case VK_FORMAT_R16G16_SFLOAT:           return ImageFormat::RG16F;
             case VK_FORMAT_R32G32_SFLOAT:           return ImageFormat::RG32F;
             case VK_FORMAT_R8G8B8A8_UNORM:          return ImageFormat::RGBA;

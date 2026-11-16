@@ -46,6 +46,7 @@ enum class ImageFormat
 {
     None = 0,
     RED32F,
+    R32UI,             // one 32-bit unsigned integer per pixel, e.g. object ids for picking
     RGB,
     RGBA,
     RGBA16F,
@@ -222,6 +223,19 @@ public:
 // - OnRender: inside the window's render pass.
 // Every pass clears its depth buffer to 1.0 (pipelines test with LESS); clip-space depth is 0..1
 // (GLM_FORCE_DEPTH_ZERO_TO_ONE).
+// A small CPU-readable buffer the GPU copies into (ICommandList::CopyPixelToReadback). Its contents are valid
+// once IsReady(): when the frame that recorded the copy has finished on the GPU, a frame or two later.
+// Readable from any thread.
+class IReadbackBuffer : public RefCounted<IReadbackBuffer>
+{
+public:
+    virtual ~IReadbackBuffer() = default;
+    virtual uint32_t GetSize() const = 0;
+    virtual bool IsReady() const = 0;
+    // Copies `size` bytes out; false (nothing copied) until it's ready
+    virtual bool Read(void* out, uint32_t size) const = 0;
+};
+
 class ICommandList
 {
 public:
@@ -242,6 +256,10 @@ public:
 
     virtual void Draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) = 0;
     virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0) = 0;
+
+    // Copies pixel (x, y) of `target`'s color image (row 0 at the top) into `buffer` once this frame's earlier
+    // drawing into the target is done. Outside any render pass; the color format must be 4 bytes per pixel.
+    virtual void CopyPixelToReadback(IRenderTarget& target, uint32_t x, uint32_t y, IReadbackBuffer& buffer) = 0;
 };
 
 class IWindowTarget : public RefCounted<IWindowTarget>

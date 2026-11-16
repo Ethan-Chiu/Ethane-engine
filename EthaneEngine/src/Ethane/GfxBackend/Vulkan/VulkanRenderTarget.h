@@ -21,6 +21,7 @@ namespace Ethane {
         vk::Extent2D GetExtent() const { return { m_Spec.Width, m_Spec.Height }; }
         // In eShaderReadOnlyOptimal outside of the target's render passes
         vk::ImageView GetColorView() const { return *m_Color.View; }
+        vk::Image GetColorImage() const { return *m_Color.Image; }
         // Unique across all targets, and changes whenever the images are recreated: lets caches of
         // descriptors pointing at the color view (e.g. VulkanImGuiLayer) tell when theirs went stale
         uint64_t GetImageId() const { return m_ImageId; }

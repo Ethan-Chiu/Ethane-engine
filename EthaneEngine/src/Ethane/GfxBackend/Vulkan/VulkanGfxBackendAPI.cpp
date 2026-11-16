@@ -54,6 +54,10 @@ RefCountPtr<ITexture2D> VulkanGfxBackendAPI::CreateTexture2D(const TextureSpecif
     return MakeRefCountPtr<VulkanTexture2D>(&m_Context.GetDevice(), spec, pixels);
 }
 
+RefCountPtr<IReadbackBuffer> VulkanGfxBackendAPI::CreateReadbackBuffer(uint32_t size) {
+    return MakeRefCountPtr<VulkanReadbackBuffer>(&m_Context.GetDevice(), size);
+}
+
 RefCountPtr<IBindingSet> VulkanGfxBackendAPI::CreateBindingSet(const RefCountPtr<IShader>& shader, uint32_t set) {
     return MakeRefCountPtr<VulkanBindingSet>(&m_Context.GetDevice(), dynamic_pointer_cast<VulkanShader>(shader), set);
 }

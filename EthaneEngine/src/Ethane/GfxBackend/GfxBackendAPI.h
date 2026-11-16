@@ -30,6 +30,7 @@ public:
     virtual RefCountPtr<IVertexBuffer> CreateVertexBuffer(uint32_t size) = 0;
     virtual RefCountPtr<IIndexBuffer> CreateIndexBuffer(uint32_t size) = 0;
     virtual RefCountPtr<IUniformBuffer> CreateUniformBuffer(uint32_t size) = 0;
+    virtual RefCountPtr<IReadbackBuffer> CreateReadbackBuffer(uint32_t size) = 0;
 
     // `pixels`: Width * Height texels of spec.Format, tightly packed, top row first
     virtual RefCountPtr<ITexture2D> CreateTexture2D(const TextureSpecification& spec, const void* pixels) = 0;

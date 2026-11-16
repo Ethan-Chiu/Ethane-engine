@@ -233,4 +233,35 @@ namespace Ethane {
             copy->SetData(data, 0, size, offset);
         }
     }
+
+    VulkanReadbackBuffer::VulkanReadbackBuffer(const VulkanDevice* device, uint32_t size)
+        : m_Device(device), m_Size(size), m_Buffer(std::make_unique<VulkanBuffer>(device))
+    {
+        m_Buffer->CreateVulkanBuffer(size, vk::BufferUsageFlagBits::eTransferDst,
+                                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
+    }
+
+    void VulkanReadbackBuffer::MarkCopyRecorded()
+    {
+        ETH_CORE_ASSERT(m_Device->IsFrameInProgress(), "Readback copies are recorded into a frame");
+        m_CopySerial.store(m_Device->GetFrameSerial(), std::memory_order_release);
+    }
+
+    bool VulkanReadbackBuffer::IsReady() const
+    {
+        // Frame S has finished once frame S + kMaxFramesInFlight has started (its slot's fence was waited on)
+        const uint64_t serial = m_CopySerial.load(std::memory_order_acquire);
+        return serial != 0 && m_Device->GetFrameSerial() >= serial + VulkanDevice::kMaxFramesInFlight;
+    }
+
+    bool VulkanReadbackBuffer::Read(void* out, uint32_t size) const
+    {
+        if (!IsReady() || size > m_Size) {
+            return false;
+        }
+        const void* data = m_Buffer->LockMemory(0, size);
+        memcpy(out, data, size);
+        m_Buffer->UnlockMemory();
+        return true;
+    }
 }

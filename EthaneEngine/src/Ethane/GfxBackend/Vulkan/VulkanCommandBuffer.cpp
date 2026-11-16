@@ -126,6 +126,50 @@ namespace Ethane {
     }
 
 
+    void VulkanCommandBuffer::CopyPixelToReadback(IRenderTarget& target, uint32_t x, uint32_t y, IReadbackBuffer& buffer)
+    {
+        ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
+        ETH_CORE_ASSERT(!m_RenderPass, "Copy a pixel outside of a render pass");
+        ETH_CORE_ASSERT(buffer.GetSize() >= 4, "The readback buffer holds one 4-byte pixel");
+        auto& vulkanTarget = static_cast<VulkanRenderTarget&>(target);
+        auto& readback = static_cast<VulkanReadbackBuffer&>(buffer);
+        const RenderTargetSpecification& spec = vulkanTarget.GetSpecification();
+        x = std::min(x, spec.Width - 1);
+        y = std::min(y, spec.Height - 1);
+
+        using Stage = vk::PipelineStageFlagBits;
+        using Access = vk::AccessFlagBits;
+        using Layout = vk::ImageLayout;
+        const vk::ImageSubresourceRange color{ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+        auto imageBarrier = [&](Layout from, Layout to, vk::AccessFlags srcAccess, vk::AccessFlags dstAccess) {
+            return vk::ImageMemoryBarrier{
+                .srcAccessMask = srcAccess, .dstAccessMask = dstAccess, .oldLayout = from, .newLayout = to,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image = vulkanTarget.GetColorImage(), .subresourceRange = color};
+        };
+
+        // The render pass left the image in shader-read layout: wait for its drawing, then read it as a transfer
+        m_CommandBuffer.pipelineBarrier(Stage::eColorAttachmentOutput, Stage::eTransfer, {}, {}, {},
+            imageBarrier(Layout::eShaderReadOnlyOptimal, Layout::eTransferSrcOptimal, Access::eColorAttachmentWrite, Access::eTransferRead));
+        m_CommandBuffer.copyImageToBuffer(vulkanTarget.GetColorImage(), Layout::eTransferSrcOptimal, readback.GetHandle(), vk::BufferImageCopy{
+            .bufferOffset      = 0,
+            .bufferRowLength   = 0,
+            .bufferImageHeight = 0,
+            .imageSubresource  = { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
+            .imageOffset       = { static_cast<int32_t>(x), static_cast<int32_t>(y), 0 },
+            .imageExtent       = { 1, 1, 1 }});
+        // Back to shader-read; later drawing into the target (next frame's pass) and sampling wait for the copy
+        m_CommandBuffer.pipelineBarrier(Stage::eTransfer, Stage::eFragmentShader | Stage::eColorAttachmentOutput, {}, {}, {},
+            imageBarrier(Layout::eTransferSrcOptimal, Layout::eShaderReadOnlyOptimal, {}, Access::eShaderRead));
+        // The copied bytes become visible to the CPU once the frame's fence is signaled
+        m_CommandBuffer.pipelineBarrier(Stage::eTransfer, Stage::eHost, {}, {},
+            vk::BufferMemoryBarrier{
+                .srcAccessMask = Access::eTransferWrite, .dstAccessMask = Access::eHostRead,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .buffer = readback.GetHandle(), .offset = 0, .size = VK_WHOLE_SIZE}, {});
+        readback.MarkCopyRecorded();
+    }
+
     void VulkanCommandBuffer::BindPipeline(const IPipeline& pipeline)
     {
         ETH_CORE_ASSERT(m_State == CommandBufferState::RECORDING, "Command buffer isn't recording");
