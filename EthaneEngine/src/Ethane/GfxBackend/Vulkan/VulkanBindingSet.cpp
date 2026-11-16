@@ -4,6 +4,7 @@
 //
 #include "ethpch.h"
 #include "VulkanBindingSet.h"
+#include "VulkanRenderTarget.h"
 #include "VulkanBuffer.h"
 #include "VulkanTexture.h"
 
@@ -62,12 +63,24 @@ namespace Ethane {
         m_Version++;
     }
 
+    void VulkanBindingSet::SetRenderTarget(uint32_t binding, const RefCountPtr<IRenderTarget>& target, RenderTargetImage image)
+    {
+        const auto& samplers = Reflection().ImageSamplers;
+        if (samplers.find(binding) == samplers.end()) {
+            ETH_CORE_ERROR("{0}: set {1} has no sampler at binding {2}", m_Shader->GetName(), m_Set, binding);
+            ETH_CORE_ASSERT(false, "No sampler at this binding");
+            return;
+        }
+        m_Resources[binding] = Resource{ .Target = target, .TargetImage = image };
+        m_Version++; // also when it's the same target: its images may have been replaced by a resize
+    }
+
     bool VulkanBindingSet::IsComplete() const
     {
         bool complete = true;
         auto check = [&](uint32_t binding, const std::string& name, bool isTexture) {
             const auto it = m_Resources.find(binding);
-            const bool set = it != m_Resources.end() && (isTexture ? static_cast<bool>(it->second.Texture) : static_cast<bool>(it->second.UniformBuffer));
+            const bool set = it != m_Resources.end() && (isTexture ? (it->second.Texture || it->second.Target) : static_cast<bool>(it->second.UniformBuffer));
             if (!set) {
                 ETH_CORE_ERROR("{0}: set {1} binding {2} ('{3}') has no resource", m_Shader->GetName(), m_Set, binding, name);
                 complete = false;
@@ -103,9 +116,11 @@ namespace Ethane {
                     .descriptorType  = vk::DescriptorType::eUniformBuffer,
                     .pBufferInfo     = &bufferInfos.back()});
             }
-            else if (resource.Texture)
+            else if (resource.Texture || resource.Target)
             {
-                imageInfos.push_back(static_cast<const VulkanTexture2D&>(*resource.Texture).GetDescriptorInfo());
+                imageInfos.push_back(resource.Texture
+                    ? static_cast<const VulkanTexture2D&>(*resource.Texture).GetDescriptorInfo()
+                    : static_cast<const VulkanRenderTarget&>(*resource.Target).GetDescriptorInfo(resource.TargetImage));
                 writes.push_back(vk::WriteDescriptorSet{
                     .dstSet          = set,
                     .dstBinding      = binding,

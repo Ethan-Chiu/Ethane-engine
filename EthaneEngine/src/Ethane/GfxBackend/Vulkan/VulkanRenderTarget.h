@@ -10,7 +10,11 @@ namespace Ethane {
     {
     public:
         VulkanRenderTarget(const VulkanDevice* device, const RenderTargetSpecification& spec);
-        ~VulkanRenderTarget() override { RetireImages(); }
+        ~VulkanRenderTarget() override
+        {
+            RetireImages();
+            m_Device->Retire(std::move(m_Sampler));
+        }
 
         virtual const RenderTargetSpecification& GetSpecification() const override { return m_Spec; }
         virtual void Resize(uint32_t width, uint32_t height) override;
@@ -22,6 +26,8 @@ namespace Ethane {
         // In eShaderReadOnlyOptimal outside of the target's render passes
         vk::ImageView GetColorView() const { return *m_Color.View; }
         vk::Image GetColorImage() const { return *m_Color.Image; }
+        // For sampling the color or depth image (IBindingSet::SetRenderTarget); depth only if the target has one
+        vk::DescriptorImageInfo GetDescriptorInfo(RenderTargetImage image) const;
         // Unique across all targets, and changes whenever the images are recreated: lets caches of
         // descriptors pointing at the color view (e.g. VulkanImGuiLayer) tell when theirs went stale
         uint64_t GetImageId() const { return m_ImageId; }
@@ -39,8 +45,9 @@ namespace Ethane {
             vk::raii::DeviceMemory Memory = nullptr;
             vk::raii::Image Image = nullptr;
             vk::raii::ImageView View = nullptr;
+            vk::raii::ImageView SampleView = nullptr; // depth only: the depth aspect alone (a depth-stencil view can't be sampled)
 
-            void Reset() { View = nullptr; Image = nullptr; Memory = nullptr; }
+            void Reset() { SampleView = nullptr; View = nullptr; Image = nullptr; Memory = nullptr; }
         };
         Attachment CreateAttachment(vk::Format format, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect) const;
 
@@ -56,6 +63,7 @@ namespace Ethane {
         Attachment m_Color;
         Attachment m_Depth;
         vk::raii::Framebuffer m_Framebuffer = nullptr;
+        vk::raii::Sampler m_Sampler = nullptr; // for sampling the images: nearest, clamped
         uint64_t m_ImageId = 0;
     };
 

@@ -208,12 +208,18 @@ public:
 // The resources of one descriptor set of a shader: `layout(set = N, binding = B)`. Every binding the
 // shader declares in that set must be filled before the set is bound. Bindings can be changed at any
 // time; the backend applies them to a frame's copy only once the GPU is done with that frame.
+// Which image of a render target to sample
+enum class RenderTargetImage { Color, Depth };
+
 class IBindingSet : public RefCounted<IBindingSet>
 {
 public:
     virtual ~IBindingSet() = default;
     virtual void SetUniformBuffer(uint32_t binding, const RefCountPtr<IUniformBuffer>& buffer) = 0;
     virtual void SetTexture(uint32_t binding, const RefCountPtr<ITexture2D>& texture) = 0;
+    // Samples a render target's color or depth image (nearest, clamped to the edge; depth as its value in
+    // 0..1). Resizing the target replaces its images: set it again each frame it's used, before binding.
+    virtual void SetRenderTarget(uint32_t binding, const RefCountPtr<IRenderTarget>& target, RenderTargetImage image) = 0;
 };
 
 // Records GPU commands into the frame being built. Handed to Layer::OnRenderOffscreen() and Layer::OnRender(),

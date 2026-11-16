@@ -23,6 +23,7 @@ namespace Ethane {
 
         virtual void SetUniformBuffer(uint32_t binding, const RefCountPtr<IUniformBuffer>& buffer) override;
         virtual void SetTexture(uint32_t binding, const RefCountPtr<ITexture2D>& texture) override;
+        virtual void SetRenderTarget(uint32_t binding, const RefCountPtr<IRenderTarget>& target, RenderTargetImage image) override;
 
         // While recording a frame: brings this frame's copy up to date and returns it
         vk::DescriptorSet Prepare();
@@ -33,6 +34,8 @@ namespace Ethane {
         {
             RefCountPtr<IUniformBuffer> UniformBuffer;
             RefCountPtr<ITexture2D> Texture;
+            RefCountPtr<IRenderTarget> Target; // sampled image of a render target
+            RenderTargetImage TargetImage = RenderTargetImage::Color;
         };
         using ResourceMap = std::map<uint32_t, Resource>; // binding -> resource
 

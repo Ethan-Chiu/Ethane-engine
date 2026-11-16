@@ -85,9 +85,11 @@ namespace Ethane {
 				.offset   = element.Offset});
 			location++;
 		}
+		// An empty layout: no vertex buffer at all (e.g. a full-screen triangle made in the vertex shader)
+		const bool hasVertices = layout.GetElementCount() > 0;
 		const vk::PipelineVertexInputStateCreateInfo vertexInputInfo{
-			.vertexBindingDescriptionCount   = 1,
-			.pVertexBindingDescriptions      = &vertexInputBinding,
+			.vertexBindingDescriptionCount   = hasVertices ? 1u : 0u,
+			.pVertexBindingDescriptions      = hasVertices ? &vertexInputBinding : nullptr,
 			.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
 			.pVertexAttributeDescriptions    = attributeDescriptions.data()};
 

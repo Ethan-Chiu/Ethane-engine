@@ -27,6 +27,14 @@ namespace Ethane {
                                                          /*clearOnLoad*/ true, /*finalPresent*/ false);
         m_Spec.Width = std::max(m_Spec.Width, 1u);
         m_Spec.Height = std::max(m_Spec.Height, 1u);
+        m_Sampler = vk::raii::Sampler(device->Get(), vk::SamplerCreateInfo{
+            .magFilter    = vk::Filter::eNearest,
+            .minFilter    = vk::Filter::eNearest,
+            .mipmapMode   = vk::SamplerMipmapMode::eNearest,
+            .addressModeU = vk::SamplerAddressMode::eClampToEdge,
+            .addressModeV = vk::SamplerAddressMode::eClampToEdge,
+            .addressModeW = vk::SamplerAddressMode::eClampToEdge,
+            .maxLod       = 0.0f});
         CreateImages();
     }
 
@@ -78,11 +86,21 @@ namespace Ethane {
         return attachment;
     }
 
+    vk::DescriptorImageInfo VulkanRenderTarget::GetDescriptorInfo(RenderTargetImage image) const
+    {
+        if (image == RenderTargetImage::Depth) {
+            ETH_CORE_ASSERT(*m_Depth.SampleView, "This render target has no depth image");
+            // The layout offscreen passes leave depth in (VulkanRenderPass)
+            return { *m_Sampler, *m_Depth.SampleView, vk::ImageLayout::eDepthStencilReadOnlyOptimal };
+        }
+        return { *m_Sampler, *m_Color.View, vk::ImageLayout::eShaderReadOnlyOptimal };
+    }
+
     void VulkanRenderTarget::RetireImages()
     {
         // in reverse creation order: framebuffer -> views -> images -> memory
         m_Device->Retire(std::move(m_Framebuffer),
-                         std::move(m_Depth.View), std::move(m_Depth.Image), std::move(m_Depth.Memory),
+                         std::move(m_Depth.SampleView), std::move(m_Depth.View), std::move(m_Depth.Image), std::move(m_Depth.Memory),
                          std::move(m_Color.View), std::move(m_Color.Image), std::move(m_Color.Memory));
         m_Framebuffer = nullptr;
         m_Depth.Reset();
@@ -99,7 +117,14 @@ namespace Ethane {
         m_Color = CreateAttachment(m_ColorFormat, Usage::eColorAttachment | Usage::eSampled | Usage::eTransferSrc, vk::ImageAspectFlagBits::eColor);
         std::vector<vk::ImageView> views{ *m_Color.View };
         if (m_DepthFormat != vk::Format::eUndefined) {
-            m_Depth = CreateAttachment(m_DepthFormat, Usage::eDepthStencilAttachment, ImageUtils::DepthAttachmentAspect(m_DepthFormat));
+            // Sampled: later passes can read the depth (e.g. the selection outline comparing depths)
+            m_Depth = CreateAttachment(m_DepthFormat, Usage::eDepthStencilAttachment | Usage::eSampled, ImageUtils::DepthAttachmentAspect(m_DepthFormat));
+            m_Depth.SampleView = vk::raii::ImageView(m_Device->Get(), vk::ImageViewCreateInfo{
+                .image            = *m_Depth.Image,
+                .viewType         = vk::ImageViewType::e2D,
+                .format           = m_DepthFormat,
+                .components       = {},
+                .subresourceRange = { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }});
             views.push_back(*m_Depth.View);
         }
 
