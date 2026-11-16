@@ -349,3 +349,49 @@ TEST_CASE("Components: asset fields say which kind of file they take")
 	CHECK(types.Find<MeshComponent>()->FindField("Mesh")->Meta.Asset == AssetKind::Mesh);
 	CHECK(types.Find<MaterialComponent>()->FindField("BaseColorTexture")->Meta.Asset == AssetKind::Texture);
 }
+
+TEST_CASE("Components: EulerNear gives the same rotation, as close as possible to the reference")
+{
+	auto sameRotation = [](const glm::vec3& a, const glm::vec3& b) {
+		const glm::quat qa(a), qb(b);
+		return std::abs(glm::dot(qa, qb)) > 0.99999f; // q and -q are the same rotation
+	};
+	const glm::vec3 samples[] = { { 0.3f, 0.2f, 0.1f }, { 1.4f, -2.9f, 0.5f }, { -0.7f, 3.0f, -3.1f } };
+	for (const glm::vec3& angles : samples)
+	{
+		const glm::quat rotation(angles);
+		// Near the original: gives the original back
+		CHECK(Near(EulerNear(rotation, angles), angles));
+		// Near a turn away: keeps up with it instead of jumping back by 2 pi
+		const glm::vec3 turned = angles + glm::vec3(glm::two_pi<float>());
+		CHECK(Near(EulerNear(rotation, turned), turned));
+		// Near the other equivalent triple: picks that one
+		const glm::vec3 other(angles.x + glm::pi<float>(), glm::pi<float>() - angles.y, angles.z + glm::pi<float>());
+		CHECK(sameRotation(other, angles));
+		CHECK(Near(EulerNear(rotation, other), other));
+	}
+	// A small rotation step from the reference stays a small change in the angles (away from yaw = +-90
+	// degrees: there Euler angles are singular, and even tiny rotations can need large pitch / roll changes)
+	const glm::vec3 reference(0.2f, 0.8f, -0.3f);
+	const glm::quat stepped = glm::angleAxis(0.05f, glm::vec3(0, 1, 0)) * glm::quat(reference);
+	const glm::vec3 result = EulerNear(stepped, reference);
+	CHECK(sameRotation(result, glm::eulerAngles(stepped)));
+	CHECK(glm::length(result - reference) < 0.2f);
+}
+
+TEST_CASE("Components: WorldTransform combines the transforms up the hierarchy")
+{
+	Fixture f;
+	Transaction tx("Build", f.Types);
+	ElementId root = tx.CreateElement("Root");
+	tx.AddComponent(root, TransformComponent{ .Position = { 10.0f, 0.0f, 0.0f }, .Scale = glm::vec3(2.0f) });
+	ElementId group = tx.CreateElement("Group (no transform)", root);
+	ElementId leaf = tx.CreateElement("Leaf", group);
+	tx.AddComponent(leaf, TransformComponent{ .Position = { 1.0f, 0.0f, 0.0f } });
+	f.Commit(std::move(tx));
+
+	const SteleSnapshot snapshot = f.Source.Read();
+	CHECK(Near(glm::vec3(WorldTransform(snapshot, leaf)[3]), glm::vec3(12.0f, 0.0f, 0.0f)));
+	CHECK(Near(glm::vec3(WorldTransform(snapshot, group)[3]), glm::vec3(10.0f, 0.0f, 0.0f)));
+	CHECK(WorldTransform(snapshot, ElementId{ 999 }) == glm::mat4(1.0f));
+}

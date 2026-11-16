@@ -2,7 +2,9 @@
 #include "Ethane/World/Components.h"
 
 #include "Ethane/Schema/TypeRegistry.h"
+#include "Ethane/Stele/SteleSnapshot.h"
 
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Ethane {
@@ -55,6 +57,36 @@ namespace Ethane {
 		const float pitch = std::atan2(d.y, std::sqrt(d.x * d.x + d.z * d.z));
 		const float yaw = std::atan2(-d.x, -d.z);
 		return { pitch, yaw, 0.0f };
+	}
+
+	glm::vec3 EulerNear(const glm::quat& rotation, const glm::vec3& reference)
+	{
+		constexpr float pi = glm::pi<float>(), twoPi = glm::two_pi<float>();
+		// Each angle shifted by whole turns to be as close as possible to the reference's
+		auto wrapNear = [&](glm::vec3 angles) {
+			for (int i = 0; i < 3; i++)
+				angles[i] += twoPi * std::round((reference[i] - angles[i]) / twoPi);
+			return angles;
+		};
+		// glm::quat(vec3(p, y, r)) is Rz(r) * Ry(y) * Rx(p), which (p + pi, pi - y, r + pi) also gives
+		const glm::vec3 first = glm::eulerAngles(rotation);
+		const glm::vec3 a = wrapNear(first);
+		const glm::vec3 b = wrapNear(glm::vec3(first.x + pi, pi - first.y, first.z + pi));
+		const glm::vec3 da = a - reference, db = b - reference;
+		return glm::dot(da, da) <= glm::dot(db, db) ? a : b;
+	}
+
+	glm::mat4 WorldTransform(const SteleSnapshot& snapshot, ElementId element)
+	{
+		glm::mat4 world(1.0f);
+		for (const SteleElement* e = snapshot.Find(element); e; e = snapshot.Find(e->Parent))
+		{
+			if (const TransformComponent* transform = snapshot.Get<TransformComponent>(e->Id))
+				world = transform->Matrix() * world;
+			if (!e->Parent.IsValid())
+				break;
+		}
+		return world;
 	}
 
 }

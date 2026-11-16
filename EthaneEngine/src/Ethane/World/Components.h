@@ -9,6 +9,7 @@
 
 namespace Ethane {
 
+	class SteleSnapshot;
 	class TypeRegistry;
 
 	// The engine's built-in component types: plain structs, described in the schema by
@@ -67,5 +68,14 @@ namespace Ethane {
 
 	// Euler angles (as TransformComponent::Rotation) that point the forward axis (-Z) along `direction`
 	glm::vec3 RotationTowards(const glm::vec3& direction);
+
+	// Euler angles (as TransformComponent::Rotation) of `rotation`, choosing among the equivalent ones (each
+	// rotation has two Euler triples, and every angle repeats every 2 pi) those closest to `reference`, so
+	// values change smoothly while something is being rotated
+	glm::vec3 EulerNear(const glm::quat& rotation, const glm::vec3& reference);
+
+	// An element's placement in the world: its Transform after its parents' (identity where an element has
+	// none). From the stele, so the editor can use it without a world.
+	glm::mat4 WorldTransform(const SteleSnapshot& snapshot, ElementId element);
 
 }
