@@ -27,6 +27,15 @@ project "ImGui"
         "../EthaneEngine/vendor/imgui/imstb_rectpack.h",
         "../EthaneEngine/vendor/imgui/imstb_textedit.h",
         "../EthaneEngine/vendor/imgui/imstb_truetype.h",
+
+        -- ImGuizmo: gizmos drawn with ImGui (same library, so it shares the engine's ImGui context)
+        "../EthaneEngine/vendor/ImGuizmo/src/ImGuizmo.h",
+        "../EthaneEngine/vendor/ImGuizmo/src/ImGuizmo.cpp",
+    }
+
+    includedirs
+    {
+        "../EthaneEngine/vendor/imgui", -- ImGuizmo includes imgui.h / imgui_internal.h
     }
 
     filter "system:windows"

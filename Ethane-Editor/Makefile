@@ -28,7 +28,7 @@ ifeq ($(origin AR), default)
   AR = ar
 endif
 RESCOMP = windres
-INCLUDES += -I../EthaneEngine/src -Isrc -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem ../../../../VulkanSDK/1.4.309.0/macOS/Include -isystem ../EthaneEngine/vendor/build/Release/include -isystem ../EthaneEngine/vendor/imgui
+INCLUDES += -I../EthaneEngine/src -Isrc -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/GLFW/include -isystem ../EthaneEngine/vendor/Glad/include -isystem ../EthaneEngine/vendor/glm -isystem ../EthaneEngine/vendor/stb_image -isystem ../EthaneEngine/vendor/entt/include -isystem ../../../../VulkanSDK/1.4.309.0/macOS/Include -isystem ../EthaneEngine/vendor/build/Release/include -isystem ../EthaneEngine/vendor/imgui -isystem ../EthaneEngine/vendor/ImGuizmo/src
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)

@@ -16,7 +16,7 @@ IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["assimp"] = "%{wks.location}/EthaneEngine/vendor/build/Release/include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/EthaneEngine/vendor/build/Release/include"
 IncludeDir["imgui"] = "%{wks.location}/EthaneEngine/vendor/imgui"
-IncludeDir["ImGuizmo"] = "%{wks.location}/EthaneEngine/vendor/ImGuizmo"
+IncludeDir["ImGuizmo"] = "%{wks.location}/EthaneEngine/vendor/ImGuizmo/src"
 
 
 LibraryDir = {}

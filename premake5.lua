@@ -81,8 +81,6 @@ project "EthaneEngine"
 
         "%{IncludeDir.VulkanSDK}/vulkan/**.cppm"
 
-        -- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
-        -- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
         -- "%{prj.name}/vendor/VulkanMemoryAllocator/**.h",
         -- "%{prj.name}/vendor/VulkanMemoryAllocator/**.cpp"
     }
@@ -123,9 +121,6 @@ project "EthaneEngine"
         pchheader "src/ethpch.h"
     filter "action:not xcode4"
         pchheader "ethpch.h"
-
-    filter "files:EthaneEngine/vendor/ImGuizmo/**.cpp"
-        flags { "NoPCH" }
 
 
     filter "system:windows"
@@ -288,7 +283,8 @@ project "Ethane-Editor"
         "%{IncludeDir.VulkanSDK}",
         "%{IncludeDir.assimp}",
         "%{IncludeDir.yaml_cpp}",
-        "%{IncludeDir.imgui}"
+        "%{IncludeDir.imgui}",
+        "%{IncludeDir.ImGuizmo}"
     }
 
     -- Not external: system header paths are left out of compiler dependency files, so editor

@@ -283,6 +283,7 @@
 					../../../../VulkanSDK/1.4.309.0/macOS/Include,
 					../EthaneEngine/vendor/build/Release/include,
 					../EthaneEngine/vendor/imgui,
+					../EthaneEngine/vendor/ImGuizmo/src,
 					"$(inherited)",
 				);
 				USER_HEADER_SEARCH_PATHS = (
@@ -360,6 +361,7 @@
 					../../../../VulkanSDK/1.4.309.0/macOS/Include,
 					../EthaneEngine/vendor/build/Release/include,
 					../EthaneEngine/vendor/imgui,
+					../EthaneEngine/vendor/ImGuizmo/src,
 					"$(inherited)",
 				);
 				USER_HEADER_SEARCH_PATHS = (
@@ -421,6 +423,7 @@
 					../../../../VulkanSDK/1.4.309.0/macOS/Include,
 					../EthaneEngine/vendor/build/Release/include,
 					../EthaneEngine/vendor/imgui,
+					../EthaneEngine/vendor/ImGuizmo/src,
 					"$(inherited)",
 				);
 				USER_HEADER_SEARCH_PATHS = (
