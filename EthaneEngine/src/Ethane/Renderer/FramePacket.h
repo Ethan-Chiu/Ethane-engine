@@ -57,6 +57,8 @@ namespace Ethane {
 	public:
 		PacketView View;
 		std::vector<DirectionalLight> DirectionalLights; // the renderer currently uses the first one
+		// Elements whose draw items Renderer::RenderOutline outlines (e.g. the editor's selection)
+		std::vector<ElementId> Highlighted;
 
 		// Material params need an element id: the renderer keeps that element's materials between
 		// frames. Without one the params are ignored.

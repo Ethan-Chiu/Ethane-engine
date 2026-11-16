@@ -19,6 +19,22 @@ namespace Ethane {
 	class Material;
 	class Mesh;
 
+	// The renderer's shaders; the editor's are in Ethane-Editor/assets/shaders
+	struct RendererShaders
+	{
+		std::string Mesh = "assets/shaders/mesh.glsl";
+		std::string Pick = "assets/shaders/pick.glsl";
+		std::string SelectionMask = "assets/shaders/selection_mask.glsl";
+		std::string SelectionOutline = "assets/shaders/selection_outline.glsl";
+	};
+
+	struct OutlineStyle
+	{
+		glm::vec4 Color{ 1.0f, 0.55f, 0.1f, 1.0f };
+		float HiddenAlpha = 0.35f; // opacity factor where the outlined surface is hidden behind others
+		int Width = 3;             // in pixels
+	};
+
 	struct RendererStats
 	{
 		uint32_t DrawItems = 0;
@@ -37,16 +53,20 @@ namespace Ethane {
 	class Renderer
 	{
 	public:
-		// `meshShader` / `pickShader`: shaders with the interfaces of the editor's assets/shaders/mesh.glsl and
-		// pick.glsl
 		Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& renderPass,
-		         const std::string& meshShader, const std::string& pickShader);
+		         const RendererShaders& shaders = {});
 		~Renderer();
 
 		// Records the packet into `target`: begins and ends the target's render pass.
 		// Call once per frame: the frame uniforms have one copy per frame in flight, and per-element
 		// materials not drawn by this call are released.
 		void Render(ICommandList& commandList, const FramePacket& packet, IRenderTarget& target);
+
+		// Draws an outline around the packet's Highlighted elements into `overlay` (an RGBA target without depth,
+		// the size of `scene`; cleared to transparent, to be shown over the scene image): solid where they're in
+		// front in `scene` (after Render drew into it, by its depth), faded where something hides them.
+		void RenderOutline(ICommandList& commandList, const FramePacket& packet, const RefCountPtr<IRenderTarget>& scene,
+		                   IRenderTarget& overlay, const OutlineStyle& style = {});
 
 		// Picking: asks which element covers `pixel` ((0, 0): top left) of the target the next Render draws
 		// into. That Render also draws the packet into a 1x1 id image and copies its pixel back; the answer
@@ -103,6 +123,17 @@ namespace Ethane {
 		std::mutex m_PickMutex;                   // guards the two below
 		std::optional<glm::uvec2> m_PickRequest;
 		std::optional<ElementId> m_PickResult;
+
+		// Selection outline: the highlighted meshes' depths (R32F + depth, the scene's size), then a full-screen
+		// pass comparing them with the scene's depth
+		RefCountPtr<IRenderTarget> m_MaskTarget;
+		RefCountPtr<IShader> m_MaskShader;
+		RefCountPtr<IPipeline> m_MaskPipeline;
+		RefCountPtr<IUniformBuffer> m_MaskUniforms;
+		RefCountPtr<IBindingSet> m_MaskBindings;
+		RefCountPtr<IShader> m_OutlineShader;
+		RefCountPtr<IPipeline> m_OutlinePipeline;
+		RefCountPtr<IBindingSet> m_OutlineBindings;
 
 		std::unordered_map<AssetId, std::vector<Ref<Material>>> m_MeshMaterials;
 		std::unordered_map<ElementId, ElementMaterialSet> m_ElementMaterials;

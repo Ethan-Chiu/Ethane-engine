@@ -22,11 +22,10 @@ namespace Ethane {
 
 	}
 
-	Renderer::Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& renderPass,
-	                   const std::string& meshShader, const std::string& pickShader)
+	Renderer::Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& renderPass, const RendererShaders& shaders)
 		: m_Backend(&backend), m_Assets(&assets)
 	{
-		m_MeshShader = backend.CreateShader(meshShader);
+		m_MeshShader = backend.CreateShader(shaders.Mesh);
 
 		PipelineSpecification spec;
 		spec.Shader = m_MeshShader;
@@ -42,7 +41,7 @@ namespace Ethane {
 		// Picking: ids in a 1x1 R32UI image, cleared to 0 ("nothing"); depth keeps the nearest one
 		m_PickTarget = backend.CreateRenderTarget(RenderTargetSpecification{
 			.Width = 1, .Height = 1, .ColorFormat = ImageFormat::R32UI, .ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f } });
-		m_PickShader = backend.CreateShader(pickShader);
+		m_PickShader = backend.CreateShader(shaders.Pick);
 		PipelineSpecification pickSpec;
 		pickSpec.Shader = m_PickShader;
 		pickSpec.RenderPass = m_PickTarget->GetRenderPass();
@@ -52,6 +51,30 @@ namespace Ethane {
 		m_PickUniforms = backend.CreateUniformBuffer(sizeof(glm::mat4));
 		m_PickBindings = backend.CreateBindingSet(m_PickShader, 0);
 		m_PickBindings->SetUniformBuffer(0, m_PickUniforms);
+
+		// Selection outline: depths of the highlighted meshes, cleared to 2 ("none": depths are 0..1)
+		m_MaskTarget = backend.CreateRenderTarget(RenderTargetSpecification{
+			.Width = 1, .Height = 1, .ColorFormat = ImageFormat::RED32F, .ClearColor = { 2.0f, 0.0f, 0.0f, 0.0f } });
+		m_MaskShader = backend.CreateShader(shaders.SelectionMask);
+		PipelineSpecification maskSpec;
+		maskSpec.Shader = m_MaskShader;
+		maskSpec.RenderPass = m_MaskTarget->GetRenderPass();
+		maskSpec.Layout = Mesh::GetVertexLayout();
+		maskSpec.CullMode = CullMode::BACK;
+		m_MaskPipeline = backend.CreatePipeline(maskSpec);
+		m_MaskUniforms = backend.CreateUniformBuffer(sizeof(glm::mat4));
+		m_MaskBindings = backend.CreateBindingSet(m_MaskShader, 0);
+		m_MaskBindings->SetUniformBuffer(0, m_MaskUniforms);
+
+		// ...and the full-screen pass into an overlay: RGBA, no depth, no vertex buffer
+		m_OutlineShader = backend.CreateShader(shaders.SelectionOutline);
+		PipelineSpecification outlineSpec;
+		outlineSpec.Shader = m_OutlineShader;
+		outlineSpec.RenderPass = backend.CreateRenderPass({ ImageFormat::RGBA }, ImageFormat::None, /*clearOnLoad*/ true);
+		outlineSpec.Layout = {};
+		outlineSpec.CullMode = CullMode::NONE;
+		m_OutlinePipeline = backend.CreatePipeline(outlineSpec);
+		m_OutlineBindings = backend.CreateBindingSet(m_OutlineShader, 0);
 	}
 
 	Renderer::~Renderer() = default;
@@ -111,6 +134,56 @@ namespace Ethane {
 		ReleaseUnused();
 		std::lock_guard lock(m_StatsMutex);
 		m_PublishedStats = m_Stats;
+	}
+
+	void Renderer::RenderOutline(ICommandList& commandList, const FramePacket& packet, const RefCountPtr<IRenderTarget>& scene,
+	                             IRenderTarget& overlay, const OutlineStyle& style)
+	{
+		auto highlighted = [&](ElementId element) {
+			return element.IsValid() && std::find(packet.Highlighted.begin(), packet.Highlighted.end(), element) != packet.Highlighted.end();
+		};
+		const auto items = packet.DrawItems();
+		const bool any = std::any_of(items.begin(), items.end(), [&](const DrawItem& item) { return highlighted(item.Element); });
+		if (!any)
+		{
+			// Nothing to outline: just clear the overlay
+			commandList.BeginRenderPass(overlay);
+			commandList.EndRenderPass();
+			return;
+		}
+
+		// 1. The highlighted meshes' depths, seen like the scene
+		const RenderTargetSpecification& size = scene->GetSpecification();
+		m_MaskTarget->Resize(size.Width, size.Height);
+		const glm::mat4 viewProjection = packet.View.ViewProjection();
+		m_MaskUniforms->SetData(&viewProjection, sizeof(viewProjection));
+		commandList.BeginRenderPass(*m_MaskTarget);
+		commandList.BindPipeline(*m_MaskPipeline);
+		commandList.BindBindingSet(*m_MaskBindings);
+		for (const DrawItem& item : items)
+		{
+			if (!highlighted(item.Element))
+				continue;
+			if (Ref<Mesh> mesh = m_Assets->GetMesh(item.Mesh))
+				mesh->Draw(commandList, item.Transform, {}); // no materials: the mask shader has none
+		}
+		commandList.EndRenderPass();
+
+		// 2. Around the silhouette, compared with the scene's depth (set every frame: resizing replaces images)
+		m_OutlineBindings->SetRenderTarget(0, m_MaskTarget, RenderTargetImage::Color);
+		m_OutlineBindings->SetRenderTarget(1, scene, RenderTargetImage::Depth);
+		struct
+		{
+			glm::vec4 Color;
+			float HiddenAlpha;
+			int32_t Width;
+		} const outline{ style.Color, style.HiddenAlpha, style.Width };
+		commandList.BeginRenderPass(overlay);
+		commandList.BindPipeline(*m_OutlinePipeline);
+		commandList.BindBindingSet(*m_OutlineBindings);
+		commandList.PushConstants(&outline, sizeof(outline));
+		commandList.Draw(3); // the full-screen triangle
+		commandList.EndRenderPass();
 	}
 
 	void Renderer::RequestPick(glm::uvec2 pixel)

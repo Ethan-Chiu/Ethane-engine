@@ -20,6 +20,7 @@ namespace Ethane {
 	{
 		View = {};
 		DirectionalLights.clear();
+		Highlighted.clear();
 		m_DrawItems.clear();
 		m_Params.clear();
 	}
