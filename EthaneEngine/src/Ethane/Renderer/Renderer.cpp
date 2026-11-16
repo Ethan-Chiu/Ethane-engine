@@ -22,7 +22,8 @@ namespace Ethane {
 
 	}
 
-	Renderer::Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& renderPass, const std::string& meshShader)
+	Renderer::Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& renderPass,
+	                   const std::string& meshShader, const std::string& pickShader)
 		: m_Backend(&backend), m_Assets(&assets)
 	{
 		m_MeshShader = backend.CreateShader(meshShader);
@@ -37,6 +38,20 @@ namespace Ethane {
 		m_FrameUniforms = backend.CreateUniformBuffer(sizeof(FrameUniforms));
 		m_FrameBindings = backend.CreateBindingSet(m_MeshShader, 0);
 		m_FrameBindings->SetUniformBuffer(0, m_FrameUniforms);
+
+		// Picking: ids in a 1x1 R32UI image, cleared to 0 ("nothing"); depth keeps the nearest one
+		m_PickTarget = backend.CreateRenderTarget(RenderTargetSpecification{
+			.Width = 1, .Height = 1, .ColorFormat = ImageFormat::R32UI, .ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f } });
+		m_PickShader = backend.CreateShader(pickShader);
+		PipelineSpecification pickSpec;
+		pickSpec.Shader = m_PickShader;
+		pickSpec.RenderPass = m_PickTarget->GetRenderPass();
+		pickSpec.Layout = Mesh::GetVertexLayout();
+		pickSpec.CullMode = CullMode::BACK;
+		m_PickPipeline = backend.CreatePipeline(pickSpec);
+		m_PickUniforms = backend.CreateUniformBuffer(sizeof(glm::mat4));
+		m_PickBindings = backend.CreateBindingSet(m_PickShader, 0);
+		m_PickBindings->SetUniformBuffer(0, m_PickUniforms);
 	}
 
 	Renderer::~Renderer() = default;
@@ -84,9 +99,81 @@ namespace Ethane {
 		}
 		commandList.EndRenderPass();
 
+		CollectPick(); // an earlier request's answer, if its frame has finished
+		std::optional<glm::uvec2> pick;
+		{
+			std::lock_guard lock(m_PickMutex);
+			pick = std::exchange(m_PickRequest, std::nullopt);
+		}
+		if (pick)
+			RecordPick(commandList, packet, target, *pick);
+
 		ReleaseUnused();
 		std::lock_guard lock(m_StatsMutex);
 		m_PublishedStats = m_Stats;
+	}
+
+	void Renderer::RequestPick(glm::uvec2 pixel)
+	{
+		std::lock_guard lock(m_PickMutex);
+		m_PickRequest = pixel;
+	}
+
+	std::optional<ElementId> Renderer::TakePick()
+	{
+		std::lock_guard lock(m_PickMutex);
+		return std::exchange(m_PickResult, std::nullopt);
+	}
+
+	void Renderer::RecordPick(ICommandList& commandList, const FramePacket& packet, const IRenderTarget& target, glm::uvec2 pixel)
+	{
+		// The view narrowed to one pixel of `target`: that pixel's center goes to the middle of clip space and
+		// its edges to the edges, so the 1x1 image sees exactly what the pixel shows. The viewport is flipped
+		// (row 0 at the top), so the top row is NDC y = +1.
+		const RenderTargetSpecification& spec = target.GetSpecification();
+		const float width = static_cast<float>(spec.Width), height = static_cast<float>(spec.Height);
+		const float centerX = 2.0f * (static_cast<float>(pixel.x) + 0.5f) / width - 1.0f;
+		const float centerY = 1.0f - 2.0f * (static_cast<float>(pixel.y) + 0.5f) / height;
+		glm::mat4 narrow(1.0f);
+		narrow[0][0] = width;
+		narrow[1][1] = height;
+		narrow[3][0] = -centerX * width; // in clip space: scaled by w, so it shifts NDC by -centerX * width
+		narrow[3][1] = -centerY * height;
+		const glm::mat4 viewProjection = narrow * packet.View.ViewProjection();
+		m_PickUniforms->SetData(&viewProjection, sizeof(viewProjection));
+
+		PendingPick pending;
+		commandList.BeginRenderPass(*m_PickTarget);
+		commandList.BindPipeline(*m_PickPipeline);
+		commandList.BindBindingSet(*m_PickBindings);
+		const auto items = packet.DrawItems();
+		pending.Elements.reserve(items.size());
+		for (uint32_t i = 0; i < items.size(); i++)
+		{
+			pending.Elements.push_back(items[i].Element);
+			Ref<Mesh> mesh = m_Assets->GetMesh(items[i].Mesh);
+			if (!mesh)
+				continue;
+			const uint32_t id = i + 1; // 0 is "nothing"
+			commandList.PushConstants(&id, sizeof(id), sizeof(glm::mat4)); // after the model matrix
+			mesh->Draw(commandList, items[i].Transform, {}); // no materials: the pick shader has none
+		}
+		commandList.EndRenderPass();
+
+		pending.Readback = m_Backend->CreateReadbackBuffer(sizeof(uint32_t));
+		commandList.CopyPixelToReadback(*m_PickTarget, 0, 0, *pending.Readback);
+		m_PendingPick = std::move(pending); // replaces an older pick still in flight
+	}
+
+	void Renderer::CollectPick()
+	{
+		uint32_t id = 0;
+		if (!m_PendingPick || !m_PendingPick->Readback->Read(&id, sizeof(id)))
+			return; // none, or its frame hasn't finished yet
+		const ElementId element = id > 0 && id <= m_PendingPick->Elements.size() ? m_PendingPick->Elements[id - 1] : ElementId{};
+		m_PendingPick.reset();
+		std::lock_guard lock(m_PickMutex);
+		m_PickResult = element;
 	}
 
 	const std::vector<Ref<Material>>& Renderer::MeshMaterials(AssetId id, const Mesh& mesh)
