@@ -74,6 +74,6 @@ as its own commits.
 - Prefab steles (reference plus overrides)
 - Array fields in the schema
 - [x] Picking (GPU pick pass) and transform gizmos (ImGuizmo), editor-only
-- Selection highlight in the viewport (outline or bounds)
+- [x] Selection outline (screen-space, faded where hidden)
 - Native file dialogs (Open / Save as are path popups for now)
 - Asking before closing a stele with unsaved changes

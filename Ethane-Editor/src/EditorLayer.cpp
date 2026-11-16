@@ -69,6 +69,9 @@ namespace Ethane {
 		viewportSpec.Height = m_ViewportSize.y;
 		viewportSpec.ClearColor = { 0.08f, 0.085f, 0.09f, 1.0f };
 		m_ViewportTarget = backend.CreateRenderTarget(viewportSpec);
+		m_OutlineTarget = backend.CreateRenderTarget(RenderTargetSpecification{
+			.Width = viewportSpec.Width, .Height = viewportSpec.Height, .ColorFormat = ImageFormat::RGBA,
+			.DepthFormat = ImageFormat::None, .ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f } });
 
 		std::string error;
 		if (std::filesystem::exists(kAssetRegistryFile) && !m_AssetRegistry.Load(kAssetRegistryFile, &error)) {
@@ -76,7 +79,7 @@ namespace Ethane {
 		}
 		// Meshes and textures load on worker threads; the library uploads them as they finish (OnUpdate)
 		m_Assets = CreateScope<AssetLibrary>(backend, m_AssetRegistry, &Application::Get().GetJobSystem());
-		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl", "assets/shaders/pick.glsl");
+		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass()); // shaders from assets/shaders
 		m_GizmoOperation = ImGuizmo::TRANSLATE;
 		// Dragging inside a window (e.g. a gizmo in the viewport) must not move the window
 		ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
@@ -102,6 +105,7 @@ namespace Ethane {
 		m_Context.reset();
 		m_Renderer.reset();
 		m_Assets.reset();
+		m_OutlineTarget.reset();
 		m_ViewportTarget.reset();
 	}
 
@@ -140,14 +144,26 @@ namespace Ethane {
 			world->Extract(packet);
 		}
 
-		// Recording owns the renderer and the target: the pass resizes the target to the panel's size (a no-op
-		// when unchanged), then draws the packet into it
-		work.Offscreen([renderer = m_Renderer.get(), target = m_ViewportTarget, size = m_ViewportSize,
-		                packet = std::make_shared<FramePacket>(std::move(packet))](ICommandList& commandList) {
+		// Editing: the selection (and everything under it) gets an outline
+		if (OpenStele* stele = m_Context->Active(); stele && !IsPlaying() && stele->Selected.IsValid()) {
+			const SteleSnapshot snapshot = stele->Source->Read();
+			if (snapshot.Contains(stele->Selected)) {
+				packet.Highlighted.push_back(stele->Selected);
+				snapshot.ForEachDepthFirst([&](const SteleElement& element) { packet.Highlighted.push_back(element.Id); }, stele->Selected);
+			}
+		}
+
+		// Recording owns the renderer and the targets: the pass resizes them to the panel's size (a no-op when
+		// unchanged), draws the packet, then the selection outline over it
+		const int outlineWidth = static_cast<int>(std::lround(2.0f * ImGui::GetIO().DisplayFramebufferScale.x)); // 2 points
+		work.Offscreen([renderer = m_Renderer.get(), target = m_ViewportTarget, outline = m_OutlineTarget, size = m_ViewportSize,
+		                outlineWidth, packet = std::make_shared<FramePacket>(std::move(packet))](ICommandList& commandList) {
 			if (size.x > 0 && size.y > 0) {
 				target->Resize(size.x, size.y);
+				outline->Resize(size.x, size.y);
 			}
 			renderer->Render(commandList, *packet, *target);
+			renderer->RenderOutline(commandList, *packet, target, *outline, OutlineStyle{ .Width = std::max(outlineWidth, 1) });
 		});
 	}
 
@@ -336,6 +352,8 @@ namespace Ethane {
 				// A frame around the image, so play mode can't be mistaken for editing
 				ImGui::GetWindowDrawList()->AddRect(min, ImVec2(min.x + size.x, min.y + size.y), IM_COL32(90, 200, 120, 255), 0.0f, 0, 3.0f);
 			} else {
+				// The selection outline over the scene, under the gizmo
+				ImGui::GetWindowDrawList()->AddImage(Application::Get().GetImGuiLayer()->GetTextureID(*m_OutlineTarget), min, ImVec2(min.x + size.x, min.y + size.y));
 				const bool onGizmo = DrawGizmo({ min.x, min.y }, { size.x, size.y });
 				// A click on the scene (not on a gizmo, not Alt for the camera) selects what's under the cursor
 				if (clicked && !onGizmo && !ImGui::GetIO().KeyAlt) {

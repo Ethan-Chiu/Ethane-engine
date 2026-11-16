@@ -190,6 +190,12 @@ the GPU (a frame or two later) the index maps back to the draw item's `ElementId
 gizmo (ImGuizmo) edits the element's world matrix; the editor turns it back into the local Transform
 through the parent's `WorldTransform`, and one drag is one undo step.
 
+Selection outline (editor): the packet lists the highlighted elements (the selection and everything
+under it). `Renderer::RenderOutline` draws their meshes' depths into a mask, then a full-screen pass into
+a transparent overlay draws the outline around the mask, comparing the mask's depth with the scene's
+depth image: solid where the selection is in front, faded where it's hidden. The overlay is a separate
+image (a pass can't sample what it draws into), shown over the viewport by the UI.
+
 Later: with a render thread, the simulation builds packet N+1 while the renderer records packet N.
 
 ## Engine components

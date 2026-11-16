@@ -86,6 +86,7 @@ namespace Ethane {
 
 		EditorCamera m_Camera{ 45.0f, 1.778f, 0.1f, 100.0f };
 		RefCountPtr<IRenderTarget> m_ViewportTarget;
+		RefCountPtr<IRenderTarget> m_OutlineTarget; // the selection outline, drawn over the viewport image
 		// In pixels, as the panel last laid out. The UI side only ever uses this; the render target belongs to
 		// recording, which resizes it to this (see OnSubmitRender).
 		glm::uvec2 m_ViewportSize{ 1280, 720 };
