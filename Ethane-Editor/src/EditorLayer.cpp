@@ -5,6 +5,11 @@
 #include <imgui.h>
 #include <imgui_internal.h> // DockBuilder
 #include <misc/cpp/imgui_stdlib.h>
+#include <ImGuizmo.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Ethane/GfxBackend/Resource.h"
 #include "Ethane/Renderer/RenderWork.h"
@@ -71,7 +76,10 @@ namespace Ethane {
 		}
 		// Meshes and textures load on worker threads; the library uploads them as they finish (OnUpdate)
 		m_Assets = CreateScope<AssetLibrary>(backend, m_AssetRegistry, &Application::Get().GetJobSystem());
-		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl");
+		m_Renderer = CreateScope<Renderer>(backend, *m_Assets, m_ViewportTarget->GetRenderPass(), "assets/shaders/mesh.glsl", "assets/shaders/pick.glsl");
+		m_GizmoOperation = ImGuizmo::TRANSLATE;
+		// Dragging inside a window (e.g. a gizmo in the viewport) must not move the window
+		ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
 		m_Context = CreateScope<EditorContext>(*m_Assets, kAssetRegistryFile);
 
 		// Game types first: steles that use them load only once they're registered
@@ -100,6 +108,13 @@ namespace Ethane {
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		m_Assets->Update();
+
+		// A viewport click's pick, answered a frame or two later: select what was under the cursor
+		if (std::optional<ElementId> picked = m_Renderer->TakePick(); picked && !IsPlaying()) {
+			if (OpenStele* stele = m_Context->Active()) {
+				stele->Selected = picked->IsValid() && stele->Source->Read().Contains(*picked) ? *picked : ElementId{};
+			}
+		}
 
 		m_Camera.SetViewportSize(static_cast<float>(m_ViewportSize.x), static_cast<float>(m_ViewportSize.y));
 
@@ -146,6 +161,7 @@ namespace Ethane {
 
 	void EditorLayer::OnImGuiRender()
 	{
+		ImGuizmo::BeginFrame();
 		HandleShortcuts();
 		DrawMenuBar();
 		DrawDockspace();
@@ -189,6 +205,12 @@ namespace Ethane {
 		}
 		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_P, global)) {
 			IsPlaying() ? Stop() : Play();
+		}
+		// Gizmo operation: W / E / R while the cursor is over the viewport (not while typing)
+		if (m_ViewportHovered && !IsPlaying() && !ImGui::GetIO().WantTextInput && !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeySuper) {
+			if (ImGui::IsKeyPressed(ImGuiKey_W, false)) m_GizmoOperation = ImGuizmo::TRANSLATE;
+			if (ImGui::IsKeyPressed(ImGuiKey_E, false)) m_GizmoOperation = ImGuizmo::ROTATE;
+			if (ImGui::IsKeyPressed(ImGuiKey_R, false)) m_GizmoOperation = ImGuizmo::SCALE;
 		}
 	}
 
@@ -309,9 +331,20 @@ namespace Ethane {
 		if (size.x > 0.0f && size.y > 0.0f) {
 			const ImVec2 min = ImGui::GetCursorScreenPos();
 			ImGui::Image(Application::Get().GetImGuiLayer()->GetTextureID(*m_ViewportTarget), size);
+			const bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
 			if (IsPlaying()) {
 				// A frame around the image, so play mode can't be mistaken for editing
 				ImGui::GetWindowDrawList()->AddRect(min, ImVec2(min.x + size.x, min.y + size.y), IM_COL32(90, 200, 120, 255), 0.0f, 0, 3.0f);
+			} else {
+				const bool onGizmo = DrawGizmo({ min.x, min.y }, { size.x, size.y });
+				// A click on the scene (not on a gizmo, not Alt for the camera) selects what's under the cursor
+				if (clicked && !onGizmo && !ImGui::GetIO().KeyAlt) {
+					const ImVec2 mouse = ImGui::GetMousePos();
+					const glm::uvec2 pixel{
+						static_cast<uint32_t>(std::clamp((mouse.x - min.x) * scale.x, 0.0f, std::max(size.x * scale.x - 1.0f, 0.0f))),
+						static_cast<uint32_t>(std::clamp((mouse.y - min.y) * scale.y, 0.0f, std::max(size.y * scale.y - 1.0f, 0.0f))) };
+					m_Renderer->RequestPick(pixel);
+				}
 			}
 		}
 
@@ -329,6 +362,30 @@ namespace Ethane {
 				Play();
 			}
 			ImGui::EndDisabled();
+
+			// Gizmo: operation (W / E / R) and space
+			ImGui::SameLine(0.0f, 16.0f);
+			auto operation = [&](const char* label, int value, const char* key) {
+				const bool active = m_GizmoOperation == value;
+				if (active) {
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+				}
+				if (ImGui::Button(label)) {
+					m_GizmoOperation = value;
+				}
+				if (active) {
+					ImGui::PopStyleColor();
+				}
+				ImGui::SetItemTooltip("%s", key);
+				ImGui::SameLine();
+			};
+			operation("Move", ImGuizmo::TRANSLATE, "W");
+			operation("Rotate", ImGuizmo::ROTATE, "E");
+			operation("Scale", ImGuizmo::SCALE, "R");
+			if (ImGui::Button(m_GizmoLocal ? "Local" : "World")) {
+				m_GizmoLocal = !m_GizmoLocal;
+			}
+			ImGui::SetItemTooltip("Gizmo axes: the element's own (Local) or the world's. Hold Ctrl to snap.");
 		} else {
 			if (ImGui::Button("Stop")) {
 				Stop();
@@ -343,6 +400,62 @@ namespace Ethane {
 		}
 		ImGui::PopStyleVar();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4.0f);
+	}
+
+	bool EditorLayer::DrawGizmo(glm::vec2 min, glm::vec2 size)
+	{
+		OpenStele* stele = m_Context->Active();
+		if (!stele) {
+			return false;
+		}
+		const SteleSnapshot snapshot = stele->Source->Read();
+		const SteleElement* element = snapshot.Find(stele->Selected);
+		const TransformComponent* transform = element ? snapshot.Get<TransformComponent>(element->Id) : nullptr;
+		if (!transform) {
+			m_GizmoWasUsing = false;
+			return false;
+		}
+
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(min.x, min.y, size.x, size.y);
+		ImGuizmo::Enable(!ImGui::GetIO().KeyAlt); // Alt + drag is the camera
+
+		// The gizmo edits the world matrix; the Transform is relative to the parent
+		const glm::mat4 parentWorld = element->Parent.IsValid() ? WorldTransform(snapshot, element->Parent) : glm::mat4(1.0f);
+		glm::mat4 world = parentWorld * transform->Matrix();
+		const auto operation = static_cast<ImGuizmo::OPERATION>(m_GizmoOperation);
+		const float snapValue = operation == ImGuizmo::ROTATE ? 15.0f : operation == ImGuizmo::SCALE ? 0.1f : 0.5f; // degrees / units
+		const float snap[3] = { snapValue, snapValue, snapValue };
+		const bool changed = ImGuizmo::Manipulate(glm::value_ptr(m_Camera.GetViewMatrix()), glm::value_ptr(m_Camera.GetProjectionMatrix()),
+			operation, m_GizmoLocal ? ImGuizmo::LOCAL : ImGuizmo::WORLD, glm::value_ptr(world), nullptr, ImGui::GetIO().KeyCtrl ? snap : nullptr);
+
+		// One drag is one undo step: a merge key per drag (top bit set: the Inspector's keys never have it)
+		const bool using_ = ImGuizmo::IsUsing();
+		if (using_ && !m_GizmoWasUsing) {
+			m_GizmoGesture = (1ull << 63) | ++m_GizmoGestures;
+		}
+		m_GizmoWasUsing = using_;
+
+		if (changed) {
+			glm::vec3 scale, position, skew;
+			glm::vec4 perspective;
+			glm::quat rotation;
+			if (glm::decompose(glm::inverse(parentWorld) * world, scale, rotation, position, skew, perspective)) {
+				// Only what this operation changes, so the other fields don't pick up rounding noise
+				Transaction tx(operation == ImGuizmo::ROTATE ? "Rotate " + element->Name : operation == ImGuizmo::SCALE ? "Scale " + element->Name : "Move " + element->Name);
+				tx.MergeKey = m_GizmoGesture;
+				if (operation == ImGuizmo::TRANSLATE) {
+					tx.SetField<TransformComponent>(element->Id, "Position", position);
+				} else if (operation == ImGuizmo::ROTATE) {
+					tx.SetField<TransformComponent>(element->Id, "Rotation", EulerNear(rotation, transform->Rotation));
+				} else {
+					tx.SetField<TransformComponent>(element->Id, "Scale", scale);
+				}
+				m_Context->Commit(std::move(tx));
+			}
+		}
+		return ImGuizmo::IsOver() || using_;
 	}
 
 	void EditorLayer::Play()

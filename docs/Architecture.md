@@ -182,8 +182,15 @@ a released Vulkan resource hands its handles to the device's deletion queue, tag
 being recorded, and they're destroyed when that frame is known to have finished (when the frame that
 reuses its slot starts). Resizing a render target therefore costs no stall.
 
+Picking (editor): a click asks the renderer which element covers that pixel. The next `Render` also draws
+the packet into a 1x1 `R32UI` image with a projection narrowed to that pixel, each draw item with its
+index + 1 (0: nothing), and copies the pixel into a readback buffer; once that frame has finished on
+the GPU (a frame or two later) the index maps back to the draw item's `ElementId`. Exact to the pixel
+(e.g. through the hole of a torus), and nothing extra is drawn unless someone clicks. The transform
+gizmo (ImGuizmo) edits the element's world matrix; the editor turns it back into the local Transform
+through the parent's `WorldTransform`, and one drag is one undo step.
+
 Later: with a render thread, the simulation builds packet N+1 while the renderer records packet N.
-Picking draws each item's `ElementId` into an ID buffer.
 
 ## Engine components
 

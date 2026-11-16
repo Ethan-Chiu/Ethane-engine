@@ -53,6 +53,9 @@ namespace Ethane {
 		// The editor camera takes input only while it's what the viewport shows (not through a play camera)
 		bool EditorCameraInControl() const { return !IsPlaying() || !m_PlayHasCamera; }
 		void DrawViewportToolbar();
+		// Gizmo for the selected element's Transform over the viewport image at screen rect (min, size).
+		// True while the mouse is over a handle or dragging one (a click there isn't a pick).
+		bool DrawGizmo(glm::vec2 min, glm::vec2 size);
 
 		void NewStele();
 		void NewDemoStele();
@@ -70,6 +73,13 @@ namespace Ethane {
 		SteleSubscription m_PlayFollow;
 		const OpenStele* m_Playing = nullptr; // the stele it was built from
 		bool m_PlayHasCamera = false;
+
+		// Gizmo (editing only): ImGuizmo::OPERATION / MODE values, and the drag in progress (one undo step)
+		int m_GizmoOperation = 0; // set from ImGuizmo::TRANSLATE in OnAttach
+		bool m_GizmoLocal = false;
+		bool m_GizmoWasUsing = false;
+		uint64_t m_GizmoGesture = 0;
+		uint64_t m_GizmoGestures = 0;
 
 		HierarchyPanel m_Hierarchy;
 		InspectorPanel m_Inspector;
