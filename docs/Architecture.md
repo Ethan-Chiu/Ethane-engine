@@ -206,6 +206,12 @@ Color: lighting adds up light, so it's computed in linear light, and brightness 
   full-screen pass then scales by the view's exposure (2^EV, from the camera), maps brightness into
   0..1 with the tone curve (Khronos PBR Neutral: colors below ~0.76 pass nearly unchanged, highlights
   roll off), and encodes to sRGB into the 8-bit output the UI shows.
+- shading (mesh.glsl) is the metallic-roughness microfacet model (GGX, Smith visibility, Schlick
+  Fresnel, Lambert diffuse); light intensity means "a white matte surface facing it reflects this much".
+  Besides the directional light, surfaces are lit by an analytic sky (zenith / horizon / ground colors):
+  diffuse light from around the normal, and reflections along the mirror direction weighted by an
+  environment BRDF fit. Metals only reflect, so without an environment they'd render black. An
+  environment map (and an Environment component) can replace the analytic sky later.
 
 Later: with a render thread, the simulation builds packet N+1 while the renderer records packet N.
 

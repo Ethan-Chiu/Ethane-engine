@@ -80,31 +80,97 @@ vec3 SurfaceNormal() {
 	return normalize(mat3(t, b, n) * tangentNormal);
 }
 
+// --- Lighting (all in linear light) ------------------------------------------------------------------
+// A metallic-roughness microfacet model (the glTF / Filament / Unreal one): GGX distribution, height-
+// correlated Smith visibility, Schlick Fresnel; Lambert diffuse. Lit by the directional light, and by an
+// environment: an analytic sky (zenith / horizon / ground colors) standing in for an environment map, so
+// surfaces (metals above all, which only reflect) have something to reflect.
+
+// Sky radiance arriving from direction `d` (world space, unit)
+vec3 Sky(vec3 d) {
+	const vec3 zenith  = vec3(0.20, 0.27, 0.42);
+	const vec3 horizon = vec3(0.46, 0.46, 0.48);
+	const vec3 ground  = vec3(0.07, 0.065, 0.06);
+	return d.y >= 0.0 ? mix(horizon, zenith, sqrt(d.y))
+	                  : mix(horizon * 0.45, ground, pow(-d.y, 0.4));
+}
+
+// The sky's light averaged over the hemisphere around normal `n` (diffuse irradiance / PI): a white matte
+// surface facing `n` reflects this much
+vec3 SkyIrradiance(vec3 n) {
+	const vec3 above = vec3(0.32, 0.35, 0.43); // the upper hemisphere's average
+	const vec3 below = vec3(0.11, 0.10, 0.095);
+	return mix(below, above, 0.5 + 0.5 * n.y);
+}
+
+// GGX normal distribution; a = roughness^2
+float DistributionGGX(float NoH, float a) {
+	float a2 = a * a;
+	float d = NoH * NoH * (a2 - 1.0) + 1.0;
+	return a2 / (PI * d * d);
+}
+
+// Height-correlated Smith visibility (geometry term / (4 NoV NoL))
+float VisibilitySmithGGX(float NoV, float NoL, float a) {
+	float a2 = a * a;
+	float v = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
+	float l = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
+	return 0.5 / max(v + l, 1e-5);
+}
+
+vec3 FresnelSchlick(float cosTheta, vec3 f0) {
+	return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
+}
+
+// How much of the environment a surface reflects toward the eye, integrated over its lobe (Karis's fit of
+// the split-sum lookup table, "Physically Based Shading on Mobile")
+vec3 EnvironmentBRDF(vec3 f0, float roughness, float NoV) {
+	const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+	const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+	vec4 r = roughness * c0 + c1;
+	float a004 = min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
+	vec2 ab = vec2(-1.04, 1.04) * a004 + r.zw;
+	return f0 * ab.x + ab.y;
+}
+
 void main() {
 	// all colors here are linear light: the base color was converted on the CPU, the map is an sRGB image
 	// decoded by the sampler; the result goes to an HDR image, tone mapped afterwards (tonemap.glsl)
 	vec4 base = u_Material.BaseColor * texture(u_BaseColorMap, v_TexCoord);
 	vec3 mr = texture(u_MetallicRoughnessMap, v_TexCoord).rgb;
-	float roughness = clamp(u_Material.Roughness * mr.g, 0.05, 1.0);
+	float roughness = clamp(u_Material.Roughness * mr.g, 0.045, 1.0); // perceptual roughness
 	float metallic = clamp(u_Material.Metallic * mr.b, 0.0, 1.0);
+	float a = roughness * roughness;
 
 	vec3 n = SurfaceNormal();
-	vec3 l = u_Frame.lightDirection.xyz;
 	vec3 v = normalize(u_Frame.cameraPosition.xyz - v_WorldPosition);
-	vec3 h = normalize(l + v);
-	float nDotL = max(dot(n, l), 0.0);
+	float NoV = clamp(dot(n, v), 1e-4, 1.0);
 
-	// metals tint their reflection and have no diffuse; dielectrics reflect ~4% white
+	// metals reflect in their color and have no diffuse; dielectrics reflect ~4%, uncolored
 	vec3 diffuseColor = base.rgb * (1.0 - metallic);
-	vec3 specularColor = mix(vec3(0.04), base.rgb, metallic);
+	vec3 f0 = mix(vec3(0.04), base.rgb, metallic);
 
-	// normalized Blinn-Phong, exponent from roughness
-	float shininess = max(2.0 / pow(roughness, 4.0) - 2.0, 1.0);
-	float specular = pow(max(dot(n, h), 0.0), shininess) * (shininess + 8.0) / (8.0 * PI);
+	// The directional light. Its radiance * PI is the illuminance it brings, so a white matte surface facing
+	// it reflects exactly its intensity.
+	vec3 color = vec3(0.0);
+	vec3 l = u_Frame.lightDirection.xyz;
+	float NoL = dot(n, l);
+	if (NoL > 0.0 && dot(u_Frame.lightRadiance.rgb, vec3(1.0)) > 0.0) {
+		vec3 h = normalize(l + v);
+		float NoH = clamp(dot(n, h), 0.0, 1.0);
+		float VoH = clamp(dot(v, h), 0.0, 1.0);
+		vec3 F = FresnelSchlick(VoH, f0);
+		vec3 specular = DistributionGGX(NoH, a) * VisibilitySmithGGX(NoV, NoL, a) * F;
+		vec3 diffuse = (1.0 - F) * diffuseColor / PI;
+		color += (diffuse + specular) * (u_Frame.lightRadiance.rgb * PI) * NoL;
+	}
 
-	// hemisphere ambient, lighter from above (linear light: sRGB (0.10, 0.09, 0.08) below, (0.22, 0.24, 0.28) above)
-	vec3 ambient = mix(vec3(0.010, 0.0080, 0.0070), vec3(0.040, 0.047, 0.064), 0.5 + 0.5 * n.y);
-	vec3 color = ambient * (diffuseColor + specularColor * 0.5)
-	           + (diffuseColor + specularColor * specular) * nDotL * u_Frame.lightRadiance.rgb;
+	// The environment: diffuse light from the sky around the normal; the reflection along the mirror
+	// direction, blurred toward the hemisphere's average as roughness grows
+	vec3 envBRDF = EnvironmentBRDF(f0, roughness, NoV);
+	vec3 r = reflect(-v, n);
+	vec3 reflected = mix(Sky(r), SkyIrradiance(r), roughness * roughness);
+	color += diffuseColor * (1.0 - envBRDF) * SkyIrradiance(n) + envBRDF * reflected;
+
 	outColor = vec4(color, 1.0);
 }
