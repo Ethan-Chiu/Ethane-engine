@@ -194,7 +194,7 @@ namespace Ethane {
 		DrawDockspace();
 		DrawViewport();
 		if (m_ShowHierarchy) m_Hierarchy.Draw(*m_Context, &m_ShowHierarchy, m_Theme);
-		if (m_ShowInspector) m_Inspector.Draw(*m_Context, &m_ShowInspector);
+		if (m_ShowInspector) m_Inspector.Draw(*m_Context, &m_ShowInspector, m_Theme);
 		if (m_ShowStats) DrawStatsPanel();
 		if (m_ShowContent) {
 			m_ContentPanel->Draw(&m_ShowContent, [this](const std::filesystem::path& path) {
