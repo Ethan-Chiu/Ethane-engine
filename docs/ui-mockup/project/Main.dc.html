@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ethane Editor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0E0E10}
+a{color:#9FA0FF}a:hover{color:#C4C5FF}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+input{font:inherit;color:inherit}
+.row:hover{background:rgba(255,243,227,0.05)}
+.iconbtn:hover{background:rgba(255,243,227,0.07)}
+.menu:hover{background:rgba(255,243,227,0.07);color:#FFF3E3}
+.tile:hover{background:rgba(255,243,227,0.05)}
+.field{background:#26262C}
+.field:hover{background:#2D2D34}
+.tab:hover .tabname{color:#FFF3E3}
+.seg:hover .seglabel{color:#FFF3E3}
+</style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; display: flex; flex-direction: column; background: #0E0E10; color: #FFF3E3; font-family: Inter, system-ui, sans-serif; font-size: 13px; line-height: 1.35; overflow: hidden">
+
+  <!-- Menu bar: part of the window, not a pane -->
+  <div style="height: 34px; flex-shrink: 0; display: flex; align-items: center; gap: 2px; padding: 0 10px">
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="margin: 0 10px 0 4px"><path d="M2 3h10M2 7h7M2 11h10" stroke="#9FA0FF" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    <button class="menu" style="padding: 4px 9px; border-radius: 6px; color: #C9C3B8">File</button>
+    <button class="menu" style="padding: 4px 9px; border-radius: 6px; color: #C9C3B8">Edit</button>
+    <button class="menu" style="padding: 4px 9px; border-radius: 6px; color: #C9C3B8">Play</button>
+    <button class="menu" style="padding: 4px 9px; border-radius: 6px; color: #C9C3B8">View</button>
+    <button class="menu" style="padding: 4px 9px; border-radius: 6px; color: #C9C3B8">Help</button>
+    <div style="flex-grow: 1"></div>
+    <span style="color: #8C8A85; font-size: 12px; padding-right: 6px">assets/steles/Demo.stele</span>
+  </div>
+
+  <!-- Panes -->
+  <div style="flex-grow: 1; min-height: 0; display: flex; gap: 6px; padding: 0 6px 6px">
+
+    <!-- Left column -->
+    <div style="width: 256px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px">
+      <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; background: #1A1A1E; border-radius: 10px; overflow: hidden">
+        <div style="height: 36px; flex-shrink: 0; display: flex; align-items: center; padding: 0 8px 0 14px">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8C8A85; flex-grow: 1">Hierarchy</span>
+          <button class="iconbtn" aria-label="Create element" style="width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke="#8C8A85" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div style="flex-grow: 1; overflow: auto; padding: 0 6px 8px">
+          <sc-for list="{{elements}}" as="el" hint-placeholder-count="10">
+            <button class="row" onClick="{{el.select}}" style="{{el.rowStyle}}">
+              <span style="width: 12px; display: flex; justify-content: center">
+                <sc-if value="{{el.isGroup}}" hint-placeholder-val="{{false}}">
+                  <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 2.5l3 3 3-3" stroke="#8C8A85" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
+                </sc-if>
+              </span>
+              <span style="{{el.iconStyle}}"></span>
+              <span style="flex-grow: 1; text-align: left">{{el.name}}</span>
+              <sc-if value="{{el.isMesh}}" hint-placeholder-val="{{true}}">
+                <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="opacity: 0.4; margin-right: 2px"><path d="M1 7s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z" stroke="#C9C3B8" stroke-width="1.2" fill="none"/><circle cx="7" cy="7" r="1.6" fill="#C9C3B8"/></svg>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex-shrink: 0; background: #1A1A1E; border-radius: 10px; padding: 0 14px 14px">
+        <div style="height: 36px; display: flex; align-items: center">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8C8A85">Stats</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 6px; column-gap: 8px; font-size: 12px">
+          <span style="color: #8C8A85">Frame</span><span style="font-family: 'JetBrains Mono', monospace; text-align: right">8.33 ms · 120 fps</span>
+          <span style="color: #8C8A85">Viewport</span><span style="font-family: 'JetBrains Mono', monospace; text-align: right">1812 × 1114</span>
+          <span style="color: #8C8A85">Draw calls</span><span style="font-family: 'JetBrains Mono', monospace; text-align: right">7</span>
+          <span style="color: #8C8A85">Triangles</span><span style="font-family: 'JetBrains Mono', monospace; text-align: right">10 528</span>
+          <span style="color: #8C8A85">Elements</span><span style="font-family: 'JetBrains Mono', monospace; text-align: right">10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center column -->
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+
+      <!-- Viewport pane -->
+      <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; background: #1A1A1E; border-radius: 10px; overflow: hidden">
+        <!-- Stele tabs -->
+        <div style="height: 38px; flex-shrink: 0; display: flex; align-items: center; gap: 2px; padding: 0 6px">
+          <sc-for list="{{steles}}" as="st" hint-placeholder-count="2">
+            <button class="tab" onClick="{{st.pick}}" style="{{st.tabStyle}}">
+              <sc-if value="{{st.dirty}}" hint-placeholder-val="{{false}}">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #FF7171"></span>
+              </sc-if>
+              <span class="tabname" style="{{st.nameStyle}}">{{st.name}}</span>
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" style="{{st.closeStyle}}"><path d="M2 2l6 6M8 2l-6 6" stroke="#8C8A85" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </button>
+          </sc-for>
+          <div style="flex-grow: 1"></div>
+          <sc-if value="{{notPlaying}}" hint-placeholder-val="{{true}}">
+            <button class="iconbtn" onClick="{{togglePlay}}" style="height: 28px; padding: 0 12px 0 10px; border-radius: 14px; display: flex; align-items: center; gap: 7px; color: #D5E8E6; background: rgba(213,232,230,0.08)">
+              <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1.5l8 4.5-8 4.5z" fill="#D5E8E6" stroke="#D5E8E6" stroke-linejoin="round"/></svg>
+              <span style="font-size: 12px; font-weight: 500">Play</span>
+            </button>
+          </sc-if>
+          <sc-if value="{{playing}}" hint-placeholder-val="{{false}}">
+            <button class="iconbtn" onClick="{{togglePlay}}" style="height: 28px; padding: 0 12px 0 10px; border-radius: 14px; display: flex; align-items: center; gap: 7px; color: #FF7171; background: rgba(255,113,113,0.10)">
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="#FF7171"/></svg>
+              <span style="font-size: 12px; font-weight: 500">Stop</span>
+            </button>
+          </sc-if>
+        </div>
+
+        <!-- Scene, with the floating tool capsule -->
+        <div style="{{viewportStyle}}">
+          <svg width="100%" height="100%" viewBox="0 0 880 560" preserveAspectRatio="xMidYMid slice" role="img" aria-label="3D scene: a floor with a cube, sphere, cylinder, cone and torus; the cube is selected">
+            <rect width="880" height="560" fill="#141417"/>
+            <path d="M40 520 L250 250 L630 250 L840 520 Z" fill="#1E1F24"/>
+            <g stroke="#2A2B31" stroke-width="1">
+              <path d="M92 453 L788 453 M135 398 L745 398 M170 353 L710 353 M200 315 L680 315 M226 281 L654 281"/>
+              <path d="M145 520 L301 250 M250 520 L352 250 M355 520 L403 250 M440 520 L440 250 M525 520 L477 250 M630 520 L528 250 M735 520 L579 250"/>
+            </g>
+            <path d="M405 300 v60 a28 9 0 0 0 56 0 v-60" fill="#5F7F79"/>
+            <ellipse cx="433" cy="300" rx="28" ry="9" fill="#86A7A1"/>
+            <path d="M540 290 L570 365 a30 9 0 0 1 -60 0 Z" fill="#6E7FA8"/>
+            <circle cx="330" cy="335" r="30" fill="#4B4A52"/>
+            <circle cx="321" cy="326" r="9" fill="#5E5D66"/>
+            <ellipse cx="645" cy="360" rx="34" ry="12" fill="none" stroke="#5B5A86" stroke-width="10"/>
+            <path d="M190 320 L235 305 L270 318 L225 334 Z" fill="#B79A86"/>
+            <path d="M190 320 L225 334 L225 385 L190 370 Z" fill="#8E7666"/>
+            <path d="M225 334 L270 318 L270 368 L225 385 Z" fill="#A3887A"/>
+            <path d="M190 320 L235 305 L270 318 L270 368 L225 385 L190 370 Z" fill="none" stroke="#9FA0FF" stroke-width="2" stroke-linejoin="round"/>
+            <g stroke-width="2.5" stroke-linecap="round">
+              <path d="M230 345 L290 330" stroke="#FF7171"/><path d="M290 330 l-8 -4 m8 4 l-6 6" stroke="#FF7171" fill="none"/>
+              <path d="M230 345 L230 280" stroke="#D5E8E6"/><path d="M230 280 l-5 8 m5 -8 l5 8" stroke="#D5E8E6" fill="none"/>
+              <path d="M230 345 L196 368" stroke="#9FA0FF"/><path d="M196 368 l9 -1 m-9 1 l2 -9" stroke="#9FA0FF" fill="none"/>
+            </g>
+            <circle cx="230" cy="345" r="4" fill="#FFF3E3"/>
+          </svg>
+
+          <!-- Tool capsule: Move / Rotate / Scale, then the gizmo's axes -->
+          <div style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; border-radius: 16px; background: rgba(36,36,42,0.72); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(255,243,227,0.08); box-shadow: 0 8px 24px rgba(0,0,0,0.35)">
+            <sc-for list="{{tools}}" as="tool" hint-placeholder-count="3">
+              <button class="seg" onClick="{{tool.pick}}" title="{{tool.hint}}" aria-label="{{tool.label}}" style="{{tool.style}}">
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="{{tool.color}}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <sc-if value="{{tool.isMove}}" hint-placeholder-val="{{true}}"><path d="M9 2v14M2 9h14M9 2l-2.2 2.2M9 2l2.2 2.2M9 16l-2.2-2.2M9 16l2.2-2.2M2 9l2.2-2.2M2 9l2.2 2.2M16 9l-2.2-2.2M16 9l-2.2 2.2"/></sc-if>
+                  <sc-if value="{{tool.isRotate}}" hint-placeholder-val="{{false}}"><path d="M14.5 9a5.5 5.5 0 1 1-1.6-3.9M14.5 2.5v3.5H11"/></sc-if>
+                  <sc-if value="{{tool.isScale}}" hint-placeholder-val="{{false}}"><path d="M3 7V3h4M3 3l5 5M15 11v4h-4M15 15l-5-5M10 3h5v5M8 15H3v-5"/></sc-if>
+                </svg>
+              </button>
+            </sc-for>
+            <div style="width: 22px; height: 1px; background: rgba(255,243,227,0.1); margin: 3px 0"></div>
+            <sc-for list="{{spaces}}" as="sp" hint-placeholder-count="2">
+              <button class="seg" onClick="{{sp.pick}}" title="{{sp.hint}}" aria-label="{{sp.label}}" style="{{sp.style}}">
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="{{sp.color}}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <sc-if value="{{sp.isWorld}}" hint-placeholder-val="{{true}}"><circle cx="9" cy="9" r="6.5"/><path d="M2.5 9h13M9 2.5c2 2 2 11 0 13M9 2.5c-2 2-2 11 0 13"/></sc-if>
+                  <sc-if value="{{sp.isLocal}}" hint-placeholder-val="{{false}}"><path d="M9 2.5l6 3.2v6.6L9 15.5l-6-3.2V5.7z M3 5.7l6 3.3 6-3.3 M9 9v6.5"/></sc-if>
+                </svg>
+              </button>
+            </sc-for>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Content pane -->
+      <div style="height: 214px; flex-shrink: 0; display: flex; flex-direction: column; background: #1A1A1E; border-radius: 10px; overflow: hidden">
+        <div style="height: 38px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 8px">
+          <button class="iconbtn" aria-label="Up a folder" style="width: 26px; height: 26px; border-radius: 13px; display: flex; align-items: center; justify-content: center">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2L3.5 6l4 4" stroke="#C9C3B8" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div role="tablist" aria-label="Folder" style="display: flex; align-items: center; height: 26px; padding: 0 3px; margin-left: 4px; border-radius: 13px; background: #26262C">
+            <button role="tab" aria-selected="true" style="height: 20px; padding: 0 10px; border-radius: 10px; background: rgba(255,243,227,0.12); color: #9FA0FF; font-size: 12px; font-weight: 500">assets</button>
+            <button role="tab" aria-selected="false" class="iconbtn" style="height: 20px; padding: 0 10px; border-radius: 10px; color: #8C8A85; font-size: 12px; font-weight: 500">res</button>
+          </div>
+          <button style="padding: 3px 6px; margin-left: 6px; color: #FFF3E3">textures</button>
+          <div style="flex-grow: 1"></div>
+          <label class="field" style="display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; width: 210px; box-sizing: border-box; border-radius: 13px">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="5" cy="5" r="3.5" stroke="#8C8A85" stroke-width="1.3" fill="none"/><path d="M8 8l3 3" stroke="#8C8A85" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <input aria-label="Search assets" placeholder="Search" style="background: none; border: 0; outline: none; width: 100%; font-size: 12px">
+          </label>
+        </div>
+        <div style="flex-grow: 1; overflow: auto; padding: 0 8px 8px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px">
+          <sc-for list="{{files}}" as="f" hint-placeholder-count="8">
+            <button class="tile" onClick="{{f.pick}}" style="{{f.tileStyle}}">
+              <sc-if value="{{f.isFolder}}" hint-placeholder-val="{{false}}">
+                <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><path d="M10 18a3 3 0 0 1 3-3h12l5 5h21a3 3 0 0 1 3 3v24a3 3 0 0 1-3 3H13a3 3 0 0 1-3-3z" fill="#D5E8E6" opacity="0.75"/><path d="M10 26a3 3 0 0 1 3-3h38a3 3 0 0 1 3 3v21a3 3 0 0 1-3 3H13a3 3 0 0 1-3-3z" fill="#D5E8E6"/></svg>
+              </sc-if>
+              <sc-if value="{{f.isImage}}" hint-placeholder-val="{{true}}">
+                <div style="{{f.thumbStyle}}"></div>
+              </sc-if>
+              <sc-if value="{{f.isFile}}" hint-placeholder-val="{{false}}">
+                <div style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center">
+                  <div style="width: 42px; height: 54px; border-radius: 6px; background: #2A2A31; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; box-sizing: border-box">
+                    <span style="{{f.badgeStyle}}">{{f.ext}}</span>
+                  </div>
+                </div>
+              </sc-if>
+              <span style="{{f.labelStyle}}">{{f.name}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspector pane -->
+    <div style="width: 304px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; background: #1A1A1E; border-radius: 10px; overflow: auto; padding: 10px 8px">
+      <div style="padding: 0 2px; display: flex; flex-direction: column; gap: 4px">
+        <label class="field" style="display: flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px">
+          <input aria-label="Element name" value="{{selectedName}}" style="background: none; border: 0; outline: none; width: 100%; font-weight: 600; font-size: 14px">
+        </label>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6E6C68; padding-left: 4px">d6f8974d4527abee</span>
+      </div>
+
+      <sc-for list="{{components}}" as="c" hint-placeholder-count="4">
+        <div style="background: #202025; border-radius: 10px; overflow: hidden">
+          <button class="row" style="width: 100%; height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 10px; box-sizing: border-box">
+            <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 2.5l3 3 3-3" stroke="#8C8A85" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
+            <span style="font-weight: 600; flex-grow: 1; text-align: left">{{c.name}}</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="opacity: 0.5"><circle cx="2" cy="6" r="1.1" fill="#C9C3B8"/><circle cx="6" cy="6" r="1.1" fill="#C9C3B8"/><circle cx="10" cy="6" r="1.1" fill="#C9C3B8"/></svg>
+          </button>
+          <div style="padding: 0 10px 10px; display: flex; flex-direction: column; gap: 4px">
+            <sc-for list="{{c.fields}}" as="fd" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 8px; min-height: 24px">
+                <span style="width: 80px; flex-shrink: 0; color: #8C8A85; font-size: 12px">{{fd.label}}</span>
+                <sc-if value="{{fd.isVec}}" hint-placeholder-val="{{true}}">
+                  <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px">
+                    <sc-for list="{{fd.parts}}" as="p" hint-placeholder-count="3">
+                      <div class="field" style="height: 24px; border-radius: 6px; display: flex; align-items: center; gap: 5px; padding: 0 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px">
+                        <span style="{{p.axisStyle}}">{{p.axis}}</span><span style="flex-grow: 1; text-align: right">{{p.value}}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{fd.isSlider}}" hint-placeholder-val="{{false}}">
+                  <div class="field" style="flex-grow: 1; height: 24px; border-radius: 6px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: flex-end; padding: 0 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px">
+                    <div style="{{fd.fillStyle}}"></div>
+                    <span style="position: relative">{{fd.value}}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{fd.isAsset}}" hint-placeholder-val="{{false}}">
+                  <div class="field" style="flex-grow: 1; height: 24px; border-radius: 6px; display: flex; align-items: center; gap: 6px; padding: 0 8px 0 5px; font-size: 12px">
+                    <span style="{{fd.swatchStyle}}"></span>
+                    <span style="flex-grow: 1">{{fd.value}}</span>
+                    <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 2.5l3 3 3-3" stroke="#8C8A85" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
+                  </div>
+                </sc-if>
+                <sc-if value="{{fd.isColor}}" hint-placeholder-val="{{false}}">
+                  <div class="field" style="flex-grow: 1; height: 24px; border-radius: 6px; display: flex; align-items: center; gap: 8px; padding: 0 5px; font-family: 'JetBrains Mono', monospace; font-size: 11px">
+                    <span style="width: 15px; height: 15px; border-radius: 4px; background: #FFFFFF"></span>
+                    <span>FFFFFF</span><span style="flex-grow: 1"></span><span style="color: #8C8A85; padding-right: 3px">100%</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{fd.isToggle}}" hint-placeholder-val="{{false}}">
+                  <div style="flex-grow: 1; display: flex">
+                    <span style="width: 30px; height: 18px; border-radius: 9px; background: #9FA0FF; position: relative"><span style="position: absolute; right: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #FFF3E3"></span></span>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+
+      <button class="field" style="flex-shrink: 0; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; color: #C9C3B8">
+        <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke="#C9C3B8" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Add component
+      </button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { selected: 'Cube', tool: 'Move', local: false, playing: false, stele: 0, file: 'grass.png' };
+  }
+  renderVals() {
+    const s = this.state;
+    const kinds = { camera: '#C9C3B8', light: '#FFF3E3', mesh: '#9FA0FF', group: '#D5E8E6' };
+    const tree = [
+      ['Camera', 0, 'camera'], ['Sun', 0, 'light'], ['Floor', 0, 'mesh'], ['Shapes', 0, 'group'],
+      ['Cube', 1, 'mesh'], ['Sphere', 1, 'mesh'], ['Cylinder', 1, 'mesh'], ['Cone', 1, 'mesh'], ['Torus', 1, 'mesh'], ['Capsule', 1, 'mesh']
+    ];
+    const elements = tree.map(([name, depth, kind]) => {
+      const sel = s.selected === name;
+      return {
+        name,
+        isGroup: kind === 'group',
+        isMesh: kind === 'mesh',
+        select: () => this.setState({ selected: name }),
+        rowStyle: 'width: 100%; height: 26px; border-radius: 6px; display: flex; align-items: center; gap: 6px; box-sizing: border-box; padding: 0 6px 0 ' + (6 + depth * 16) + 'px; ' + (sel ? 'background: rgba(213,232,230,0.11); color: #FFF3E3;' : 'color: #D9D2C6;'),
+        iconStyle: 'width: 7px; height: 7px; flex-shrink: 0; border-radius: ' + (kind === 'light' || kind === 'camera' ? '50%' : '2px') + '; background: ' + kinds[kind] + ';' + (sel ? '' : ' opacity: 0.7;')
+      };
+    });
+
+    const steleList = [{ name: 'Demo', dirty: true }, { name: 'Demo2', dirty: false }];
+    const steles = steleList.map((st, i) => {
+      const active = i === s.stele;
+      return {
+        name: st.name, dirty: st.dirty,
+        pick: () => this.setState({ stele: i }),
+        tabStyle: 'height: 28px; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 12px; ' + (active ? 'background: rgba(255,243,227,0.07);' : ''),
+        nameStyle: active ? 'color: #FFF3E3; font-weight: 500' : 'color: #8C8A85',
+        closeStyle: active ? 'opacity: 1' : 'opacity: 0'
+      };
+    });
+
+    // Apple-style segments: the selected one sits in a lighter rounded square, its icon in the accent
+    const segment = (selected) => ({
+      style: 'width: 32px; height: 32px; border-radius: 12px; display: flex; align-items: center; justify-content: center; ' + (selected ? 'background: rgba(255,243,227,0.12);' : ''),
+      color: selected ? '#9FA0FF' : '#C9C3B8',
+      labelStyle: 'font-size: 10.5px; font-weight: 500; ' + (selected ? 'color: #9FA0FF' : 'color: #A8A49C')
+    });
+    const tools = [['Move', 'W'], ['Rotate', 'E'], ['Scale', 'R']].map(([label, key]) => ({
+      ...segment(s.tool === label), label, hint: label + ' (' + key + ')',
+      isMove: label === 'Move', isRotate: label === 'Rotate', isScale: label === 'Scale',
+      pick: () => this.setState({ tool: label })
+    }));
+    const spaces = [['World', false], ['Local', true]].map(([label, local]) => ({
+      ...segment(s.local === local), label, hint: 'Gizmo axes: ' + label,
+      isWorld: !local, isLocal: local,
+      pick: () => this.setState({ local })
+    }));
+
+    const thumbs = { 'grass.png': '#5E8C4A', 'sky.png': '#7FA6C9', 'test.png': '#B45DA8', 'test2.png': '#C8955A', 'RPGpack_sheet.png': '#8C7A64', 'test3_rgba.png': '#D9C24A' };
+    const fileList = [
+      ['FloorSandStone', 'folder'], ['grass.png', 'image'], ['RPGpack_sheet.png', 'image'], ['sky.png', 'image'],
+      ['test.png', 'image'], ['test2.png', 'image'], ['test3_rgba.png', 'image'], ['Crate.fbx', 'mesh'], ['Level.stele', 'stele'], ['notes.txt', 'other']
+    ];
+    const badge = { mesh: ['#9FA0FF', '#161619'], stele: ['#FF7171', '#161619'], other: ['#3A3A42', '#C9C3B8'] };
+    const files = fileList.map(([name, kind]) => {
+      const sel = s.file === name;
+      const ext = name.includes('.') ? name.split('.').pop().toUpperCase() : '';
+      const b = badge[kind] || badge.other;
+      return {
+        name: name.length > 14 ? name.slice(0, 12) + '…' : name,
+        ext,
+        isFolder: kind === 'folder', isImage: kind === 'image', isFile: kind === 'mesh' || kind === 'stele' || kind === 'other',
+        pick: () => this.setState({ file: name }),
+        tileStyle: 'width: 88px; padding: 8px 4px 6px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; ' + (sel ? 'background: rgba(213,232,230,0.11);' : ''),
+        thumbStyle: 'width: 64px; height: 64px; border-radius: 8px; background: ' + (thumbs[name] || '#444') + ';',
+        badgeStyle: 'font-family: JetBrains Mono, monospace; font-size: 9px; font-weight: 500; padding: 1px 5px; border-radius: 4px; background: ' + b[0] + '; color: ' + b[1] + ';',
+        labelStyle: 'font-size: 11px; ' + (sel ? 'color: #FFF3E3' : 'color: #C9C3B8')
+      };
+    });
+
+    const axis = (a, v) => ({ axis: a, value: v, axisStyle: 'font-weight: 500; color: ' + ({ X: '#FF7171', Y: '#D5E8E6', Z: '#9FA0FF' })[a] });
+    const vec = (label, x, y, z) => ({ label, isVec: true, parts: [axis('X', x), axis('Y', y), axis('Z', z)] });
+    const slider = (label, v) => ({ label, isSlider: true, value: v.toFixed(2), fillStyle: 'position: absolute; left: 0; top: 0; bottom: 0; width: ' + (v * 100) + '%; background: rgba(159,160,255,0.22); box-shadow: inset -2px 0 0 #9FA0FF;' });
+    const asset = (label, v, color) => ({ label, isAsset: true, value: v, swatchStyle: 'width: 15px; height: 15px; border-radius: 4px; flex-shrink: 0; background: ' + color + ';' });
+    const components = [
+      { name: 'Transform', fields: [vec('Position', '-4.00', '0.50', '0.00'), vec('Rotation', '0°', '45°', '0°'), vec('Scale', '1.00', '1.00', '1.00')] },
+      { name: 'Mesh', fields: [asset('Mesh', 'Cube.fbx', '#9FA0FF'), { label: 'Visible', isToggle: true }] },
+      { name: 'Material', fields: [{ label: 'Base color', isColor: true }, slider('Metallic', 0), slider('Roughness', 0.6), asset('Texture', 'test.png', '#B45DA8')] },
+      { name: 'Spin', fields: [slider('Speed', 0.5)] }
+    ];
+
+    return {
+      elements, steles, tools, spaces, files, components,
+      selectedName: s.selected,
+      playing: s.playing, notPlaying: !s.playing,
+      togglePlay: () => this.setState({ playing: !s.playing }),
+      viewportStyle: 'flex-grow: 1; min-height: 0; position: relative; margin: 0 6px 6px; border-radius: 8px; overflow: hidden; background: #141417; ' + (s.playing ? 'box-shadow: inset 0 0 0 2px #D5E8E6;' : '')
+    };
+  }
+}
+</script>
+</body>
+</html>
