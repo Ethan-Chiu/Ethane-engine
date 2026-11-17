@@ -9,6 +9,8 @@
 
 #include "EditorContext.h"
 #include "Theme/EditorTheme.h"
+#include "ContentBrowser/ContentBrowser.h"
+#include "Panels/ContentBrowserPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
 
@@ -62,6 +64,9 @@ namespace Ethane {
 		void NewDemoStele();
 		void Save(bool chooseFile);
 		void ResetCamera();
+		// Where a mesh dropped at `mouse` (screen position) lands: on the ground plane under the cursor, or the
+		// camera's focal point when the cursor's ray misses it
+		glm::vec3 DropPosition(const glm::vec2& mouse, const glm::vec2& viewportMin, const glm::vec2& viewportSize) const;
 
 	private:
 		AssetRegistry m_AssetRegistry;
@@ -85,6 +90,8 @@ namespace Ethane {
 		EditorTheme m_Theme = EditorTheme::Default();
 		HierarchyPanel m_Hierarchy;
 		InspectorPanel m_Inspector;
+		Scope<ContentBrowser> m_Content;
+		Scope<ContentBrowserPanel> m_ContentPanel;
 
 		EditorCamera m_Camera{ 45.0f, 1.778f, 0.1f, 100.0f };
 		RefCountPtr<IRenderTarget> m_ViewportTarget;
@@ -104,6 +111,7 @@ namespace Ethane {
 		bool m_ShowHierarchy = true;
 		bool m_ShowInspector = true;
 		bool m_ShowStats = true;
+		bool m_ShowContent = true;
 		bool m_ShowImGuiDemo = false;
 		bool m_ResetLayout = false;
 	};

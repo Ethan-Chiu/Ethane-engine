@@ -75,5 +75,7 @@ as its own commits.
 - Array fields in the schema
 - [x] Picking (GPU pick pass) and transform gizmos (ImGuizmo), editor-only
 - [x] Selection outline (screen-space, faded where hidden)
+- [x] Content browser (thumbnails, search, drag to viewport / hierarchy / asset fields) and the editor theme
+- Content browser: rename / delete / move files (keeping asset ids through `Relocate`), mesh thumbnails
 - Native file dialogs (Open / Save as are path popups for now)
 - Asking before closing a stele with unsaved changes

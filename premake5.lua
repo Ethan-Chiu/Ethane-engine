@@ -358,7 +358,10 @@ project "Ethane-Tests"
     files
     {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
+        "%{prj.name}/src/**.cpp",
+        -- Editor code that doesn't depend on a UI library, tested here
+        "Ethane-Editor/src/ContentBrowser/**.h",
+        "Ethane-Editor/src/ContentBrowser/**.cpp",
     }
 
     externalincludedirs
@@ -370,6 +373,7 @@ project "Ethane-Tests"
     includedirs
     {
         "%{wks.location}/EthaneEngine/src",
+        "%{wks.location}/Ethane-Editor/src", -- the editor code compiled in above
     }
 
     links

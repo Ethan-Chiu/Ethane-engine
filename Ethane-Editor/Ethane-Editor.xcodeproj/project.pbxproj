@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		07802218CE0E198A3C104058 /* EditorTheme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B25C9FE047D35F12B66FB620 /* EditorTheme.cpp */; };
+		138D2292C6832C4417A588D2 /* ContentBrowserPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81CAE1BA75CA2B2CFAB53FFA /* ContentBrowserPanel.cpp */; };
+		1731FA726E976D6420A588B2 /* EditorActions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC1F167A2E18612CA7F79CBA /* EditorActions.cpp */; };
 		1A790DA071DE809223EC9BE0 /* ImGuiTheme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E0FF73E812F8BE9A8CD7FA28 /* ImGuiTheme.cpp */; };
 		1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */; };
 		2216BF5A797C324C2B8A4D9A /* EditorContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B458F8E2E652439460317F22 /* EditorContext.cpp */; };
@@ -18,6 +20,7 @@
 		AB564F861C78F078D23F9DC6 /* DemoStele.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
 		C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAE78FA0313EBECB522073A /* HierarchyPanel.cpp */; };
+		CE63520E6887474018AD284E /* ContentBrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0DBA4A3682148F28FFF81876 /* ContentBrowser.cpp */; };
 		DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */; };
 		F50A4342F4AD26742F01D982 /* InspectorPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */; };
 /* End PBXBuildFile section */
@@ -42,16 +45,23 @@
 /* Begin PBXFileReference section */
 		0017EACA4D7AE0FCC399E10A /* EditorTheme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorTheme.h; path = src/Theme/EditorTheme.h; sourceTree = "<group>"; };
 		0B3EEE149DCCB80606A55C54 /* InspectorPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = InspectorPanel.h; path = src/Panels/InspectorPanel.h; sourceTree = "<group>"; };
+		0DBA4A3682148F28FFF81876 /* ContentBrowser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ContentBrowser.cpp; path = src/ContentBrowser/ContentBrowser.cpp; sourceTree = "<group>"; };
 		0DE9C1917F74DA032E75FFD1 /* Spin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Spin.h; path = src/Game/Spin.h; sourceTree = "<group>"; };
 		128ABEA4A51888960DF12CE4 /* HierarchyPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HierarchyPanel.h; path = src/Panels/HierarchyPanel.h; sourceTree = "<group>"; };
 		17950264E5B856166CC6A8A4 /* EthaneEditorApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EthaneEditorApp.cpp; path = src/EthaneEditorApp.cpp; sourceTree = "<group>"; };
+		1894811073D5D48247301F50 /* AssetDrop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AssetDrop.h; path = src/Panels/AssetDrop.h; sourceTree = "<group>"; };
 		1C4E48BADFBA0A6C1E5DAEFA /* TriangleLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TriangleLayer.h; path = src/TriangleLayer.h; sourceTree = "<group>"; };
 		1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorLayer.cpp; path = src/EditorLayer.cpp; sourceTree = "<group>"; };
 		2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = InspectorPanel.cpp; path = src/Panels/InspectorPanel.cpp; sourceTree = "<group>"; };
+		4245A9E0E42F45D2DB565820 /* ContentBrowser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ContentBrowser.h; path = src/ContentBrowser/ContentBrowser.h; sourceTree = "<group>"; };
 		45849C4C08F05DFE4794028C /* EditorContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorContext.h; path = src/EditorContext.h; sourceTree = "<group>"; };
 		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor"; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
+		51B9877E96082CF0D82F65BE /* AssetDrag.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AssetDrag.h; path = src/ContentBrowser/AssetDrag.h; sourceTree = "<group>"; };
 		6600948E3423E840BB323ACE /* TexturedQuadLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TexturedQuadLayer.h; path = src/TexturedQuadLayer.h; sourceTree = "<group>"; };
 		6E73633231DF24E47082C972 /* ImGuiTheme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ImGuiTheme.h; path = src/Theme/ImGuiTheme.h; sourceTree = "<group>"; };
+		7F0E20E44279E296811D8724 /* EditorActions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorActions.h; path = src/EditorActions.h; sourceTree = "<group>"; };
+		81CAE1BA75CA2B2CFAB53FFA /* ContentBrowserPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ContentBrowserPanel.cpp; path = src/Panels/ContentBrowserPanel.cpp; sourceTree = "<group>"; };
+		8FBDC284527E22F6AFB300C4 /* ContentBrowserPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ContentBrowserPanel.h; path = src/Panels/ContentBrowserPanel.h; sourceTree = "<group>"; };
 		9069A764A2938416D6846DA4 /* TexturedQuadLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TexturedQuadLayer.cpp; path = src/TexturedQuadLayer.cpp; sourceTree = "<group>"; };
 		91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TriangleLayer.cpp; path = src/TriangleLayer.cpp; sourceTree = "<group>"; };
 		989FA13CC0DA59EEA875E77C /* EditorLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorLayer.h; path = src/EditorLayer.h; sourceTree = "<group>"; };
@@ -65,6 +75,7 @@
 		E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DemoStele.cpp; path = src/DemoStele.cpp; sourceTree = "<group>"; };
 		F352F86C1979281E80801EAC /* CubeLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CubeLayer.h; path = src/CubeLayer.h; sourceTree = "<group>"; };
 		F698B167EFFEB2D9E39A0FA7 /* Spin.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Spin.cpp; path = src/Game/Spin.cpp; sourceTree = "<group>"; };
+		FC1F167A2E18612CA7F79CBA /* EditorActions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorActions.cpp; path = src/EditorActions.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,10 +106,13 @@
 		78BAB969B1757FDB410CB7A9 /* Ethane-Editor */ = {
 			isa = PBXGroup;
 			children = (
+				DBD54FC6FDA0FCF83A562606 /* ContentBrowser */,
 				AB66FB82D3A1B434BB3D41C2 /* CubeLayer.cpp */,
 				F352F86C1979281E80801EAC /* CubeLayer.h */,
 				E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */,
 				BE6354B8E489846A4B907AF8 /* DemoStele.h */,
+				FC1F167A2E18612CA7F79CBA /* EditorActions.cpp */,
+				7F0E20E44279E296811D8724 /* EditorActions.h */,
 				B458F8E2E652439460317F22 /* EditorContext.cpp */,
 				45849C4C08F05DFE4794028C /* EditorContext.h */,
 				1ECFCD12E23B8EC420DF3352 /* EditorLayer.cpp */,
@@ -161,9 +175,22 @@
 			name = Game;
 			sourceTree = "<group>";
 		};
+		DBD54FC6FDA0FCF83A562606 /* ContentBrowser */ = {
+			isa = PBXGroup;
+			children = (
+				51B9877E96082CF0D82F65BE /* AssetDrag.h */,
+				0DBA4A3682148F28FFF81876 /* ContentBrowser.cpp */,
+				4245A9E0E42F45D2DB565820 /* ContentBrowser.h */,
+			);
+			name = ContentBrowser;
+			sourceTree = "<group>";
+		};
 		F8C6F20E9C127B40B6E3484E /* Panels */ = {
 			isa = PBXGroup;
 			children = (
+				1894811073D5D48247301F50 /* AssetDrop.h */,
+				81CAE1BA75CA2B2CFAB53FFA /* ContentBrowserPanel.cpp */,
+				8FBDC284527E22F6AFB300C4 /* ContentBrowserPanel.h */,
 				ABAE78FA0313EBECB522073A /* HierarchyPanel.cpp */,
 				128ABEA4A51888960DF12CE4 /* HierarchyPanel.h */,
 				2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */,
@@ -243,12 +270,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE63520E6887474018AD284E /* ContentBrowser.cpp in Sources */,
 				74C0C7FAE5E368EC9BAA163A /* CubeLayer.cpp in Sources */,
 				AB564F861C78F078D23F9DC6 /* DemoStele.cpp in Sources */,
+				1731FA726E976D6420A588B2 /* EditorActions.cpp in Sources */,
 				2216BF5A797C324C2B8A4D9A /* EditorContext.cpp in Sources */,
 				7969B48A0BF77E7C74D022CA /* EditorLayer.cpp in Sources */,
 				1DD339FCBFBCD5EEB6E3E83C /* EthaneEditorApp.cpp in Sources */,
 				9B34779F5EA039519D43DDDF /* Spin.cpp in Sources */,
+				138D2292C6832C4417A588D2 /* ContentBrowserPanel.cpp in Sources */,
 				C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */,
 				F50A4342F4AD26742F01D982 /* InspectorPanel.cpp in Sources */,
 				79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */,

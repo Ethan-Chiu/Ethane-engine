@@ -7,17 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0D45E778AF2F836AA65695B8 /* MeshImportTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FD253220CB4885D25256D860 /* MeshImportTests.cpp */; };
-		161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DB5260D6BF99690843869716 /* FramePacketTests.cpp */; };
-		20CAD77865197CEAA740B5B8 /* WorldTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE962120D061CE520D16F760 /* WorldTests.cpp */; };
-		7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */; };
-		80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */; };
-		9BFA20FA8FF96A6C14E47F3A /* AssetRegistryTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C235782603728B45408ADC2 /* AssetRegistryTests.cpp */; };
-		A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51029A7499737EA6DE1250B4 /* TestMain.cpp */; };
-		ACDE647AA0DDADEC25C8C2BA /* DeletionQueueTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D662302B179F434A54B7942 /* DeletionQueueTests.cpp */; };
-		B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */; };
+		031A50FD5D1B67EF24625F3D /* ContentBrowserTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11E561C52CB1D07730826805 /* ContentBrowserTests.cpp */; };
+		043DA3B110C856238BAD21F1 /* AssetRegistryTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4BAEDE392ACBF86B06D55479 /* AssetRegistryTests.cpp */; };
+		05A46EBDA90B9C6FC04154FD /* ContentBrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 93A960E52C214E5758083F25 /* ContentBrowser.cpp */; };
+		134D2F9FD60D901133426DDF /* JobSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA094247CE504A79523D7887 /* JobSystemTests.cpp */; };
+		165D82AF83859121851880EF /* WorldTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C685605713E856898A075697 /* WorldTests.cpp */; };
+		1C714D0F90CB92010EAF1B4F /* MeshImportTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2AC5ABB73CEF886970E071F7 /* MeshImportTests.cpp */; };
+		2D32E083718185F5B3A8BEC3 /* TestMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948924EBB654D21DF309FB2B /* TestMain.cpp */; };
+		307771799D9F7FEB9F326FB9 /* SteleTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 28617B8175C471B3EBE371C1 /* SteleTests.cpp */; };
+		4F293D85432886F7C8139BC5 /* FramePacketTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8DB0E2CDD1C4B3FFC596390D /* FramePacketTests.cpp */; };
+		76EA11ED558CAD5F0A6EB02D /* SteleSerializerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DB4138B5DAE41BE71538CEF5 /* SteleSerializerTests.cpp */; };
+		921FA321E98516139B933161 /* SchemaTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 260ABFA958040A5BD1E345E9 /* SchemaTests.cpp */; };
+		B706C731C39179A33E764571 /* DeletionQueueTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DADA89B9B9F7A3EB9600FFF9 /* DeletionQueueTests.cpp */; };
 		C7FD533AA2A49BEC86E5997A /* libEthaneEngine.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE0AEFE24520985471692E22 /* libEthaneEngine.dylib */; };
-		FAEC64E8C17A5C5A2F7C8328 /* JobSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6B79639000F022C26F8C79D0 /* JobSystemTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,19 +40,23 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1C235782603728B45408ADC2 /* AssetRegistryTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AssetRegistryTests.cpp; path = src/AssetRegistryTests.cpp; sourceTree = "<group>"; };
-		1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleTests.cpp; path = src/SteleTests.cpp; sourceTree = "<group>"; };
-		2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleSerializerTests.cpp; path = src/SteleSerializerTests.cpp; sourceTree = "<group>"; };
+		11E561C52CB1D07730826805 /* ContentBrowserTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ContentBrowserTests.cpp; path = src/ContentBrowserTests.cpp; sourceTree = "<group>"; };
+		260ABFA958040A5BD1E345E9 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
+		28617B8175C471B3EBE371C1 /* SteleTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleTests.cpp; path = src/SteleTests.cpp; sourceTree = "<group>"; };
+		2A94280F871B2C810FBDE64F /* ContentBrowser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ContentBrowser.h; path = "../Ethane-Editor/src/ContentBrowser/ContentBrowser.h"; sourceTree = "<group>"; };
+		2AC5ABB73CEF886970E071F7 /* MeshImportTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MeshImportTests.cpp; path = src/MeshImportTests.cpp; sourceTree = "<group>"; };
+		3C8B1E0D2D828BFF99860C4D /* AssetDrag.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AssetDrag.h; path = "../Ethane-Editor/src/ContentBrowser/AssetDrag.h"; sourceTree = "<group>"; };
 		414F29FE420226F0B5E3F83E /* Ethane-Tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Tests"; path = "Ethane-Tests"; sourceTree = BUILT_PRODUCTS_DIR; };
-		51029A7499737EA6DE1250B4 /* TestMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TestMain.cpp; path = src/TestMain.cpp; sourceTree = "<group>"; };
-		6B79639000F022C26F8C79D0 /* JobSystemTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = JobSystemTests.cpp; path = src/JobSystemTests.cpp; sourceTree = "<group>"; };
-		6D662302B179F434A54B7942 /* DeletionQueueTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DeletionQueueTests.cpp; path = src/DeletionQueueTests.cpp; sourceTree = "<group>"; };
-		A5B725344902AE6663D37B74 /* Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Test.h; path = src/Test.h; sourceTree = "<group>"; };
-		AE962120D061CE520D16F760 /* WorldTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WorldTests.cpp; path = src/WorldTests.cpp; sourceTree = "<group>"; };
+		4BAEDE392ACBF86B06D55479 /* AssetRegistryTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AssetRegistryTests.cpp; path = src/AssetRegistryTests.cpp; sourceTree = "<group>"; };
+		66DC326B6A4D049DEBB9A8AB /* Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Test.h; path = src/Test.h; sourceTree = "<group>"; };
+		8DB0E2CDD1C4B3FFC596390D /* FramePacketTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = FramePacketTests.cpp; path = src/FramePacketTests.cpp; sourceTree = "<group>"; };
+		93A960E52C214E5758083F25 /* ContentBrowser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ContentBrowser.cpp; path = "../Ethane-Editor/src/ContentBrowser/ContentBrowser.cpp"; sourceTree = "<group>"; };
+		948924EBB654D21DF309FB2B /* TestMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TestMain.cpp; path = src/TestMain.cpp; sourceTree = "<group>"; };
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
-		DB5260D6BF99690843869716 /* FramePacketTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = FramePacketTests.cpp; path = src/FramePacketTests.cpp; sourceTree = "<group>"; };
-		DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SchemaTests.cpp; path = src/SchemaTests.cpp; sourceTree = "<group>"; };
-		FD253220CB4885D25256D860 /* MeshImportTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MeshImportTests.cpp; path = src/MeshImportTests.cpp; sourceTree = "<group>"; };
+		C685605713E856898A075697 /* WorldTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WorldTests.cpp; path = src/WorldTests.cpp; sourceTree = "<group>"; };
+		DADA89B9B9F7A3EB9600FFF9 /* DeletionQueueTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DeletionQueueTests.cpp; path = src/DeletionQueueTests.cpp; sourceTree = "<group>"; };
+		DB4138B5DAE41BE71538CEF5 /* SteleSerializerTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleSerializerTests.cpp; path = src/SteleSerializerTests.cpp; sourceTree = "<group>"; };
+		EA094247CE504A79523D7887 /* JobSystemTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = JobSystemTests.cpp; path = src/JobSystemTests.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +84,43 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXGroup section */
+		15F383BA3E2E3C6C25C9C9FA /* Ethane-Editor */ = {
+			isa = PBXGroup;
+			children = (
+				B58476F0CC971222BCB30D30 /* src */,
+			);
+			name = "Ethane-Editor";
+			sourceTree = "<group>";
+		};
+		5775D4184366DFCA959E7A58 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				4BAEDE392ACBF86B06D55479 /* AssetRegistryTests.cpp */,
+				11E561C52CB1D07730826805 /* ContentBrowserTests.cpp */,
+				DADA89B9B9F7A3EB9600FFF9 /* DeletionQueueTests.cpp */,
+				8DB0E2CDD1C4B3FFC596390D /* FramePacketTests.cpp */,
+				EA094247CE504A79523D7887 /* JobSystemTests.cpp */,
+				2AC5ABB73CEF886970E071F7 /* MeshImportTests.cpp */,
+				260ABFA958040A5BD1E345E9 /* SchemaTests.cpp */,
+				DB4138B5DAE41BE71538CEF5 /* SteleSerializerTests.cpp */,
+				28617B8175C471B3EBE371C1 /* SteleTests.cpp */,
+				66DC326B6A4D049DEBB9A8AB /* Test.h */,
+				948924EBB654D21DF309FB2B /* TestMain.cpp */,
+				C685605713E856898A075697 /* WorldTests.cpp */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
+		65EB9C95FE3882472C7F82D5 /* ContentBrowser */ = {
+			isa = PBXGroup;
+			children = (
+				3C8B1E0D2D828BFF99860C4D /* AssetDrag.h */,
+				93A960E52C214E5758083F25 /* ContentBrowser.cpp */,
+				2A94280F871B2C810FBDE64F /* ContentBrowser.h */,
+			);
+			name = ContentBrowser;
+			sourceTree = "<group>";
+		};
 		7FE210EDDB23645FAE7DAF2D /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -89,17 +132,8 @@
 		870CC795336F87C7F1F7FDD5 /* Ethane-Tests */ = {
 			isa = PBXGroup;
 			children = (
-				1C235782603728B45408ADC2 /* AssetRegistryTests.cpp */,
-				6D662302B179F434A54B7942 /* DeletionQueueTests.cpp */,
-				DB5260D6BF99690843869716 /* FramePacketTests.cpp */,
-				6B79639000F022C26F8C79D0 /* JobSystemTests.cpp */,
-				FD253220CB4885D25256D860 /* MeshImportTests.cpp */,
-				DE680D12A1D3CEC4E0777352 /* SchemaTests.cpp */,
-				2949F93E08671370E4706F7E /* SteleSerializerTests.cpp */,
-				1DCC49CA3F97F6FC7C4D200A /* SteleTests.cpp */,
-				A5B725344902AE6663D37B74 /* Test.h */,
-				51029A7499737EA6DE1250B4 /* TestMain.cpp */,
-				AE962120D061CE520D16F760 /* WorldTests.cpp */,
+				15F383BA3E2E3C6C25C9C9FA /* Ethane-Editor */,
+				5775D4184366DFCA959E7A58 /* src */,
 				A6C936B49B3FADE6EA134CF4 /* Products */,
 				9D968EAA920D05DCE0E0A4EA /* Projects */,
 			);
@@ -120,6 +154,14 @@
 				414F29FE420226F0B5E3F83E /* Ethane-Tests */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B58476F0CC971222BCB30D30 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				65EB9C95FE3882472C7F82D5 /* ContentBrowser */,
+			);
+			name = src;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -193,16 +235,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9BFA20FA8FF96A6C14E47F3A /* AssetRegistryTests.cpp in Sources */,
-				ACDE647AA0DDADEC25C8C2BA /* DeletionQueueTests.cpp in Sources */,
-				161A1F8ED8DA8000360F5DCE /* FramePacketTests.cpp in Sources */,
-				FAEC64E8C17A5C5A2F7C8328 /* JobSystemTests.cpp in Sources */,
-				0D45E778AF2F836AA65695B8 /* MeshImportTests.cpp in Sources */,
-				B765F48A49F3BE7CB2CC62CA /* SchemaTests.cpp in Sources */,
-				80C6F6768D51A8E8083674B6 /* SteleSerializerTests.cpp in Sources */,
-				7C2603C2C074A934029BE202 /* SteleTests.cpp in Sources */,
-				A2AE4A0C9C70067ED66F084C /* TestMain.cpp in Sources */,
-				20CAD77865197CEAA740B5B8 /* WorldTests.cpp in Sources */,
+				05A46EBDA90B9C6FC04154FD /* ContentBrowser.cpp in Sources */,
+				043DA3B110C856238BAD21F1 /* AssetRegistryTests.cpp in Sources */,
+				031A50FD5D1B67EF24625F3D /* ContentBrowserTests.cpp in Sources */,
+				B706C731C39179A33E764571 /* DeletionQueueTests.cpp in Sources */,
+				4F293D85432886F7C8139BC5 /* FramePacketTests.cpp in Sources */,
+				134D2F9FD60D901133426DDF /* JobSystemTests.cpp in Sources */,
+				1C714D0F90CB92010EAF1B4F /* MeshImportTests.cpp in Sources */,
+				921FA321E98516139B933161 /* SchemaTests.cpp in Sources */,
+				76EA11ED558CAD5F0A6EB02D /* SteleSerializerTests.cpp in Sources */,
+				307771799D9F7FEB9F326FB9 /* SteleTests.cpp in Sources */,
+				2D32E083718185F5B3A8BEC3 /* TestMain.cpp in Sources */,
+				165D82AF83859121851880EF /* WorldTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,6 +292,7 @@
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
+					"../Ethane-Editor/src",
 				);
 			};
 			name = Release;
@@ -308,6 +353,7 @@
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
+					"../Ethane-Editor/src",
 				);
 			};
 			name = Debug;
@@ -355,6 +401,7 @@
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					../EthaneEngine/src,
+					"../Ethane-Editor/src",
 				);
 			};
 			name = Dist;

@@ -1,5 +1,7 @@
 #include "HierarchyPanel.h"
 
+#include "AssetDrop.h"
+#include "EditorActions.h"
 #include "EditorContext.h"
 #include "Ethane/World/Components.h"
 
@@ -79,6 +81,8 @@ namespace Ethane {
 		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, std::max(ImGui::GetContentRegionAvail().y, 20.0f)));
 		if (auto dropped = AcceptElementDrop())
 			MoveElement(context, snapshot, *dropped, {});
+		if (auto mesh = AcceptAssetDrop(AssetKind::Mesh))
+			CreateMeshElement(context, mesh->Asset);
 		if (ImGui::IsItemClicked())
 			stele->Selected = {};
 		if (ImGui::BeginPopupContextItem("##empty"))
@@ -159,6 +163,8 @@ namespace Ethane {
 		}
 		if (auto dropped = AcceptElementDrop(); dropped && *dropped != id)
 			MoveElement(context, snapshot, *dropped, id);
+		if (auto mesh = AcceptAssetDrop(AssetKind::Mesh))
+			CreateMeshElement(context, mesh->Asset, id);
 		if (ImGui::BeginPopupContextItem())
 		{
 			stele.Selected = id;

@@ -21,6 +21,8 @@ namespace Ethane{
 		void OnEvent(Event & e); // scroll to zoom
 
 		inline float GetDistance() const { return m_Distance; }
+		// The point the camera orbits and zooms toward
+		const glm::vec3& GetFocalPoint() const { return m_FocalPoint; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
 		// Radians. Positive pitch looks down at the focal point; yaw orbits around the vertical axis.
 		inline void SetPitchYaw(float pitch, float yaw) { m_Pitch = pitch; m_Yaw = yaw; UpdateView(); }

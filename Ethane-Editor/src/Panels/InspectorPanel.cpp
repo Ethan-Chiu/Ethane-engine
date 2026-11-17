@@ -1,5 +1,6 @@
 #include "InspectorPanel.h"
 
+#include "AssetDrop.h"
 #include "EditorContext.h"
 #include "Ethane/Asset/AssetRegistry.h"
 
@@ -262,9 +263,12 @@ namespace Ethane {
 								chosen = asset;
 					ImGui::EndCombo();
 				}
-				if (ImGui::IsItemHovered() && v.IsValid())
+				if (ImGui::IsItemHovered() && v.IsValid() && !ImGui::GetDragDropPayload())
 					if (auto path = registry.GetPath(v))
 						ImGui::SetTooltip("%s", path->generic_string().c_str());
+				// Or drop one from the content browser
+				if (auto dropped = AcceptAssetDrop(meta.Asset))
+					chosen = dropped->Asset;
 				return chosen;
 			}
 			case FieldType::Element:

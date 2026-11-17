@@ -222,6 +222,7 @@ Panels bind to an `EditorContext`, not to a scene:
 | Inspector | The selection, through the schema | `SetField` / add / remove commands |
 | Viewport | A world + a camera + a render target | Selection (picking) |
 | Stats | Renderer and world statistics | Nothing |
+| Content | Files under `assets/` and `res/` | The asset registry (import on use); drags meshes / textures out |
 
 Steles are saved as `.stele` files (the editor keeps its own in `Ethane-Editor/assets/steles/`).
 Each open stele has its own undo history; the inspector gives every press-and-drag of a widget its own
@@ -229,6 +230,22 @@ Each open stele has its own undo history; the inspector gives every press-and-dr
 
 Because the inspector works through the schema, it handles any registered type, including materials
 and asset settings, with no per-component UI code.
+
+### Keeping the editor's UI library replaceable
+
+The editor draws with ImGui today, but a custom editor UI may replace it, so what panels show and do
+is kept apart from how ImGui draws it:
+
+- `EditorTheme` holds colors by role (Background, Surface, Text, Accent, Secondary, Danger,
+  Selection, ...) and shapes. `ApplyImGuiTheme` is the only code that maps them onto ImGui's style;
+  panels ask for roles, never for ImGui colors.
+- Models without ImGui: `ContentBrowser` (navigation within its roots, filtering, classification,
+  importing) is unit-tested; `ContentBrowserPanel` only draws it.
+- Editing operations used by several panels (`EditorActions`, e.g. `CreateMeshElement`) are plain
+  functions over the `EditorContext`, one transaction each.
+- A drag from the content browser carries an `AssetDrag` (asset id and kind); `AcceptAssetDrop` is the
+  ImGui side, and only highlights targets that take that kind. Meshes dropped on the viewport land
+  where the cursor's ray meets the ground (y = 0); on the hierarchy they become children of the row.
 
 ## Threads
 

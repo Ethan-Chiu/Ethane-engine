@@ -1,6 +1,8 @@
 #include "EditorLayer.h"
 #include "DemoStele.h"
 #include "Game/Spin.h"
+#include "EditorActions.h"
+#include "Panels/AssetDrop.h"
 #include "Theme/ImGuiTheme.h"
 
 #include <imgui.h>
@@ -86,6 +88,8 @@ namespace Ethane {
 		ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
 		ApplyImGuiTheme(m_Theme);
 		m_Context = CreateScope<EditorContext>(*m_Assets, kAssetRegistryFile);
+		m_Content = CreateScope<ContentBrowser>(m_AssetRegistry, std::vector<std::filesystem::path>{ "assets", "res" });
+		m_ContentPanel = CreateScope<ContentBrowserPanel>(*m_Content, *m_Assets, m_Theme);
 
 		// Game types first: steles that use them load only once they're registered
 		RegisterGameTypes();
@@ -187,6 +191,14 @@ namespace Ethane {
 		if (m_ShowHierarchy) m_Hierarchy.Draw(*m_Context, &m_ShowHierarchy);
 		if (m_ShowInspector) m_Inspector.Draw(*m_Context, &m_ShowInspector);
 		if (m_ShowStats) DrawStatsPanel();
+		if (m_ShowContent) {
+			m_ContentPanel->Draw(&m_ShowContent, [this](const std::filesystem::path& path) {
+				std::string error;
+				if (!m_Context->Open(path, error)) {
+					ETH_WARN("Couldn't open {}: {}", path.generic_string(), error);
+				}
+			});
+		}
 		if (m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
 		DrawFileDialogs();
 
@@ -288,13 +300,14 @@ namespace Ethane {
 			ImGui::MenuItem(HierarchyPanel::kWindowName, nullptr, &m_ShowHierarchy);
 			ImGui::MenuItem(InspectorPanel::kWindowName, nullptr, &m_ShowInspector);
 			ImGui::MenuItem(kStatsWindow, nullptr, &m_ShowStats);
+			ImGui::MenuItem(ContentBrowserPanel::kWindowName, nullptr, &m_ShowContent);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Reset camera")) {
 				ResetCamera();
 			}
 			if (ImGui::MenuItem("Reset layout")) {
 				m_ResetLayout = true;
-				m_ShowHierarchy = m_ShowInspector = m_ShowStats = true;
+				m_ShowHierarchy = m_ShowInspector = m_ShowStats = m_ShowContent = true;
 			}
 			ImGui::EndMenu();
 		}
@@ -320,6 +333,7 @@ namespace Ethane {
 			ImGuiID center = dockspace;
 			const ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.18f, nullptr, &center);
 			const ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.25f, nullptr, &center);
+			const ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.3f, nullptr, &center);
 			ImGuiID leftTop = left;
 			const ImGuiID leftBottom = ImGui::DockBuilderSplitNode(leftTop, ImGuiDir_Down, 0.4f, nullptr, &leftTop);
 
@@ -327,6 +341,7 @@ namespace Ethane {
 			ImGui::DockBuilderDockWindow(HierarchyPanel::kWindowName, leftTop);
 			ImGui::DockBuilderDockWindow(kStatsWindow, leftBottom);
 			ImGui::DockBuilderDockWindow(InspectorPanel::kWindowName, right);
+			ImGui::DockBuilderDockWindow(ContentBrowserPanel::kWindowName, bottom);
 			ImGui::DockBuilderFinish(dockspace);
 		}
 		ImGui::DockSpaceOverViewport(dockspace, viewport);
@@ -350,6 +365,13 @@ namespace Ethane {
 			const ImVec2 min = ImGui::GetCursorScreenPos();
 			ImGui::Image(Application::Get().GetImGuiLayer()->GetTextureID(*m_ViewportTarget), size);
 			const bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
+			// A mesh from the content browser, dropped into the scene
+			if (!IsPlaying()) {
+				if (auto mesh = AcceptAssetDrop(AssetKind::Mesh)) {
+					const ImVec2 mouse = ImGui::GetMousePos();
+					CreateMeshElement(*m_Context, mesh->Asset, {}, DropPosition({ mouse.x, mouse.y }, { min.x, min.y }, { size.x, size.y }));
+				}
+			}
 			if (IsPlaying()) {
 				// A frame around the image, so play mode can't be mistaken for editing
 				ImGui::GetWindowDrawList()->AddRect(min, ImVec2(min.x + size.x, min.y + size.y), ToImGuiU32(m_Theme.Secondary), 0.0f, 0, 3.0f);
@@ -370,6 +392,30 @@ namespace Ethane {
 
 		ImGui::End();
 		ImGui::PopStyleVar();
+	}
+
+	glm::vec3 EditorLayer::DropPosition(const glm::vec2& mouse, const glm::vec2& viewportMin, const glm::vec2& viewportSize) const
+	{
+		// The cursor's ray: unproject the cursor at two depths. NDC y points up (as ImGuizmo also assumes
+		// for these matrices), screen y down.
+		const glm::vec2 uv = (mouse - viewportMin) / glm::max(viewportSize, glm::vec2(1.0f));
+		const glm::vec2 ndc{ uv.x * 2.0f - 1.0f, 1.0f - uv.y * 2.0f };
+		const glm::mat4 inverse = glm::inverse(m_Camera.GetViewProjection());
+		auto unproject = [&](float depth) {
+			const glm::vec4 p = inverse * glm::vec4(ndc, depth, 1.0f);
+			return glm::vec3(p) / p.w;
+		};
+		const glm::vec3 origin = unproject(0.0f);
+		const glm::vec3 direction = glm::normalize(unproject(1.0f) - origin);
+
+		// Where it meets y = 0, if in front of the camera and not absurdly far (a ray grazing the horizon)
+		if (std::abs(direction.y) > 1e-4f) {
+			const float t = -origin.y / direction.y;
+			if (t > 0.0f && t < 200.0f) {
+				return origin + direction * t;
+			}
+		}
+		return m_Camera.GetFocalPoint();
 	}
 
 	void EditorLayer::DrawViewportToolbar()

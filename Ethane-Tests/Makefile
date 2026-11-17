@@ -28,7 +28,7 @@ ifeq ($(origin AR), default)
   AR = ar
 endif
 RESCOMP = windres
-INCLUDES += -I../EthaneEngine/src -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/glm
+INCLUDES += -I../EthaneEngine/src -I../Ethane-Editor/src -isystem ../EthaneEngine/vendor/spdlog/include -isystem ../EthaneEngine/vendor/glm
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
@@ -84,6 +84,8 @@ GENERATED :=
 OBJECTS :=
 
 GENERATED += $(OBJDIR)/AssetRegistryTests.o
+GENERATED += $(OBJDIR)/ContentBrowser.o
+GENERATED += $(OBJDIR)/ContentBrowserTests.o
 GENERATED += $(OBJDIR)/DeletionQueueTests.o
 GENERATED += $(OBJDIR)/FramePacketTests.o
 GENERATED += $(OBJDIR)/JobSystemTests.o
@@ -94,6 +96,8 @@ GENERATED += $(OBJDIR)/SteleTests.o
 GENERATED += $(OBJDIR)/TestMain.o
 GENERATED += $(OBJDIR)/WorldTests.o
 OBJECTS += $(OBJDIR)/AssetRegistryTests.o
+OBJECTS += $(OBJDIR)/ContentBrowser.o
+OBJECTS += $(OBJDIR)/ContentBrowserTests.o
 OBJECTS += $(OBJDIR)/DeletionQueueTests.o
 OBJECTS += $(OBJDIR)/FramePacketTests.o
 OBJECTS += $(OBJDIR)/JobSystemTests.o
@@ -166,7 +170,13 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/ContentBrowser.o: ../Ethane-Editor/src/ContentBrowser/ContentBrowser.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/AssetRegistryTests.o: src/AssetRegistryTests.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/ContentBrowserTests.o: src/ContentBrowserTests.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/DeletionQueueTests.o: src/DeletionQueueTests.cpp

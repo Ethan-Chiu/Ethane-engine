@@ -83,8 +83,11 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/ContentBrowser.o
+GENERATED += $(OBJDIR)/ContentBrowserPanel.o
 GENERATED += $(OBJDIR)/CubeLayer.o
 GENERATED += $(OBJDIR)/DemoStele.o
+GENERATED += $(OBJDIR)/EditorActions.o
 GENERATED += $(OBJDIR)/EditorContext.o
 GENERATED += $(OBJDIR)/EditorLayer.o
 GENERATED += $(OBJDIR)/EditorTheme.o
@@ -95,8 +98,11 @@ GENERATED += $(OBJDIR)/InspectorPanel.o
 GENERATED += $(OBJDIR)/Spin.o
 GENERATED += $(OBJDIR)/TexturedQuadLayer.o
 GENERATED += $(OBJDIR)/TriangleLayer.o
+OBJECTS += $(OBJDIR)/ContentBrowser.o
+OBJECTS += $(OBJDIR)/ContentBrowserPanel.o
 OBJECTS += $(OBJDIR)/CubeLayer.o
 OBJECTS += $(OBJDIR)/DemoStele.o
+OBJECTS += $(OBJDIR)/EditorActions.o
 OBJECTS += $(OBJDIR)/EditorContext.o
 OBJECTS += $(OBJDIR)/EditorLayer.o
 OBJECTS += $(OBJDIR)/EditorTheme.o
@@ -170,10 +176,16 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/ContentBrowser.o: src/ContentBrowser/ContentBrowser.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/CubeLayer.o: src/CubeLayer.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/DemoStele.o: src/DemoStele.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/EditorActions.o: src/EditorActions.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EditorContext.o: src/EditorContext.cpp
@@ -186,6 +198,9 @@ $(OBJDIR)/EthaneEditorApp.o: src/EthaneEditorApp.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Spin.o: src/Game/Spin.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/ContentBrowserPanel.o: src/Panels/ContentBrowserPanel.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/HierarchyPanel.o: src/Panels/HierarchyPanel.cpp
