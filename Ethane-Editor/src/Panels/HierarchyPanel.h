@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Ethane/Stele/SteleSnapshot.h"
+#include "Theme/EditorTheme.h"
+
+#include <imgui.h>
 
 #include <string>
 
@@ -17,12 +20,14 @@ namespace Ethane {
 	public:
 		static constexpr const char* kWindowName = "Hierarchy";
 
-		void Draw(EditorContext& context, bool* open);
+		void Draw(EditorContext& context, bool* open, const EditorTheme& theme);
 
 	private:
 		void DrawElement(EditorContext& context, const SteleSnapshot& snapshot, ElementId id);
 		void DrawRenamePopup(EditorContext& context, const SteleSnapshot& snapshot);
 
+		const EditorTheme* m_Theme = nullptr;
+		ImDrawListSplitter m_Rows; // row backgrounds (channel 0) under the rows (channel 1)
 		ElementId m_Renaming;        // set for one frame: open the rename popup for this element
 		ElementId m_RenamingTarget;  // the element the open rename popup applies to
 		std::string m_RenameText;

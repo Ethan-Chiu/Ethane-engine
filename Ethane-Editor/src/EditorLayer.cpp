@@ -193,7 +193,7 @@ namespace Ethane {
 		DrawMenuBar();
 		DrawDockspace();
 		DrawViewport();
-		if (m_ShowHierarchy) m_Hierarchy.Draw(*m_Context, &m_ShowHierarchy);
+		if (m_ShowHierarchy) m_Hierarchy.Draw(*m_Context, &m_ShowHierarchy, m_Theme);
 		if (m_ShowInspector) m_Inspector.Draw(*m_Context, &m_ShowInspector);
 		if (m_ShowStats) DrawStatsPanel();
 		if (m_ShowContent) {

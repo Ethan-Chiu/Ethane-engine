@@ -3,6 +3,8 @@
 #include "AssetDrop.h"
 #include "EditorActions.h"
 #include "EditorContext.h"
+#include "Theme/ImGuiTheme.h"
+#include "Theme/ImGuiWidgets.h"
 #include "Ethane/World/Components.h"
 
 #include <imgui.h>
@@ -57,15 +59,28 @@ namespace Ethane {
 
 	}
 
-	void HierarchyPanel::Draw(EditorContext& context, bool* open)
+	void HierarchyPanel::Draw(EditorContext& context, bool* open, const EditorTheme& theme)
 	{
-		ImGui::Begin(kWindowName, open);
+		m_Theme = &theme;
+		BeginPane(kWindowName, open, theme);
 
+		// Title row, with "create element" at its right end
+		const float titleY = ImGui::GetCursorPosY();
+		PaneTitle(kWindowName, theme);
 		OpenStele* stele = context.Active();
+		if (stele)
+		{
+			const ImVec2 after = ImGui::GetCursorPos();
+			ImGui::SetCursorPos(ImVec2(ImGui::GetWindowContentRegionMax().x - 24.0f, titleY + 2.0f));
+			if (IconButton("##create", Icon::Plus, 24.0f, theme.TextMuted, theme))
+				CreateElement(context, {});
+			ImGui::SetItemTooltip("Create element");
+			ImGui::SetCursorPos(after);
+		}
 		if (!stele)
 		{
 			ImGui::TextDisabled("No stele open (File > New or Open)");
-			ImGui::End();
+			EndPane();
 			return;
 		}
 
@@ -73,8 +88,19 @@ namespace Ethane {
 		if (stele->Selected.IsValid() && !snapshot.Contains(stele->Selected))
 			stele->Selected = {}; // deleted, or undone away
 
+		// Rows: ImGui's own highlight off (they get a rounded one), row height from the frame padding
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6.0f, (theme.RowHeight - ImGui::GetFontSize()) * 0.5f));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 0.0f));
+		m_Rows.Split(ImGui::GetWindowDrawList(), 2);
+		m_Rows.SetCurrentChannel(ImGui::GetWindowDrawList(), 1);
 		for (ElementId id : snapshot.Children())
 			DrawElement(context, snapshot, id);
+		m_Rows.Merge(ImGui::GetWindowDrawList());
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(3);
 
 		// The rest of the window: drop to move to the top level, click to deselect, right click to create
 		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, std::max(ImGui::GetContentRegionAvail().y, 20.0f)));
@@ -96,7 +122,7 @@ namespace Ethane {
 			DeleteElement(context, snapshot, stele->Selected);
 
 		DrawRenamePopup(context, snapshot);
-		ImGui::End();
+		EndPane();
 	}
 
 	void HierarchyPanel::DrawElement(EditorContext& context, const SteleSnapshot& snapshot, ElementId id)
@@ -107,16 +133,51 @@ namespace Ethane {
 
 		ImGui::PushID(ImGuiId(id));
 		const MeshComponent* mesh = snapshot.Get<MeshComponent>(id);
+		const EditorTheme& theme = *m_Theme;
+		const bool selected = stele.Selected == id;
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-		                           ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen |
+		                           ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding |
 		                           ImGuiTreeNodeFlags_AllowOverlap; // the visibility toggle sits on the row
 		if (children.empty())
 			flags |= ImGuiTreeNodeFlags_Leaf;
 		if (stele.Selected == id)
 			flags |= ImGuiTreeNodeFlags_Selected;
-		const bool open = ImGui::TreeNodeEx("##node", flags, "%s", element.Name.empty() ? "(unnamed)" : element.Name.c_str());
+		// The label leaves room for the kind marker drawn before the name
+		ImGui::PushStyleColor(ImGuiCol_Text, ToImGui(selected ? theme.Text : EditorTheme::WithAlpha(theme.Text, 0.85f)));
+		const bool open = ImGui::TreeNodeEx("##node", flags, "    %s", element.Name.empty() ? "(unnamed)" : element.Name.c_str());
+		ImGui::PopStyleColor();
 		const bool rowHovered = ImGui::IsItemHovered();
+		{
+			// Row background (rounded, the pane's full width) in the channel under the rows
+			ImDrawList* draw = ImGui::GetWindowDrawList();
+			const ImVec2 itemMin = ImGui::GetItemRectMin(), itemMax = ImGui::GetItemRectMax();
+			const float left = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMin().x;
+			const float right = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			if (selected || rowHovered)
+			{
+				m_Rows.SetCurrentChannel(draw, 0);
+				draw->AddRectFilled(ImVec2(left, itemMin.y), ImVec2(right, itemMax.y), ToImGuiU32(selected ? theme.Selected : theme.Hover), theme.ControlRounding);
+				m_Rows.SetCurrentChannel(draw, 1);
+			}
+
+			// Kind marker: meshes periwinkle squares, groups mint squares, cameras and lights dots
+			const bool isCamera = snapshot.Get<CameraComponent>(id) != nullptr;
+			const bool isLight = snapshot.Get<DirectionalLightComponent>(id) != nullptr;
+			EditorTheme::Color color = theme.TextFaint;
+			bool round = true;
+			if (mesh) { color = theme.Accent; round = false; }
+			else if (isCamera) color = theme.TextSecondary;
+			else if (isLight) color = theme.Text;
+			else if (!children.empty()) { color = theme.Mint; round = false; }
+			if (!selected)
+				color.a *= 0.75f;
+			const ImVec2 center(itemMin.x + ImGui::GetTreeNodeToLabelSpacing() + 5.0f, (itemMin.y + itemMax.y) * 0.5f);
+			if (round)
+				draw->AddCircleFilled(center, 3.5f, ToImGuiU32(color));
+			else
+				draw->AddRectFilled(ImVec2(center.x - 3.5f, center.y - 3.5f), ImVec2(center.x + 3.5f, center.y + 3.5f), ToImGuiU32(color), 1.5f);
+		}
 
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 			stele.Selected = id;
@@ -145,27 +206,21 @@ namespace Ethane {
 			ImGui::EndPopup();
 		}
 
-		// Shown/hidden, at the right edge of the row: a small check, faint unless hidden or hovered
+		// Shown / hidden: an eye at the right end of the row, faint unless hidden or the row is hovered
 		if (mesh)
 		{
-			const float box = ImGui::GetTextLineHeight() * 0.8f;
-			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - box - ImGui::GetStyle().FramePadding.x);
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(box * 0.1f, box * 0.1f));
-			if (mesh->Visible && !rowHovered)
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.35f);
-			bool visible = mesh->Visible;
-			ImGui::SetNextItemWidth(box);
-			if (ImGui::Checkbox("##visible", &visible))
+			const float size = theme.RowHeight - 4.0f;
+			const float rowTop = ImGui::GetItemRectMin().y;
+			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - size - 2.0f);
+			ImGui::SetCursorScreenPos(ImVec2(ImGui::GetCursorScreenPos().x, rowTop + 2.0f));
+			const float alpha = !mesh->Visible ? 0.9f : rowHovered ? 0.6f : 0.3f;
+			if (IconButton("##visible", mesh->Visible ? Icon::Eye : Icon::EyeOff, size, EditorTheme::WithAlpha(theme.TextSecondary, alpha), theme, -1.0f, nullptr, 14.0f))
 			{
-				Transaction tx(visible ? "Show " + element.Name : "Hide " + element.Name);
-				tx.SetField<MeshComponent>(id, "Visible", visible);
+				Transaction tx(mesh->Visible ? "Hide " + element.Name : "Show " + element.Name);
+				tx.SetField<MeshComponent>(id, "Visible", !mesh->Visible);
 				context.Commit(std::move(tx));
 			}
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip(mesh->Visible ? "Visible (click to hide)" : "Hidden (click to show)");
-			if (mesh->Visible && !rowHovered)
-				ImGui::PopStyleVar();
-			ImGui::PopStyleVar();
+			ImGui::SetItemTooltip(mesh->Visible ? "Visible (click to hide)" : "Hidden (click to show)");
 		}
 
 		if (open)
