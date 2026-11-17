@@ -22,7 +22,9 @@
 		C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABAE78FA0313EBECB522073A /* HierarchyPanel.cpp */; };
 		CE63520E6887474018AD284E /* ContentBrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0DBA4A3682148F28FFF81876 /* ContentBrowser.cpp */; };
 		DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ACA690C3A5F1423D852CD0 /* TriangleLayer.cpp */; };
+		F17DC5689367615A8A8E73A8 /* ImGuiWidgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BF89D9308DAD2CE214BB7F70 /* ImGuiWidgets.cpp */; };
 		F50A4342F4AD26742F01D982 /* InspectorPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */; };
+		F741DD82096BBA343D5CA3C2 /* SteleTabs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C303ABAABCC5681CF6C469EA /* SteleTabs.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +59,7 @@
 		45849C4C08F05DFE4794028C /* EditorContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorContext.h; path = src/EditorContext.h; sourceTree = "<group>"; };
 		514DCF5268606A84587C6592 /* Ethane-Editor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "Ethane-Editor"; path = "Ethane-Editor"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51B9877E96082CF0D82F65BE /* AssetDrag.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AssetDrag.h; path = src/ContentBrowser/AssetDrag.h; sourceTree = "<group>"; };
+		595BE034B49D33A687F77E74 /* SteleTabs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SteleTabs.h; path = src/Panels/SteleTabs.h; sourceTree = "<group>"; };
 		6600948E3423E840BB323ACE /* TexturedQuadLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TexturedQuadLayer.h; path = src/TexturedQuadLayer.h; sourceTree = "<group>"; };
 		6E73633231DF24E47082C972 /* ImGuiTheme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ImGuiTheme.h; path = src/Theme/ImGuiTheme.h; sourceTree = "<group>"; };
 		7F0E20E44279E296811D8724 /* EditorActions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditorActions.h; path = src/EditorActions.h; sourceTree = "<group>"; };
@@ -71,8 +74,11 @@
 		B2CBAE1B4CEFA34DFD15845B /* libEthaneEngine.dylib */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "EthaneEngine.xcodeproj"; path = ../EthaneEngine/EthaneEngine.xcodeproj; sourceTree = SOURCE_ROOT; };
 		B458F8E2E652439460317F22 /* EditorContext.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorContext.cpp; path = src/EditorContext.cpp; sourceTree = "<group>"; };
 		BE6354B8E489846A4B907AF8 /* DemoStele.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DemoStele.h; path = src/DemoStele.h; sourceTree = "<group>"; };
+		BF89D9308DAD2CE214BB7F70 /* ImGuiWidgets.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ImGuiWidgets.cpp; path = src/Theme/ImGuiWidgets.cpp; sourceTree = "<group>"; };
+		C303ABAABCC5681CF6C469EA /* SteleTabs.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SteleTabs.cpp; path = src/Panels/SteleTabs.cpp; sourceTree = "<group>"; };
 		E0FF73E812F8BE9A8CD7FA28 /* ImGuiTheme.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ImGuiTheme.cpp; path = src/Theme/ImGuiTheme.cpp; sourceTree = "<group>"; };
 		E9FD044E1237BD00F9D34A8E /* DemoStele.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DemoStele.cpp; path = src/DemoStele.cpp; sourceTree = "<group>"; };
+		EFFC42BA21F58D6C9BD4C8FA /* ImGuiWidgets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ImGuiWidgets.h; path = src/Theme/ImGuiWidgets.h; sourceTree = "<group>"; };
 		F352F86C1979281E80801EAC /* CubeLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CubeLayer.h; path = src/CubeLayer.h; sourceTree = "<group>"; };
 		F698B167EFFEB2D9E39A0FA7 /* Spin.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Spin.cpp; path = src/Game/Spin.cpp; sourceTree = "<group>"; };
 		FC1F167A2E18612CA7F79CBA /* EditorActions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EditorActions.cpp; path = src/EditorActions.cpp; sourceTree = "<group>"; };
@@ -146,6 +152,8 @@
 				0017EACA4D7AE0FCC399E10A /* EditorTheme.h */,
 				E0FF73E812F8BE9A8CD7FA28 /* ImGuiTheme.cpp */,
 				6E73633231DF24E47082C972 /* ImGuiTheme.h */,
+				BF89D9308DAD2CE214BB7F70 /* ImGuiWidgets.cpp */,
+				EFFC42BA21F58D6C9BD4C8FA /* ImGuiWidgets.h */,
 			);
 			name = Theme;
 			sourceTree = "<group>";
@@ -195,6 +203,8 @@
 				128ABEA4A51888960DF12CE4 /* HierarchyPanel.h */,
 				2166326A78CBA55C2AD9C0AA /* InspectorPanel.cpp */,
 				0B3EEE149DCCB80606A55C54 /* InspectorPanel.h */,
+				C303ABAABCC5681CF6C469EA /* SteleTabs.cpp */,
+				595BE034B49D33A687F77E74 /* SteleTabs.h */,
 			);
 			name = Panels;
 			sourceTree = "<group>";
@@ -281,9 +291,11 @@
 				138D2292C6832C4417A588D2 /* ContentBrowserPanel.cpp in Sources */,
 				C8BE8AD2C8616E0402B62112 /* HierarchyPanel.cpp in Sources */,
 				F50A4342F4AD26742F01D982 /* InspectorPanel.cpp in Sources */,
+				F741DD82096BBA343D5CA3C2 /* SteleTabs.cpp in Sources */,
 				79F75CFCEE51A1EE6C352B3C /* TexturedQuadLayer.cpp in Sources */,
 				07802218CE0E198A3C104058 /* EditorTheme.cpp in Sources */,
 				1A790DA071DE809223EC9BE0 /* ImGuiTheme.cpp in Sources */,
+				F17DC5689367615A8A8E73A8 /* ImGuiWidgets.cpp in Sources */,
 				DB6E24E832D397DAE4E1B328 /* TriangleLayer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

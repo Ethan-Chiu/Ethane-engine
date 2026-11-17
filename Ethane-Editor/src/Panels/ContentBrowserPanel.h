@@ -34,6 +34,7 @@ namespace Ethane {
 		// The entry's picture in the square at `min` with edge `size` (screen coordinates)
 		void DrawIcon(const ContentBrowser::Entry& entry, const RefCountPtr<ITexture2D>& thumbnail, glm::vec2 min, float size) const;
 		EditorTheme::Color KindColor(ContentBrowser::Kind kind) const;
+		EditorTheme::Color BandText(const EditorTheme::Color& band) const; // text that reads on `band`
 
 		ContentBrowser* m_Model;
 		AssetLibrary* m_Assets;

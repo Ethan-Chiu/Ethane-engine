@@ -3,7 +3,9 @@
 #include "Game/Spin.h"
 #include "EditorActions.h"
 #include "Panels/AssetDrop.h"
+#include "Panels/SteleTabs.h"
 #include "Theme/ImGuiTheme.h"
+#include "Theme/ImGuiWidgets.h"
 
 #include <imgui.h>
 #include <imgui_internal.h> // DockBuilder
@@ -301,6 +303,15 @@ namespace Ethane {
 			ImGui::MenuItem(InspectorPanel::kWindowName, nullptr, &m_ShowInspector);
 			ImGui::MenuItem(kStatsWindow, nullptr, &m_ShowStats);
 			ImGui::MenuItem(ContentBrowserPanel::kWindowName, nullptr, &m_ShowContent);
+			if (ImGui::BeginMenu("Theme")) {
+				for (const EditorTheme& theme : { EditorTheme::Light(), EditorTheme::Dark() }) {
+					if (ImGui::MenuItem(theme.Name, nullptr, std::string_view(m_Theme.Name) == theme.Name)) {
+						m_Theme = theme;
+						ApplyImGuiTheme(m_Theme);
+					}
+				}
+				ImGui::EndMenu();
+			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Reset camera")) {
 				ResetCamera();
@@ -344,7 +355,8 @@ namespace Ethane {
 			ImGui::DockBuilderDockWindow(ContentBrowserPanel::kWindowName, bottom);
 			ImGui::DockBuilderFinish(dockspace);
 		}
-		ImGui::DockSpaceOverViewport(dockspace, viewport);
+		// Tab bars only where windows share a dock area
+		ImGui::DockSpaceOverViewport(dockspace, viewport, ImGuiDockNodeFlags_AutoHideTabBar);
 	}
 
 	void EditorLayer::DrawViewport()
@@ -420,60 +432,58 @@ namespace Ethane {
 
 	void EditorLayer::DrawViewportToolbar()
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 3.0f));
-		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 6.0f, ImGui::GetCursorPosY() + 4.0f));
+		// One bar over the scene: the open steles on the left, play / stop in the middle, the gizmo's tools
+		// on the right
+		const float height = ImGui::GetFrameHeight() + 4.0f;
+		const ImVec2 start = ImGui::GetCursorPos();
+		const ImVec2 screen = ImGui::GetCursorScreenPos();
+		const float width = ImGui::GetContentRegionAvail().x;
+		ImGui::GetWindowDrawList()->AddRectFilled(screen, ImVec2(screen.x + width, screen.y + height), ToImGuiU32(m_Theme.Panel));
+
+		DrawSteleTabs(*m_Context, height, m_Theme);
+		ImGui::SameLine(start.x + (width - height) * 0.5f, 0.0f);
 		if (!IsPlaying()) {
 			ImGui::BeginDisabled(m_Context->Active() == nullptr);
-			ImGui::PushStyleColor(ImGuiCol_Button, ToImGui(EditorTheme::WithAlpha(m_Theme.Secondary, 0.2f)));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImGui(EditorTheme::WithAlpha(m_Theme.Secondary, 0.35f)));
-			const bool play = ImGui::Button("Play");
-			ImGui::PopStyleColor(2);
-			if (play) {
+			if (IconButton("##play", IconShape::Play, m_Theme.Secondary, height, m_Theme)) {
 				Play();
 			}
 			ImGui::EndDisabled();
+			ImGui::SetItemTooltip("Play");
 
-			// Gizmo: operation (W / E / R) and space
-			ImGui::SameLine(0.0f, 16.0f);
-			auto operation = [&](const char* label, int value, const char* key) {
-				const bool active = m_GizmoOperation == value;
-				if (active) {
-					ImGui::PushStyleColor(ImGuiCol_Button, ToImGui(EditorTheme::WithAlpha(m_Theme.Accent, 0.35f)));
+			// Gizmo: operation (W / E / R), then its axes, right-aligned
+			struct Tool { const char* Label; int Operation; const char* Key; };
+			const Tool tools[] = { { "Move", ImGuizmo::TRANSLATE, "W" }, { "Rotate", ImGuizmo::ROTATE, "E" }, { "Scale", ImGuizmo::SCALE, "R" } };
+			const char* axes = m_GizmoLocal ? "Local" : "World";
+			const float padding = ImGui::GetStyle().FramePadding.x, gap = padding * 2.0f;
+			float toolsWidth = ImGui::CalcTextSize(axes).x + padding * 2.0f + gap;
+			for (const Tool& tool : tools) {
+				toolsWidth += ImGui::CalcTextSize(tool.Label).x + padding * 2.0f;
+			}
+			ImGui::SameLine(std::max(start.x + width - toolsWidth - padding, ImGui::GetCursorPosX()), 0.0f);
+			for (const Tool& tool : tools) {
+				if (FlatButton(tool.Label, m_GizmoOperation == tool.Operation, height, m_Theme)) {
+					m_GizmoOperation = tool.Operation;
 				}
-				if (ImGui::Button(label)) {
-					m_GizmoOperation = value;
-				}
-				if (active) {
-					ImGui::PopStyleColor();
-				}
-				ImGui::SetItemTooltip("%s", key);
-				ImGui::SameLine();
-			};
-			operation("Move", ImGuizmo::TRANSLATE, "W");
-			operation("Rotate", ImGuizmo::ROTATE, "E");
-			operation("Scale", ImGuizmo::SCALE, "R");
-			if (ImGui::Button(m_GizmoLocal ? "Local" : "World")) {
+				ImGui::SetItemTooltip("%s", tool.Key);
+				ImGui::SameLine(0.0f, 0.0f);
+			}
+			ImGui::SameLine(0.0f, gap);
+			if (FlatButton(axes, false, height, m_Theme)) {
 				m_GizmoLocal = !m_GizmoLocal;
 			}
 			ImGui::SetItemTooltip("Gizmo axes: the element's own (Local) or the world's. Hold Ctrl to snap.");
 		} else {
-			ImGui::PushStyleColor(ImGuiCol_Button, ToImGui(EditorTheme::WithAlpha(m_Theme.Danger, 0.3f)));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImGui(EditorTheme::WithAlpha(m_Theme.Danger, 0.45f)));
-			const bool stop = ImGui::Button("Stop");
-			ImGui::PopStyleColor(2);
-			if (stop) {
+			if (IconButton("##stop", IconShape::Stop, m_Theme.Danger, height, m_Theme)) {
 				Stop();
 			}
-			ImGui::SameLine();
-			ImGui::AlignTextToFramePadding();
-			if (m_PlayHasCamera) {
-				ImGui::TextColored(ToImGui(m_Theme.Secondary), "Playing");
-			} else {
-				ImGui::TextColored(ToImGui(m_Theme.Danger), "Playing (no primary camera: editor view)");
+			ImGui::SetItemTooltip("Stop");
+			if (!m_PlayHasCamera) {
+				ImGui::SameLine();
+				ImGui::SetCursorPosY(start.y + (height - ImGui::GetTextLineHeight()) * 0.5f);
+				ImGui::TextColored(ToImGui(m_Theme.TextMuted), "No primary camera: editor view");
 			}
 		}
-		ImGui::PopStyleVar();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4.0f);
+		ImGui::SetCursorPos(ImVec2(start.x, start.y + height));
 	}
 
 	bool EditorLayer::DrawGizmo(glm::vec2 min, glm::vec2 size)
@@ -569,7 +579,7 @@ namespace Ethane {
 		const RendererStats stats = m_Renderer->GetStats();
 		ImGui::Text("Meshes: %u, draw calls: %u, triangles: %u", stats.DrawItems, stats.DrawCalls, stats.Triangles);
 		if (const size_t loading = m_Assets->PendingCount(); loading > 0) {
-			ImGui::TextColored(ToImGui(m_Theme.Accent), "Loading %zu assets...", loading);
+			ImGui::TextColored(ToImGui(m_Theme.AccentText), "Loading %zu assets...", loading);
 		} else if (stats.MissingMeshes > 0) {
 			ImGui::TextColored(ToImGui(m_Theme.Danger), "%u meshes couldn't be loaded", stats.MissingMeshes);
 		}

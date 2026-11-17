@@ -89,11 +89,11 @@ namespace Ethane {
 			}
 			ImGui::PushID(static_cast<int>(i));
 			const bool last = i + 1 == crumbs.size();
-			if (last)
-				ImGui::PushStyleColor(ImGuiCol_Text, ToImGui(theme.Accent));
+			if (!last)
+				ImGui::PushStyleColor(ImGuiCol_Text, ToImGui(theme.TextMuted));
 			if (ImGui::Button(DisplayName(crumbs[i]).c_str()))
 				m_Model->Navigate(crumbs[i]);
-			if (last)
+			if (!last)
 				ImGui::PopStyleColor();
 			ImGui::PopID();
 		}
@@ -156,12 +156,21 @@ namespace Ethane {
 		return m_Theme->TextMuted;
 	}
 
+	EditorTheme::Color ContentBrowserPanel::BandText(const EditorTheme::Color& band) const
+	{
+		const EditorTheme& theme = *m_Theme;
+		const bool textIsDark = EditorTheme::Luminance(theme.Text) < EditorTheme::Luminance(theme.Background);
+		const EditorTheme::Color& dark = textIsDark ? theme.Text : theme.Background;
+		const EditorTheme::Color& light = textIsDark ? theme.Background : theme.Text;
+		return EditorTheme::Luminance(band) > 0.55f ? dark : light;
+	}
+
 	void ContentBrowserPanel::DrawIcon(const ContentBrowser::Entry& entry, const RefCountPtr<ITexture2D>& thumbnail, glm::vec2 min, float size) const
 	{
 		const EditorTheme& theme = *m_Theme;
 		ImDrawList* draw = ImGui::GetWindowDrawList();
 		auto at = [&](float x, float y) { return ImVec2(min.x + x * size, min.y + y * size); };
-		const float rounding = std::max(2.0f, size * 0.06f);
+		const float rounding = theme.Rounding;
 
 		if (thumbnail)
 		{
@@ -181,10 +190,11 @@ namespace Ethane {
 
 		// A page with a folded corner and a band in the kind's color carrying the extension
 		const float fold = 0.16f;
-		const ImU32 page = ToImGuiU32(theme.SurfaceActive);
-		draw->AddRectFilled(at(0.2f, 0.1f), at(0.8f - fold, 0.1f + fold), page, rounding, ImDrawFlags_RoundCornersTopLeft);
-		draw->AddRectFilled(at(0.2f, 0.1f + fold), at(0.8f, 0.9f), page, rounding, ImDrawFlags_RoundCornersBottom);
-		draw->AddTriangleFilled(at(0.8f - fold, 0.1f), at(0.8f, 0.1f + fold), at(0.8f - fold, 0.1f + fold), ToImGuiU32(theme.TextMuted));
+		const ImU32 page = ToImGuiU32(theme.Surface), edge = ToImGuiU32(theme.Border);
+		const ImVec2 outline[] = { at(0.2f, 0.1f), at(0.8f - fold, 0.1f), at(0.8f, 0.1f + fold), at(0.8f, 0.9f), at(0.2f, 0.9f) };
+		draw->AddConvexPolyFilled(outline, 5, page);
+		draw->AddPolyline(outline, 5, edge, ImDrawFlags_Closed, 1.0f);
+		draw->AddTriangleFilled(at(0.8f - fold, 0.1f), at(0.8f, 0.1f + fold), at(0.8f - fold, 0.1f + fold), edge);
 		draw->AddRectFilled(at(0.2f, 0.56f), at(0.8f, 0.74f), ToImGuiU32(color));
 
 		std::string extension = entry.Path.extension().string();
@@ -196,12 +206,12 @@ namespace Ethane {
 			extension.resize(5);
 		if (!extension.empty() && size >= 32.0f)
 		{
-			// Sized to the band; dark text on the light palette colors
+			// Sized to the band, in whichever of the text and page colors reads on it
 			ImFont* font = ImGui::GetFont();
 			const float fontSize = std::min(size * 0.14f, ImGui::GetFontSize());
 			const ImVec2 textSize = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, extension.c_str());
 			const ImVec2 bandCenter = at(0.5f, 0.65f);
-			draw->AddText(font, fontSize, ImVec2(bandCenter.x - textSize.x * 0.5f, bandCenter.y - textSize.y * 0.5f), ToImGuiU32(theme.Background), extension.c_str());
+			draw->AddText(font, fontSize, ImVec2(bandCenter.x - textSize.x * 0.5f, bandCenter.y - textSize.y * 0.5f), ToImGuiU32(BandText(color)), extension.c_str());
 		}
 	}
 
@@ -224,9 +234,8 @@ namespace Ethane {
 		const bool hovered = ImGui::IsItemHovered();
 		if (selected || hovered)
 		{
-			const float alpha = selected ? (hovered ? 0.4f : 0.3f) : 0.15f;
 			ImGui::GetWindowDrawList()->AddRectFilled(cellMin, ImVec2(cellMin.x + width, cellMin.y + m_CellSize),
-			                                          ToImGuiU32(EditorTheme::WithAlpha(theme.Selection, alpha)), theme.Rounding);
+			                                          ToImGuiU32(selected ? theme.Highlight : theme.HighlightHover), theme.Rounding);
 		}
 		DrawIcon(entry, thumbnail, { cellMin.x + (width - m_CellSize) * 0.5f, cellMin.y }, m_CellSize);
 
@@ -262,7 +271,7 @@ namespace Ethane {
 		const float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, (width - labelWidth) * 0.5f));
 		if (selected)
-			ImGui::TextColored(ToImGui(theme.Accent), "%s", label.c_str());
+			ImGui::TextColored(ToImGui(theme.AccentText), "%s", label.c_str());
 		else
 			ImGui::TextUnformatted(label.c_str());
 		ImGui::EndGroup();

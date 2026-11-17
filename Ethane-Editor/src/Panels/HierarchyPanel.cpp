@@ -60,7 +60,6 @@ namespace Ethane {
 	void HierarchyPanel::Draw(EditorContext& context, bool* open)
 	{
 		ImGui::Begin(kWindowName, open);
-		DrawTabs(context);
 
 		OpenStele* stele = context.Active();
 		if (!stele)
@@ -98,40 +97,6 @@ namespace Ethane {
 
 		DrawRenamePopup(context, snapshot);
 		ImGui::End();
-	}
-
-	void HierarchyPanel::DrawTabs(EditorContext& context)
-	{
-		if (!ImGui::BeginTabBar("##steles", ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_FittingPolicyScroll))
-			return;
-		std::optional<size_t> close;
-		// When the active stele changed elsewhere (New, Open, Close), select its tab instead of letting the
-		// tab bar's current selection switch it back
-		const OpenStele* wanted = context.Active();
-		const bool changedElsewhere = wanted != m_ShownActive;
-		const auto steles = context.Steles();
-		for (size_t i = 0; i < steles.size(); i++)
-		{
-			const OpenStele& stele = *steles[i];
-			bool keepOpen = true;
-			// The ### part keeps the tab's identity when the label changes (dirty mark, renames on save)
-			const std::string label = stele.Name + (stele.IsDirty() ? " *" : "") + "###" + std::to_string(reinterpret_cast<uintptr_t>(&stele));
-			const ImGuiTabItemFlags flags = changedElsewhere && &stele == wanted ? ImGuiTabItemFlags_SetSelected : 0;
-			if (ImGui::BeginTabItem(label.c_str(), &keepOpen, flags))
-			{
-				if (!changedElsewhere)
-					context.SetActive(i);
-				ImGui::EndTabItem();
-			}
-			if (ImGui::IsItemHovered() && !stele.Path.empty())
-				ImGui::SetTooltip("%s", stele.Path.generic_string().c_str());
-			if (!keepOpen)
-				close = i;
-		}
-		ImGui::EndTabBar();
-		if (close)
-			context.Close(*close);
-		m_ShownActive = context.Active();
 	}
 
 	void HierarchyPanel::DrawElement(EditorContext& context, const SteleSnapshot& snapshot, ElementId id)
