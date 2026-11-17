@@ -53,6 +53,7 @@ namespace Ethane {
 		float FieldOfView = glm::radians(45.0f); // vertical, radians
 		float Near = 0.1f;
 		float Far = 100.0f;
+		float Exposure = 0.0f; // EV: each +1 doubles the image's brightness, -1 halves it
 		bool Primary = true; // the camera a play world is shown through (the first primary one)
 	};
 

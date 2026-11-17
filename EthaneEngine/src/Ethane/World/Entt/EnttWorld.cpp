@@ -382,6 +382,7 @@ namespace Ethane {
 		view.View = glm::inverse(placement);
 		view.Projection = glm::perspective(camera.FieldOfView, std::max(aspectRatio, 1e-4f), std::max(camera.Near, 1e-4f), std::max(camera.Far, camera.Near + 1e-3f));
 		view.Position = glm::vec3(world[3]);
+		view.Exposure = camera.Exposure;
 		return true;
 	}
 

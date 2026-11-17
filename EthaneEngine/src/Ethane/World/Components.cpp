@@ -42,6 +42,7 @@ namespace Ethane {
 			.Field("FieldOfView", &CameraComponent::FieldOfView, FieldFlags::Angle)
 			.Field("Near", &CameraComponent::Near, FieldFlags::None, { .Speed = 0.01f })
 			.Field("Far", &CameraComponent::Far, FieldFlags::None, { .Speed = 1.0f })
+			.Field("Exposure", &CameraComponent::Exposure, FieldFlags::None, { .Min = -8.0f, .Max = 8.0f })
 			.Field("Primary", &CameraComponent::Primary);
 
 		registry.Register<NativeScriptComponent>("NativeScript")

@@ -146,7 +146,7 @@ namespace Ethane {
 	{
 		// The packet is built here, from the world and camera (state of this side), then moved into the pass
 		FramePacket packet;
-		packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition() };
+		packet.View = { m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix(), m_Camera.GetPosition(), m_EditorExposure };
 		const World* world = IsPlaying() ? static_cast<const World*>(m_PlayWorld.get())
 		                   : m_Context->Active() ? m_Context->Active()->EditWorld.get() : nullptr;
 		if (world) {
@@ -325,6 +325,12 @@ namespace Ethane {
 			ImGui::MenuItem(kStatsWindow, nullptr, &m_ShowStats);
 			ImGui::MenuItem(ContentBrowserPanel::kWindowName, nullptr, &m_ShowContent);
 			ImGui::Separator();
+			ImGui::SetNextItemWidth(140.0f);
+			ImGui::SliderFloat("Exposure (EV)", &m_EditorExposure, -8.0f, 8.0f, "%+.1f");
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				m_EditorExposure = 0.0f;
+			}
+			ImGui::SetItemTooltip("The editor camera's exposure (double-click: 0). Scene cameras have their own.");
 			if (ImGui::MenuItem("Reset camera")) {
 				ResetCamera();
 			}
