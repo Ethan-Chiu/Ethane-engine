@@ -56,6 +56,8 @@ namespace Ethane {
 		// The editor camera takes input only while it's what the viewport shows (not through a play camera)
 		bool EditorCameraInControl() const { return !IsPlaying() || !m_PlayHasCamera; }
 		void DrawViewportToolbar();
+		// Move / Rotate / Scale and World / Local over the scene; true if the mouse is over it
+		bool DrawToolCapsule(glm::vec2 topRight);
 		// Gizmo for the selected element's Transform over the viewport image at screen rect (min, size).
 		// True while the mouse is over a handle or dragging one (a click there isn't a pick).
 		bool DrawGizmo(glm::vec2 min, glm::vec2 size);

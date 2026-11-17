@@ -7,6 +7,8 @@
 #include "Theme/ImGuiTheme.h"
 #include "Theme/ImGuiWidgets.h"
 
+#include <utility>
+
 #include <imgui.h>
 #include <imgui_internal.h> // DockBuilder
 #include <misc/cpp/imgui_stdlib.h>
@@ -88,6 +90,7 @@ namespace Ethane {
 		m_GizmoOperation = ImGuizmo::TRANSLATE;
 		// Dragging inside a window (e.g. a gizmo in the viewport) must not move the window
 		ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+		LoadImGuiFonts("assets/fonts");
 		ApplyImGuiTheme(m_Theme);
 		m_Context = CreateScope<EditorContext>(*m_Assets, kAssetRegistryFile);
 		m_Content = CreateScope<ContentBrowser>(m_AssetRegistry, std::vector<std::filesystem::path>{ "assets", "res" });
@@ -165,7 +168,7 @@ namespace Ethane {
 		// unchanged), draws the packet, then the selection outline over it
 		const int outlineWidth = static_cast<int>(std::lround(2.0f * ImGui::GetIO().DisplayFramebufferScale.x)); // 2 points
 		work.Offscreen([renderer = m_Renderer.get(), target = m_ViewportTarget, outline = m_OutlineTarget, size = m_ViewportSize,
-		                outlineWidth, selection = m_Theme.Selection, packet = std::make_shared<FramePacket>(std::move(packet))](ICommandList& commandList) {
+		                outlineWidth, selection = m_Theme.Accent, packet = std::make_shared<FramePacket>(std::move(packet))](ICommandList& commandList) {
 			if (size.x > 0 && size.y > 0) {
 				target->Resize(size.x, size.y);
 				outline->Resize(size.x, size.y);
@@ -248,8 +251,24 @@ namespace Ethane {
 
 	void EditorLayer::DrawMenuBar()
 	{
-		if (!ImGui::BeginMainMenuBar()) {
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 10.5f));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, ImGui::GetStyle().ItemSpacing.y));
+		const bool open = ImGui::BeginMainMenuBar();
+		ImGui::PopStyleVar(2);
+		if (!open) {
 			return;
+		}
+		{
+			// The mark: three bars, the middle one short
+			const ImVec2 at = ImGui::GetCursorScreenPos();
+			const float h = ImGui::GetFrameHeight(), y = at.y + h * 0.5f;
+			ImDrawList* draw = ImGui::GetWindowDrawList();
+			const ImU32 mark = ToImGuiU32(m_Theme.Accent);
+			for (const auto& [dy, w] : { std::pair{ -4.0f, 10.0f }, std::pair{ 0.0f, 7.0f }, std::pair{ 4.0f, 10.0f } }) {
+				draw->AddLine(ImVec2(at.x + 6.0f, y + dy), ImVec2(at.x + 6.0f + w, y + dy), mark, 2.0f);
+			}
+			ImGui::Dummy(ImVec2(24.0f, h * 0.5f));
+			ImGui::SameLine();
 		}
 		OpenStele* active = m_Context->Active();
 		if (ImGui::BeginMenu("File")) {
@@ -303,15 +322,6 @@ namespace Ethane {
 			ImGui::MenuItem(InspectorPanel::kWindowName, nullptr, &m_ShowInspector);
 			ImGui::MenuItem(kStatsWindow, nullptr, &m_ShowStats);
 			ImGui::MenuItem(ContentBrowserPanel::kWindowName, nullptr, &m_ShowContent);
-			if (ImGui::BeginMenu("Theme")) {
-				for (const EditorTheme& theme : { EditorTheme::Light(), EditorTheme::Dark() }) {
-					if (ImGui::MenuItem(theme.Name, nullptr, std::string_view(m_Theme.Name) == theme.Name)) {
-						m_Theme = theme;
-						ApplyImGuiTheme(m_Theme);
-					}
-				}
-				ImGui::EndMenu();
-			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Reset camera")) {
 				ResetCamera();
@@ -325,6 +335,11 @@ namespace Ethane {
 		if (ImGui::BeginMenu("Help")) {
 			ImGui::MenuItem("ImGui demo window", nullptr, &m_ShowImGuiDemo);
 			ImGui::EndMenu();
+		}
+		if (active && !active->Path.empty()) {
+			const std::string path = active->Path.generic_string();
+			ImGui::SameLine(ImGui::GetWindowWidth() - ImGui::CalcTextSize(path.c_str()).x - 16.0f);
+			ImGui::TextColored(ToImGui(m_Theme.TextMuted), "%s", path.c_str());
 		}
 		ImGui::EndMainMenuBar();
 	}
@@ -343,10 +358,10 @@ namespace Ethane {
 
 			ImGuiID center = dockspace;
 			const ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.18f, nullptr, &center);
-			const ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.25f, nullptr, &center);
-			const ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.3f, nullptr, &center);
+			const ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.26f, nullptr, &center);
+			const ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.26f, nullptr, &center);
 			ImGuiID leftTop = left;
-			const ImGuiID leftBottom = ImGui::DockBuilderSplitNode(leftTop, ImGuiDir_Down, 0.4f, nullptr, &leftTop);
+			const ImGuiID leftBottom = ImGui::DockBuilderSplitNode(leftTop, ImGuiDir_Down, 0.22f, nullptr, &leftTop);
 
 			ImGui::DockBuilderDockWindow(kViewportWindow, center);
 			ImGui::DockBuilderDockWindow(HierarchyPanel::kWindowName, leftTop);
@@ -355,28 +370,48 @@ namespace Ethane {
 			ImGui::DockBuilderDockWindow(ContentBrowserPanel::kWindowName, bottom);
 			ImGui::DockBuilderFinish(dockspace);
 		}
-		// Tab bars only where windows share a dock area
-		ImGui::DockSpaceOverViewport(dockspace, viewport, ImGuiDockNodeFlags_AutoHideTabBar);
+
+		// The panes float on the window: a host window padded by the gap, the dockspace in it (the docking
+		// separators are the gaps between panes). Tab bars only where windows share a dock area.
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(m_Theme.Gap, 0.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ToImGui(m_Theme.Window));
+		ImGui::Begin("##EditorHost", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoMove |
+		             ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings);
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar(3);
+		const ImVec2 available = ImGui::GetContentRegionAvail();
+		ImGui::DockSpace(dockspace, ImVec2(available.x, available.y - m_Theme.Gap), ImGuiDockNodeFlags_AutoHideTabBar);
+		ImGui::End();
 	}
 
 	void EditorLayer::DrawViewport()
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin(kViewportWindow);
-
-		DrawViewportToolbar();
+		BeginPane(kViewportWindow, nullptr, m_Theme, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 		m_ViewportHovered = ImGui::IsWindowHovered();
 		m_ViewportFocused = ImGui::IsWindowFocused();
+		DrawViewportToolbar();
 
-		// Render at the panel's size in pixels (the framebuffer scale is 2 on Retina displays)
+		// The scene fills the rest of the pane, rounded. Rendered at its size in pixels (the framebuffer
+		// scale is 2 on Retina displays).
 		const ImVec2 size = ImGui::GetContentRegionAvail();
 		const ImVec2 scale = ImGui::GetIO().DisplayFramebufferScale;
 		m_ViewportSize = { static_cast<uint32_t>(std::max(size.x * scale.x, 0.0f)), static_cast<uint32_t>(std::max(size.y * scale.y, 0.0f)) };
 
 		if (size.x > 0.0f && size.y > 0.0f) {
 			const ImVec2 min = ImGui::GetCursorScreenPos();
-			ImGui::Image(Application::Get().GetImGuiLayer()->GetTextureID(*m_ViewportTarget), size);
+			const ImVec2 max(min.x + size.x, min.y + size.y);
+			const float rounding = m_Theme.ControlRounding + 2.0f;
+			ImGui::Dummy(size);
 			const bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
+			ImDrawList* draw = ImGui::GetWindowDrawList();
+			ImGuiLayer& imgui = *Application::Get().GetImGuiLayer();
+			draw->AddImageRounded(imgui.GetTextureID(*m_ViewportTarget), min, max, ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE, rounding);
+
 			// A mesh from the content browser, dropped into the scene
 			if (!IsPlaying()) {
 				if (auto mesh = AcceptAssetDrop(AssetKind::Mesh)) {
@@ -385,14 +420,15 @@ namespace Ethane {
 				}
 			}
 			if (IsPlaying()) {
-				// A frame around the image, so play mode can't be mistaken for editing
-				ImGui::GetWindowDrawList()->AddRect(min, ImVec2(min.x + size.x, min.y + size.y), ToImGuiU32(m_Theme.Secondary), 0.0f, 0, 3.0f);
+				// A frame around the scene, so play mode can't be mistaken for editing
+				draw->AddRect(min, max, ToImGuiU32(m_Theme.Mint), rounding, 0, 2.0f);
 			} else {
-				// The selection outline over the scene, under the gizmo
-				ImGui::GetWindowDrawList()->AddImage(Application::Get().GetImGuiLayer()->GetTextureID(*m_OutlineTarget), min, ImVec2(min.x + size.x, min.y + size.y));
+				// The selection outline over the scene, under the gizmo and the tools
+				draw->AddImageRounded(imgui.GetTextureID(*m_OutlineTarget), min, max, ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE, rounding);
 				const bool onGizmo = DrawGizmo({ min.x, min.y }, { size.x, size.y });
-				// A click on the scene (not on a gizmo, not Alt for the camera) selects what's under the cursor
-				if (clicked && !onGizmo && !ImGui::GetIO().KeyAlt) {
+				const bool onTools = DrawToolCapsule({ max.x, min.y });
+				// A click on the scene (not on a gizmo or the tools, not Alt for the camera) selects what's under the cursor
+				if (clicked && !onGizmo && !onTools && !ImGui::GetIO().KeyAlt) {
 					const ImVec2 mouse = ImGui::GetMousePos();
 					const glm::uvec2 pixel{
 						static_cast<uint32_t>(std::clamp((mouse.x - min.x) * scale.x, 0.0f, std::max(size.x * scale.x - 1.0f, 0.0f))),
@@ -401,9 +437,53 @@ namespace Ethane {
 				}
 			}
 		}
+		EndPane();
+	}
 
-		ImGui::End();
-		ImGui::PopStyleVar();
+	bool EditorLayer::DrawToolCapsule(glm::vec2 topRight)
+	{
+		// A vertical glass capsule in the scene's top-right corner: Move / Rotate / Scale, then the gizmo's
+		// axes (World / Local). The selected segment sits in a lighter square, its icon in the accent.
+		const float segment = 32.0f, padding = 4.0f, spacing = 2.0f, divider = 7.0f;
+		const float width = segment + padding * 2.0f;
+		const float height = padding * 2.0f + segment * 5.0f + spacing * 3.0f + divider;
+		const ImVec2 min(topRight.x - 10.0f - width, topRight.y + 10.0f), max(min.x + width, min.y + height);
+		ImDrawList* draw = ImGui::GetWindowDrawList();
+		draw->AddRectFilled(min, max, ToImGuiU32(m_Theme.Glass), 16.0f);
+		draw->AddRect(min, max, ToImGuiU32(m_Theme.GlassEdge), 16.0f);
+
+		struct Tool { const char* Id; Icon Shape; const char* Hint; bool Selected; };
+		const Tool tools[] = {
+			{ "##move", Icon::Move, "Move (W)", m_GizmoOperation == ImGuizmo::TRANSLATE },
+			{ "##rotate", Icon::Rotate, "Rotate (E)", m_GizmoOperation == ImGuizmo::ROTATE },
+			{ "##scale", Icon::Scale, "Scale (R)", m_GizmoOperation == ImGuizmo::SCALE },
+			{ "##world", Icon::World, "Gizmo axes: World", !m_GizmoLocal },
+			{ "##local", Icon::Local, "Gizmo axes: Local (Ctrl snaps)", m_GizmoLocal },
+		};
+		float y = min.y + padding;
+		for (int i = 0; i < 5; i++) {
+			if (i == 3) {
+				draw->AddLine(ImVec2(min.x + width * 0.5f - 11.0f, y + divider * 0.5f - spacing * 0.5f),
+				              ImVec2(min.x + width * 0.5f + 11.0f, y + divider * 0.5f - spacing * 0.5f), ToImGuiU32(m_Theme.GlassEdge), 1.0f);
+				y += divider;
+			}
+			const Tool& tool = tools[i];
+			ImGui::SetCursorScreenPos(ImVec2(min.x + padding, y));
+			if (IconButton(tool.Id, tool.Shape, segment, tool.Selected ? m_Theme.Accent : m_Theme.TextSecondary, m_Theme, 12.0f,
+			               tool.Selected ? &m_Theme.GlassSelected : nullptr, 17.0f)) {
+				switch (i) {
+					case 0: m_GizmoOperation = ImGuizmo::TRANSLATE; break;
+					case 1: m_GizmoOperation = ImGuizmo::ROTATE; break;
+					case 2: m_GizmoOperation = ImGuizmo::SCALE; break;
+					case 3: m_GizmoLocal = false; break;
+					case 4: m_GizmoLocal = true; break;
+				}
+			}
+			ImGui::SetItemTooltip("%s", tool.Hint);
+			y += segment + spacing;
+		}
+		const ImVec2 mouse = ImGui::GetMousePos();
+		return mouse.x >= min.x && mouse.x < max.x && mouse.y >= min.y && mouse.y < max.y;
 	}
 
 	glm::vec3 EditorLayer::DropPosition(const glm::vec2& mouse, const glm::vec2& viewportMin, const glm::vec2& viewportSize) const
@@ -432,58 +512,35 @@ namespace Ethane {
 
 	void EditorLayer::DrawViewportToolbar()
 	{
-		// One bar over the scene: the open steles on the left, play / stop in the middle, the gizmo's tools
-		// on the right
-		const float height = ImGui::GetFrameHeight() + 4.0f;
+		// The pane's top row: the open steles as tabs, Play / Stop at the right
+		const float height = 34.0f;
 		const ImVec2 start = ImGui::GetCursorPos();
-		const ImVec2 screen = ImGui::GetCursorScreenPos();
-		const float width = ImGui::GetContentRegionAvail().x;
-		ImGui::GetWindowDrawList()->AddRectFilled(screen, ImVec2(screen.x + width, screen.y + height), ToImGuiU32(m_Theme.Panel));
-
 		DrawSteleTabs(*m_Context, height, m_Theme);
-		ImGui::SameLine(start.x + (width - height) * 0.5f, 0.0f);
+
+		const float pill = 76.0f;
+		const float right = ImGui::GetWindowContentRegionMax().x;
 		if (!IsPlaying()) {
+			ImGui::SameLine(right - pill);
+			ImGui::SetCursorPosY(start.y + (height - 28.0f) * 0.5f);
 			ImGui::BeginDisabled(m_Context->Active() == nullptr);
-			if (IconButton("##play", IconShape::Play, m_Theme.Secondary, height, m_Theme)) {
+			if (PillButton("play", Icon::Play, "Play", m_Theme.Mint, m_Theme)) {
 				Play();
 			}
 			ImGui::EndDisabled();
-			ImGui::SetItemTooltip("Play");
-
-			// Gizmo: operation (W / E / R), then its axes, right-aligned
-			struct Tool { const char* Label; int Operation; const char* Key; };
-			const Tool tools[] = { { "Move", ImGuizmo::TRANSLATE, "W" }, { "Rotate", ImGuizmo::ROTATE, "E" }, { "Scale", ImGuizmo::SCALE, "R" } };
-			const char* axes = m_GizmoLocal ? "Local" : "World";
-			const float padding = ImGui::GetStyle().FramePadding.x, gap = padding * 2.0f;
-			float toolsWidth = ImGui::CalcTextSize(axes).x + padding * 2.0f + gap;
-			for (const Tool& tool : tools) {
-				toolsWidth += ImGui::CalcTextSize(tool.Label).x + padding * 2.0f;
-			}
-			ImGui::SameLine(std::max(start.x + width - toolsWidth - padding, ImGui::GetCursorPosX()), 0.0f);
-			for (const Tool& tool : tools) {
-				if (FlatButton(tool.Label, m_GizmoOperation == tool.Operation, height, m_Theme)) {
-					m_GizmoOperation = tool.Operation;
-				}
-				ImGui::SetItemTooltip("%s", tool.Key);
-				ImGui::SameLine(0.0f, 0.0f);
-			}
-			ImGui::SameLine(0.0f, gap);
-			if (FlatButton(axes, false, height, m_Theme)) {
-				m_GizmoLocal = !m_GizmoLocal;
-			}
-			ImGui::SetItemTooltip("Gizmo axes: the element's own (Local) or the world's. Hold Ctrl to snap.");
 		} else {
-			if (IconButton("##stop", IconShape::Stop, m_Theme.Danger, height, m_Theme)) {
+			if (!m_PlayHasCamera) {
+				const char* note = "No primary camera: editor view";
+				ImGui::SameLine(right - pill - ImGui::CalcTextSize(note).x - 12.0f);
+				ImGui::SetCursorPosY(start.y + (height - ImGui::GetTextLineHeight()) * 0.5f);
+				ImGui::TextColored(ToImGui(m_Theme.TextMuted), "%s", note);
+			}
+			ImGui::SameLine(right - pill);
+			ImGui::SetCursorPosY(start.y + (height - 28.0f) * 0.5f);
+			if (PillButton("stop", Icon::Stop, "Stop", m_Theme.Danger, m_Theme)) {
 				Stop();
 			}
-			ImGui::SetItemTooltip("Stop");
-			if (!m_PlayHasCamera) {
-				ImGui::SameLine();
-				ImGui::SetCursorPosY(start.y + (height - ImGui::GetTextLineHeight()) * 0.5f);
-				ImGui::TextColored(ToImGui(m_Theme.TextMuted), "No primary camera: editor view");
-			}
 		}
-		ImGui::SetCursorPos(ImVec2(start.x, start.y + height));
+		ImGui::SetCursorPos(ImVec2(start.x, start.y + height + 4.0f));
 	}
 
 	bool EditorLayer::DrawGizmo(glm::vec2 min, glm::vec2 size)
@@ -570,40 +627,41 @@ namespace Ethane {
 
 	void EditorLayer::DrawStatsPanel()
 	{
-		ImGui::Begin(kStatsWindow, &m_ShowStats);
+		BeginPane(kStatsWindow, &m_ShowStats, m_Theme);
+		PaneTitle(kStatsWindow, m_Theme);
+
+		// Label on the left, the value (mono) right-aligned
+		auto row = [&](const char* label, const std::string& value, const EditorTheme::Color* color = nullptr) {
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
+			ImGui::PushFont(nullptr, m_Theme.FontSize - 1.0f);
+			ImGui::TextColored(ToImGui(m_Theme.TextMuted), "%s", label);
+			ImGui::PopFont();
+			ImGui::PushFont(EditorFonts().Mono, m_Theme.FontSize - 1.5f);
+			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::CalcTextSize(value.c_str()).x - 6.0f);
+			ImGui::TextColored(ToImGui(color ? *color : m_Theme.Text), "%s", value.c_str());
+			ImGui::PopFont();
+		};
+
 		const ImGuiIO& io = ImGui::GetIO();
-		ImGui::Text("%.1f FPS (%.2f ms)", io.Framerate, 1000.0f / std::max(io.Framerate, 1e-3f));
-
-		ImGui::Text("Viewport: %u x %u px", m_ViewportSize.x, m_ViewportSize.y);
-
+		row("Frame", fmt::format("{:.2f} ms \u00b7 {:.0f} fps", 1000.0f / std::max(io.Framerate, 1e-3f), io.Framerate));
+		row("Viewport", fmt::format("{} \u00d7 {}", m_ViewportSize.x, m_ViewportSize.y));
 		const RendererStats stats = m_Renderer->GetStats();
-		ImGui::Text("Meshes: %u, draw calls: %u, triangles: %u", stats.DrawItems, stats.DrawCalls, stats.Triangles);
-		if (const size_t loading = m_Assets->PendingCount(); loading > 0) {
-			ImGui::TextColored(ToImGui(m_Theme.AccentText), "Loading %zu assets...", loading);
-		} else if (stats.MissingMeshes > 0) {
-			ImGui::TextColored(ToImGui(m_Theme.Danger), "%u meshes couldn't be loaded", stats.MissingMeshes);
-		}
-
+		row("Draw calls", std::to_string(stats.DrawCalls));
+		row("Triangles", std::to_string(stats.Triangles));
 		if (OpenStele* stele = m_Context->Active()) {
-			ImGui::SeparatorText("Stele");
 			const SteleSnapshot snapshot = stele->Source->Read();
-			ImGui::Text("%s%s", stele->Path.empty() ? "(not saved)" : stele->Path.generic_string().c_str(), stele->IsDirty() ? " *" : "");
-			ImGui::Text("Version %llu, %zu elements", static_cast<unsigned long long>(snapshot.Version()), snapshot.ElementCount());
-			ImGui::Text("Edit world: %zu entities, version %llu", stele->EditWorld->EntityCount(), static_cast<unsigned long long>(stele->EditWorld->Version()));
+			row("Elements", std::to_string(snapshot.ElementCount()));
+			row("Version", std::to_string(snapshot.Version()));
 			if (IsPlaying()) {
-				ImGui::Text("Play world: %zu entities, %zu scripts", m_PlayWorld->EntityCount(), m_PlayWorld->ScriptCount());
+				row("Scripts", std::to_string(m_PlayWorld->ScriptCount()));
 			}
 		}
-
-		ImGui::SeparatorText("Camera");
-		ImGui::Text("Distance %.2f, pitch %.2f, yaw %.2f", m_Camera.GetDistance(), m_Camera.GetPitch(), m_Camera.GetYaw());
-		if (ImGui::Button("Reset camera")) {
-			ResetCamera();
+		if (const size_t loading = m_Assets->PendingCount(); loading > 0) {
+			row("Loading", fmt::format("{} asset{}", loading, loading == 1 ? "" : "s"), &m_Theme.Accent);
+		} else if (stats.MissingMeshes > 0) {
+			row("Missing", fmt::format("{} mesh{}", stats.MissingMeshes, stats.MissingMeshes == 1 ? "" : "es"), &m_Theme.Danger);
 		}
-
-		ImGui::SeparatorText("About");
-		ImGui::Text("Dear ImGui %s", ImGui::GetVersion());
-		ImGui::End();
+		EndPane();
 	}
 
 	void EditorLayer::DrawFileDialogs()

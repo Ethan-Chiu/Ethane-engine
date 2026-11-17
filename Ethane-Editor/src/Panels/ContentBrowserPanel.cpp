@@ -4,11 +4,15 @@
 #include "Ethane/Asset/AssetLibrary.h"
 #include "Ethane/Core/Application.h"
 #include "Theme/ImGuiTheme.h"
+#include "Theme/ImGuiWidgets.h"
 
 #include <imgui.h>
-
-#include <cctype>
 #include <misc/cpp/imgui_stdlib.h>
+
+#include <algorithm>
+#include <cctype>
+#include <string>
+#include <vector>
 
 namespace Ethane {
 
@@ -36,6 +40,20 @@ namespace Ethane {
 			return name.empty() ? folder.generic_string() : name;
 		}
 
+		// A crumb: plain text, a faint wash when hovered
+		bool Crumb(const char* label, bool current, const EditorTheme& theme)
+		{
+			const ImVec2 text = ImGui::CalcTextSize(label);
+			const ImVec2 size(text.x + 12.0f, 24.0f);
+			const ImVec2 min = ImGui::GetCursorScreenPos();
+			const bool clicked = ImGui::InvisibleButton(label, size);
+			ImDrawList* draw = ImGui::GetWindowDrawList();
+			if (ImGui::IsItemHovered() && !current)
+				draw->AddRectFilled(min, ImVec2(min.x + size.x, min.y + size.y), ToImGuiU32(theme.Hover), theme.ControlRounding);
+			draw->AddText(ImVec2(min.x + 6.0f, min.y + (size.y - text.y) * 0.5f), ToImGuiU32(current ? theme.Text : theme.TextMuted), label);
+			return clicked;
+		}
+
 	}
 
 	ContentBrowserPanel::ContentBrowserPanel(ContentBrowser& model, AssetLibrary& assets, const EditorTheme& theme)
@@ -45,84 +63,97 @@ namespace Ethane {
 
 	void ContentBrowserPanel::Draw(bool* open, const OpenSteleFn& openStele)
 	{
-		ImGui::Begin(kWindowName, open);
+		BeginPane(kWindowName, open, *m_Theme);
 		DrawToolbar();
-		ImGui::Separator();
 		DrawGrid(openStele);
-		ImGui::End();
+		EndPane();
 	}
 
 	void ContentBrowserPanel::DrawToolbar()
 	{
 		const EditorTheme& theme = *m_Theme;
+		const float height = 30.0f;
+		const float top = ImGui::GetCursorPosY();
+		auto center = [&](float h) { ImGui::SetCursorPosY(top + (height - h) * 0.5f); };
 
-		// Root
-		if (m_Model->Roots().size() > 1)
-		{
-			ImGui::SetNextItemWidth(ImGui::CalcTextSize(m_Model->Root().generic_string().c_str()).x + ImGui::GetFrameHeight() + 16.0f);
-			if (ImGui::BeginCombo("##root", m_Model->Root().generic_string().c_str()))
-			{
-				for (const std::filesystem::path& root : m_Model->Roots())
-					if (ImGui::Selectable(root.generic_string().c_str(), root == m_Model->Root()))
-						m_Model->Navigate(root);
-				ImGui::EndCombo();
-			}
-			ImGui::SameLine();
-		}
-
-		// Back, then the path as buttons
+		// Back: a round button
+		center(26.0f);
 		ImGui::BeginDisabled(!m_Model->CanGoUp());
-		if (ImGui::ArrowButton("##up", ImGuiDir_Left))
+		if (IconButton("##up", Icon::ChevronLeft, 26.0f, theme.TextSecondary, theme, 13.0f, nullptr, 12.0f))
 			m_Model->GoUp();
 		ImGui::EndDisabled();
 		ImGui::SetItemTooltip("Up a folder");
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ToImGui(EditorTheme::WithAlpha(theme.Surface, 0.0f)));
-		const auto crumbs = m_Model->Breadcrumbs();
-		for (size_t i = 0; i < crumbs.size(); i++)
+		// The roots as segments (assets | res), like the viewport's tool capsule
+		if (m_Model->Roots().size() > 1)
 		{
-			ImGui::SameLine(0.0f, i == 0 ? -1.0f : 2.0f);
-			if (i > 0)
+			std::vector<std::string> names;
+			std::vector<const char*> labels;
+			int selected = 0;
+			for (const std::filesystem::path& root : m_Model->Roots())
 			{
-				ImGui::TextColored(ToImGui(theme.TextMuted), "/");
-				ImGui::SameLine(0.0f, 2.0f);
+				if (root == m_Model->Root())
+					selected = static_cast<int>(names.size());
+				names.push_back(root.generic_string());
 			}
+			for (const std::string& name : names)
+				labels.push_back(name.c_str());
+			ImGui::SameLine(0.0f, 8.0f);
+			center(26.0f);
+			const int clicked = SegmentedControl("##roots", labels.data(), static_cast<int>(labels.size()), selected, 26.0f, theme);
+			if (clicked >= 0)
+				m_Model->Navigate(m_Model->Roots()[clicked]);
+		}
+
+		// The folders below the root as crumbs
+		const auto crumbs = m_Model->Breadcrumbs();
+		for (size_t i = 1; i < crumbs.size(); i++)
+		{
+			ImGui::SameLine(0.0f, i == 1 ? 10.0f : 0.0f);
+			if (i > 1)
+			{
+				center(ImGui::GetTextLineHeight());
+				ImGui::TextColored(ToImGui(EditorTheme::WithAlpha(theme.TextMuted, 0.5f)), "/");
+				ImGui::SameLine(0.0f, 0.0f);
+			}
+			center(24.0f);
 			ImGui::PushID(static_cast<int>(i));
-			const bool last = i + 1 == crumbs.size();
-			if (!last)
-				ImGui::PushStyleColor(ImGuiCol_Text, ToImGui(theme.TextMuted));
-			if (ImGui::Button(DisplayName(crumbs[i]).c_str()))
+			if (Crumb(DisplayName(crumbs[i]).c_str(), i + 1 == crumbs.size(), theme))
 				m_Model->Navigate(crumbs[i]);
-			if (!last)
-				ImGui::PopStyleColor();
 			ImGui::PopID();
 		}
-		ImGui::PopStyleColor();
 
-		// Right side: search and the thumbnail size
-		const float searchWidth = 180.0f, sizeWidth = 80.0f;
+		// Search, at the right: a pill with the magnifier inside
+		const float searchWidth = 210.0f;
 		const float right = ImGui::GetWindowContentRegionMax().x;
-		ImGui::SameLine(std::max(ImGui::GetCursorPosX(), right - searchWidth - sizeWidth - ImGui::GetStyle().ItemSpacing.x));
+		ImGui::SameLine(std::max(ImGui::GetCursorPosX() + 8.0f, right - searchWidth));
+		center(26.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 13.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(28.0f, (26.0f - ImGui::GetFontSize()) * 0.5f));
 		ImGui::SetNextItemWidth(searchWidth);
 		if (ImGui::InputTextWithHint("##search", "Search", &m_Search))
 			m_Model->SetFilter(m_Search);
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(sizeWidth);
-		ImGui::SliderFloat("##size", &m_CellSize, 48.0f, 160.0f, "");
-		ImGui::SetItemTooltip("Thumbnail size");
+		ImGui::PopStyleVar(2);
+		const ImVec2 field = ImGui::GetItemRectMin();
+		Ethane::DrawIcon(ImGui::GetWindowDrawList(), Icon::Search, ImVec2(field.x + 15.0f, field.y + 13.0f), 12.0f, ToImGuiU32(theme.TextMuted));
+		ImGui::SetCursorPosY(top + height + 2.0f);
 	}
 
 	void ContentBrowserPanel::DrawGrid(const OpenSteleFn& openStele)
 	{
 		ImGui::BeginChild("##grid");
+		// Ctrl + scroll: tile size
+		if (ImGui::IsWindowHovered() && ImGui::GetIO().KeyCtrl && ImGui::GetIO().MouseWheel != 0.0f)
+			m_CellSize = std::clamp(m_CellSize + ImGui::GetIO().MouseWheel * 8.0f, 40.0f, 160.0f);
 		const auto entries = m_Model->Entries();
 		if (entries.empty())
 			ImGui::TextDisabled(m_Model->Filter().empty() ? "This folder is empty" : "No matches");
 
-		const ImGuiStyle& style = ImGui::GetStyle();
-		const float cellWidth = m_CellSize + style.FramePadding.x * 2.0f;
+		const float gap = 4.0f;
+		const float tileWidth = m_CellSize + 24.0f;
 		const float available = ImGui::GetContentRegionAvail().x;
-		const int columns = std::max(1, static_cast<int>((available + style.ItemSpacing.x) / (cellWidth + style.ItemSpacing.x)));
+		const int columns = std::max(1, static_cast<int>((available + gap) / (tileWidth + gap)));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(gap, gap));
 		for (size_t i = 0; i < entries.size(); i++)
 		{
 			if (i % columns != 0)
@@ -133,6 +164,7 @@ namespace Ethane {
 			if (m_Model->Entries().data() != entries.data())
 				break; // navigated: the rest belongs to the old folder
 		}
+		ImGui::PopStyleVar();
 
 		if (ImGui::BeginPopupContextWindow("##grid", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 		{
@@ -147,22 +179,13 @@ namespace Ethane {
 	{
 		switch (kind)
 		{
-			case ContentBrowser::Kind::Folder: return m_Theme->Secondary;
+			case ContentBrowser::Kind::Folder: return m_Theme->Mint;
 			case ContentBrowser::Kind::Mesh: return m_Theme->Accent;
-			case ContentBrowser::Kind::Texture: return m_Theme->Text;
+			case ContentBrowser::Kind::Texture: return m_Theme->TextSecondary;
 			case ContentBrowser::Kind::Stele: return m_Theme->Danger;
 			case ContentBrowser::Kind::Other: break;
 		}
-		return m_Theme->TextMuted;
-	}
-
-	EditorTheme::Color ContentBrowserPanel::BandText(const EditorTheme::Color& band) const
-	{
-		const EditorTheme& theme = *m_Theme;
-		const bool textIsDark = EditorTheme::Luminance(theme.Text) < EditorTheme::Luminance(theme.Background);
-		const EditorTheme::Color& dark = textIsDark ? theme.Text : theme.Background;
-		const EditorTheme::Color& light = textIsDark ? theme.Background : theme.Text;
-		return EditorTheme::Luminance(band) > 0.55f ? dark : light;
+		return m_Theme->FieldActive;
 	}
 
 	void ContentBrowserPanel::DrawIcon(const ContentBrowser::Entry& entry, const RefCountPtr<ITexture2D>& thumbnail, glm::vec2 min, float size) const
@@ -170,33 +193,26 @@ namespace Ethane {
 		const EditorTheme& theme = *m_Theme;
 		ImDrawList* draw = ImGui::GetWindowDrawList();
 		auto at = [&](float x, float y) { return ImVec2(min.x + x * size, min.y + y * size); };
-		const float rounding = theme.Rounding;
 
 		if (thumbnail)
 		{
-			draw->AddImageRounded(TextureId(thumbnail), at(0.08f, 0.08f), at(0.92f, 0.92f), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE, rounding);
+			draw->AddImageRounded(TextureId(thumbnail), at(0.0f, 0.0f), at(1.0f, 1.0f), ImVec2(0, 0), ImVec2(1, 1), IM_COL32_WHITE, size * 0.125f);
 			return;
 		}
 
-		const EditorTheme::Color color = KindColor(entry.Type);
 		if (entry.Type == ContentBrowser::Kind::Folder)
 		{
-			// A tab, then the body over it, a little lighter at the front
-			draw->AddRectFilled(at(0.12f, 0.2f), at(0.48f, 0.36f), ToImGuiU32(EditorTheme::WithAlpha(color, 0.7f)), rounding);
-			draw->AddRectFilled(at(0.12f, 0.28f), at(0.88f, 0.8f), ToImGuiU32(EditorTheme::WithAlpha(color, 0.7f)), rounding);
-			draw->AddRectFilled(at(0.12f, 0.36f), at(0.88f, 0.8f), ToImGuiU32(color), rounding);
+			// The back with its tab, then the front
+			const ImU32 back = ToImGuiU32(EditorTheme::WithAlpha(theme.Mint, 0.75f)), front = ToImGuiU32(theme.Mint);
+			const float r = size * 0.05f;
+			draw->AddRectFilled(at(0.16f, 0.23f), at(0.42f, 0.36f), back, r);
+			draw->AddRectFilled(at(0.16f, 0.29f), at(0.84f, 0.78f), back, r);
+			draw->AddRectFilled(at(0.16f, 0.36f), at(0.84f, 0.78f), front, r);
 			return;
 		}
 
-		// A page with a folded corner and a band in the kind's color carrying the extension
-		const float fold = 0.16f;
-		const ImU32 page = ToImGuiU32(theme.Surface), edge = ToImGuiU32(theme.Border);
-		const ImVec2 outline[] = { at(0.2f, 0.1f), at(0.8f - fold, 0.1f), at(0.8f, 0.1f + fold), at(0.8f, 0.9f), at(0.2f, 0.9f) };
-		draw->AddConvexPolyFilled(outline, 5, page);
-		draw->AddPolyline(outline, 5, edge, ImDrawFlags_Closed, 1.0f);
-		draw->AddTriangleFilled(at(0.8f - fold, 0.1f), at(0.8f, 0.1f + fold), at(0.8f - fold, 0.1f + fold), edge);
-		draw->AddRectFilled(at(0.2f, 0.56f), at(0.8f, 0.74f), ToImGuiU32(color));
-
+		// A page with a badge carrying the extension
+		draw->AddRectFilled(at(0.17f, 0.09f), at(0.83f, 0.91f), ToImGuiU32(theme.FieldHover), size * 0.09f);
 		std::string extension = entry.Path.extension().string();
 		if (!extension.empty())
 			extension.erase(0, 1);
@@ -204,15 +220,18 @@ namespace Ethane {
 			c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
 		if (extension.size() > 5)
 			extension.resize(5);
-		if (!extension.empty() && size >= 32.0f)
-		{
-			// Sized to the band, in whichever of the text and page colors reads on it
-			ImFont* font = ImGui::GetFont();
-			const float fontSize = std::min(size * 0.14f, ImGui::GetFontSize());
-			const ImVec2 textSize = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, extension.c_str());
-			const ImVec2 bandCenter = at(0.5f, 0.65f);
-			draw->AddText(font, fontSize, ImVec2(bandCenter.x - textSize.x * 0.5f, bandCenter.y - textSize.y * 0.5f), ToImGuiU32(BandText(color)), extension.c_str());
-		}
+		if (extension.empty() || size < 32.0f)
+			return;
+		const EditorTheme::Color badge = KindColor(entry.Type);
+		const bool lightBadge = entry.Type != ContentBrowser::Kind::Other;
+		ImFont* font = EditorFonts().Mono;
+		const float fontSize = std::max(8.0f, size * 0.14f);
+		const ImVec2 text = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, extension.c_str());
+		const ImVec2 center = at(0.5f, 0.72f);
+		const ImVec2 bmin(center.x - text.x * 0.5f - 4.0f, center.y - text.y * 0.5f - 1.0f), bmax(center.x + text.x * 0.5f + 4.0f, center.y + text.y * 0.5f + 1.0f);
+		draw->AddRectFilled(bmin, bmax, ToImGuiU32(badge), 3.0f);
+		draw->AddText(font, fontSize, ImVec2(center.x - text.x * 0.5f, center.y - text.y * 0.5f),
+		              ToImGuiU32(lightBadge ? theme.Pane : theme.TextSecondary), extension.c_str());
 	}
 
 	void ContentBrowserPanel::DrawEntry(const ContentBrowser::Entry& entry, const OpenSteleFn& openStele)
@@ -226,18 +245,24 @@ namespace Ethane {
 			thumbnail = m_Assets->GetTexture(m_Model->Import(entry));
 
 		ImGui::PushID(entry.Path.generic_string().c_str());
-		ImGui::BeginGroup();
 		const bool selected = entry.Path == m_Selected;
-		const float width = m_CellSize + ImGui::GetStyle().FramePadding.x * 2.0f;
-		const ImVec2 cellMin = ImGui::GetCursorScreenPos();
-		ImGui::InvisibleButton("##cell", ImVec2(width, m_CellSize));
+		const float width = m_CellSize + 24.0f;
+		const float labelHeight = ImGui::GetFontSize() + 4.0f;
+		const ImVec2 size(width, 8.0f + m_CellSize + 6.0f + labelHeight + 4.0f);
+		const ImVec2 min = ImGui::GetCursorScreenPos();
+		ImGui::InvisibleButton("##tile", size);
 		const bool hovered = ImGui::IsItemHovered();
+		ImDrawList* draw = ImGui::GetWindowDrawList();
 		if (selected || hovered)
-		{
-			ImGui::GetWindowDrawList()->AddRectFilled(cellMin, ImVec2(cellMin.x + width, cellMin.y + m_CellSize),
-			                                          ToImGuiU32(selected ? theme.Highlight : theme.HighlightHover), theme.Rounding);
-		}
-		DrawIcon(entry, thumbnail, { cellMin.x + (width - m_CellSize) * 0.5f, cellMin.y }, m_CellSize);
+			draw->AddRectFilled(min, ImVec2(min.x + size.x, min.y + size.y), ToImGuiU32(selected ? theme.Selected : theme.Hover), theme.CardRounding);
+		DrawIcon(entry, thumbnail, { min.x + (width - m_CellSize) * 0.5f, min.y + 8.0f }, m_CellSize);
+
+		// The name under it, centered, shortened to fit
+		ImGui::PushFont(nullptr, theme.FontSize - 2.0f);
+		const std::string label = Elide(entry.Name, width - 8.0f);
+		const ImVec2 text = ImGui::CalcTextSize(label.c_str());
+		draw->AddText(ImVec2(min.x + (width - text.x) * 0.5f, min.y + 8.0f + m_CellSize + 6.0f), ToImGuiU32(selected ? theme.Text : theme.TextSecondary), label.c_str());
+		ImGui::PopFont();
 
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 			m_Selected = entry.Path;
@@ -257,24 +282,14 @@ namespace Ethane {
 			const AssetDrag drag{ m_Model->Import(entry), entry.Type == Kind::Mesh ? AssetKind::Mesh : AssetKind::Texture };
 			ImGui::SetDragDropPayload(kAssetDragType, &drag, sizeof(drag));
 			const ImVec2 iconMin = ImGui::GetCursorScreenPos();
-			const float iconSize = ImGui::GetFrameHeight() * 1.5f;
+			const float iconSize = 32.0f;
 			ImGui::Dummy(ImVec2(iconSize, iconSize));
 			DrawIcon(entry, thumbnail, { iconMin.x, iconMin.y }, iconSize);
 			ImGui::SameLine();
-			ImGui::AlignTextToFramePadding();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (iconSize - ImGui::GetFontSize()) * 0.5f);
 			ImGui::TextUnformatted(entry.Name.c_str());
 			ImGui::EndDragDropSource();
 		}
-
-		// The name under it, centered, shortened to fit
-		const std::string label = Elide(entry.Name, width);
-		const float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, (width - labelWidth) * 0.5f));
-		if (selected)
-			ImGui::TextColored(ToImGui(theme.AccentText), "%s", label.c_str());
-		else
-			ImGui::TextUnformatted(label.c_str());
-		ImGui::EndGroup();
 		ImGui::PopID();
 	}
 

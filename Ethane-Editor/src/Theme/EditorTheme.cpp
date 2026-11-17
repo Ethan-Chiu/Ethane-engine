@@ -2,51 +2,37 @@
 
 namespace Ethane {
 
-	EditorTheme EditorTheme::Light()
-	{
-		EditorTheme theme;
-		theme.Name           = "Light";
-		theme.Background     = Hex(0xFFF3E3); // cream
-		theme.Panel          = Hex(0xF7E8D3);
-		theme.Surface        = Hex(0xFFFBF5);
-		theme.SurfaceHover   = Hex(0xE6F1EF);
-		theme.SurfaceActive  = Hex(0xD5E8E6);
-		theme.Border         = Hex(0xEBDAC3);
-
-		theme.Text           = Hex(0x2B2D3A);
-		theme.TextMuted      = Hex(0x968B7C);
-
-		theme.Highlight      = Hex(0xD5E8E6); // mint
-		theme.HighlightHover = Hex(0xE4F0EE);
-		theme.Accent         = Hex(0x9FA0FF); // periwinkle
-		theme.AccentText     = Hex(0x6668D9);
-		theme.Secondary      = Hex(0x6FB3AA); // mint, deepened to read on cream
-		theme.Danger         = Hex(0xFF7171); // coral
-		theme.Selection      = Hex(0x9FA0FF);
-		return theme;
-	}
-
 	EditorTheme EditorTheme::Dark()
 	{
+		const Color cream = Hex(0xFFF3E3), mint = Hex(0xD5E8E6), periwinkle = Hex(0x9FA0FF), coral = Hex(0xFF7171);
+
 		EditorTheme theme;
-		theme.Name           = "Dark";
-		theme.Background     = Hex(0x1D1D20);
-		theme.Panel          = Hex(0x252528);
-		theme.Surface        = Hex(0x2E2E32);
-		theme.SurfaceHover   = Hex(0x38383D);
-		theme.SurfaceActive  = Hex(0x424248);
-		theme.Border         = Hex(0x323236);
+		theme.Window        = Hex(0x0E0E10);
+		theme.Pane          = Hex(0x1A1A1E);
+		theme.Card          = Hex(0x202025);
+		theme.Field         = Hex(0x26262C);
+		theme.FieldHover    = Hex(0x2D2D34);
+		theme.FieldActive   = Hex(0x34343C);
+		theme.Line          = Hex(0x26262C);
 
-		theme.Text           = Hex(0xFFF3E3); // cream
-		theme.TextMuted      = Hex(0x8D8A85);
+		theme.Text          = cream;
+		theme.TextSecondary = Hex(0xC9C3B8);
+		theme.TextMuted     = Hex(0x8C8A85);
+		theme.TextFaint     = Hex(0x6E6C68);
 
-		theme.Highlight      = Hex(0x33484A); // mint, darkened
-		theme.HighlightHover = Hex(0x2B393B);
-		theme.Accent         = Hex(0x9FA0FF); // periwinkle
-		theme.AccentText     = Hex(0xB3B4FF);
-		theme.Secondary      = Hex(0xD5E8E6); // mint
-		theme.Danger         = Hex(0xFF7171); // coral
-		theme.Selection      = Hex(0x9FA0FF);
+		theme.Hover         = WithAlpha(cream, 0.05f);
+		theme.Selected      = WithAlpha(mint, 0.11f);
+
+		theme.Accent        = periwinkle;
+		theme.Mint          = mint;
+		theme.Danger        = coral;
+		theme.AxisX         = coral;
+		theme.AxisY         = mint;
+		theme.AxisZ         = periwinkle;
+
+		theme.Glass         = Hex(0x24242A, 0.88f);
+		theme.GlassEdge     = WithAlpha(cream, 0.08f);
+		theme.GlassSelected = WithAlpha(cream, 0.12f);
 		return theme;
 	}
 

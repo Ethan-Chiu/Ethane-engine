@@ -236,14 +236,17 @@ and asset settings, with no per-component UI code.
 The editor draws with ImGui today, but a custom editor UI may replace it, so what panels show and do
 is kept apart from how ImGui draws it:
 
-- `EditorTheme` holds colors by role (Background, Panel, Surface, Text, Highlight, Accent, Danger,
-  Selection, ...) and shapes; `Light` (the default: cream pages, mint selection, periwinkle marks,
-  coral for stopping and errors) and `Dark` share the palette (View > Theme). `ApplyImGuiTheme` is the
-  only code that maps roles onto ImGui's style; panels ask for roles, never for ImGui colors. The few
-  custom widgets (`FlatButton`, `IconButton`, the stele tabs) draw with the theme directly.
-- Minimal layout: square corners, no borders, tight padding; window tab bars show only where windows
-  share a dock area; the open steles are tabs on the viewport's bar, with play / stop and the gizmo's
-  tools.
+- The look is designed first as an HTML / CSS mockup (`docs/ui-mockup`), then replicated here.
+- `EditorTheme` holds colors by role (Window, Pane, Card, Field, Text levels, Selected, Accent, Mint,
+  Danger, the axes, Glass) and shapes (pane / control rounding, gap, row height, font size); dark, on
+  the palette cream / mint / periwinkle / coral. `ApplyImGuiTheme` is the only code that maps roles
+  onto ImGui's style (and loads the fonts: Inter, JetBrains Mono); panels ask for roles, never for
+  ImGui colors. The editor's own widgets (`Theme/ImGuiWidgets`: panes, cards, drawn icons, icon
+  buttons, toggle, pill, segmented control) draw with the theme directly.
+- Layout: rounded panes float on the window (a padded dockspace host; the docking separators are the
+  gaps; docked windows have no background, `BeginPane` draws the pane). Window tab bars show only where
+  windows share a dock area. The open steles are tabs on the viewport pane, with Play / Stop; the
+  gizmo's tools are a glass capsule over the scene.
 - Models without ImGui: `ContentBrowser` (navigation within its roots, filtering, classification,
   importing) is unit-tested; `ContentBrowserPanel` only draws it.
 - Editing operations used by several panels (`EditorActions`, e.g. `CreateMeshElement`) are plain
