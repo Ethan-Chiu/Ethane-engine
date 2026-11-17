@@ -15,7 +15,7 @@ void main() {
 #version 450 core
 
 layout(set = 0, binding = 0) uniform sampler2D u_Mask;       // highlighted depth, 2.0 where there's none
-layout(set = 0, binding = 1) uniform sampler2D u_SceneDepth; // the viewport's depth image
+layout(set = 0, binding = 1) uniform sampler2D u_SceneDepth; // the scene's depth image (the renderer's HDR target)
 
 layout(push_constant) uniform Outline {
 	vec4 color;

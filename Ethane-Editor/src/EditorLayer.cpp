@@ -74,7 +74,8 @@ namespace Ethane {
 		RenderTargetSpecification viewportSpec;
 		viewportSpec.Width = m_ViewportSize.x;
 		viewportSpec.Height = m_ViewportSize.y;
-		viewportSpec.ClearColor = { 0.08f, 0.085f, 0.09f, 1.0f };
+		viewportSpec.ColorFormat = ImageFormat::RGBA; // 8-bit, sRGB-encoded by the renderer's tone mapping
+		viewportSpec.DepthFormat = ImageFormat::None; // the renderer keeps the scene's depth
 		m_ViewportTarget = backend.CreateRenderTarget(viewportSpec);
 		m_OutlineTarget = backend.CreateRenderTarget(RenderTargetSpecification{
 			.Width = viewportSpec.Width, .Height = viewportSpec.Height, .ColorFormat = ImageFormat::RGBA,
@@ -174,7 +175,8 @@ namespace Ethane {
 				outline->Resize(size.x, size.y);
 			}
 			renderer->Render(commandList, *packet, *target);
-			renderer->RenderOutline(commandList, *packet, target, *outline, OutlineStyle{ .Color = selection, .Width = std::max(outlineWidth, 1) });
+			// The outline goes over the shown image as it is: its color stays sRGB, like the UI's
+			renderer->RenderOutline(commandList, *packet, *outline, OutlineStyle{ .Color = selection, .Width = std::max(outlineWidth, 1) });
 		});
 	}
 

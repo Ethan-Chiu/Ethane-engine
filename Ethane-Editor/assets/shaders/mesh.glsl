@@ -46,7 +46,7 @@ layout(set = 0, binding = 0) uniform Frame {
 	mat4 viewproj;
 	vec4 cameraPosition; // xyz: world space
 	vec4 lightDirection; // xyz: towards the directional light
-	vec4 lightRadiance;  // rgb: its color * intensity (0: no light)
+	vec4 lightRadiance;  // rgb: its color * intensity, linear (0: no light)
 } u_Frame;
 
 // set 1: Ethane::Material
@@ -81,6 +81,8 @@ vec3 SurfaceNormal() {
 }
 
 void main() {
+	// all colors here are linear light: the base color was converted on the CPU, the map is an sRGB image
+	// decoded by the sampler; the result goes to an HDR image, tone mapped afterwards (tonemap.glsl)
 	vec4 base = u_Material.BaseColor * texture(u_BaseColorMap, v_TexCoord);
 	vec3 mr = texture(u_MetallicRoughnessMap, v_TexCoord).rgb;
 	float roughness = clamp(u_Material.Roughness * mr.g, 0.05, 1.0);
@@ -100,8 +102,8 @@ void main() {
 	float shininess = max(2.0 / pow(roughness, 4.0) - 2.0, 1.0);
 	float specular = pow(max(dot(n, h), 0.0), shininess) * (shininess + 8.0) / (8.0 * PI);
 
-	// hemisphere ambient: lighter from above
-	vec3 ambient = mix(vec3(0.10, 0.09, 0.08), vec3(0.22, 0.24, 0.28), 0.5 + 0.5 * n.y);
+	// hemisphere ambient, lighter from above (linear light: sRGB (0.10, 0.09, 0.08) below, (0.22, 0.24, 0.28) above)
+	vec3 ambient = mix(vec3(0.010, 0.0080, 0.0070), vec3(0.040, 0.047, 0.064), 0.5 + 0.5 * n.y);
 	vec3 color = ambient * (diffuseColor + specularColor * 0.5)
 	           + (diffuseColor + specularColor * specular) * nDotL * u_Frame.lightRadiance.rgb;
 	outColor = vec4(color, 1.0);

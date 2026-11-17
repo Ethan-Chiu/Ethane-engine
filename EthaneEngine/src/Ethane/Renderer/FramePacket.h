@@ -15,6 +15,7 @@ namespace Ethane {
 		glm::mat4 View{ 1.0f };
 		glm::mat4 Projection{ 1.0f };
 		glm::vec3 Position{ 0.0f }; // world space
+		float Exposure = 0.0f;      // EV: each +1 doubles the brightness (the camera's)
 
 		glm::mat4 ViewProjection() const { return Projection * View; }
 	};
@@ -23,7 +24,7 @@ namespace Ethane {
 	struct DirectionalLight
 	{
 		glm::vec3 Direction{ 0.0f, -1.0f, 0.0f }; // the way the light travels (world space)
-		glm::vec3 Color{ 1.0f };
+		glm::vec3 Color{ 1.0f };       // sRGB, as authored (the renderer makes it linear)
 		float Intensity = 1.0f;
 	};
 
@@ -31,7 +32,7 @@ namespace Ethane {
 	// file's other textures (normal, metallic-roughness) stay
 	struct MaterialParams
 	{
-		glm::vec4 BaseColor{ 1.0f };
+		glm::vec4 BaseColor{ 1.0f };   // sRGB, as authored (the renderer makes it linear)
 		float Metallic = 0.0f;
 		float Roughness = 0.8f;
 		AssetId BaseColorTexture; // null: keep the file's

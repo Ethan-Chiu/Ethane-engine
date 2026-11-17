@@ -26,7 +26,11 @@ namespace Ethane {
 		std::string Pick = "assets/shaders/pick.glsl";
 		std::string SelectionMask = "assets/shaders/selection_mask.glsl";
 		std::string SelectionOutline = "assets/shaders/selection_outline.glsl";
+		std::string ToneMap = "assets/shaders/tonemap.glsl";
 	};
+
+	// How HDR brightness is mapped to the screen (tonemap.glsl's `curve`)
+	enum class ToneCurve : int32_t { PbrNeutral = 0 };
 
 	struct OutlineStyle
 	{
@@ -48,25 +52,32 @@ namespace Ethane {
 	// the GPU materials: each mesh's own, and those of elements with material params (kept while the
 	// element keeps being drawn, released when a frame doesn't draw it).
 	//
-	// The pipeline is made for one render pass: Render into targets whose passes are compatible with it
-	// (same formats), such as the target the renderer was created for, even after it's resized.
+	// Color: lighting is computed in linear light into an HDR scene image the renderer owns (RGBA16F +
+	// depth, resized to the output), then tone mapped (exposure, tone curve) and sRGB-encoded into the
+	// output. Colors authored as sRGB (material base color, light color) are converted to linear here;
+	// textures holding color are sRGB images, decoded when sampled.
+	//
+	// The output pass is made for one render pass: Render into targets whose passes are compatible with it
+	// (same formats, color only), such as the target the renderer was created for, even after it's resized.
 	class Renderer
 	{
 	public:
-		Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& renderPass,
+		// `outputPass`: the render pass of the targets Render draws into (8-bit RGBA, no depth)
+		Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& outputPass,
 		         const RendererShaders& shaders = {});
 		~Renderer();
 
-		// Records the packet into `target`: begins and ends the target's render pass.
-		// Call once per frame: the frame uniforms have one copy per frame in flight, and per-element
-		// materials not drawn by this call are released.
+		// Records the packet: the scene into the HDR image, then tone mapped into `target` (whose render pass
+		// it begins and ends). Call once per frame: the frame uniforms have one copy per frame in flight, and
+		// per-element materials not drawn by this call are released.
 		void Render(ICommandList& commandList, const FramePacket& packet, IRenderTarget& target);
 
 		// Draws an outline around the packet's Highlighted elements into `overlay` (an RGBA target without depth,
-		// the size of `scene`; cleared to transparent, to be shown over the scene image): solid where they're in
-		// front in `scene` (after Render drew into it, by its depth), faded where something hides them.
-		void RenderOutline(ICommandList& commandList, const FramePacket& packet, const RefCountPtr<IRenderTarget>& scene,
-		                   IRenderTarget& overlay, const OutlineStyle& style = {});
+		// the size of the last Render's target; cleared to transparent, to be shown over it): solid where they're
+		// in front in the scene (by the depth that Render left), faded where something hides them.
+		void RenderOutline(ICommandList& commandList, const FramePacket& packet, IRenderTarget& overlay, const OutlineStyle& style = {});
+
+		ToneCurve Curve = ToneCurve::PbrNeutral;
 
 		// Picking: asks which element covers `pixel` ((0, 0): top left) of the target the next Render draws
 		// into. That Render also draws the packet into a 1x1 id image and copies its pixel back; the answer
@@ -108,10 +119,17 @@ namespace Ethane {
 
 		GfxBackendAPI* m_Backend;
 		AssetLibrary* m_Assets;
+		// The scene in linear light: RGBA16F + depth, the output's size
+		RefCountPtr<IRenderTarget> m_SceneTarget;
 		RefCountPtr<IShader> m_MeshShader;
 		RefCountPtr<IPipeline> m_MeshPipeline;
 		RefCountPtr<IUniformBuffer> m_FrameUniforms;
 		RefCountPtr<IBindingSet> m_FrameBindings;
+
+		// Tone mapping: a full-screen pass from the scene image into the output
+		RefCountPtr<IShader> m_ToneMapShader;
+		RefCountPtr<IPipeline> m_ToneMapPipeline;
+		RefCountPtr<IBindingSet> m_ToneMapBindings;
 
 		// Picking: a 1x1 R32UI (+ depth) target and the pipeline drawing ids into it
 		RefCountPtr<IRenderTarget> m_PickTarget;

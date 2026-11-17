@@ -196,6 +196,17 @@ a transparent overlay draws the outline around the mask, comparing the mask's de
 depth image: solid where the selection is in front, faded where it's hidden. The overlay is a separate
 image (a pass can't sample what it draws into), shown over the viewport by the UI.
 
+Color: lighting adds up light, so it's computed in linear light, and brightness isn't capped at 1:
+- colors authored by people (material base color, light color) are sRGB values, as color pickers give
+  them; the renderer converts them to linear;
+- textures holding color are `SRGBA` images, decoded to linear by the sampler (also for filtering and
+  mip generation); data maps (normals, metallic / roughness) stay `RGBA`. An `SRGBA` texture also has a
+  raw `UNORM` view of the same bytes, which the UI uses: it works in sRGB values throughout;
+- meshes are drawn into the renderer's HDR scene image (`RGBA16F` + depth, the output's size); a
+  full-screen pass then scales by the view's exposure (2^EV, from the camera), maps brightness into
+  0..1 with the tone curve (Khronos PBR Neutral: colors below ~0.76 pass nearly unchanged, highlights
+  roll off), and encodes to sRGB into the 8-bit output the UI shows.
+
 Later: with a render thread, the simulation builds packet N+1 while the renderer records packet N.
 
 ## Engine components

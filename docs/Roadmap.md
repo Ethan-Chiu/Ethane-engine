@@ -76,6 +76,8 @@ as its own commits.
 - [x] Picking (GPU pick pass) and transform gizmos (ImGuizmo), editor-only
 - [x] Selection outline (screen-space, faded where hidden)
 - [x] Content browser (thumbnails, search, drag to viewport / hierarchy / asset fields) and the editor theme
+- [x] Color: linear lighting, sRGB textures and inputs, HDR scene image, tone mapping (PBR Neutral), camera exposure
+- Selectable tone curves (AgX, ACES), auto exposure, bloom
 - Content browser: rename / delete / move files (keeping asset ids through `Relocate`), mesh thumbnails
 - Native file dialogs (Open / Save as are path popups for now)
 - Asking before closing a stele with unsaved changes

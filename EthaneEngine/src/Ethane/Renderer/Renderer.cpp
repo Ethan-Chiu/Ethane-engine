@@ -16,20 +16,36 @@ namespace Ethane {
 			glm::mat4 ViewProj;
 			glm::vec4 CameraPosition; // xyz
 			glm::vec4 LightDirection; // xyz: towards the light; w unused
-			glm::vec4 LightRadiance;  // rgb: color * intensity (0 when there's no light)
+			glm::vec4 LightRadiance;  // rgb: color * intensity, linear (0 when there's no light)
 		};
+
+		// sRGB-encoded color (what color pickers and image files hold) -> linear light (what lighting adds up)
+		float SrgbToLinear(float c)
+		{
+			return c <= 0.04045f ? c / 12.92f : std::pow((c + 0.055f) / 1.055f, 2.4f);
+		}
+		glm::vec3 SrgbToLinear(const glm::vec3& c) { return { SrgbToLinear(c.r), SrgbToLinear(c.g), SrgbToLinear(c.b) }; }
+		glm::vec4 SrgbToLinear(const glm::vec4& c) { return { SrgbToLinear(glm::vec3(c)), c.a }; } // alpha is linear already
+
+		// The background where nothing is drawn, in linear light: chosen so it shows as a dark grey (about sRGB
+		// 0.08) after tone mapping, which darkens the deepest values (PBR Neutral's toe)
+		constexpr std::array<float, 4> kBackground{ 0.033f, 0.034f, 0.036f, 1.0f };
 
 
 	}
 
-	Renderer::Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& renderPass, const RendererShaders& shaders)
+	Renderer::Renderer(GfxBackendAPI& backend, AssetLibrary& assets, const RefCountPtr<IRenderPass>& outputPass, const RendererShaders& shaders)
 		: m_Backend(&backend), m_Assets(&assets)
 	{
+		// The scene in linear light, any brightness: 16-bit float color, and depth
+		m_SceneTarget = backend.CreateRenderTarget(RenderTargetSpecification{
+			.Width = 1, .Height = 1, .ColorFormat = ImageFormat::RGBA16F, .ClearColor = kBackground });
+
 		m_MeshShader = backend.CreateShader(shaders.Mesh);
 
 		PipelineSpecification spec;
 		spec.Shader = m_MeshShader;
-		spec.RenderPass = renderPass;
+		spec.RenderPass = m_SceneTarget->GetRenderPass();
 		spec.Layout = Mesh::GetVertexLayout();
 		spec.CullMode = CullMode::BACK;
 		m_MeshPipeline = backend.CreatePipeline(spec);
@@ -37,6 +53,16 @@ namespace Ethane {
 		m_FrameUniforms = backend.CreateUniformBuffer(sizeof(FrameUniforms));
 		m_FrameBindings = backend.CreateBindingSet(m_MeshShader, 0);
 		m_FrameBindings->SetUniformBuffer(0, m_FrameUniforms);
+
+		// Tone mapping: full screen into the output, no vertex buffer
+		m_ToneMapShader = backend.CreateShader(shaders.ToneMap);
+		PipelineSpecification toneMapSpec;
+		toneMapSpec.Shader = m_ToneMapShader;
+		toneMapSpec.RenderPass = outputPass;
+		toneMapSpec.Layout = {};
+		toneMapSpec.CullMode = CullMode::NONE;
+		m_ToneMapPipeline = backend.CreatePipeline(toneMapSpec);
+		m_ToneMapBindings = backend.CreateBindingSet(m_ToneMapShader, 0);
 
 		// Picking: ids in a 1x1 R32UI image, cleared to 0 ("nothing"); depth keeps the nearest one
 		m_PickTarget = backend.CreateRenderTarget(RenderTargetSpecification{
@@ -90,12 +116,15 @@ namespace Ethane {
 		{
 			const DirectionalLight& light = packet.DirectionalLights.front();
 			frame.LightDirection = glm::vec4(-glm::normalize(light.Direction), 0.0f);
-			frame.LightRadiance = glm::vec4(light.Color * light.Intensity, 0.0f);
+			frame.LightRadiance = glm::vec4(SrgbToLinear(light.Color) * light.Intensity, 0.0f);
 		}
 		m_FrameUniforms->SetData(&frame, sizeof(frame));
 
+		// 1. The scene, in linear light, into the HDR image (the output's size)
+		const RenderTargetSpecification& output = target.GetSpecification();
+		m_SceneTarget->Resize(output.Width, output.Height);
 		m_Stats = {};
-		commandList.BeginRenderPass(target);
+		commandList.BeginRenderPass(*m_SceneTarget);
 		commandList.BindPipeline(*m_MeshPipeline);
 		commandList.BindBindingSet(*m_FrameBindings);
 		for (const DrawItem& item : packet.DrawItems())
@@ -122,6 +151,20 @@ namespace Ethane {
 		}
 		commandList.EndRenderPass();
 
+		// 2. Tone mapped into the output (set every frame: resizing replaces the scene's images)
+		m_ToneMapBindings->SetRenderTarget(0, m_SceneTarget, RenderTargetImage::Color);
+		struct
+		{
+			float Exposure;
+			int32_t Curve;
+		} const toneMap{ std::exp2(packet.View.Exposure), static_cast<int32_t>(Curve) };
+		commandList.BeginRenderPass(target);
+		commandList.BindPipeline(*m_ToneMapPipeline);
+		commandList.BindBindingSet(*m_ToneMapBindings);
+		commandList.PushConstants(&toneMap, sizeof(toneMap));
+		commandList.Draw(3); // the full-screen triangle
+		commandList.EndRenderPass();
+
 		CollectPick(); // an earlier request's answer, if its frame has finished
 		std::optional<glm::uvec2> pick;
 		{
@@ -136,8 +179,7 @@ namespace Ethane {
 		m_PublishedStats = m_Stats;
 	}
 
-	void Renderer::RenderOutline(ICommandList& commandList, const FramePacket& packet, const RefCountPtr<IRenderTarget>& scene,
-	                             IRenderTarget& overlay, const OutlineStyle& style)
+	void Renderer::RenderOutline(ICommandList& commandList, const FramePacket& packet, IRenderTarget& overlay, const OutlineStyle& style)
 	{
 		auto highlighted = [&](ElementId element) {
 			return element.IsValid() && std::find(packet.Highlighted.begin(), packet.Highlighted.end(), element) != packet.Highlighted.end();
@@ -153,7 +195,7 @@ namespace Ethane {
 		}
 
 		// 1. The highlighted meshes' depths, seen like the scene
-		const RenderTargetSpecification& size = scene->GetSpecification();
+		const RenderTargetSpecification& size = m_SceneTarget->GetSpecification();
 		m_MaskTarget->Resize(size.Width, size.Height);
 		const glm::mat4 viewProjection = packet.View.ViewProjection();
 		m_MaskUniforms->SetData(&viewProjection, sizeof(viewProjection));
@@ -171,7 +213,7 @@ namespace Ethane {
 
 		// 2. Around the silhouette, compared with the scene's depth (set every frame: resizing replaces images)
 		m_OutlineBindings->SetRenderTarget(0, m_MaskTarget, RenderTargetImage::Color);
-		m_OutlineBindings->SetRenderTarget(1, scene, RenderTargetImage::Depth);
+		m_OutlineBindings->SetRenderTarget(1, m_SceneTarget, RenderTargetImage::Depth);
 		struct
 		{
 			glm::vec4 Color;
@@ -263,7 +305,7 @@ namespace Ethane {
 		// arrive a few frames after the materials were made
 		const RefCountPtr<ITexture2D> texture = values.BaseColorTexture.IsValid() ? m_Assets->GetTexture(values.BaseColorTexture) : RefCountPtr<ITexture2D>();
 		auto apply = [&](MaterialData data) {
-			data.BaseColor = values.BaseColor;
+			data.BaseColor = SrgbToLinear(values.BaseColor); // authored as sRGB
 			data.Metallic = values.Metallic;
 			data.Roughness = values.Roughness;
 			if (texture)
