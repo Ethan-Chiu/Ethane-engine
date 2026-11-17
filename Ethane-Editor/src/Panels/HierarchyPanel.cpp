@@ -137,25 +137,17 @@ namespace Ethane {
 		const auto children = snapshot.Children(id);
 
 		ImGui::PushID(ImGuiId(id));
-		if (const MeshComponent* mesh = snapshot.Get<MeshComponent>(id))
-		{
-			bool visible = mesh->Visible;
-			if (ImGui::Checkbox("##visible", &visible))
-			{
-				Transaction tx(visible ? "Show " + element.Name : "Hide " + element.Name);
-				tx.SetField<MeshComponent>(id, "Visible", visible);
-				context.Commit(std::move(tx));
-			}
-			ImGui::SameLine();
-		}
+		const MeshComponent* mesh = snapshot.Get<MeshComponent>(id);
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-		                           ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+		                           ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen |
+		                           ImGuiTreeNodeFlags_AllowOverlap; // the visibility toggle sits on the row
 		if (children.empty())
 			flags |= ImGuiTreeNodeFlags_Leaf;
 		if (stele.Selected == id)
 			flags |= ImGuiTreeNodeFlags_Selected;
 		const bool open = ImGui::TreeNodeEx("##node", flags, "%s", element.Name.empty() ? "(unnamed)" : element.Name.c_str());
+		const bool rowHovered = ImGui::IsItemHovered();
 
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 			stele.Selected = id;
@@ -180,6 +172,29 @@ namespace Ethane {
 			if (ImGui::MenuItem("Delete", "Del"))
 				DeleteElement(context, snapshot, id);
 			ImGui::EndPopup();
+		}
+
+		// Shown/hidden, at the right edge of the row: a small check, faint unless hidden or hovered
+		if (mesh)
+		{
+			const float box = ImGui::GetTextLineHeight() * 0.8f;
+			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - box - ImGui::GetStyle().FramePadding.x);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(box * 0.1f, box * 0.1f));
+			if (mesh->Visible && !rowHovered)
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.35f);
+			bool visible = mesh->Visible;
+			ImGui::SetNextItemWidth(box);
+			if (ImGui::Checkbox("##visible", &visible))
+			{
+				Transaction tx(visible ? "Show " + element.Name : "Hide " + element.Name);
+				tx.SetField<MeshComponent>(id, "Visible", visible);
+				context.Commit(std::move(tx));
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip(mesh->Visible ? "Visible (click to hide)" : "Hidden (click to show)");
+			if (mesh->Visible && !rowHovered)
+				ImGui::PopStyleVar();
+			ImGui::PopStyleVar();
 		}
 
 		if (open)

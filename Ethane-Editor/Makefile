@@ -87,8 +87,10 @@ GENERATED += $(OBJDIR)/CubeLayer.o
 GENERATED += $(OBJDIR)/DemoStele.o
 GENERATED += $(OBJDIR)/EditorContext.o
 GENERATED += $(OBJDIR)/EditorLayer.o
+GENERATED += $(OBJDIR)/EditorTheme.o
 GENERATED += $(OBJDIR)/EthaneEditorApp.o
 GENERATED += $(OBJDIR)/HierarchyPanel.o
+GENERATED += $(OBJDIR)/ImGuiTheme.o
 GENERATED += $(OBJDIR)/InspectorPanel.o
 GENERATED += $(OBJDIR)/Spin.o
 GENERATED += $(OBJDIR)/TexturedQuadLayer.o
@@ -97,8 +99,10 @@ OBJECTS += $(OBJDIR)/CubeLayer.o
 OBJECTS += $(OBJDIR)/DemoStele.o
 OBJECTS += $(OBJDIR)/EditorContext.o
 OBJECTS += $(OBJDIR)/EditorLayer.o
+OBJECTS += $(OBJDIR)/EditorTheme.o
 OBJECTS += $(OBJDIR)/EthaneEditorApp.o
 OBJECTS += $(OBJDIR)/HierarchyPanel.o
+OBJECTS += $(OBJDIR)/ImGuiTheme.o
 OBJECTS += $(OBJDIR)/InspectorPanel.o
 OBJECTS += $(OBJDIR)/Spin.o
 OBJECTS += $(OBJDIR)/TexturedQuadLayer.o
@@ -191,6 +195,12 @@ $(OBJDIR)/InspectorPanel.o: src/Panels/InspectorPanel.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/TexturedQuadLayer.o: src/TexturedQuadLayer.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/EditorTheme.o: src/Theme/EditorTheme.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/ImGuiTheme.o: src/Theme/ImGuiTheme.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/TriangleLayer.o: src/TriangleLayer.cpp

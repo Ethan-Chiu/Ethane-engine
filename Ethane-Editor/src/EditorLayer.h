@@ -8,6 +8,7 @@
 #include "Ethane/Renderer/Renderer.h"
 
 #include "EditorContext.h"
+#include "Theme/EditorTheme.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
 
@@ -81,6 +82,7 @@ namespace Ethane {
 		uint64_t m_GizmoGesture = 0;
 		uint64_t m_GizmoGestures = 0;
 
+		EditorTheme m_Theme = EditorTheme::Default();
 		HierarchyPanel m_Hierarchy;
 		InspectorPanel m_Inspector;
 

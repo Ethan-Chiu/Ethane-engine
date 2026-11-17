@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 #include "DemoStele.h"
 #include "Game/Spin.h"
+#include "Theme/ImGuiTheme.h"
 
 #include <imgui.h>
 #include <imgui_internal.h> // DockBuilder
@@ -83,6 +84,7 @@ namespace Ethane {
 		m_GizmoOperation = ImGuizmo::TRANSLATE;
 		// Dragging inside a window (e.g. a gizmo in the viewport) must not move the window
 		ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+		ApplyImGuiTheme(m_Theme);
 		m_Context = CreateScope<EditorContext>(*m_Assets, kAssetRegistryFile);
 
 		// Game types first: steles that use them load only once they're registered
@@ -157,13 +159,13 @@ namespace Ethane {
 		// unchanged), draws the packet, then the selection outline over it
 		const int outlineWidth = static_cast<int>(std::lround(2.0f * ImGui::GetIO().DisplayFramebufferScale.x)); // 2 points
 		work.Offscreen([renderer = m_Renderer.get(), target = m_ViewportTarget, outline = m_OutlineTarget, size = m_ViewportSize,
-		                outlineWidth, packet = std::make_shared<FramePacket>(std::move(packet))](ICommandList& commandList) {
+		                outlineWidth, selection = m_Theme.Selection, packet = std::make_shared<FramePacket>(std::move(packet))](ICommandList& commandList) {
 			if (size.x > 0 && size.y > 0) {
 				target->Resize(size.x, size.y);
 				outline->Resize(size.x, size.y);
 			}
 			renderer->Render(commandList, *packet, *target);
-			renderer->RenderOutline(commandList, *packet, target, *outline, OutlineStyle{ .Width = std::max(outlineWidth, 1) });
+			renderer->RenderOutline(commandList, *packet, target, *outline, OutlineStyle{ .Color = selection, .Width = std::max(outlineWidth, 1) });
 		});
 	}
 
@@ -350,7 +352,7 @@ namespace Ethane {
 			const bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
 			if (IsPlaying()) {
 				// A frame around the image, so play mode can't be mistaken for editing
-				ImGui::GetWindowDrawList()->AddRect(min, ImVec2(min.x + size.x, min.y + size.y), IM_COL32(90, 200, 120, 255), 0.0f, 0, 3.0f);
+				ImGui::GetWindowDrawList()->AddRect(min, ImVec2(min.x + size.x, min.y + size.y), ToImGuiU32(m_Theme.Secondary), 0.0f, 0, 3.0f);
 			} else {
 				// The selection outline over the scene, under the gizmo
 				ImGui::GetWindowDrawList()->AddImage(Application::Get().GetImGuiLayer()->GetTextureID(*m_OutlineTarget), min, ImVec2(min.x + size.x, min.y + size.y));
@@ -376,7 +378,11 @@ namespace Ethane {
 		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 6.0f, ImGui::GetCursorPosY() + 4.0f));
 		if (!IsPlaying()) {
 			ImGui::BeginDisabled(m_Context->Active() == nullptr);
-			if (ImGui::Button("Play")) {
+			ImGui::PushStyleColor(ImGuiCol_Button, ToImGui(EditorTheme::WithAlpha(m_Theme.Secondary, 0.2f)));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImGui(EditorTheme::WithAlpha(m_Theme.Secondary, 0.35f)));
+			const bool play = ImGui::Button("Play");
+			ImGui::PopStyleColor(2);
+			if (play) {
 				Play();
 			}
 			ImGui::EndDisabled();
@@ -386,7 +392,7 @@ namespace Ethane {
 			auto operation = [&](const char* label, int value, const char* key) {
 				const bool active = m_GizmoOperation == value;
 				if (active) {
-					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+					ImGui::PushStyleColor(ImGuiCol_Button, ToImGui(EditorTheme::WithAlpha(m_Theme.Accent, 0.35f)));
 				}
 				if (ImGui::Button(label)) {
 					m_GizmoOperation = value;
@@ -405,15 +411,19 @@ namespace Ethane {
 			}
 			ImGui::SetItemTooltip("Gizmo axes: the element's own (Local) or the world's. Hold Ctrl to snap.");
 		} else {
-			if (ImGui::Button("Stop")) {
+			ImGui::PushStyleColor(ImGuiCol_Button, ToImGui(EditorTheme::WithAlpha(m_Theme.Danger, 0.3f)));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ToImGui(EditorTheme::WithAlpha(m_Theme.Danger, 0.45f)));
+			const bool stop = ImGui::Button("Stop");
+			ImGui::PopStyleColor(2);
+			if (stop) {
 				Stop();
 			}
 			ImGui::SameLine();
 			ImGui::AlignTextToFramePadding();
 			if (m_PlayHasCamera) {
-				ImGui::TextColored(ImVec4(0.45f, 0.85f, 0.55f, 1.0f), "Playing");
+				ImGui::TextColored(ToImGui(m_Theme.Secondary), "Playing");
 			} else {
-				ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.35f, 1.0f), "Playing (no primary camera: editor view)");
+				ImGui::TextColored(ToImGui(m_Theme.Danger), "Playing (no primary camera: editor view)");
 			}
 		}
 		ImGui::PopStyleVar();
@@ -513,9 +523,9 @@ namespace Ethane {
 		const RendererStats stats = m_Renderer->GetStats();
 		ImGui::Text("Meshes: %u, draw calls: %u, triangles: %u", stats.DrawItems, stats.DrawCalls, stats.Triangles);
 		if (const size_t loading = m_Assets->PendingCount(); loading > 0) {
-			ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Loading %zu assets...", loading);
+			ImGui::TextColored(ToImGui(m_Theme.Accent), "Loading %zu assets...", loading);
 		} else if (stats.MissingMeshes > 0) {
-			ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "%u meshes couldn't be loaded", stats.MissingMeshes);
+			ImGui::TextColored(ToImGui(m_Theme.Danger), "%u meshes couldn't be loaded", stats.MissingMeshes);
 		}
 
 		if (OpenStele* stele = m_Context->Active()) {
@@ -584,7 +594,7 @@ namespace Ethane {
 				}
 			}
 			if (!m_DialogError.empty()) {
-				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), "%s", m_DialogError.c_str());
+				ImGui::TextColored(ToImGui(m_Theme.Danger), "%s", m_DialogError.c_str());
 			}
 			ImGui::EndPopup();
 		}
@@ -605,7 +615,7 @@ namespace Ethane {
 				}
 			}
 			if (!m_DialogError.empty()) {
-				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), "%s", m_DialogError.c_str());
+				ImGui::TextColored(ToImGui(m_Theme.Danger), "%s", m_DialogError.c_str());
 			}
 			ImGui::EndPopup();
 		}
