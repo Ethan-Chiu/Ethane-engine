@@ -6,6 +6,7 @@
 #include "VulkanWindowTarget.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderTarget.h"
+#include "VulkanTexture.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -63,7 +64,7 @@ namespace Ethane {
         info.Device = *device.Get();
         info.QueueFamily = m_Context.GetPhysicalDevice().GetQueueFamilyIndices().Graphics.value();
         info.Queue = *device.GetGraphicsQueue();
-        info.DescriptorPoolSize = 64; // backend-owned pool: font atlas + textures shown with ImGui::Image
+        info.DescriptorPoolSize = 512; // backend-owned pool: font atlas + textures shown with ImGui::Image (icons, thumbnails)
         // Copies of the per-frame vertex / index buffers. A copy is rewritten once every ImageCount frames,
         // which must be more than the frames the GPU can still be reading: kMaxFramesInFlight + 1 is safe.
         info.MinImageCount = 2;
@@ -156,6 +157,23 @@ namespace Ethane {
         if (inserted) {
             std::lock_guard pool(*m_DescriptorPoolMutex);
             it->second.Set = ImGui_ImplVulkan_AddTexture(vulkanTarget.GetColorView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
+        it->second.LastUsedFrame = m_FrameCounter;
+        return reinterpret_cast<ImTextureID>(it->second.Set);
+    }
+
+    ImTextureID VulkanImGuiLayer::GetTextureID(const RefCountPtr<ITexture2D>& texture)
+    {
+        if (!texture) {
+            return ImTextureID_Invalid;
+        }
+        const uint64_t key = reinterpret_cast<uint64_t>(texture.get()) | (1ull << 63);
+        auto [it, inserted] = m_Textures.try_emplace(key);
+        if (inserted) {
+            const vk::DescriptorImageInfo info = static_cast<const VulkanTexture2D&>(*texture).GetDescriptorInfo();
+            std::lock_guard pool(*m_DescriptorPoolMutex);
+            it->second.Set = ImGui_ImplVulkan_AddTexture(info.imageView, static_cast<VkImageLayout>(info.imageLayout));
+            it->second.Texture = texture;
         }
         it->second.LastUsedFrame = m_FrameCounter;
         return reinterpret_cast<ImTextureID>(it->second.Set);

@@ -25,6 +25,7 @@ namespace Ethane {
         virtual void End() override;
         virtual void SubmitRender(RenderWork& work) override;
         virtual ImTextureID GetTextureID(const IRenderTarget& target) override;
+        virtual ImTextureID GetTextureID(const RefCountPtr<ITexture2D>& texture) override;
 
     private:
         // Releases the descriptor sets of render target images the last UI frame didn't show (all: every one)
@@ -35,10 +36,12 @@ namespace Ethane {
         VulkanWindowTarget& m_WindowTarget;
         GLFWwindow* m_Window;
 
-        // Descriptor sets of render target color images, by VulkanRenderTarget::GetImageId()
+        // Descriptor sets of what ImGui shows: render target color images by VulkanRenderTarget::GetImageId(),
+        // textures by address with the top bit set (image ids are small counters, so the keys never collide)
         struct TextureEntry
         {
             VkDescriptorSet Set = VK_NULL_HANDLE;
+            RefCountPtr<ITexture2D> Texture; // for textures (not render targets): kept alive while shown
             uint64_t LastUsedFrame = 0;
         };
         // This frame's draw data, copied by End() so recording doesn't depend on ImGui's state (the next

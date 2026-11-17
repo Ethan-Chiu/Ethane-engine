@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Ethane/Core/Layer.h"
+#include "Ethane/GfxBackend/GfxObject.h" // RefCountPtr<ITexture2D> needs the complete type
 
 #include <imgui.h>
 
@@ -9,6 +10,7 @@ namespace Ethane {
 	class GfxBackendAPI;
 	class IWindowTarget;
 	class IRenderTarget;
+	class ITexture2D;
 
 	// Dear ImGui on top of the window, pushed as an overlay by Application. Each frame:
 	//   Begin() -> every layer's OnImGuiRender() -> End()   builds the UI; End() applies ImGui's texture
@@ -30,6 +32,8 @@ namespace Ethane {
 		// frame (resizing the target replaces its image). The target must be rendered into before the
 		// window's render pass of every frame that shows it, e.g. in an offscreen pass (RenderWork).
 		virtual ImTextureID GetTextureID(const IRenderTarget& target) = 0;
+		// A texture, for ImGui::Image (icons, thumbnails). Kept alive while UI frames keep asking for it.
+		virtual ImTextureID GetTextureID(const RefCountPtr<ITexture2D>& texture) = 0;
 
 		virtual void OnEvent(Event& e) override;
 		void BlockEvents(bool block) { m_BlockEvents = block; }
