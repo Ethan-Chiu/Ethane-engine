@@ -77,7 +77,7 @@ namespace Ethane {
 		m_Pipeline = backend.CreatePipeline(spec);
 
 		m_CameraBuffer = backend.CreateUniformBuffer(sizeof(CameraData));
-		m_Texture = backend.LoadTexture2D("assets/textures/test.png");
+		m_Texture = backend.LoadTexture2D("assets/textures/test.png", GfxBackendAPI::ImageContent::Data); // drawn as stored, to a UNORM target
 
 		m_BindingSet = backend.CreateBindingSet(m_Shader, 0);
 		m_BindingSet->SetUniformBuffer(0, m_CameraBuffer);

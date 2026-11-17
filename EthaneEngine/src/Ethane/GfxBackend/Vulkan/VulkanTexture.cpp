@@ -16,6 +16,7 @@ namespace Ethane {
             switch (format)
             {
             case ImageFormat::RGBA:
+            case ImageFormat::SRGBA:
             case ImageFormat::BGRA:
             case ImageFormat::RED32F:
             case ImageFormat::RG16F:   return 4;
@@ -71,7 +72,11 @@ namespace Ethane {
             }
         }
 
+        // sRGB color also gets a raw (UNORM) view of the same bytes, for showing it as it is (the UI): the
+        // image must allow views of another format of its class
+        const bool rawView = spec.Format == ImageFormat::SRGBA;
         m_Image = vk::raii::Image(vkDevice, vk::ImageCreateInfo{
+            .flags         = rawView ? vk::ImageCreateFlagBits::eMutableFormat : vk::ImageCreateFlags{},
             .imageType     = vk::ImageType::e2D,
             .format        = m_Format,
             .extent        = { spec.Width, spec.Height, 1 },
@@ -98,6 +103,14 @@ namespace Ethane {
             .format           = m_Format,
             .components       = {},
             .subresourceRange = { .aspectMask = vk::ImageAspectFlagBits::eColor, .baseMipLevel = 0, .levelCount = m_MipLevels, .baseArrayLayer = 0, .layerCount = 1 }});
+        if (rawView) {
+            m_RawView = vk::raii::ImageView(vkDevice, vk::ImageViewCreateInfo{
+                .image            = *m_Image,
+                .viewType         = vk::ImageViewType::e2D,
+                .format           = vk::Format::eR8G8B8A8Unorm,
+                .components       = {},
+                .subresourceRange = { .aspectMask = vk::ImageAspectFlagBits::eColor, .baseMipLevel = 0, .levelCount = m_MipLevels, .baseArrayLayer = 0, .layerCount = 1 }});
+        }
 
         // samplerAnisotropy is required by device selection and enabled with the supported features
         const bool anisotropy = physicalDevice.GetEnabledFeatures().get<vk::PhysicalDeviceFeatures2>().features.samplerAnisotropy;
@@ -198,6 +211,14 @@ namespace Ethane {
         return vk::DescriptorImageInfo{
             .sampler     = *m_Sampler,
             .imageView   = *m_ImageView,
+            .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal};
+    }
+
+    vk::DescriptorImageInfo VulkanTexture2D::GetRawDescriptorInfo() const
+    {
+        return vk::DescriptorImageInfo{
+            .sampler     = *m_Sampler,
+            .imageView   = m_RawView != nullptr ? *m_RawView : *m_ImageView,
             .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal};
     }
 

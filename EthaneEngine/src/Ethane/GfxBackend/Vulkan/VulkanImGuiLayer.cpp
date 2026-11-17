@@ -170,7 +170,8 @@ namespace Ethane {
         const uint64_t key = reinterpret_cast<uint64_t>(texture.get()) | (1ull << 63);
         auto [it, inserted] = m_Textures.try_emplace(key);
         if (inserted) {
-            const vk::DescriptorImageInfo info = static_cast<const VulkanTexture2D&>(*texture).GetDescriptorInfo();
+            // The UI draws sRGB values to a UNORM swapchain: it gets the bytes undecoded
+            const vk::DescriptorImageInfo info = static_cast<const VulkanTexture2D&>(*texture).GetRawDescriptorInfo();
             std::lock_guard pool(*m_DescriptorPoolMutex);
             it->second.Set = ImGui_ImplVulkan_AddTexture(info.imageView, static_cast<VkImageLayout>(info.imageLayout));
             it->second.Texture = texture;

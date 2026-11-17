@@ -49,6 +49,7 @@ enum class ImageFormat
     R32UI,             // one 32-bit unsigned integer per pixel, e.g. object ids for picking
     RGB,
     RGBA,
+    SRGBA,             // 8-bit RGBA holding sRGB-encoded color: sampling decodes it to linear
     RGBA16F,
     RGBA32F,
     RG16F,

@@ -28,36 +28,37 @@ GfxBackendAPI::API GfxBackendAPI::s_API = GfxBackendAPI::API::Vulkan;
         return nullptr;
     }
 
-    RefCountPtr<ITexture2D> GfxBackendAPI::CreateTexture2DFromImage(const DecodedImage& image, TextureFilter filter, TextureWrap wrap)
+    RefCountPtr<ITexture2D> GfxBackendAPI::CreateTexture2DFromImage(const DecodedImage& image, ImageContent content, TextureFilter filter, TextureWrap wrap)
     {
         const TextureSpecification spec{
             .Width  = image.Width,
             .Height = image.Height,
-            .Format = ImageFormat::RGBA, // decoded images are always RGBA8
+            // decoded images are always 8-bit RGBA; color is sRGB-encoded
+            .Format = content == ImageContent::Color ? ImageFormat::SRGBA : ImageFormat::RGBA,
             .Filter = filter,
             .Wrap   = wrap,
         };
         return CreateTexture2D(spec, image.Pixels.data()); // copies the pixels
     }
 
-    RefCountPtr<ITexture2D> GfxBackendAPI::LoadTexture2D(const std::string& filepath, TextureFilter filter, TextureWrap wrap)
+    RefCountPtr<ITexture2D> GfxBackendAPI::LoadTexture2D(const std::string& filepath, ImageContent content, TextureFilter filter, TextureWrap wrap)
     {
         const std::optional<DecodedImage> image = DecodeImage(filepath);
         if (!image) {
             ETH_CORE_ERROR("Failed to load texture {0}", filepath);
             return {};
         }
-        return CreateTexture2DFromImage(*image, filter, wrap);
+        return CreateTexture2DFromImage(*image, content, filter, wrap);
     }
 
-    RefCountPtr<ITexture2D> GfxBackendAPI::LoadTexture2DFromMemory(const void* encoded, size_t size, TextureFilter filter, TextureWrap wrap)
+    RefCountPtr<ITexture2D> GfxBackendAPI::LoadTexture2DFromMemory(const void* encoded, size_t size, ImageContent content, TextureFilter filter, TextureWrap wrap)
     {
         const std::optional<DecodedImage> image = DecodeImage(encoded, size);
         if (!image) {
             ETH_CORE_ERROR("Failed to decode an in-memory texture ({0} bytes)", size);
             return {};
         }
-        return CreateTexture2DFromImage(*image, filter, wrap);
+        return CreateTexture2DFromImage(*image, content, filter, wrap);
     }
 
     const RefCountPtr<ITexture2D>& GfxBackendAPI::GetDefaultTexture(DefaultTexture which)

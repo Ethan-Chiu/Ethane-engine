@@ -16,12 +16,16 @@ namespace Ethane {
         // `pixels`: spec.Width * spec.Height tightly packed texels of spec.Format, uploaded through a staging buffer
         VulkanTexture2D(const VulkanDevice* device, const TextureSpecification& spec, const void* pixels);
         // Frames in flight may still sample it: destroyed once they've finished
-        virtual ~VulkanTexture2D() { m_Device->Retire(std::move(m_Sampler), std::move(m_ImageView), std::move(m_Image), std::move(m_Memory)); }
+        virtual ~VulkanTexture2D() { m_Device->Retire(std::move(m_Sampler), std::move(m_RawView), std::move(m_ImageView), std::move(m_Image), std::move(m_Memory)); }
 
         virtual const TextureSpecification& GetSpecification() const override { return m_Specification; }
         uint32_t GetMipLevels() const { return m_MipLevels; }
 
+        // For shaders: sRGB color decodes to linear when sampled
         vk::DescriptorImageInfo GetDescriptorInfo() const;
+        // The stored bytes as they are, without decoding (for the UI, which works in sRGB values): the raw view
+        // of an sRGB texture, else the same as GetDescriptorInfo()
+        vk::DescriptorImageInfo GetRawDescriptorInfo() const;
 
     private:
         // Copies the pixels to mip 0, blits the rest of the chain, leaves every level in eShaderReadOnlyOptimal
@@ -34,10 +38,11 @@ namespace Ethane {
         vk::Format m_Format = vk::Format::eUndefined;
         uint32_t m_MipLevels = 1;
 
-        // NOTE: declaration order matters, members are destroyed in reverse: sampler -> view -> image -> memory
+        // NOTE: declaration order matters, members are destroyed in reverse: sampler -> views -> image -> memory
         vk::raii::DeviceMemory m_Memory = nullptr;
         vk::raii::Image m_Image = nullptr;
         vk::raii::ImageView m_ImageView = nullptr;
+        vk::raii::ImageView m_RawView = nullptr;  // sRGB textures: the same image as UNORM
         vk::raii::Sampler m_Sampler = nullptr;
     };
 

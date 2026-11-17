@@ -27,6 +27,7 @@ namespace ImageUtils {
         case ImageFormat::RGB:             return VK_FORMAT_R8G8B8_UNORM;
         case ImageFormat::BGR:             return VK_FORMAT_B8G8R8_UNORM;
         case ImageFormat::RGBA:            return VK_FORMAT_R8G8B8A8_UNORM;
+        case ImageFormat::SRGBA:           return VK_FORMAT_R8G8B8A8_SRGB;
         case ImageFormat::RGBA16F:         return VK_FORMAT_R16G16B16A16_SFLOAT;
         case ImageFormat::RGBA32F:         return VK_FORMAT_R32G32B32A32_SFLOAT;
         case ImageFormat::BGRA:            return VK_FORMAT_B8G8R8A8_UNORM;

@@ -34,12 +34,16 @@ public:
 
     // `pixels`: Width * Height texels of spec.Format, tightly packed, top row first
     virtual RefCountPtr<ITexture2D> CreateTexture2D(const TextureSpecification& spec, const void* pixels) = 0;
+    // What an image's 8-bit values are: sRGB-encoded color (photos, base color / albedo maps, UI art; sampled
+    // as linear color) or plain data (normal maps, metallic / roughness maps; sampled as they are)
+    enum class ImageContent { Color, Data };
+
     // Uploads decoded pixels (DecodeImage, on any thread); the image itself can go afterwards
-    RefCountPtr<ITexture2D> CreateTexture2DFromImage(const DecodedImage& image, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
-    // Loads an image file as RGBA8 (null if the file can't be read)
-    RefCountPtr<ITexture2D> LoadTexture2D(const std::string& filepath, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
+    RefCountPtr<ITexture2D> CreateTexture2DFromImage(const DecodedImage& image, ImageContent content, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
+    // Loads an image file as 8-bit RGBA (null if the file can't be read)
+    RefCountPtr<ITexture2D> LoadTexture2D(const std::string& filepath, ImageContent content, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
     // Same, from an encoded image (png, jpg, ...) in memory
-    RefCountPtr<ITexture2D> LoadTexture2DFromMemory(const void* encoded, size_t size, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
+    RefCountPtr<ITexture2D> LoadTexture2DFromMemory(const void* encoded, size_t size, ImageContent content, TextureFilter filter = TextureFilter::Linear, TextureWrap wrap = TextureWrap::Repeat);
 
     // Shared 1x1 textures for maps a material doesn't have
     enum class DefaultTexture { White, FlatNormal };

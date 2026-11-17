@@ -1,6 +1,8 @@
 #include "ethpch.h"
 #include "Mesh.h"
 
+#include <map>
+
 #include "Ethane/GfxBackend/GfxBackendAPI.h"
 
 #include <assimp/Importer.hpp>
@@ -271,24 +273,26 @@ namespace Ethane {
         mesh->m_Nodes = meshImport.Nodes;
         mesh->m_BoundingBox = meshImport.BoundingBox;
 
-        // One texture per decoded image, however many materials use it
-        std::unordered_map<const DecodedImage*, RefCountPtr<ITexture2D>> textures;
-        auto texture = [&](const std::shared_ptr<const DecodedImage>& image) -> RefCountPtr<ITexture2D> {
+        // One texture per decoded image and use, however many materials share it. Base color maps are
+        // sRGB-encoded color; normal and metallic-roughness maps are data.
+        using Content = GfxBackendAPI::ImageContent;
+        std::map<std::pair<const DecodedImage*, Content>, RefCountPtr<ITexture2D>> textures;
+        auto texture = [&](const std::shared_ptr<const DecodedImage>& image, Content content) -> RefCountPtr<ITexture2D> {
             if (!image) {
                 return {};
             }
-            auto [it, inserted] = textures.try_emplace(image.get());
+            auto [it, inserted] = textures.try_emplace({ image.get(), content });
             if (inserted) {
-                it->second = backend.CreateTexture2DFromImage(*image);
+                it->second = backend.CreateTexture2DFromImage(*image, content);
             }
             return it->second;
         };
         mesh->m_Materials.reserve(meshImport.Materials.size());
         for (const MeshImport::Material& imported : meshImport.Materials) {
             MaterialData& material = mesh->m_Materials.emplace_back(imported.Factors);
-            material.BaseColorTexture = texture(imported.BaseColor);
-            material.NormalTexture = texture(imported.Normal);
-            material.MetallicRoughnessTexture = texture(imported.MetallicRoughness);
+            material.BaseColorTexture = texture(imported.BaseColor, Content::Color);
+            material.NormalTexture = texture(imported.Normal, Content::Data);
+            material.MetallicRoughnessTexture = texture(imported.MetallicRoughness, Content::Data);
         }
 
         mesh->m_VertexCount = static_cast<uint32_t>(meshImport.Vertices.size());

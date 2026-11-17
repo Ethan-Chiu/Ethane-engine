@@ -109,7 +109,7 @@ namespace Ethane {
 	{
 		RefCountPtr<ITexture2D> texture;
 		if (image)
-			texture = m_Backend->CreateTexture2DFromImage(*image);
+			texture = m_Backend->CreateTexture2DFromImage(*image, GfxBackendAPI::ImageContent::Color); // textures are color (base color maps, UI)
 		if (!texture)
 		{
 			m_FailedTextures.insert(id); // DecodeImage logged why
